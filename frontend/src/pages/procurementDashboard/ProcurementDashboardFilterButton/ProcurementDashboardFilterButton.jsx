@@ -55,7 +55,7 @@ export const ProcurementDashboardFilterButton = ({
             className={fieldStyles}
         >
             <FilterComboBox
-                label="Division"
+                label="COR's division"
                 namespace="division-combobox"
                 options={divisionOptions}
                 selected={division}

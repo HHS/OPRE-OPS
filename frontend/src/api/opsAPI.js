@@ -106,6 +106,7 @@ export const opsApi = createApi({
                     awardType,
                     awardingEntityId,
                     division,
+                    cor,
                     includeProcurement,
                     includeBudgetLines = true
                 },
@@ -162,6 +163,11 @@ export const opsApi = createApi({
                     // COR's division: the division of the agreement's primary COR (project officer).
                     // Expects Division objects ({ id, name, abbreviation }), not ids; only `id` is sent.
                     division.forEach((d) => queryParams.push(`division=${d.id}`));
+                }
+                if (cor) {
+                    // The agreement's primary COR (project officer). The backend ORs `cor_id` with `division`
+                    // ("Division & Staffing"). Expects COR objects ({ id, name, division_id }); only `id` is sent.
+                    cor.forEach((c) => queryParams.push(`cor_id=${c.id}`));
                 }
                 if (includeProcurement) {
                     queryParams.push("include_procurement=true");
@@ -386,7 +392,8 @@ export const opsApi = createApi({
                     agreementTypes,
                     agreementTitles,
                     canActivePeriods,
-                    division
+                    division,
+                    cor
                 },
                 page,
                 onlyMy,
@@ -439,6 +446,11 @@ export const opsApi = createApi({
                     // COR's division: the division of the budget line's agreement's primary COR (project officer).
                     // Expects Division objects ({ id, name, abbreviation }), not ids; only `id` is sent.
                     division.forEach((d) => queryParams.push(`division=${d.id}`));
+                }
+                if (cor) {
+                    // The budget line's agreement's primary COR (project officer). The backend ORs `cor_id` with
+                    // `division` ("Division & Staffing"). Expects COR objects ({ id, name, division_id }); only `id` is sent.
+                    cor.forEach((c) => queryParams.push(`cor_id=${c.id}`));
                 }
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
@@ -696,6 +708,24 @@ export const opsApi = createApi({
                 body: { budget_line_item_ids: budgetLineItemIds, requestor_notes: requestorNotes || null }
             }),
             invalidatesTags: ["ContractModifications", "BudgetLineItems", "Notifications"]
+        }),
+        reviewContractModification: builder.mutation({
+            query: ({ requestId, action, reviewerNotes }) => ({
+                url: `/contract-modification-requests/${requestId}/`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: { action, reviewer_notes: reviewerNotes || null }
+            }),
+            // Approving executes the selected budget lines, so refresh the agreement the Budget Lines tab
+            // reads from (getAgreementById), not just the change-request lists — same reasoning as
+            // updateChangeRequest above.
+            invalidatesTags: [
+                "ContractModifications",
+                "Agreements",
+                "BudgetLineItems",
+                "Notifications",
+                "AgreementHistory"
+            ]
         }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
@@ -1487,6 +1517,7 @@ export const {
     useGetAgreementContractModificationEditsByIdQuery,
     useGetAgreementContractModificationsByIdQuery,
     useSubmitContractModificationMutation,
+    useReviewContractModificationMutation,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
     useLazyGetProcurementTrackersByAgreementIdsQuery,

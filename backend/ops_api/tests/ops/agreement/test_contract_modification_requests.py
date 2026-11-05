@@ -44,6 +44,10 @@ from tests.ops.agreement.test_contract_modification_edits import (  # noqa: F401
     modified_loe_enabled,
 )
 
+# Director Derrek, DivisionDirectorAuthClient's director of division 6 (used below as a
+# *deputy* of the agreement's own division, distinct from being that division's director).
+DIVISION_6_DIRECTOR_USER_ID = 525
+
 
 def _submit(client, agreement_id, **body):
     return client.post(url_for("api.agreements-contract-modifications", id=agreement_id), json=body)
@@ -98,7 +102,7 @@ def _latest_event(loaded_db, event_type):
 
 
 def test_submit_puts_edits_in_review_and_notifies_the_director(
-    awarded_with_edit, basic_user_auth_client, loaded_db, app_ctx
+    awarded_with_edit, basic_user_auth_client, loaded_db, test_can, app_ctx
 ):
     agreement, _, executable = awarded_with_edit
 
@@ -113,6 +117,15 @@ def test_submit_puts_edits_in_review_and_notifies_the_director(
     assert response.json["budget_line_item_ids"] == [executable.id]
     assert response.json["requestor_notes"] == "Please review"
     assert response.json["agreement_mod_id"] is None
+
+    # The Division Director needs more than the bare id to actually review what they're
+    # approving for execution.
+    (budget_line_summary,) = response.json["budget_line_items"]
+    assert budget_line_summary["id"] == executable.id
+    assert budget_line_summary["line_description"] == executable.line_description
+    assert budget_line_summary["amount"] == f"{executable.amount:.2f}"
+    assert budget_line_summary["fiscal_year"] == executable.fiscal_year
+    assert budget_line_summary["can_display_name"] == test_can.display_name
 
     # AC12: the edits stay on the list, now marked In Review; nothing is applied yet.
     (pending,) = _get_pending(basic_user_auth_client, agreement.id).json["data"]
@@ -496,6 +509,26 @@ def test_approve_creates_the_mod_attaches_edits_and_executes_budget_lines(
     assert _submit(basic_user_auth_client, agreement.id).status_code == 400  # nothing pending
 
 
+def test_approve_with_only_budget_lines_tags_mod_as_as_is(
+    modified_loe_enabled,  # noqa: F811
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,  # noqa: F811
+):
+    """A pure "as is" execution (#1008) -- no edits bundled -- tags the mod AS_IS, not MODIFIED_LOE."""
+    agreement, _ = make_agreement(test_can)
+    executable = _add_bli(loaded_db, agreement, test_can)
+    request_id = _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).json["id"]
+
+    response = _review_mod(division_director_auth_client, request_id)
+
+    assert response.status_code == 200, response.json
+    mod = loaded_db.get(AgreementMod, response.json["agreement_mod_id"])
+    assert mod.mod_type == ModType.AS_IS
+
+
 def test_decline_returns_edits_to_pending(
     awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, app_ctx
 ):
@@ -543,6 +576,35 @@ def test_review_by_another_divisions_director_returns_403(
     assert loaded_db.get(ContractModificationRequest, request_id).status == ContractModificationRequestStatus.IN_REVIEW
 
 
+def test_review_by_a_second_authorized_reviewer_after_approval_returns_400(
+    awarded_with_edit,
+    basic_user_auth_client,
+    division_director_auth_client,
+    power_user_auth_client,
+    loaded_db,
+    app_ctx,
+):
+    """Two different reviewers (not the same one retrying, like test_review_twice_returns_400)
+    both authorized to review the same request: the Director approves, then a superuser who
+    didn't see that happen tries to decline it. The row lock in review() means whichever commits
+    second sees status != IN_REVIEW and is rejected -- it doesn't un-approve or double-apply."""
+    agreement, _, executable = awarded_with_edit
+    request_id = _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).json["id"]
+
+    assert _review_mod(division_director_auth_client, request_id, "APPROVE").status_code == 200
+    second_response = _review_mod(power_user_auth_client, request_id, "DECLINE")
+    assert second_response.status_code == 400
+    assert "already been reviewed" in second_response.json["errors"]["status"]
+
+    # The second (rejected) call left the first call's approval untouched: still APPROVED (not
+    # reverted or re-closed as DECLINED), and the budget line executed exactly once.
+    loaded_db.expire_all()
+    request = loaded_db.get(ContractModificationRequest, request_id)
+    assert request.status == ContractModificationRequestStatus.APPROVED
+    assert request.agreement_mod_id is not None
+    assert loaded_db.get(ContractBudgetLineItem, executable.id).status == BudgetLineItemStatus.IN_EXECUTION
+
+
 def test_review_unknown_request_returns_404(modified_loe_enabled, division_director_auth_client, app_ctx):  # noqa: F811
     assert _review_mod(division_director_auth_client, 9999999).status_code == 404
 
@@ -571,6 +633,72 @@ def test_get_requests_for_agreement_newest_first(
     assert response.status_code == 200
     assert [r["id"] for r in response.json["data"]] == [second_id, first_id]
     assert [r["status"] for r in response.json["data"]] == ["IN_REVIEW", "DECLINED"]
+
+
+def test_get_requests_can_review_is_true_only_for_an_authorized_director_on_the_in_review_request(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, division_6_director_auth_client
+):
+    agreement, _, _ = awarded_with_edit
+    in_review_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+
+    by_client = {
+        "director": division_director_auth_client,
+        "submitter": basic_user_auth_client,
+        "unrelated_director": division_6_director_auth_client,
+    }
+    can_review_by_client = {
+        name: next(
+            r["can_review"]
+            for r in client.get(url_for("api.agreements-contract-modifications", id=agreement.id)).json["data"]
+            if r["id"] == in_review_id
+        )
+        for name, client in by_client.items()
+    }
+
+    assert can_review_by_client == {"director": True, "submitter": False, "unrelated_director": False}
+
+    # Once reviewed, even the authorized director no longer sees review controls for it.
+    _review_mod(division_director_auth_client, in_review_id, "DECLINE")
+    reviewed = next(
+        r
+        for r in division_director_auth_client.get(
+            url_for("api.agreements-contract-modifications", id=agreement.id)
+        ).json["data"]
+        if r["id"] == in_review_id
+    )
+    assert reviewed["can_review"] is False
+
+
+def test_get_requests_can_review_is_true_for_superuser_and_deputy_director(
+    awarded_with_edit,
+    basic_user_auth_client,
+    power_user_auth_client,
+    division_6_director_auth_client,
+    loaded_db,
+    test_can,
+):
+    """The superuser and deputy-director branches of can_review(), neither exercised by
+    test_get_requests_can_review_is_true_only_for_an_authorized_director_on_the_in_review_request
+    above (which only covers the primary-director branch)."""
+    agreement, _, _ = awarded_with_edit
+    in_review_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+
+    def can_review_for(client):
+        response = client.get(url_for("api.agreements-contract-modifications", id=agreement.id))
+        return next(r["can_review"] for r in response.json["data"] if r["id"] == in_review_id)
+
+    # Superuser branch: can review regardless of division.
+    assert can_review_for(power_user_auth_client) is True
+
+    # Deputy branch: make Director Derrek (division_6_director_auth_client's user) the *deputy*
+    # of the agreement's own division -- confirmed not its director by the test above, where he
+    # was "unrelated_director": False.
+    division = test_can.portfolio.division
+    division.deputy_division_director_id = DIVISION_6_DIRECTOR_USER_ID
+    loaded_db.add(division)
+    loaded_db.commit()
+
+    assert can_review_for(division_6_director_auth_client) is True
 
 
 def test_agreement_notifications_include_contract_modification_requests(

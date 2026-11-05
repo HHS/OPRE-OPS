@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 # Init Story
 
-Create a story file for the current branch by pulling context from GitHub and asking the developer targeted questions. The file will be used by `/update-story` to track AC progress throughout development.
+Create a story file for the current branch by pulling context from GitHub, asking the developer one round of mostly-optional input, and investigating the codebase to fill in the rest. The file will be used by `/update-story` to track AC progress throughout development.
 
 ## Step 1 — Detect the issue number and ensure a branch exists
 
@@ -49,49 +49,43 @@ Extract from the issue body:
 - **Acceptance criteria** (look for checkboxes `- [ ]`, numbered lists, or bullet points describing requirements)
 - **Background / current state / desired state** if present
 
-If AC items are present but not formatted as `- [ ]` checkboxes, convert them to that format — this is required for `/update-story` to track progress. If AC items are genuinely absent from the issue, add a question in Step 3 to collect them from the developer before proceeding.
+If AC items are present but not formatted as `- [ ]` checkboxes, convert them to that format — this is required for `/update-story` to track progress. If AC items are genuinely absent from the issue, that's a hard blocker, not something to infer — but don't interrupt the developer a second time for it. Fold it into the single ask in Step 3 instead (see below) so it's still one round-trip, not two.
 
-If other sections are sparse or missing, note what's missing — you'll fill gaps with developer input in Step 3.
+If other sections are sparse or missing, note what's missing — the investigation in Step 4 will try to fill the gaps; anything it can't will surface in Step 5.
 
-## Step 3 — Ask targeted questions
+## Step 3 — One optional ask
 
-Ask only what GitHub doesn't already tell you. Keep questions focused and concrete. Do not ask all at once — ask, wait for the answer, then ask the next.
+The developer's attention is the scarce resource here — ask once, then go figure out the rest yourself. Send a single message:
 
-Ask these in order:
+- If AC items are missing from the issue (flagged in Step 2), make that part of the ask required, not optional: "I couldn't find acceptance criteria in the issue — what are they?" — then continue in the same message with the optional part below.
+- Always include the optional, open-ended part: "Anything else you want to tell me up front — approach, key files, testing plan, constraints/gotchas? Optional, answer as much or as little as you like. I'll investigate the codebase and figure out the rest."
 
-1. **Technical approach**: "What's the high-level approach? Which existing pattern or component are you following?" (1-2 sentences is enough) — skip only if the issue has a detailed technical implementation plan.
+Whatever they volunteer (all of it, some of it, or nothing beyond required AC) becomes input to Step 4 alongside the issue content. Do not ask the four optional topics as separate questions, and do not re-ask about anything already covered by the issue (title, AC items if present, user story, background).
 
-2. **Key files** (always ask — never skip): "Which files will you primarily be touching?" This is required for `/update-story` to evaluate commits against AC items.
+## Step 4 — Investigate and infer with parallel agents
 
-3. **Testing plan**: "What's your testing plan? For example: unit tests for helpers, Vitest+RTL for component rendering, no E2E needed." This will be validated against the project's testing philosophy.
+Before composing the story file, spawn three agents in parallel to work out everything the developer didn't hand you, and to pressure-test anything they did. Pass each agent the issue content and whatever the developer volunteered in Step 3 as explicit input. Each agent's job is to reach a confident answer by reading the codebase — not to ask questions itself. "Significant" below means the agent could not reach a confident answer even after investigating, not merely that the developer left something unstated.
 
-4. **Known constraints or gotchas**: "Any known constraints, edge cases, or things to avoid?" — skip if the issue already documents these clearly.
+- **Agent 1 — Approach & key files**: If the developer gave an approach and/or file list, use Read and Grep to verify them against how those files and patterns actually work, and flag wrong assumptions or missing/adjacent files. If the developer didn't give one or both, investigate the issue and the codebase (similar existing features, naming conventions, directory layout) and infer them yourself — state the inferred approach and file list plainly, as a conclusion, not a question. Report a significant finding only if, after investigating, there are multiple equally-plausible approaches or file sets with no way to tell which is intended, or a developer-given file plainly doesn't exist.
 
-Do not ask about: the title, AC items, user story, background — those come from the issue.
+- **Agent 2 — AC coverage check**: Use Read and Grep to inspect the (given or inferred) key files. For each AC item, is there a plausible implementation path given the (given or inferred) approach and files? Report a significant finding only for an AC item where investigation turns up no plausible implementation path at all, or the AC text itself is ambiguous about what's required (not just "needs more detail" if a reasonable reading exists).
 
-## Step 4 — Validate the plan with parallel agents
+- **Agent 3 — Testing strategy**: Read `docs/TESTING.md` first. If the developer gave a testing plan, validate it against the project's testing philosophy. If they didn't, infer one yourself from the AC items and from how similar existing code in this repo is tested:
+  - Tests at the lowest appropriate level (unit → integration → component → E2E)
+  - E2E only where integration/component tests can't cover it
+  - Right frameworks (Vest for validation, Vitest+RTL for frontend unit, MSW for API mocking, Cypress CT for complex UI, Cypress E2E for critical full-stack journeys only)
+  - No tests for trivial code, framework internals, or implementation details
+  State the inferred testing strategy as a conclusion. Report a significant finding only for an AC item where no testing approach can be determined even by analogy to existing tests.
 
-Before composing the story file, spawn three agents in parallel to pressure-test the plan against the codebase. Pass each agent the developer's answers from Step 3 as explicit input.
+Synthesize the three reports into: (a) the approach, key files, and testing strategy to use — whatever the developer gave, corrected or filled in by the agents — and (b) a list of significant findings, if any.
 
-- **Agent 1 — Feasibility check**: Use Read and Grep to inspect the key files listed by the developer and the patterns they reference. Given the stated approach and file list: Does the plan align with how those files and patterns actually work? Are there wrong assumptions, missing files, or adjacent files that should be on the list? Report only concrete findings grounded in what you actually read — not generic advice.
+## Step 5 — Ask about unclear items only, batched
 
-- **Agent 2 — AC coverage check**: Use Read and Grep to inspect the key files. For each AC item, is there a plausible implementation path given the stated approach and files? Flag any AC items that seem underspecified, technically ambiguous, or likely to require files/systems not mentioned. Report only concrete findings grounded in what you actually read.
+If Step 4 produced zero significant findings, skip straight to Step 6 — no further questions.
 
-- **Agent 3 — Testing strategy check**: Read `docs/TESTING.md` first. Then, given the developer's testing plan and the AC items, evaluate against the project's testing philosophy:
-  - Are tests at the lowest appropriate level (unit → integration → component → E2E)?
-  - Is any E2E coverage justified, or could integration/component tests suffice?
-  - Are the right frameworks being used (Vest for validation, Vitest+RTL for frontend unit, MSW for API mocking, Cypress CT for complex UI, Cypress E2E for critical full-stack journeys only)?
-  - Flag tests for trivial code, framework internals, or implementation details that shouldn't be tested.
-  - Flag AC items with no testing path identified.
+If it produced any, ask about all of them in a **single** message (not one at a time): list each unclear item plainly and ask for a decision or clarification on it. Wait for one combined answer, then proceed to Step 6.
 
-A finding is **significant** if:
-- Agent 1: a listed file doesn't exist, uses a different pattern than described, or important files are missing from the list
-- Agent 2: any AC item lacks a clear implementation path
-- Agent 3: any AC item has no testing path, or tests are proposed at the wrong level
-
-Synthesize significant findings and surface them to the developer before proceeding. Ask for clarification on anything flagged. If no agent produces a significant finding, proceed directly to Step 5.
-
-## Step 5 — Generate the story file
+## Step 6 — Generate the story file
 
 Compose the story file using the information gathered. Use this structure:
 
@@ -115,19 +109,19 @@ branch: <BRANCH-NAME>
 
 ### Approach
 
-<Developer's answer from Step 3 question 1>
+<The approach from Step 4's synthesis — developer-given and verified, or inferred>
 
 ### Key Files
 
-<Developer's answer from Step 3 question 2 — as a bullet list>
+<The key file list from Step 4's synthesis — as a bullet list>
 
 ### Testing Strategy
 
-<Developer's testing plan from Step 3 question 3, refined by Agent 3's synthesis>
+<The testing strategy from Step 4's synthesis>
 
 ### Constraints
 
-<Developer's answer from Step 3 question 4, or "None noted" if skipped>
+<Developer-volunteered constraints from Step 3, or "None noted" if none given>
 ```
 
 Rules:
@@ -135,17 +129,18 @@ Rules:
 - All boxes start unchecked `[ ]` regardless of issue state
 - Keep the file short — only sections that help `/update-story` evaluate commits
 
-## Step 6 — Confirm and write
-
-Show the developer a preview of the generated file and ask: "Does this look right? I'll write it to `.claude/stories/<slug>.md`."
+## Step 7 — Write the file
 
 Name the file: `<issue-number>-<short-slug-from-title>.md` — e.g. `6032-story-tracking-automation.md`. Use lowercase, hyphens, max 5 words in the slug.
 
-Once confirmed, write the file. Create `.claude/stories/` if it doesn't exist.
+Write it immediately — don't ask the developer to confirm first. This file only tracks the story for `/update-story`; writing it doesn't start implementation and doesn't commit anything, so there's nothing to approve in advance. Create `.claude/stories/` if it doesn't exist.
 
-## Step 7 — Report back
+## Step 8 — Report back and invite corrections
 
-Tell the developer:
+Tell the developer, in one message:
 - The file path written
 - How many AC items were found
+- Which parts (approach / key files / testing strategy) were inferred versus developer-given — call out inferred parts explicitly, since this is the developer's one chance to catch anything the inference got wrong
+- That this just created the tracking file — it does **not** start implementation; say so plainly to avoid the file being mistaken for a go-ahead
+- That they can edit the file directly, or ask for changes, if anything's off
 - That they can run `/update-story` at any point to mark progress and sync to GitHub

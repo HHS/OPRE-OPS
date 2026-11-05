@@ -559,4 +559,58 @@ describe("BLIFilterTags", () => {
         expect(screen.getByTestId("remove-tag-Agreement 1")).toBeInTheDocument();
         expect(screen.getByTestId("remove-tag-Active")).toBeInTheDocument();
     });
+
+    describe("Division & Staffing", () => {
+        const division = [{ id: 1, name: "Division A", abbreviation: "DA" }];
+        const cor = [
+            { id: 1, name: "Hank Smith", division_id: 2, division_abbreviation: "DB" },
+            { id: 22, name: "Ann Nodivision", division_id: null, division_abbreviation: null }
+        ];
+
+        it("shows division and COR tags labelled like the options, right after portfolios", () => {
+            render(
+                <BLIFilterTags
+                    filters={{ ...defaultFilters, portfolios: [{ id: 9, name: "Portfolio Z" }], division, cor }}
+                    setFilters={mockSetFilters}
+                />
+            );
+
+            expect(screen.getAllByRole("button").map((button) => button.textContent)).toEqual([
+                "Portfolio Z ×",
+                "DA - Division A ×",
+                "Ann Nodivision ×",
+                "DB - Hank Smith ×"
+            ]);
+        });
+
+        it("removes only the clicked COR, even when a division shares its id", () => {
+            render(
+                <BLIFilterTags
+                    filters={{ ...defaultFilters, division, cor }}
+                    setFilters={mockSetFilters}
+                />
+            );
+
+            fireEvent.click(screen.getByTestId("remove-tag-DB - Hank Smith"));
+
+            const result = mockSetFilters.mock.calls[0][0]({ ...defaultFilters, division, cor });
+            expect(result.cor).toEqual([cor[1]]);
+            expect(result.division).toEqual(division);
+        });
+
+        it("removes only the clicked division", () => {
+            render(
+                <BLIFilterTags
+                    filters={{ ...defaultFilters, division, cor }}
+                    setFilters={mockSetFilters}
+                />
+            );
+
+            fireEvent.click(screen.getByTestId("remove-tag-DA - Division A"));
+
+            const result = mockSetFilters.mock.calls[0][0]({ ...defaultFilters, division, cor });
+            expect(result.division).toEqual([]);
+            expect(result.cor).toEqual(cor);
+        });
+    });
 });

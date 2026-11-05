@@ -70,4 +70,22 @@ describe("BudgetSummaryCard", () => {
         expect(screen.getByText(/\$123,456\.78/)).toBeInTheDocument();
         expect(screen.getByText(/\$987,654\.32/)).toBeInTheDocument();
     });
+
+    it("hides the spending disclaimer paragraph when showSpendingNote is false, but keeps the spending data line", () => {
+        render(
+            <BudgetCard
+                {...defaultProps}
+                showSpendingNote={false}
+            />
+        );
+
+        expect(
+            screen.queryByText("*Spending is the sum of BLs in Planned, Executing and Obligated Status")
+        ).not.toBeInTheDocument();
+        // The actual spending/funding data line is unaffected by this prop
+        expect(screen.getByText(/\$15,000/)).toBeInTheDocument();
+        expect(screen.getByText(/\$20,000/)).toBeInTheDocument();
+        // Unrelated card content still renders
+        expect(screen.getByText("Budget Summary")).toBeInTheDocument();
+    });
 });

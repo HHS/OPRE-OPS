@@ -143,8 +143,7 @@ class ContractModificationRequestService:
                 raise ResourceNotFoundError("ContractModificationRequest", request_id)
 
             user = get_current_user()
-            directors, deputies = get_division_directors_for_agreement(request.agreement)
-            if not (user.is_superuser or user.id in directors or user.id in deputies):
+            if not self.can_review(request, user):
                 raise AuthorizationError(
                     "User is not authorized to review this contract modification.",
                     "ContractModificationRequest",
@@ -185,7 +184,10 @@ class ContractModificationRequestService:
         if changed:
             raise ValidationError({"budget_line_item_ids": changed})
 
-        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=ModType.MODIFIED_LOE)
+        # As-is when the request is pure budget-line execution with no bundled edits (#1008);
+        # Modified LOE when edits ride along (#3072's existing semantics).
+        mod_type = ModType.MODIFIED_LOE if request.edits else ModType.AS_IS
+        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=mod_type)
         self.db_session.add(agreement_mod)
         self.db_session.flush()
 
@@ -278,6 +280,15 @@ class ContractModificationRequestService:
             },
             commit=False,
         )
+
+    @staticmethod
+    def can_review(request: ContractModificationRequest, user) -> bool:
+        """Whether ``user`` may approve/decline this request: a superuser, or a Division
+        Director/deputy for the agreement's divisions. Shared by ``review()`` (the real
+        authorization gate) and the agreement's contract-modifications GET (so the frontend
+        knows whether to render the Division Director's review controls)."""
+        directors, deputies = get_division_directors_for_agreement(request.agreement)
+        return bool(user.is_superuser or user.id in directors or user.id in deputies)
 
     @staticmethod
     def _check_enabled() -> None:

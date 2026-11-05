@@ -53,7 +53,9 @@ const ProjectSpending = () => {
 
     // The FY is shared with the portfolio, CAN and project funding pages, so going back shows
     // the FY last picked on any of them. It applies here when this project has spending in it.
-    const { fiscalYear: requestedFY, setFiscalYear: setSelectedFY } = useDetailFiscalYear();
+    const { fiscalYear: requestedFY, setFiscalYear: setSelectedFY } = useDetailFiscalYear(null, {
+        fallbackCrumb: LIST_CRUMBS.projects
+    });
 
     const {
         data: project,

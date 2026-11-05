@@ -8,6 +8,7 @@ import AgreementTypeComboBox from "../../../../components/Agreements/AgreementTy
 import AgreementNameComboBox from "../../../../components/Agreements/AgreementNameComboBox";
 import ContractNumberComboBox from "../../../../components/Agreements/ContractNumberComboBox";
 import AwardTypeComboBox from "../../../../components/Agreements/AwardTypeComboBox";
+import DivisionStaffingComboBox from "../../../../components/Agreements/DivisionStaffingComboBox";
 import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import useAgreementsFilterButton from "./AgreementsFilterButton.hooks";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
@@ -37,6 +38,10 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
         setContractNumber,
         awardType,
         setAwardType,
+        division,
+        setDivision,
+        cor,
+        setCor,
         applyFilter,
         resetFilter
     } = useAgreementsFilterButton(filters, setFilters, showModal);
@@ -70,6 +75,23 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 usePrefetchedOptions={true}
                 selectedPortfolios={portfolio}
                 setSelectedPortfolios={setPortfolio}
+                legendClassname={legendStyles}
+                defaultString={""}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
+                isLoading={isLoadingOptions}
+            />
+        </fieldset>,
+        <fieldset
+            key="divisionStaffingField"
+            className={`margin-top-105 ${fieldStyles}`}
+        >
+            <DivisionStaffingComboBox
+                corDivisions={agreementFilterOptions?.cor_divisions ?? []}
+                cors={agreementFilterOptions?.cors ?? []}
+                selectedDivisions={division}
+                setSelectedDivisions={setDivision}
+                selectedCors={cor}
+                setSelectedCors={setCor}
                 legendClassname={legendStyles}
                 defaultString={""}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}

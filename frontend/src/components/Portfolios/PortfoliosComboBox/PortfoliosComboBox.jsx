@@ -53,9 +53,9 @@ export const PortfoliosComboBox = ({
             <div>
                 <label
                     className={legendClassname}
-                    htmlFor="project-combobox-input"
+                    htmlFor="portfolios-combobox-input"
                 >
-                    Portfolio
+                    Portfolio (funding stream)
                 </label>
                 <div>
                     <ComboBox

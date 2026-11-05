@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import BLIFilterButton from "./BLIFilterButton";
 
@@ -135,7 +136,7 @@ describe("BLIFilterButton", () => {
         );
 
         expect(screen.getByTestId("filter-button")).toBeInTheDocument();
-        expect(screen.getByTestId("fieldset-list")).toHaveTextContent("7 fields");
+        expect(screen.getByTestId("fieldset-list")).toHaveTextContent("8 fields");
     });
 
     it.each([
@@ -349,6 +350,61 @@ describe("BLIFilterButton", () => {
 
             // No placeholder text
             expect(screen.getByTestId("default-string")).toHaveTextContent("");
+        });
+    });
+
+    describe("Division & Staffing", () => {
+        const options = {
+            ...mockFilterOptions,
+            cor_divisions: [
+                { id: 1, name: "Division A", abbreviation: "DA" },
+                { id: 2, name: "Division B", abbreviation: "DB" }
+            ],
+            cors: [{ id: 21, name: "Hank Smith", division_id: 1 }]
+        };
+
+        it("lets a keyboard user choose a division and a COR and apply them", async () => {
+            const user = userEvent.setup();
+            render(
+                <BLIFilterButton
+                    filters={defaultFilters}
+                    setFilters={mockSetFilters}
+                    filterOptions={options}
+                />
+            );
+
+            const input = screen.getByLabelText("Division & Staffing");
+            await user.type(input, "Division B");
+            await user.keyboard("{Enter}");
+            await user.type(input, "Hank");
+            await user.keyboard("{Enter}");
+            fireEvent.click(screen.getByTestId("apply-filter-btn"));
+
+            const applied = mockSetFilters.mock.calls.at(-1)[0](defaultFilters);
+            expect(applied.division).toEqual([options.cor_divisions[1]]);
+            expect(applied.cor).toEqual([{ ...options.cors[0], division_abbreviation: "DA" }]);
+        });
+
+        it("reset clears the Division & Staffing selections once applied", () => {
+            const filters = {
+                ...defaultFilters,
+                division: [options.cor_divisions[0]],
+                cor: [{ ...options.cors[0], division_abbreviation: "DA" }]
+            };
+            render(
+                <BLIFilterButton
+                    filters={filters}
+                    setFilters={mockSetFilters}
+                    filterOptions={options}
+                />
+            );
+
+            fireEvent.click(screen.getByTestId("reset-filter-btn"));
+            fireEvent.click(screen.getByTestId("apply-filter-btn"));
+
+            const applied = mockSetFilters.mock.calls.at(-1)[0](filters);
+            expect(applied.division).toEqual([]);
+            expect(applied.cor).toEqual([]);
         });
     });
 });

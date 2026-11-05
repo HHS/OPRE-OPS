@@ -4,6 +4,10 @@ import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
 import { deriveFYTags, handleFYTagRemoval } from "../../../helpers/fiscalYearFilter.helpers";
 import { getAgreementFilterTagText } from "../../../helpers/agreement.helpers";
+import {
+    getCorOptionLabel,
+    getDivisionOptionLabel
+} from "../../../components/Agreements/DivisionStaffingComboBox/DivisionStaffingComboBox.helpers";
 
 /**
  * A filter tags.
@@ -66,6 +70,19 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
                     };
                 });
                 break;
+            case "division":
+                // Division & Staffing tags are keyed by id; a division and a COR can share one.
+                setFilters((prevState) => ({
+                    ...prevState,
+                    division: (prevState.division ?? []).filter((division) => division.id !== tag.id)
+                }));
+                break;
+            case "cor":
+                setFilters((prevState) => ({
+                    ...prevState,
+                    cor: (prevState.cor ?? []).filter((cor) => cor.id !== tag.id)
+                }));
+                break;
             case "canActivePeriods":
                 setFilters((prevState) => {
                     return {
@@ -88,6 +105,24 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
             filter: "portfolios"
         }));
     }, [filters.portfolios]);
+
+    const divisionTags = useMemo(() => {
+        if (!Array.isArray(filters.division)) return [];
+        return filters.division.map((division) => ({
+            tagText: getDivisionOptionLabel(division),
+            filter: "division",
+            id: division.id
+        }));
+    }, [filters.division]);
+
+    const corTags = useMemo(() => {
+        if (!Array.isArray(filters.cor)) return [];
+        return filters.cor.map((cor) => ({
+            tagText: getCorOptionLabel(cor),
+            filter: "cor",
+            id: cor.id
+        }));
+    }, [filters.cor]);
 
     const bliStatusTags = useMemo(() => {
         if (!Array.isArray(filters.bliStatus)) return [];
@@ -142,6 +177,8 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
         return [
             ...fiscalYearTags,
             ...portfolioTags,
+            ...divisionTags,
+            ...corTags,
             ...bliStatusTags,
             ...budgetRangeTags,
             ...agreementTypeTags,
@@ -151,6 +188,8 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
     }, [
         fiscalYearTags,
         portfolioTags,
+        divisionTags,
+        corTags,
         bliStatusTags,
         budgetRangeTags,
         agreementTypeTags,
@@ -167,6 +206,8 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
         Array.isArray(tagsListByFilter.fiscalYears) &&
             merged.push(...sortTagsByText([...tagsListByFilter.fiscalYears]));
         Array.isArray(tagsListByFilter.portfolios) && merged.push(...sortTagsByText([...tagsListByFilter.portfolios]));
+        Array.isArray(tagsListByFilter.division) && merged.push(...sortTagsByText([...tagsListByFilter.division]));
+        Array.isArray(tagsListByFilter.cor) && merged.push(...sortTagsByText([...tagsListByFilter.cor]));
         Array.isArray(tagsListByFilter.bliStatus) && merged.push(...sortTagsByText([...tagsListByFilter.bliStatus]));
         Array.isArray(tagsListByFilter.budgetRange) && merged.push(...tagsListByFilter.budgetRange);
         Array.isArray(tagsListByFilter.agreementTypes) &&

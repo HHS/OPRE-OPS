@@ -135,6 +135,19 @@ export const trailIncludesList = (trail, listCrumb) =>
     Boolean(trail?.ancestors.some((ancestor) => ancestor.to.split("?")[0] === listCrumb.to));
 
 /**
+ * The crumbs a page's breadcrumb shows before its own: the trail's ancestors
+ * or, when no trail applies, just its route-hierarchy fallback crumb.
+ *
+ * @param {BreadcrumbTrail | null | undefined} trail - The trail that applies to the page, if any.
+ * @param {BreadcrumbAncestor} [fallbackCrumb]
+ * @returns {BreadcrumbAncestor[]}
+ */
+export const breadcrumbAncestors = (trail, fallbackCrumb) => {
+    if (trail) return trail.ancestors;
+    return fallbackCrumb ? [fallbackCrumb] : [];
+};
+
+/**
  * Decide whether a trail applies to the current location.
  *
  * Matches when the current pathname belongs to the same resource as the

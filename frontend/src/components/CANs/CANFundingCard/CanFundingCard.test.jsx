@@ -27,6 +27,7 @@ describe("CanFundingCard", () => {
         expect(totalBudget).toBeInTheDocument();
         expect(totalSpending).toBeInTheDocument();
         expect(remainingBudget).toBeInTheDocument();
+        expect(screen.queryByText(/\*Spending is the sum of BLs/)).not.toBeInTheDocument();
     });
 
     it("should render the component after approval", () => {

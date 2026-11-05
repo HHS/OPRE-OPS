@@ -1040,6 +1040,25 @@ def test_agreements_with_invalid_division_returns_400(auth_client, app_ctx):
     assert response.status_code == 400
 
 
+def test_agreements_with_cor_id_filter(auth_client, loaded_db, app_ctx):
+    """GET /agreements/?cor_id=N returns only agreements whose primary COR is that user."""
+    po_id = loaded_db.scalar(select(Agreement.project_officer_id).where(Agreement.project_officer_id.isnot(None)))
+    if po_id is None:
+        pytest.skip("No seeded agreement with a project officer")
+
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"cor_id": po_id, "limit": 50})
+    assert response.status_code == 200
+
+    assert len(response.json["data"]) > 0
+    assert {item["project_officer_id"] for item in response.json["data"]} == {po_id}
+
+
+def test_agreements_with_invalid_cor_id_returns_400(auth_client, app_ctx):
+    """A non-integer cor_id value is rejected."""
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"cor_id": "not-a-number"})
+    assert response.status_code == 400
+
+
 def test_agreements_with_only_my_filter(division_director_auth_client, app_ctx):
     query_dict = {"only_my": True}
     response = division_director_auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
@@ -4189,6 +4208,17 @@ class TestAgreementFilterOptions:
         assert "contract_numbers" in data
         assert "research_types" in data
         assert "cor_divisions" in data
+        assert "cors" in data
+
+    def test_filter_options_cors_shape(self, auth_client, loaded_db, app_ctx):
+        """CORs are sorted by name and carry id, name and division_id (None when the COR has no division)."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        cors = response.json["cors"]
+        assert len(cors) > 0
+        assert all(set(c) == {"id", "name", "division_id"} for c in cors)
+        assert [c["name"] for c in cors] == sorted(c["name"] for c in cors)
 
     def test_filter_options_cor_divisions_shape(self, auth_client, loaded_db, app_ctx):
         """COR divisions are sorted by name and carry id, name and abbreviation."""

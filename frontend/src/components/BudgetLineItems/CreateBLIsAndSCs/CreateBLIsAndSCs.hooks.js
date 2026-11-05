@@ -27,7 +27,7 @@ import {
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import { formatServiceComponent } from "../../ServicesComponents/ServicesComponents.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
-import { formatDateForScreen } from "../../../helpers/utils";
+import { extractBackendErrorMessage, formatDateForScreen } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import { useGetLoggedInUserFullName, useIsUserBudgetTeam } from "../../../hooks/user.hooks";
@@ -394,9 +394,7 @@ const useCreateBLIsAndSCs = (
         } catch (error) {
             console.error("Error deleting budget lines:", error);
             // e.g. an SC delete blocked on an Awarded agreement (OPS-6440) returns its reason in errors
-            const backendMessage = Object.values(error?.data?.errors ?? {})
-                .flat()
-                .find((message) => typeof message === "string");
+            const backendMessage = extractBackendErrorMessage(error);
             setAlert({
                 type: "error",
                 heading: "Error",

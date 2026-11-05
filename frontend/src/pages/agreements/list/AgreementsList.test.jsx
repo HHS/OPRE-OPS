@@ -73,6 +73,15 @@ vi.mock("./AgreementsFilterButton/AgreementsFilterButton", () => ({
             >
                 Apply COR division
             </button>
+            <button
+                data-testid="apply-cor"
+                onClick={() =>
+                    setFilters &&
+                    setFilters((prev) => ({ ...prev, cor: [{ id: 21, name: "Hank Smith", division_id: 7 }] }))
+                }
+            >
+                Apply COR
+            </button>
         </div>
     )
 }));
@@ -631,6 +640,41 @@ describe("AgreementsList - Pagination", () => {
             fireEvent.click(screen.getByRole("button", { name: /export/i }));
             await waitFor(() => expect(mockGetAllAgreementsTrigger).toHaveBeenCalled());
             expect(mockGetAllAgreementsTrigger.mock.calls[0][0].filters.division).toEqual(expectedDivision);
+        });
+
+        it("passes the COR filter through to the list query and the export", async () => {
+            const queryParams = [];
+            useGetAgreementsQuery.mockImplementation((params) => {
+                queryParams.push(params);
+                return { data: mockAgreementsResponse, error: undefined, isLoading: false, isFetching: false };
+            });
+            const mockGetAllAgreementsTrigger = vi.fn((params) => ({
+                unwrap: () =>
+                    Promise.resolve({
+                        agreements: [{ id: 1, name: "Agreement 1", project_officer_id: null }],
+                        count: 1,
+                        limit: params.limit,
+                        offset: 0
+                    })
+            }));
+            useLazyGetAgreementsQuery.mockReturnValue([mockGetAllAgreementsTrigger, {}]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            fireEvent.click(await screen.findByTestId("apply-cor"));
+
+            const expectedCor = [{ id: 21, name: "Hank Smith", division_id: 7 }];
+            await waitFor(() => expect(queryParams.at(-1).filters.cor).toEqual(expectedCor));
+
+            fireEvent.click(screen.getByRole("button", { name: /export/i }));
+            await waitFor(() => expect(mockGetAllAgreementsTrigger).toHaveBeenCalled());
+            expect(mockGetAllAgreementsTrigger.mock.calls[0][0].filters.cor).toEqual(expectedCor);
         });
 
         it("should pass 'Lifetime Obligated' column header to exportTableToXlsx when All FYs selected", async () => {

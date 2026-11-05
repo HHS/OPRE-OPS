@@ -90,6 +90,11 @@ vi.mock("../../../helpers/scrollToTop.helper", () => ({
 }));
 
 vi.mock("../../../helpers/utils", () => ({
+    extractBackendErrorMessage: vi.fn((error) =>
+        Object.values(error?.data?.errors ?? {})
+            .flat()
+            .find((message) => typeof message === "string")
+    ),
     formatDateForApi: vi.fn(() => "2026-01-01"),
     formatDateForScreen: vi.fn(() => "01/01/2026"),
     renderField: vi.fn(() => "field")

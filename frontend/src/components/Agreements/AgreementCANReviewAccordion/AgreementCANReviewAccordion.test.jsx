@@ -44,6 +44,12 @@ describe("AgreementCANReview", () => {
         expect(remainingBudgetCard1).toBeInTheDocument();
         expect(totalSpendingCard2).toBeInTheDocument();
         expect(remainingBudgetCard2).toBeInTheDocument();
+
+        expect(screen.getByText("Portfolios:")).toBeInTheDocument();
+        expect(screen.getByText("Program Support")).toBeInTheDocument();
+        expect(screen.getByText("Child Care")).toBeInTheDocument();
+        expect(screen.queryByText("Other CANs Outside Your Division:")).not.toBeInTheDocument();
+        expect(screen.queryByText(/\*Spending is the sum of BLs/i)).not.toBeInTheDocument();
     });
     it("should render from review page for DRAFT_TO_PLANNED BLIS", async () => {
         const user = userEvent.setup();
@@ -493,7 +499,83 @@ describe("AgreementCANReview", () => {
         expect(totalSpendingCard2).toBeInTheDocument();
         expect(remainingBudgetCard2).toBeInTheDocument();
     });
+    it("should render no body content (besides instructions) when no budget lines are selected", () => {
+        render(
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        {...initialProps}
+                        selectedBudgetLines={[]}
+                    />
+                </Provider>
+            </MemoryRouter>
+        );
+
+        expect(screen.getByRole("heading", { name: "Review CANs" })).toBeInTheDocument();
+        // The instructions paragraph always renders; UX wants this addressed in a separate ticket
+        expect(screen.getByText(initialProps.instructions)).toBeInTheDocument();
+        expect(screen.queryByText(/do not have a CAN/i)).not.toBeInTheDocument();
+        expect(screen.queryByText("Portfolios:")).not.toBeInTheDocument();
+        expect(screen.queryByText("Other CANs Outside Your Division:")).not.toBeInTheDocument();
+    });
+    it("should render no body content (besides instructions) when selected budget lines have no CAN", () => {
+        render(
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        {...initialProps}
+                        selectedBudgetLines={selectedBudgetLinesWithoutCan}
+                    />
+                </Provider>
+            </MemoryRouter>
+        );
+
+        expect(screen.getByRole("heading", { name: "Review CANs" })).toBeInTheDocument();
+        expect(screen.getByText(initialProps.instructions)).toBeInTheDocument();
+        expect(screen.queryByText(/do not have a CAN/i)).not.toBeInTheDocument();
+    });
+    it("should hide the Portfolios caption when no portfolios match the selected CANs", () => {
+        useGetPortfoliosQuery.mockReturnValueOnce({ data: [] });
+        useGetCanFundingQuery
+            .mockReturnValueOnce({ data: canFundingCardData })
+            .mockReturnValueOnce({ data: canFundingCardData2 });
+        render(
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion {...initialProps} />
+                </Provider>
+            </MemoryRouter>
+        );
+
+        expect(screen.getByRole("heading", { name: "G99PHS9-1Y CAN Available Budget" })).toBeInTheDocument();
+        expect(screen.queryByText("Portfolios:")).not.toBeInTheDocument();
+    });
 });
+
+const selectedBudgetLinesWithoutCan = [
+    {
+        agreement_id: 9,
+        amount: 300000,
+        can: null,
+        can_id: null,
+        change_requests_in_review: null,
+        comments: "",
+        created_by: null,
+        created_on: "2024-07-29T14:45:03.641377",
+        date_needed: "2043-06-13",
+        fiscal_year: 2043,
+        id: 15099,
+        in_review: false,
+        line_description: "No CAN yet",
+        proc_shop_fee_percentage: 0.005,
+        services_component_id: 6,
+        status: "PLANNED",
+        team_members: [],
+        updated_on: "2024-07-29T14:45:03.641377",
+        selected: true,
+        actionable: true
+    }
+];
 
 const selectedBudgetLines = [
     {

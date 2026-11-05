@@ -19,6 +19,7 @@ import {
 import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import FilterResultsAnnouncer from "../../../components/UI/FilterResultsAnnouncer";
 import FiscalYear from "../../../components/UI/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
@@ -315,10 +316,19 @@ const AgreementsList = () => {
                     details={details}
                     TabsSection={<AgreementTabs />}
                     FilterTags={
-                        <AgreementsFilterTags
-                            filters={filters}
-                            setFilters={setFilters}
-                        />
+                        <>
+                            <AgreementsFilterTags
+                                filters={filters}
+                                setFilters={setFilters}
+                            />
+                            <FilterResultsAnnouncer
+                                filters={filters}
+                                resultCount={totalCount}
+                                isFetching={isTableLoading}
+                                itemName="agreement"
+                                itemNamePlural="agreements"
+                            />
+                        </>
                     }
                     FilterButton={
                         <>

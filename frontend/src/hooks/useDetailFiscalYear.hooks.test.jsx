@@ -3,8 +3,18 @@ import { act, fireEvent, render, renderHook, screen } from "@testing-library/rea
 import { Provider } from "react-redux";
 import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { describe, expect, it } from "vitest";
-import sessionUIReducer, { setDetailFiscalYear } from "../sessionUISlice";
+import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../constants";
+import { buildTrailState, LIST_CRUMBS } from "../helpers/breadcrumb.helpers";
+import { getCurrentFiscalYear } from "../helpers/utils";
+import sessionUIReducer, { setDetailFiscalYear, setListFilters } from "../sessionUISlice";
+import { useListFilters } from "./useListFilters.hooks";
 import { useDetailFiscalYear, useHandOverFiscalYear, useSyncFiscalYearParam } from "./useDetailFiscalYear.hooks";
+
+/**
+ * A year `n` years before the current FY, as the dropdowns' string value. Only years inside the
+ * dropdowns' range (current FY ±5) reach the lists, so tests of the sync use these, not literals.
+ */
+const yearsAgo = (n) => String(Number(getCurrentFiscalYear()) - n);
 
 const makeStore = () => configureStore({ reducer: { sessionUI: sessionUIReducer } });
 
@@ -44,6 +54,75 @@ describe("useDetailFiscalYear", () => {
 
         act(() => result.current.setFiscalYear("All"));
         expect(store.getState().sessionUI.detailFiscalYear).toBe(2024);
+    });
+});
+
+describe("useDetailFiscalYear: the lists in the breadcrumb", () => {
+    const portfolioA = { label: "Portfolio A", to: "/portfolios/3/funding" };
+    const at = (pathname, ancestors) => ({ pathname, state: ancestors && buildTrailState(pathname, ancestors) });
+    const listYear = (store, page) => store.getState().sessionUI.listFilters[page].selectedFiscalYear;
+
+    it("gives a picked year to the Portfolios list in the trail, resetting only its budget range", () => {
+        const store = makeStore();
+        const filters = { portfolios: [{ id: 3 }], budgetRange: [10, 20], availablePct: ["over90"] };
+        store.dispatch(setListFilters({ page: "portfolios", filters }));
+        const { result } = renderAt(
+            () => useDetailFiscalYear(2026, { fallbackCrumb: LIST_CRUMBS.cans }),
+            at("/cans/1", [{ ...LIST_CRUMBS.portfolios, to: "/portfolios?tab=mine" }, portfolioA]),
+            store
+        );
+
+        const cansBefore = listYear(store, "cans");
+        act(() => result.current.setFiscalYear(yearsAgo(1)));
+
+        expect(listYear(store, "portfolios")).toBe(yearsAgo(1));
+        expect(store.getState().sessionUI.listFilters.portfolios.filters).toEqual({
+            ...filters,
+            budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE
+        });
+        // The CANs list isn't in this trail, so it keeps its own year.
+        expect(listYear(store, "cans")).toBe(cansBefore);
+    });
+
+    it("gives a picked year to the fallback list when no trail was carried", () => {
+        const { result, store } = renderAt(
+            () => useDetailFiscalYear(2026, { fallbackCrumb: LIST_CRUMBS.cans }),
+            at("/cans/1")
+        );
+        act(() => result.current.setFiscalYear(Number(yearsAgo(2))));
+        expect(listYear(store, "cans")).toBe(yearsAgo(2));
+    });
+
+    it("leaves the Projects list on its own year", () => {
+        const { result, store } = renderAt(
+            () => useDetailFiscalYear(2026, { fallbackCrumb: LIST_CRUMBS.projects }),
+            at("/projects/1/funding", [LIST_CRUMBS.projects])
+        );
+        act(() => result.current.setFiscalYear(yearsAgo(2)));
+        expect(listYear(store, "projects")).toBe("All");
+    });
+
+    it("leaves the lists alone for a year their dropdowns don't offer", () => {
+        const { result, store } = renderAt(
+            () => useDetailFiscalYear(2026, { fallbackCrumb: LIST_CRUMBS.portfolios }),
+            at("/portfolios/3/funding")
+        );
+        const before = listYear(store, "portfolios");
+        act(() => result.current.setFiscalYear(2010));
+        expect(store.getState().sessionUI.detailFiscalYear).toBe(2010);
+        expect(listYear(store, "portfolios")).toBe(before);
+    });
+
+    it("doesn't change the lists for a year that only comes from ?fy=", () => {
+        const store = makeStore();
+        const before = listYear(store, "portfolios");
+        renderAt(
+            () => useDetailFiscalYear(2026, { fallbackCrumb: LIST_CRUMBS.portfolios }),
+            `/portfolios/3/funding?fy=${yearsAgo(2)}`,
+            store
+        );
+        expect(store.getState().sessionUI.detailFiscalYear).toBe(Number(yearsAgo(2)));
+        expect(listYear(store, "portfolios")).toBe(before);
     });
 });
 
@@ -237,5 +316,100 @@ describe("a year from ?fy= on a fresh load (new tab, refresh, bookmark)", () => 
         renderFreshAt("/cans/5/spending?fy=2023");
         fireEvent.click(screen.getByRole("link", { name: "Portfolio crumb" }));
         expect(screen.getByTestId("page")).toHaveTextContent("Portfolio FY 2023");
+    });
+});
+
+describe("going back to the Portfolios list (UX scenario from #3789)", () => {
+    const PortfoliosList = () => {
+        const { selectedFiscalYear, changeFiscalYear } = useListFilters("portfolios");
+        const handOverFiscalYear = useHandOverFiscalYear();
+        return (
+            <div>
+                <p data-testid="page">{`Portfolios FY ${selectedFiscalYear}`}</p>
+                <button onClick={() => changeFiscalYear(yearsAgo(1))}>Pick list FY</button>
+                <Link
+                    to="/portfolios/3/funding"
+                    state={buildTrailState("/portfolios/3/funding", [LIST_CRUMBS.portfolios])}
+                    onClick={handOverFiscalYear(selectedFiscalYear)}
+                >
+                    Portfolio A
+                </Link>
+            </div>
+        );
+    };
+
+    const DetailPage = ({ name, fallbackCrumb, child }) => {
+        const { pathname, state } = useLocation();
+        const { fiscalYear, setFiscalYear } = useDetailFiscalYear(2027, { fallbackCrumb });
+        const ancestors = state?.breadcrumbTrail?.ancestors ?? [fallbackCrumb];
+        return (
+            <div>
+                <p data-testid="page">{`${name} FY ${fiscalYear}`}</p>
+                <button onClick={() => setFiscalYear(yearsAgo(3))}>Pick detail FY</button>
+                {child && (
+                    <Link
+                        to={child}
+                        state={buildTrailState(child, [...ancestors, { label: name, to: pathname }])}
+                    >
+                        Child
+                    </Link>
+                )}
+                {ancestors.map((crumb) => (
+                    <Link
+                        key={crumb.to}
+                        to={crumb.to}
+                    >{`Crumb ${crumb.label}`}</Link>
+                ))}
+            </div>
+        );
+    };
+
+    it("shows the year picked on the CAN at every step back to the list", () => {
+        render(
+            <Provider store={makeStore()}>
+                <MemoryRouter initialEntries={["/portfolios"]}>
+                    <Routes>
+                        <Route
+                            path="/portfolios"
+                            element={<PortfoliosList />}
+                        />
+                        <Route
+                            path="/portfolios/:id/funding"
+                            element={
+                                <DetailPage
+                                    name="Portfolio A"
+                                    fallbackCrumb={LIST_CRUMBS.portfolios}
+                                    child="/cans/504"
+                                />
+                            }
+                        />
+                        <Route
+                            path="/cans/:id"
+                            element={
+                                <DetailPage
+                                    name="CAN"
+                                    fallbackCrumb={LIST_CRUMBS.cans}
+                                />
+                            }
+                        />
+                    </Routes>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        const listFY = yearsAgo(1);
+        const detailFY = yearsAgo(3);
+
+        fireEvent.click(screen.getByRole("button", { name: "Pick list FY" }));
+        fireEvent.click(screen.getByRole("link", { name: "Portfolio A" }));
+        expect(screen.getByTestId("page")).toHaveTextContent(`Portfolio A FY ${listFY}`);
+        fireEvent.click(screen.getByRole("link", { name: "Child" }));
+        expect(screen.getByTestId("page")).toHaveTextContent(`CAN FY ${listFY}`);
+
+        fireEvent.click(screen.getByRole("button", { name: "Pick detail FY" }));
+        fireEvent.click(screen.getByRole("link", { name: "Crumb Portfolio A" }));
+        expect(screen.getByTestId("page")).toHaveTextContent(`Portfolio A FY ${detailFY}`);
+        fireEvent.click(screen.getByRole("link", { name: "Crumb Portfolios" }));
+        expect(screen.getByTestId("page")).toHaveTextContent(`Portfolios FY ${detailFY}`);
     });
 });

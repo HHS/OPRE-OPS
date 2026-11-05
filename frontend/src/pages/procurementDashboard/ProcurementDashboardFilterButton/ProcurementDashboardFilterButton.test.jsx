@@ -95,7 +95,7 @@ describe("ProcurementDashboardFilterButton", () => {
         expect(await screen.findByTestId("modal")).toBeInTheDocument();
 
         await user.selectOptions(screen.getByLabelText("Procurement Shop"), "1");
-        await user.selectOptions(screen.getByLabelText("Division"), "2");
+        await user.selectOptions(screen.getByLabelText("COR's division"), "2");
         await user.click(screen.getByRole("button", { name: /apply/i }));
 
         expect(mockSetFilters).toHaveBeenCalledWith(expect.any(Function));
