@@ -69,6 +69,20 @@ describe("DoubleRangeSlider", () => {
         expect(thumbs[0]).toHaveAttribute("aria-valuenow", "10");
         expect(thumbs[1]).toHaveAttribute("aria-valuenow", "90");
     });
+    it("applies a distinct aria-label to each thumb when ariaLabel is provided", () => {
+        const handleChange = vi.fn();
+        render(
+            <DoubleRangeSlider
+                handleChange={handleChange}
+                value={[25, 75]}
+                ariaLabel={["Budget Line Total minimum", "Budget Line Total maximum"]}
+            />
+        );
+
+        const thumbs = screen.getAllByRole("slider");
+        expect(thumbs[0]).toHaveAttribute("aria-label", "Budget Line Total minimum");
+        expect(thumbs[1]).toHaveAttribute("aria-label", "Budget Line Total maximum");
+    });
     it("applies overrideStyles to the slider", () => {
         const handleChange = vi.fn();
         render(
