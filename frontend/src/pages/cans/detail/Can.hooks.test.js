@@ -95,7 +95,10 @@ const renderUseCan = () => {
             sessionUI: sessionUIReducer
         }
     });
-    return renderHook(() => useCan(), { wrapper: ({ children }) => createElement(Provider, { store }, children) });
+    return {
+        store,
+        ...renderHook(() => useCan(), { wrapper: ({ children }) => createElement(Provider, { store }, children) })
+    };
 };
 
 describe("useCan", () => {
@@ -157,6 +160,17 @@ describe("useCan", () => {
         expect(result.current.carryForwardFunding).toBe(75);
         expect(result.current.isLoading).toBe(false);
         expect(result.current.isTableLoading).toBe(false);
+    });
+
+    it("gives a picked year to the CANs list, which its breadcrumb falls back to", () => {
+        const { result, store } = renderUseCan();
+        // getCurrentFiscalYear is mocked here, but the dropdowns' range (constants.fiscalYears) follows
+        // the real date, so pick last calendar year, which is always inside it.
+        const pickedYear = String(new Date().getFullYear() - 1);
+        const portfoliosBefore = store.getState().sessionUI.listFilters.portfolios.selectedFiscalYear;
+        act(() => result.current.setSelectedFiscalYear(pickedYear));
+        expect(store.getState().sessionUI.listFilters.cans.selectedFiscalYear).toBe(pickedYear);
+        expect(store.getState().sessionUI.listFilters.portfolios.selectedFiscalYear).toBe(portfoliosBefore);
     });
 
     it("updates filtered results when the selected fiscal year changes and toggles edit modes", async () => {

@@ -92,6 +92,16 @@ const listFilterDefaults = {
 };
 
 /**
+ * Filters whose values only make sense for one fiscal year, so they go back to
+ * their defaults when a year picked on a detail page reaches the list (see
+ * `syncListFiscalYear`). The Portfolios budget range is bounded by that year's
+ * funding.
+ */
+const FY_DEPENDENT_FILTERS = {
+    portfolios: ["budgetRange"]
+};
+
+/**
  * Build a fresh per-page state entry from its default. Deep-clones `filters`
  * so the exported defaults are never mutated (by Immer freezing or otherwise).
  * Single source of truth for both initial-state construction and reset.
@@ -113,7 +123,9 @@ const buildListFiltersInitialState = () =>
 /**
  * `detailFiscalYear` is the fiscal year shared by the portfolio, CAN and project
  * detail pages (see `useDetailFiscalYear`): `null` until the user picks one on a
- * detail page or opens one from a list set to a specific year.
+ * detail page or opens one from a list set to a specific year. A year picked on
+ * a detail page can also reach a list's `selectedFiscalYear` through
+ * `syncListFiscalYear` (see `useDetailFiscalYear` for which lists).
  * @returns {{ listFilters: ReturnType<typeof buildListFiltersInitialState>, detailFiscalYear: number | null }}
  */
 const buildInitialState = () => ({
@@ -159,6 +171,22 @@ const sessionUISlice = createSlice({
             state.listFilters[page] = { ...buildPageState(def), selectedFiscalYear };
         },
         /**
+         * Set a list page's fiscal year to one picked on a detail page, and reset
+         * only the filters that depend on the year (`FY_DEPENDENT_FILTERS`). The
+         * list's other filters are kept.
+         * @param {ReturnType<typeof buildInitialState>} state
+         * @param {{ payload: { page: string, selectedFiscalYear: string|number } }} action
+         */
+        syncListFiscalYear: (state, action) => {
+            const { page, selectedFiscalYear } = action.payload;
+            const def = listFilterDefaults[page];
+            if (!def || !state.listFilters[page]) return;
+            state.listFilters[page].selectedFiscalYear = selectedFiscalYear;
+            for (const key of FY_DEPENDENT_FILTERS[page] ?? []) {
+                state.listFilters[page].filters[key] = structuredClone(def.filters[key]);
+            }
+        },
+        /**
          * Set the fiscal year shared by the detail pages.
          * @param {ReturnType<typeof buildInitialState>} state
          * @param {{ payload: number }} action
@@ -175,6 +203,7 @@ const sessionUISlice = createSlice({
 });
 
 export { listFilterDefaults };
-export const { setListFilters, setListFiscalYear, changeListFiscalYear, setDetailFiscalYear } = sessionUISlice.actions;
+export const { setListFilters, setListFiscalYear, changeListFiscalYear, syncListFiscalYear, setDetailFiscalYear } =
+    sessionUISlice.actions;
 
 export default sessionUISlice.reducer;

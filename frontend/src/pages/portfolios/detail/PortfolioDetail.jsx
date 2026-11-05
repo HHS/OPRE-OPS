@@ -17,8 +17,10 @@ import PortfolioHero from "../../../components/Portfolios/PortfolioHero";
 
 const PortfolioDetail = () => {
     // Shared with the CAN and project pages, so going back shows the FY last picked on any of them.
-    const { fiscalYear: selectedFiscalYear, setFiscalYear: setSelectedFiscalYear } =
-        useDetailFiscalYear(getCurrentFiscalYear());
+    const { fiscalYear: selectedFiscalYear, setFiscalYear: setSelectedFiscalYear } = useDetailFiscalYear(
+        getCurrentFiscalYear(),
+        { fallbackCrumb: LIST_CRUMBS.portfolios }
+    );
     const fiscalYear = Number(selectedFiscalYear);
     useSyncFiscalYearParam(fiscalYear);
     const urlPathParams = useParams();
