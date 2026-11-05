@@ -171,8 +171,12 @@ def slack_escape(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def slack_id_for(login: str | None, slack_map: dict) -> str:
+    return slack_map.get(login.lower(), "") if login else ""
+
+
 def slack_mention(login: str, slack_map: dict) -> str:
-    slack_id = slack_map.get(login.lower())
+    slack_id = slack_id_for(login, slack_map)
     return f"<@{slack_id}>" if slack_id else f"@{login}"
 
 
@@ -260,11 +264,19 @@ def fetch_calendar_off(pool: list[Member], tz: ZoneInfo, min_off_hours: float) -
         return set()
 
 
-def post_slack(text: str) -> None:
+def post_slack(message: str, reviewer_id: str = "") -> None:
+    """Posts to the review-rotation Slack Workflow Builder trigger.
+
+    The trigger defines two input variables: `message` (the formatted text) and
+    `reviewer_id` (the picked reviewer's Slack member ID, or "" when unmapped or
+    nobody was picked). This is NOT the {"text": ...} shape a classic Incoming
+    Webhook expects -- Workflow Builder triggers are keyed by their own variable
+    names, declared when the trigger was built in Slack.
+    """
     req = urllib.request.Request(
         os.environ["SLACK_WEBHOOK_URL"],
         method="POST",
-        data=json.dumps({"text": text}).encode(),
+        data=json.dumps({"message": message, "reviewer_id": reviewer_id}).encode(),
         headers={"Content-Type": "application/json"},
     )
     open_https(req, timeout=10).close()
@@ -323,7 +335,8 @@ def main() -> int:
     # This also caps Slack posts per PR at the pool size, however many times /reroll is sent.
     if new_pick or mode == "label":
         try:
-            post_slack(build_slack_text(mode, actor, pr, repo, new_pick, old_pick, slack_map))
+            text = build_slack_text(mode, actor, pr, repo, new_pick, old_pick, slack_map)
+            post_slack(text, reviewer_id=slack_id_for(new_pick, slack_map))
         except Exception as exc:  # noqa: BLE001 -- the reviewer pick and PR comment already succeeded
             print(f"::warning::Could not post to Slack ({type(exc).__name__}); the pick and PR comment stand.")
     print(f"Picked {new_pick or 'nobody'} (history: {picked}, off today: {sorted(off)})")

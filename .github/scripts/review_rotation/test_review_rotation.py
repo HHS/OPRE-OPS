@@ -252,14 +252,18 @@ BASE_CONFIG = {
 @pytest.fixture
 def run(tmp_path, monkeypatch):
     config = tmp_path / "rotation.json"
-    slack_map = tmp_path / "slack.json"
-    slack_map.write_text("{}")
-    slack_posts = []
-    monkeypatch.setattr(rr, "post_slack", slack_posts.append)
+    slack_map_path = tmp_path / "slack.json"
+    slack_posts = []  # each entry is {"message": ..., "reviewer_id": ...}
+    monkeypatch.setattr(
+        rr, "post_slack", lambda message, reviewer_id="": slack_posts.append({"message": message, "reviewer_id": reviewer_id})
+    )
 
-    def _run(mode, pr, comments=(), off=frozenset(), files=(), visual_path_prefixes=None, fetch_calendar_off=None):
+    def _run(
+        mode, pr, comments=(), off=frozenset(), files=(), visual_path_prefixes=None, fetch_calendar_off=None, slack_map=None
+    ):
         overrides = {} if visual_path_prefixes is None else {"visual_path_prefixes": visual_path_prefixes}
         config.write_text(json.dumps({**BASE_CONFIG, **overrides}))
+        slack_map_path.write_text(json.dumps(slack_map or {}))
         fake = FakeGitHub(pr, list(comments), files)
         _run.last_fake = fake
         monkeypatch.setattr(rr, "GitHub", lambda token, repo: fake)
@@ -274,7 +278,7 @@ def run(tmp_path, monkeypatch):
             "ACTOR": "dana",
             "GITHUB_TOKEN": "t",
             "CONFIG_PATH": str(config),
-            "SLACK_MAP_PATH": str(slack_map),
+            "SLACK_MAP_PATH": str(slack_map_path),
         }.items():
             monkeypatch.setenv(key, value)
         assert rr.main() == 0
@@ -305,7 +309,7 @@ class TestMain:
         assert ("POST", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]}) in writes
         comment = next(body for method, path, body in writes if path == "/issues/4/comments")
         assert rr.parse_history(comment["body"]) == ["bob"]
-        assert len(slack) == 1 and "@bob is up" in slack[0]
+        assert len(slack) == 1 and "@bob is up" in slack[0]["message"]
 
     def test_relabel_does_not_reroll(self, run):
         existing = bot_comment(["bob"], "bob")
@@ -323,7 +327,7 @@ class TestMain:
         assert writes[1] == ("DELETE", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]})
         assert writes[2][0:2] == ("PATCH", "/issues/comments/9")
         assert rr.parse_history(writes[2][2]["body"]) == ["bob", "alice"]
-        assert "@alice is up" in slack[0] and "(was bob)" in slack[0]
+        assert "@alice is up" in slack[0]["message"] and "(was bob)" in slack[0]["message"]
 
     def test_label_picks_engineering_only_when_pr_is_not_visual(self, run):
         # Pool order is alice, bob, carol, uxena (ux-only); pr_number=3 would land on uxena
@@ -361,13 +365,27 @@ class TestMain:
         assert not any(path == "/pulls/4/requested_reviewers" for _, path, _ in writes)
         comment = next(body for method, path, body in writes if path == "/issues/4/comments")
         assert "nobody in the rotation is available" in comment["body"]
-        assert len(slack) == 1 and "nobody in the rotation is available" in slack[0]
+        assert len(slack) == 1 and "nobody in the rotation is available" in slack[0]["message"]
 
     def test_disabled_visual_prefixes_skips_the_file_list_fetch(self, run):
         run("label", make_pr(), visual_path_prefixes=[])
         assert not any(call[0] == "GET" and "/files" in call[1] for call in run.last_fake.calls)
 
+    def test_slack_payload_includes_mapped_reviewer_id(self, run):
+        _, slack = run("label", make_pr(), slack_map={"bob": "U123"})
+        assert slack[0]["reviewer_id"] == "U123"
+
+    def test_slack_payload_has_empty_reviewer_id_when_unmapped(self, run):
+        _, slack = run("label", make_pr())
+        assert slack[0]["reviewer_id"] == ""
+
+    def test_slack_payload_has_empty_reviewer_id_when_nobody_picked(self, run):
+        _, slack = run("label", make_pr(), off={"alice", "bob", "carol"})
+        assert slack[0]["reviewer_id"] == ""
+
     def test_broken_slack_webhook_does_not_fail_the_run(self, run, monkeypatch):
-        monkeypatch.setattr(rr, "post_slack", lambda text: (_ for _ in ()).throw(KeyError("SLACK_WEBHOOK_URL")))
+        monkeypatch.setattr(
+            rr, "post_slack", lambda message, reviewer_id="": (_ for _ in ()).throw(KeyError("SLACK_WEBHOOK_URL"))
+        )
         writes, _ = run("label", make_pr())
         assert ("POST", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]}) in writes
