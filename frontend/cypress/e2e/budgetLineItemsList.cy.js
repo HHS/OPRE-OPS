@@ -54,6 +54,11 @@ it("pagination on the bli table works as expected", () => {
 it("filter button works as expected", () => {
     cy.get("button").contains("Filter").click();
 
+    // The afterEach hook only checks the DOM after the modal is closed again, so
+    // check it here too, while it's actually open.
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+
     // set a number of filters
 
     cy.get(".fiscal-year-combobox__control")
@@ -111,6 +116,10 @@ it("filter button works as expected", () => {
         });
     });
 
+    // All fieldsets filled in and the slider thumbs moved — check this populated,
+    // pre-Apply state too, not just the modal's untouched opening state above.
+    cy.checkA11y(null, null, terminalLog);
+
     // click the button that has text Apply
     cy.get("button").contains("Apply").click();
 
@@ -165,6 +174,12 @@ it("filters budget lines by a person in Division & Staffing and clears it from t
 
     // Each division is followed by its people, so the second option is the first division's first person.
     cy.get(".division-staffing-combobox__control").click();
+
+    // The menu is open and its option list rendered — another state the
+    // afterEach-only check never sees.
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+
     cy.get(".division-staffing-combobox__option")
         .eq(1)
         .invoke("text")

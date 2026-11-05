@@ -36,8 +36,9 @@ Run the existing `afterEach(() => { cy.injectAxe(); cy.checkA11y(null, null, ter
 - `frontend/src/components/UI/FilterButton/FilterButton.jsx` (react-modal filter dialog)
 - `frontend/src/components/UI/Table/Table.jsx`
 - `frontend/src/components/UI/PaginationNav/PaginationNav.jsx`
-- `frontend/src/components/UI/BudgetRangeSlider/BudgetRangeSlider.jsx` — known orphaned `<label htmlFor="budget-range-slider">`, no matching `id` in the tree
-- `frontend/src/components/UI/DoubleRangeSlider/DoubleRangeSlider.jsx` — thumbs lack `aria-label`/`ariaValuetext` distinguishing min vs max (likely needs a `react-slider` prop fix, not markup)
+- `frontend/src/components/UI/BudgetRangeSlider/BudgetRangeSlider.jsx` — fixed: orphaned `<label htmlFor="budget-range-slider">`
+- `frontend/src/components/UI/DoubleRangeSlider/DoubleRangeSlider.jsx` — fixed: thumbs lacked distinguishing `aria-label`
+- `frontend/src/components/UI/Form/ComboBox/ComboBox.hooks.js` — fixed: shared `noOptionsMessage` color failed WCAG AA contrast
 - `frontend/src/components/UI/Form/FiscalYearComboBox/FiscalYearComboBox.jsx`
 - `frontend/src/components/Portfolios/PortfoliosComboBox/PortfoliosComboBox.jsx`
 - `frontend/src/components/Agreements/AgreementTypeComboBox/AgreementTypeComboBox.jsx`
@@ -50,18 +51,20 @@ Run the existing `afterEach(() => { cy.injectAxe(); cy.checkA11y(null, null, ter
 
 ### Testing Strategy
 
-Rely on the existing Cypress `cy.checkA11y` afterEach hook in the spec as the pass/fail gate. Validated against this project's own ADR 015 and `docs/TESTING.md`'s decision matrix, which designate E2E axe checks (not unit/component-level jest-axe) as the chosen a11y testing mechanism for this app — no new tests needed.
+Initially planned to rely solely on the existing `cy.checkA11y` afterEach hook (validated against ADR 015 and `docs/TESTING.md`'s decision matrix). Revised after a real violation was found hiding in a state the afterEach-only check couldn't see (see Resolution): added `cy.injectAxe(); cy.checkA11y(...)` calls directly in `budgetLineItemsList.cy.js` at two additional checkpoints — right after the filter modal opens, and right after the Division & Staffing combobox menu opens — mirroring the existing in-test-checkpoint pattern already used in `headerSearch.cy.js`. These are now permanent regression checks, not just one-off manual verification.
 
 ### Constraints
 
-`cy.checkA11y` runs once per test, against whatever DOM state that test ends on. No current test leaves the filter modal open, mid-drag on the range slider, or in another mid-interaction state — so violations isolated to those states could go undetected by this story's fixes. This is a known limitation, not an added AC item; mid-interaction coverage is out of scope here.
+Still not covered by an explicit checkpoint, acknowledged as residual gaps rather than new AC items: the exact mid-drag instant of the budget range slider (checked immediately after, not during), the zero-results filtered state, and the export-loading spinner state.
 
 ## Resolution
 
 Fast-forwarding the branch onto latest `main` picked up ~20 unrelated commits of accessibility work (Division & Staffing filter, `FilterResultsAnnouncer`, dashboard filter labeling). Running the spec headless against that baseline: **8 passing, 0 failing** — `cy.checkA11y` was already clean on every state the spec exercises.
 
-Because `checkA11y` only runs once per test against the end-state DOM, the filter modal (and its comboboxes/slider) is always closed by the time the check runs — a real coverage gap (see Constraints). To verify those untested states without expanding the committed test suite, ran a live axe-core scan via Playwright with the filter modal open, the Division & Staffing combobox menu open, and the default closed state. **Zero violations in all three.**
+Because `checkA11y` only ran once per test against the end-state DOM, the filter modal (and its comboboxes/slider) was always closed by the time the check ran — a real coverage gap. Added two new in-test checkpoints to close it (see Testing Strategy). The second one — checking right after the Division & Staffing combobox menu opens — immediately caught a real, previously-invisible violation: **`color-contrast` (serious)** on `.division-staffing-combobox__menu-notice--no-options`, react-select's default "No options" text (`#999999` on white, 2.84:1 contrast, needs 4.5:1). It only appears for the instant between the filter panel opening and `filterOptions` finishing its fetch — exactly the kind of state the old afterEach-only check could never reach, and flaky to catch even with the new checkpoint (Cypress's retry sometimes outran the race). Reproduced deterministically via a throttled-network Playwright repro to confirm root cause before fixing.
 
-One genuine defect was found by manual code inspection that axe's automated rules don't catch (`aria-input-field-name` evaluates as inapplicable to these elements): `BudgetRangeSlider.jsx`'s `<label htmlFor="budget-range-slider">` pointed at an `id` that doesn't exist anywhere in the tree, and its two `react-slider` thumbs had no accessible name distinguishing min from max. Fixed in [`BudgetRangeSlider.jsx`](../../src/components/UI/BudgetRangeSlider/BudgetRangeSlider.jsx) and [`DoubleRangeSlider.jsx`](../../src/components/UI/DoubleRangeSlider/DoubleRangeSlider.jsx) (shared by the BLI, CAN, and Portfolio filter panels) by replacing the orphaned label with a plain legend-style span and adding an `ariaLabel` prop passthrough to `react-slider`, giving each thumb a distinct name (e.g. "Budget Line Total minimum"/"maximum"). Added a unit test for the new prop; verified no visual regression via screenshot and confirmed zero axe violations post-fix.
+Fixed by adding a `noOptionsMessage` entry to the shared `customStyles` object in [`ComboBox.hooks.js`](../../src/components/UI/Form/ComboBox/ComboBox.hooks.js), matching the existing `placeholder` color (`#565C65`, already WCAG-AA compliant) — this is the one `useComboBox` hook shared by every ComboBox in the app, so the fix applies everywhere a "No options" state can flash, not just Budget Lines. Re-verified with the throttled-network repro: zero violations. Ran the full spec 3x back-to-back with no retries/violations.
 
-Full frontend suite: 5313 tests passing, 0 failures. `budgetLineItemsList.cy.js`: 8 passing, 0 failing (unchanged — confirms no regression).
+Also found and fixed, by manual code inspection, one more defect axe's automated rules don't catch (`aria-input-field-name` evaluates as inapplicable to these elements): `BudgetRangeSlider.jsx`'s `<label htmlFor="budget-range-slider">` pointed at an `id` that doesn't exist anywhere in the tree, and its two `react-slider` thumbs had no accessible name distinguishing min from max. Fixed in [`BudgetRangeSlider.jsx`](../../src/components/UI/BudgetRangeSlider/BudgetRangeSlider.jsx) and [`DoubleRangeSlider.jsx`](../../src/components/UI/DoubleRangeSlider/DoubleRangeSlider.jsx) (shared by the BLI, CAN, and Portfolio filter panels) by replacing the orphaned label with a plain legend-style span and adding an `ariaLabel` prop passthrough to `react-slider`, giving each thumb a distinct name (e.g. "Budget Line Total minimum"/"maximum"). Added a unit test for the new prop; verified no visual regression via screenshot and confirmed zero axe violations post-fix.
+
+Full frontend suite: 5313 tests passing, 0 failures. `budgetLineItemsList.cy.js`: 8 passing, 0 failing, run 3x with no flakiness.
