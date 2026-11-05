@@ -921,9 +921,9 @@ describe("handleExport", () => {
         expect(row[4]).toBe("Full Legal Title");
     });
 
-    it("keeps the 'Agreement' header unchanged regardless of nickname preference", async () => {
+    it("labels the Agreement column header 'Agreement Nickname' regardless of nickname preference", async () => {
         const args = await runExport([makeBli()], false);
-        expect(args.headers[4]).toBe("Agreement");
+        expect(args.headers[4]).toBe("Agreement Nickname");
     });
 
     it("inserts the CLIN column after SC and shifts currencyColumns to [12, 14] when includeClin is true", async () => {

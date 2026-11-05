@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
@@ -222,6 +222,28 @@ describe("ReviewBudgetTeamRequisition", () => {
 
             expect(screen.getByText("Pre-Award Requisition")).toBeInTheDocument();
             expect(screen.getByLabelText("Requisition #")).toBeInTheDocument();
+        });
+    });
+
+    describe("Page header subtitle", () => {
+        it("renders the nickname-preferred display name as subtitle, not the raw full name", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                agreement: { id: 1, name: "Full Legal Title For Testing", nick_name: "FLT", display_name: "FLT" }
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            const header = within(screen.getByTestId("page-header"));
+            expect(header.getByText("FLT")).toBeInTheDocument();
+            expect(header.queryByText("Full Legal Title For Testing")).not.toBeInTheDocument();
+        });
+
+        it("falls back to the full name as subtitle when there is no nickname", () => {
+            render(<ReviewBudgetTeamRequisition />);
+
+            const header = within(screen.getByTestId("page-header"));
+            expect(header.getByText("Test Agreement")).toBeInTheDocument();
         });
     });
 

@@ -8,6 +8,7 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TextClip from "../../UI/Text/TextClip";
+import Tooltip from "../../UI/USWDS/Tooltip";
 import {
     getAgreementContractNumber,
     getAgreementEndDate,
@@ -53,6 +54,13 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal, ancestry 
     }
 
     const agreementName = getAgreementName(agreement) || NO_DATA;
+    // When the nickname-preferred agreementName differs from the full title, the full title
+    // reaches hover/focus users via a Tooltip on the Link itself, matching AgreementTableRow.
+    const fullAgreementName = agreement?.name;
+    const hasDistinctFullName = Boolean(fullAgreementName) && fullAgreementName !== agreementName;
+    const agreementLinkLabel = hasDistinctFullName
+        ? `View agreement details for ${agreementName}, full title ${fullAgreementName}`
+        : `View agreement details for ${agreementName}`;
     const agreementType = getAgreementType(agreement?.agreement_type) ?? NO_DATA;
     const agreementStartDate = getAgreementStartDate(agreement);
     const agreementEndDate = getAgreementEndDate(agreement);
@@ -71,17 +79,22 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal, ancestry 
     const TableRowData = (
         <>
             <td data-cy="agreement-name">
-                <Link
-                    className="text-ink text-no-underline"
-                    to={`/agreements/${agreement?.id}`}
-                    state={buildTrailState(`/agreements/${agreement?.id}`, ancestry, agreement?.display_name)}
-                    aria-label={`View agreement details for ${agreementName}`}
+                <Tooltip
+                    label={hasDistinctFullName ? fullAgreementName : ""}
+                    position="right"
                 >
-                    <TextClip
-                        text={agreementName}
-                        maxLines={2}
-                    />
-                </Link>
+                    <Link
+                        className="text-ink text-no-underline"
+                        to={`/agreements/${agreement?.id}`}
+                        state={buildTrailState(`/agreements/${agreement?.id}`, ancestry, agreement?.display_name)}
+                        aria-label={agreementLinkLabel}
+                    >
+                        <TextClip
+                            text={agreementName}
+                            maxLines={2}
+                        />
+                    </Link>
+                </Tooltip>
             </td>
             <td data-cy="agreement-type">{agreementType}</td>
             <td data-cy="agreement-start-date">{agreementStartDate}</td>

@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import StepCreateBudgetLinesAndSCs from "../../components/BudgetLineItems/CreateBLIsAndSCs";
+import { getAgreementDisplayName } from "../../helpers/agreement.helpers";
 import useAlert from "../../hooks/use-alert.hooks";
 import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepCreateAgreement from "./StepCreateAgreement";
@@ -106,7 +107,7 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
                     setAlert({
                         type: "success",
                         heading: `${isReviewMode ? "Errors Resolved" : "Agreement Created"}`,
-                        message: `${isReviewMode ? "This agreement has been successfully updated and can now be sent to approval." : `The agreement ${selectedAgreement?.name} has been successfully created.`}`,
+                        message: `${isReviewMode ? "This agreement has been successfully updated and can now be sent to approval." : `The agreement ${getAgreementDisplayName(selectedAgreement)} has been successfully created.`}`,
                         redirectUrl: `${!isReviewMode ? "/agreements" : `/agreements/review/${selectedAgreement?.id}`}`
                     })
                 }

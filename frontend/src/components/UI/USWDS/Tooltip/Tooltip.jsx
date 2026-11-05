@@ -2,6 +2,26 @@ import React from "react";
 import tooltip from "@uswds/uswds/js/usa-tooltip";
 
 /**
+ * USWDS's tooltip handler resolves the trigger via the raw `event.target` of the hover/
+ * focus event, not the element `tooltip.on()` was called with. Focus always targets the
+ * trigger itself, but a hover over any nested descendant (an icon, a text span) makes
+ * `event.target` that descendant instead — USWDS then looks for the tooltip body inside
+ * the wrong ancestor and silently fails to show it, which is why these tooltips tend to
+ * work on click/focus but not on hover for any trigger with child elements. Disabling
+ * pointer events on every descendant forces the browser to resolve `event.target` to the
+ * trigger element itself regardless of which nested element is visually hovered.
+ * @param {Element} root
+ * @param {boolean} disable
+ */
+const setDescendantPointerEvents = (root, disable) => {
+    root.querySelectorAll("*").forEach((node) => {
+        if (node instanceof HTMLElement || node instanceof SVGElement) {
+            node.style.pointerEvents = disable ? "none" : "";
+        }
+    });
+};
+
+/**
  * A tooltip is a short descriptive message that appears when a user hovers or focuses on an element.
  * @component
  * @param {object} props - the component props
@@ -45,6 +65,7 @@ const Tooltip = ({ label, position = "top", children, className, maxWidth }) => 
         triggerElement.removeAttribute("data-position");
         triggerElement.removeAttribute("aria-describedby");
         triggerElement.removeAttribute("tabindex");
+        setDescendantPointerEvents(triggerElement, false);
         isInitializedRef.current = false;
     }, []);
 
@@ -68,6 +89,7 @@ const Tooltip = ({ label, position = "top", children, className, maxWidth }) => 
             triggerElement.title = label;
             triggerElement.setAttribute("data-position", position);
             tooltip.on(triggerElement);
+            setDescendantPointerEvents(triggerElement, true);
             isInitializedRef.current = true;
         } else {
             // Already wrapped by USWDS — update the existing trigger/body in place.
@@ -78,6 +100,8 @@ const Tooltip = ({ label, position = "top", children, className, maxWidth }) => 
                 tooltipBody.textContent = label;
             }
             triggerElement.setAttribute("data-position", position);
+            // Re-apply in case re-rendered children added new descendants since init.
+            setDescendantPointerEvents(triggerElement, true);
         }
 
         if (maxWidth) {

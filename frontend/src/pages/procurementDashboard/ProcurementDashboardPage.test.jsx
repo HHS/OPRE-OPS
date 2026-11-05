@@ -221,6 +221,40 @@ describe("ProcurementDashboardPage", () => {
         ]);
     });
 
+    it("exports the nickname-preferred display name, not the raw full name, when a nickname exists", async () => {
+        mockUseGetAllAgreements.mockReturnValue({
+            agreements: [
+                {
+                    id: 11,
+                    name: "Full Legal Title For Testing",
+                    nick_name: "FLT",
+                    display_name: "FLT",
+                    agreement_type: "CONTRACT",
+                    procurement_shop: { abbr: "GCS" },
+                    award_type: "NEW",
+                    budget_line_items: [{ id: 110, fiscal_year: 2025, status: "IN_EXECUTION", amount: 1000, fees: 50 }]
+                }
+            ],
+            metadata: { procurement_overview: null, procurement_step_summary: null },
+            isLoading: false,
+            error: null
+        });
+        mockUseGetAllProcurementTrackers.mockReturnValue({
+            procurementTrackers: [{ agreement_id: 11, active_step_number: 1 }],
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+
+        const user = userEvent.setup();
+        renderWithProviders(<ProcurementDashboard />);
+
+        await user.click(screen.getByText("Export"));
+
+        const allSheet = mockExportMultiSheetToXlsx.mock.calls[0][0].sheets[0];
+        expect(allSheet.rows[0][1]).toBe("FLT");
+    });
+
     it("filters export rows into step-specific sheets", async () => {
         const user = userEvent.setup();
         renderWithProviders(<ProcurementDashboard />);

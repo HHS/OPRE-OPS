@@ -18,7 +18,12 @@ import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import Tag from "../../../components/UI/Tag";
-import { calculateFeeTotal, isContractOrAaAgreement, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import {
+    calculateFeeTotal,
+    getAgreementDisplayName,
+    isContractOrAaAgreement,
+    isNotDevelopedYet
+} from "../../../helpers/agreement.helpers";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
@@ -239,10 +244,12 @@ const Agreement = () => {
     const isPostPreAwardLocked = agreement?.is_post_pre_award_locked === true;
 
     const isAgreementAwarded = agreement?.is_awarded;
+    // Nickname-preferred, matching every other read-only agreement surface (OPS-6144). The
+    // meta accordion still shows the raw full title in its own "Agreement" field, so the
+    // full title stays visible on this page even though the heading/breadcrumb don't show it.
+    const agreementDisplayName = getAgreementDisplayName(agreement);
     return (
-        // Must stay raw agreement.name (never nickname-preferred) — this is the agreement's own
-        // page, the explicit AC exception to issue #6144's nickname-display change.
-        <App breadCrumbName={agreement?.name}>
+        <App breadCrumbName={agreementDisplayName}>
             {showReviewAlert && (
                 <AgreementChangesAlert
                     changeRequests={allChangeRequests}
@@ -312,9 +319,7 @@ const Agreement = () => {
                     </svg>
                 </Tag>
             )}
-            {/* Must stay raw agreement.name (never nickname-preferred) — same AC exception as the
-                breadCrumbName above. Ref: issue #6144 F7. */}
-            <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement?.name}</h1>
+            <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreementDisplayName}</h1>
             <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
                 {`${agreement?.project?.title ?? ""}${agreement?.project?.short_title ? ` (${agreement.project.short_title})` : ""}`}
             </h2>

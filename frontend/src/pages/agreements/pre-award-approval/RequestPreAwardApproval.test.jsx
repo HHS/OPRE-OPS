@@ -152,6 +152,23 @@ describe("RequestPreAwardApproval", () => {
         expect(screen.getByRole("heading", { level: 2, name: "Test Agreement" })).toBeInTheDocument();
     });
 
+    it("renders the nickname-preferred display name as subtitle, not the raw full name", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            agreement: {
+                name: "Full Legal Title For Testing",
+                nick_name: "FLT",
+                display_name: "FLT",
+                id: 1,
+                _meta: { isEditable: true }
+            }
+        });
+        render(<RequestPreAwardApproval />);
+
+        expect(screen.getByRole("heading", { level: 2, name: "FLT" })).toBeInTheDocument();
+        expect(screen.queryByText("Full Legal Title For Testing")).not.toBeInTheDocument();
+    });
+
     it("renders all required accordions", () => {
         render(<RequestPreAwardApproval />);
 

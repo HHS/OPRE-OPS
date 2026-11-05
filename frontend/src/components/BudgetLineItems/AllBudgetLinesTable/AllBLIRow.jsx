@@ -16,6 +16,7 @@ import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hook
 import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
+import Tooltip from "../../UI/USWDS/Tooltip";
 import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
 import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 
@@ -47,9 +48,13 @@ const AllBLIRow = ({ budgetLine }) => {
     const awardType = AWARD_TYPE_LABELS[budgetLine?.agreement?.award_type] ?? NO_DATA;
     const vendor = budgetLine?.agreement?.vendor ?? NO_DATA;
     const agreementName = getAgreementDisplayName(budgetLine?.agreement).trim() || NO_DATA;
-    const agreementLinkLabel =
-        getAgreementDisplayName(budgetLine?.agreement).trim() ||
-        (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
+    // When the nickname-preferred agreementName differs from the full title, the full title
+    // reaches hover/focus users via a Tooltip on the Link itself, matching AgreementTableRow.
+    const fullAgreementName = budgetLine?.agreement?.name;
+    const hasDistinctFullName = Boolean(fullAgreementName) && fullAgreementName !== agreementName;
+    const agreementLinkLabel = hasDistinctFullName
+        ? `View agreement details for ${agreementName}, full title ${fullAgreementName}`
+        : agreementName || (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
     const listTrailState = useListTrailState("budgetLines");
     const agreementPath = budgetLine?.agreement?.id ? `/agreements/${budgetLine.agreement.id}` : "";
 
@@ -59,17 +64,22 @@ const AllBLIRow = ({ budgetLine }) => {
             <td data-cy="agreement-name">
                 <div className={tableStyles.textClipContainer}>
                     {budgetLine?.agreement?.id ? (
-                        <Link
-                            to={agreementPath}
-                            state={listTrailState(agreementPath, budgetLine?.agreement?.name?.trim())}
-                            className="text-ink text-no-underline"
-                            aria-label={agreementLinkLabel}
+                        <Tooltip
+                            label={hasDistinctFullName ? fullAgreementName : ""}
+                            position="right"
                         >
-                            <TextClip
-                                text={agreementName}
-                                maxLines={1}
-                            />
-                        </Link>
+                            <Link
+                                to={agreementPath}
+                                state={listTrailState(agreementPath, budgetLine?.agreement?.name?.trim())}
+                                className="text-ink text-no-underline"
+                                aria-label={agreementLinkLabel}
+                            >
+                                <TextClip
+                                    text={agreementName}
+                                    maxLines={1}
+                                />
+                            </Link>
+                        </Tooltip>
                     ) : (
                         <TextClip
                             text={agreementName}

@@ -262,3 +262,41 @@ describe("ReviewAgreement CLIN column", () => {
         expect(screen.queryByText("CLIN")).not.toBeInTheDocument();
     });
 });
+
+describe("ReviewAgreement page header subtitle", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it("renders the nickname-preferred display name as subtitle, not the raw full name", () => {
+        renderComponent({
+            agreement: {
+                id: 1,
+                name: "Full Legal Title For Testing",
+                nick_name: "FLT",
+                display_name: "FLT",
+                _meta: { isEditable: true }
+            }
+        });
+
+        expect(screen.getByText("Change Budget Line Status")).toBeInTheDocument();
+        // Scope to the subtitle's own <p> — the meta accordion's "Agreement" field correctly
+        // shows the raw full name elsewhere on the page, so an unscoped query would be ambiguous.
+        expect(
+            screen.getByText((_, element) => element.tagName === "P" && element.textContent === "FLT")
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(
+                (_, element) => element.tagName === "P" && element.textContent === "Full Legal Title For Testing"
+            )
+        ).not.toBeInTheDocument();
+    });
+
+    it("falls back to the full name as subtitle when there is no nickname", () => {
+        renderComponent();
+
+        expect(
+            screen.getByText((_, element) => element.tagName === "P" && element.textContent === "Test Agreement")
+        ).toBeInTheDocument();
+    });
+});

@@ -7,9 +7,10 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import store from "../../../store";
 import Agreement from "./Agreement";
 
-// --- Negative-AC coverage (issue #6144): the agreement's own details page must keep showing
-// the raw full name — never the nickname-preferred display_name — in the <h1> and the
-// breadcrumb, even when the agreement has a nickname. ---
+// --- Coverage for issue #6144: the agreement's own details page shows the nickname-preferred
+// display_name — not the raw full name — in the <h1> and the breadcrumb when a nickname
+// exists, falling back to the full name when it doesn't. (The meta accordion's separate
+// "Agreement" field still shows the raw full name, unchanged — see AgreementMetaAccordion.) ---
 vi.mock("../../../api/opsAPI");
 vi.mock("../../../App", () => ({
     default: ({ breadCrumbName, children }) => (
@@ -563,7 +564,7 @@ describe("Agreement memoization functionality", () => {
     });
 });
 
-describe("Agreement page — details page nickname negative AC (issue #6144)", () => {
+describe("Agreement page — details page nickname display (issue #6144)", () => {
     const nicknamedAgreement = {
         id: 42,
         name: "Full Legal Title For Testing",
@@ -576,10 +577,22 @@ describe("Agreement page — details page nickname negative AC (issue #6144)", (
         change_requests_in_review: []
     };
 
-    beforeEach(async () => {
+    const noNicknameAgreement = {
+        id: 43,
+        name: "Full Legal Title Without A Nickname",
+        nick_name: null,
+        display_name: "Full Legal Title Without A Nickname",
+        agreement_type: "CONTRACT",
+        project: { title: "Some Project" },
+        budget_line_items: [],
+        is_awarded: false,
+        change_requests_in_review: []
+    };
+
+    const mockAgreementQueries = async (agreement) => {
         const opsAPI = await import("../../../api/opsAPI");
         opsAPI.useGetAgreementByIdQuery.mockReturnValue({
-            data: nicknamedAgreement,
+            data: agreement,
             error: undefined,
             isLoading: false,
             isSuccess: true
@@ -587,12 +600,12 @@ describe("Agreement page — details page nickname negative AC (issue #6144)", (
         opsAPI.useGetNotificationsByUserIdAndAgreementIdQuery.mockReturnValue({ data: [] });
         opsAPI.useGetProcurementShopByIdQuery.mockReturnValue({ data: undefined });
         opsAPI.useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({ data: { data: [] } });
-    });
+    };
 
-    const renderAgreementPage = () =>
+    const renderAgreementPage = (id) =>
         render(
             <Provider store={store}>
-                <MemoryRouter initialEntries={["/agreements/42"]}>
+                <MemoryRouter initialEntries={[`/agreements/${id}`]}>
                     <Routes>
                         <Route
                             path="/agreements/:id/*"
@@ -603,19 +616,32 @@ describe("Agreement page — details page nickname negative AC (issue #6144)", (
             </Provider>
         );
 
-    it("renders the <h1> as the raw full name, never the nickname or display_name", async () => {
-        renderAgreementPage();
+    it("renders the <h1> as the nickname-preferred display_name when a nickname exists", async () => {
+        await mockAgreementQueries(nicknamedAgreement);
+        renderAgreementPage(nicknamedAgreement.id);
 
         const heading = await screen.findByRole("heading", { level: 1 });
-        expect(heading).toHaveTextContent(nicknamedAgreement.name);
-        expect(heading).not.toHaveTextContent(nicknamedAgreement.nick_name);
+        expect(heading).toHaveTextContent(nicknamedAgreement.display_name);
+        expect(heading).not.toHaveTextContent(nicknamedAgreement.name);
     });
 
-    it("passes the raw full name as breadCrumbName, never the nickname or display_name", async () => {
-        renderAgreementPage();
+    it("passes the nickname-preferred display_name as breadCrumbName when a nickname exists", async () => {
+        await mockAgreementQueries(nicknamedAgreement);
+        renderAgreementPage(nicknamedAgreement.id);
 
         const appMock = await screen.findByTestId("app-mock");
-        expect(appMock.dataset.breadcrumb).toBe(nicknamedAgreement.name);
-        expect(appMock.dataset.breadcrumb).not.toBe(nicknamedAgreement.nick_name);
+        expect(appMock.dataset.breadcrumb).toBe(nicknamedAgreement.display_name);
+        expect(appMock.dataset.breadcrumb).not.toBe(nicknamedAgreement.name);
+    });
+
+    it("falls back to the full name in the <h1> and breadcrumb when there is no nickname", async () => {
+        await mockAgreementQueries(noNicknameAgreement);
+        renderAgreementPage(noNicknameAgreement.id);
+
+        const heading = await screen.findByRole("heading", { level: 1 });
+        expect(heading).toHaveTextContent(noNicknameAgreement.name);
+
+        const appMock = await screen.findByTestId("app-mock");
+        expect(appMock.dataset.breadcrumb).toBe(noNicknameAgreement.name);
     });
 });

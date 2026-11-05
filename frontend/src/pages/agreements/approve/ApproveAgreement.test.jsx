@@ -176,6 +176,21 @@ describe("ApproveAgreement", () => {
         expect(screen.getByText("Agreement 1")).toBeInTheDocument();
     });
 
+    it("renders the nickname-preferred display name as subtitle, not the raw full name", () => {
+        approveAgreementMock.mockReturnValue({
+            ...baseHookResult(),
+            agreement: {
+                name: "Full Legal Title For Testing",
+                nick_name: "FLT",
+                display_name: "FLT",
+                service_requirement_type: "TEST"
+            }
+        });
+        renderWithRouter();
+        expect(screen.getByText("FLT")).toBeInTheDocument();
+        expect(screen.queryByText("Full Legal Title For Testing")).not.toBeInTheDocument();
+    });
+
     it("renders documents section for executing status", () => {
         renderWithRouter();
         expect(screen.getByText("Review Documents")).toBeInTheDocument();

@@ -128,7 +128,7 @@ describe("handleProjectsExport", () => {
                 "FY26 Total",
                 "Lifetime Total",
                 "Total Agreements",
-                "Agreements"
+                "Agreements (nickname)"
             ],
             rowMapper: expect.any(Function),
             filename: "projects_FY2026",
@@ -157,7 +157,7 @@ describe("handleProjectsExport", () => {
                     "End Date",
                     "Lifetime Total",
                     "Total Agreements",
-                    "Agreements"
+                    "Agreements (nickname)"
                 ],
                 filename: "projects_all",
                 currencyColumns: [4]
