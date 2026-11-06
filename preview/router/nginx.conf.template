@@ -69,8 +69,11 @@ http {
             proxy_set_header Connection "";
 
             # Redirects built from that Host (e.g. Flask's trailing-slash 308s)
-            # would send browsers to the internal name; keep them on pr-<N>.
+            # would send browsers to the internal name; keep them on pr-<N>. The
+            # result is a relative path, so absolute_redirect must stay off: with it
+            # on, nginx adds its own name and port (the router's :8080) back in.
             proxy_redirect "~^https?://opre-ops-pr[0-9]+-app-(?:frontend|backend)\.[^/]+(/.*)$" $1;
+            absolute_redirect off;
 
             proxy_ssl_server_name on;
             proxy_ssl_name $target;
