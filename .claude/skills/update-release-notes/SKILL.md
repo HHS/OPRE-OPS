@@ -82,16 +82,34 @@ gh project item-list 5 --owner HHS --format json -L 200
 `gh project item-list` defaults to 30 items, which can silently truncate a long-lived board. Pass a generous `-L` and compare the returned item count against the JSON's `totalCount` field; if they don't match, re-run with a higher `-L` rather than proceeding on an incomplete list.
 
 Filter results into two groups:
-- **Shipping now** — Status equals **"Review / Demo"**. These feed the release notes draft (Step 4) and move to `"Done"` on the roadmap board (Step 8).
-- **In progress** — Status equals **"In Progress"** (or your board's equivalent active-work column). These feed the `"Currently Developing"` column on the roadmap board (Step 8) — read regardless of whether you're updating release notes this time.
+- **Shipping now** — Status equals **"Review / Demo"** *or* **"Done"**. Treat them the same way: both feed the release notes draft (Step 6), and "Review / Demo" items additionally move to `"Done"` on the roadmap board (Step 9). A lot of work never stops in "Review / Demo" at all — it gets closed straight to "Done" once it's demoed, sometimes weeks after the code actually merged. Scanning "Review / Demo" alone will miss it.
+- **In progress** — Status equals **"In Progress"** (or your board's equivalent active-work column). These feed the `"Currently Developing"` column on the roadmap board (Step 9) — read regardless of whether you're updating release notes this time. **Exclude "In Progress" items from "shipping now" even when a merged PR references that issue number** — a PR can land one slice of a multi-part item without finishing it. Trust the board's status over a PR title.
 
-The date range from Step 1 is meant to narrow "Shipping now" to recent work, but `gh project item-list`'s JSON doesn't reliably include the project item's own `updatedAt` — only the linked issue/PR (under `content`) has timestamps, and even that may be absent depending on the field's shape. **Don't guess or silently skip the date filter.** For each "Review / Demo" item, check `content.updatedAt` (or run `gh issue view <number>` / `gh pr view <number>` on its linked content if that's missing) to decide whether it falls in range. If an item's timestamp truly can't be determined, say so and ask the user whether to include it rather than assuming either way.
+The date range from Step 1 is meant to narrow "Shipping now" to recent work, but `gh project item-list`'s JSON doesn't reliably include the project item's own `updatedAt` — only the linked issue/PR (under `content`) has timestamps, and even that may be absent depending on the field's shape. **Don't guess or silently skip the date filter.** For each "Review / Demo" or "Done" item, check `content.updatedAt` (or run `gh issue view <number>` / `gh pr view <number>` on its linked content if that's missing) to decide whether it falls in range. If an item's timestamp truly can't be determined, say so and ask the user whether to include it rather than assuming either way.
+
+**Cross-check with closed issues — the board's status can lag the actual ship date by days or weeks.** A feature can merge and go live, then sit un-closed on the board until someone gets around to the bookkeeping, so date-filtering the board alone can miss it entirely. Run:
+
+```bash
+gh issue list --repo HHS/OPRE-OPS --state closed --search "closed:$START_DATE..$END_DATE" --json number,title,closedAt,labels -L 100
+```
+
+For each issue this turns up that isn't already in your "Review / Demo"/"Done" list, check whether it actually shipped (see Step 4) before adding it — an issue can close in this window for reasons that have nothing to do with recent work, like a late administrative close of old code.
 
 For each item, read its details (title, description, labels, linked PRs) to understand the change.
 
 ### 4. Filter and Categorize
 
 **Only include items a user would notice.** Ask: *"Would a user see or experience this change?"*
+
+**First, verify the item actually shipped — a closed issue is not proof of a fix.** An issue can close as "Completed" because the team decided to keep the existing behavior instead of changing it, or because it stopped reproducing (often as a side effect of unrelated, already-announced work), with no PR ever implementing what the issue describes. Before writing a release note for anything:
+- Find the PR(s) that actually implement it: `gh pr list --state merged --search "<issue number> in:title,body"`, or follow a PR the issue's own comments link to.
+- If you can't find one, skim the issue's last few comments (`gh issue view <number> --json comments`) for a "won't fix," "decided to keep current behavior," or "can't reproduce anymore" resolution. If you find one, leave it out and say why rather than announcing it as a fix.
+
+**Then check whether the change is actually live, not just merged.** Some features ship behind a config flag that's only turned on in dev, not staging or production — the code is real and merged, but no real user can see it yet. If a PR description names a flag, grep for it:
+```bash
+grep -rn "<FLAG_NAME>" backend/ops_api/ops/environment/
+```
+and confirm it's `True` (or set via an env var that resolves `True`) in `azure/stg.py` and `azure/prod.py`, not only in `azure/dev.py` or as a hardcoded default in `default_settings.py`. If it's only on in dev, exclude the item from this round — it's not something a real user can notice yet — and tell the user so, the same way you'd flag an ambiguous date.
 
 Include:
 - ✅ New pages, features, or workflows
@@ -115,28 +133,35 @@ Categorize each included item as one of:
 
 **Group aggressively** — if multiple items relate to the same feature area, combine them into one entry.
 
-### 5. Write the Release Notes Draft
+### 5. Check Against Release Notes History
+
+Before drafting, read the **entire** `frontend/src/pages/home/release-notes/data.js` file — not just the most recent entry — and check every candidate item against *all* prior releases, not only the last one. A topic can resurface (for example, a fix that already shipped once gets described as "fixed" again, for an unrelated issue that happens to close in the same window) or a prior round can turn out to have missed something that's still worth catching up on now. If you find a duplicate, drop the new item and say so. If you find something genuinely unannounced from an earlier window, it's fine to include it now — just say in the draft that it's catching up on an earlier gap.
+
+### 6. Write the Release Notes Draft
 
 Using the **Tone Guide** above, write a draft of the release notes and **present them to the user for review** before making any file changes.
 
 Format the draft as a simple list grouped by type so the user can review and request edits.
 
-### 6. Confirm Version, Date, and Sprint
+### 7. Confirm Version and Date
 
 Ask the user for:
-- **Sprint number** — for the branch name and PR title
 - **Version number** — e.g., 1.456.0 (no "v" prefix in the data file)
 - **Release date** — format: YYYY-MM-DD
 
-If not provided, look them up:
+If not provided, look up the version and date:
 ```bash
 git tag --sort=-creatordate | head -1
 git log --format="%ad %D" --date=short --tags --simplify-by-decoration | grep "tag:" | head -1
 ```
 
+**Don't be surprised by a big version jump, and don't guess "+1 or +2" is wrong.** This repo's `semantic-release` workflow (`.github/workflows/release.yml`) bumps the version on every merge to `main`, so the gap between two release-notes rounds is proportional to how many PRs merged in between — a jump of 10-20+ minor versions across a 2-3 week gap is normal, not a sign of a mistake. If the user asks why the version jumped, that's the answer.
+
+**This team runs Kanban, not sprints — don't ask for or use a sprint number.** The branch name and PR title are keyed off the **release date** instead (see Step 10), which is unambiguous and doesn't need the user to supply anything extra.
+
 Confirm with the user before proceeding.
 
-### 7. Update the Release Notes Data File
+### 8. Update the Release Notes Data File
 
 Read the current file at: `frontend/src/pages/home/release-notes/data.js`
 
@@ -165,7 +190,7 @@ Rules:
 - Match the indentation style of the existing file (4 spaces)
 - Multi-line descriptions use the existing pattern: `description:` on one line, then the string indented on the next
 
-### 8. Update the Roadmap Status Board
+### 9. Update the Roadmap Status Board
 
 Read `frontend/src/pages/home/roadmapData.json` — one flat array of `{id, title, status}` objects. `status` must be exactly one of these three plain strings (no JS enum to import — this is pure JSON):
 - `"Done"`
@@ -179,7 +204,7 @@ This step has two different kinds of decision in it — don't conflate them:
 - **Adding a brand-new item that wasn't already tracked is a curation call.** This board is a curated highlight reel, not a mechanical mirror of the full backlog (same as always) — most individual bug fixes shouldn't become their own new roadmap row. New entries are typically only worth adding for `"New Feature"`-level work.
 
 What to do, using the "shipping now" and "in progress" items you gathered in Step 3:
-1. For **every** item that just shipped in the `data.js` entry you added in Step 7 — regardless of its `"New Feature"` / `"Improvements"` / `"Fixes"` type — check whether it matches an existing `"Currently Developing"` item in `roadmapData.json` (by meaning, not just exact title string — e.g. "Add Procurement Tracker Award Step" shipping can complete an existing "Finish Procurement Tracker" entry). If it matches, move that existing item to `"Done"`.
+1. For **every** item that just shipped in the `data.js` entry you added in Step 8 — regardless of its `"New Feature"` / `"Improvements"` / `"Fixes"` type — check whether it matches an existing `"Currently Developing"` item in `roadmapData.json` (by meaning, not just exact title string — e.g. "Add Procurement Tracker Award Step" shipping can complete an existing "Finish Procurement Tracker" entry). If it matches, move that existing item to `"Done"` — **unless the feature is still flag-gated off outside dev** (the check from Step 4). Moving a roadmap item to "Done" tells users it's available; don't say that about something only visible in a dev environment.
 2. Only **add** a new item directly under `"Done"` for shipped work that wasn't already tracked **and** is big enough to be worth surfacing on the roadmap — use the same curation judgment as always; don't add one for every routine fix.
 3. Ask the user which item(s) from `"Not Started Yet"` should move to `"Currently Developing"` now that work has started on them — cross-check against the "In Progress" items from Step 3.
 4. Keep titles short and user-facing (a few words), matching the Tone Guide's voice.
@@ -190,15 +215,15 @@ Example of a single entry:
 { "id": 16, "title": "View Grant History", "status": "Done" }
 ```
 
-Keep the array's existing 4-space indentation and formatting exactly — this file is also checked by this repo's `prettier` and `check json` pre-commit hooks (see the note on hooks in Step 9), so malformed JSON or inconsistent spacing will fail CI even though this looks like a simple data edit.
+Keep the array's existing 4-space indentation and formatting exactly — this file is also checked by this repo's `prettier` and `check json` pre-commit hooks (see the note on hooks in Step 10), so malformed JSON or inconsistent spacing will fail CI even though this looks like a simple data edit.
 
-### 9. Create Branch, Commit, and PR
+### 10. Create Branch, Commit, and PR
 
-Fetch first — a stale local `main` would cut the new branch from an outdated tree:
+**If you're already running in a worktree or branch dedicated to this exact task** (for example, a session whose branch was already scoped to this release-notes update), commit directly to that branch — skip to the pre-commit checks below. Otherwise, fetch first — a stale local `main` would cut the new branch from an outdated tree:
 
 ```bash
 git fetch origin main
-git checkout -b docs/updated-release-notes-sprint-{number} origin/main
+git checkout -b docs/release-notes-{release-date} origin/main
 ```
 
 Before committing, run this repo's mandated frontend pre-commit checks proactively (per the root `CLAUDE.md` Pre-Commit Workflow) rather than relying only on the hooks to catch problems reactively. Run it as a subshell — the parentheses matter: Claude Code's shell keeps its working directory between separate commands, so a bare `cd frontend && ...` would leave later repo-root-relative paths (like `git add frontend/...`) resolving incorrectly.
@@ -207,12 +232,14 @@ Before committing, run this repo's mandated frontend pre-commit checks proactive
 (cd frontend && bun run format && bun run lint --fix)
 ```
 
+If that fails with something like `prettier: command not found`, the worktree is fresh and doesn't have `node_modules` yet — run `(cd frontend && bun install --frozen-lockfile)` first, then retry.
+
 Then stage and commit, from the repo root:
 
 ```bash
 git add frontend/src/pages/home/release-notes/data.js frontend/src/pages/home/roadmapData.json
-git commit -m "docs: updated release notes sprint {number}"
-git push origin docs/updated-release-notes-sprint-{number}
+git commit -m "docs: updated release notes {release-date}"
+git push origin docs/release-notes-{release-date}
 ```
 
 Don't reach for `--no-verify` by default. `roadmapData.json` is plain JSON and gets checked by this repo's `check json` and `prettier` hooks specifically to catch exactly the kind of mistake a quick manual edit can introduce (malformed JSON, inconsistent indentation). If a hook fails:
@@ -221,7 +248,7 @@ Don't reach for `--no-verify` by default. `roadmapData.json` is plain JSON and g
 
 Once the branch is pushed, **don't call `gh pr create` yourself** with just a title and short body — that skips the repo's PR template. This repo's `create-pr` skill populates the full `.github/pull_request_template.md` (What changed, Issue, How to test, A11y impact, Definition of Done, etc.) for exactly this, but it has `disable-model-invocation: true`, meaning you can't invoke it on your own — only the user can trigger it, by typing `/create-pr`. So instead, tell the user the branch is pushed and ask them to run `/create-pr` themselves to open it with the full template.
 
-### 10. Offer to Preview
+### 11. Offer to Preview
 
 Let the user know they can preview locally:
 ```bash
