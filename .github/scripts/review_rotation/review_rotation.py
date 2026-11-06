@@ -175,22 +175,23 @@ def slack_id_for(login: str | None, slack_map: dict) -> str:
     return slack_map.get(login.lower(), "") if login else ""
 
 
-def slack_mention(login: str, slack_map: dict) -> str:
-    slack_id = slack_id_for(login, slack_map)
-    return f"<@{slack_id}>" if slack_id else f"@{login}"
+def build_slack_text(mode: str, actor: str, pr: dict, repo: str, new_pick: str | None, old_pick: str | None) -> str:
+    """The `message` variable sent to the Slack Workflow Builder trigger.
 
-
-def build_slack_text(
-    mode: str, actor: str, pr: dict, repo: str, new_pick: str | None, old_pick: str | None, slack_map: dict
-) -> str:
-    link = f"<{pr['html_url']}|{repo}#{pr['number']}: {slack_escape(pr['title'])}>"
+    No <url|label> or <@id> syntax here: Workflow Builder's "Send a message" step doesn't
+    re-parse mrkdwn inside a substituted text variable, so that syntax shows up as literal
+    text instead of a working link or mention. A bare URL still auto-links, so it goes on
+    its own line; the reviewer mention is composed in Slack itself from the separate
+    `reviewer_id` variable (a real Slack user), not built into this string.
+    """
+    title = f"{repo}#{pr['number']}: {slack_escape(pr['title'])}"
     if mode == "reroll":
-        action = f"*{actor}* rerolled the reviewer for {link}" + (f" (was {slack_escape(old_pick)})" if old_pick else "")
+        action = f"*{actor}* rerolled the reviewer for {title}" + (f" (was {slack_escape(old_pick)})" if old_pick else "")
     else:
-        action = f"*{actor}* marked {link} ready for human review"
-    if new_pick:
-        return f"{action} → {slack_mention(new_pick, slack_map)} is up for intent + risk review"
-    return f"{action}, but nobody in the rotation is available. Please pick a reviewer manually."
+        action = f"*{actor}* marked {title} ready for human review"
+    if not new_pick:
+        action += ", but nobody in the rotation is available. Please pick a reviewer manually."
+    return f"{action}\n{pr['html_url']}"
 
 
 def open_https(req: urllib.request.Request | str, timeout: int):
@@ -335,7 +336,7 @@ def main() -> int:
     # This also caps Slack posts per PR at the pool size, however many times /reroll is sent.
     if new_pick or mode == "label":
         try:
-            text = build_slack_text(mode, actor, pr, repo, new_pick, old_pick, slack_map)
+            text = build_slack_text(mode, actor, pr, repo, new_pick, old_pick)
             post_slack(text, reviewer_id=slack_id_for(new_pick, slack_map))
         except Exception as exc:  # noqa: BLE001 -- the reviewer pick and PR comment already succeeded
             print(f"::warning::Could not post to Slack ({type(exc).__name__}); the pick and PR comment stand.")

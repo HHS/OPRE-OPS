@@ -187,22 +187,29 @@ class TestComment:
 class TestSlackText:
     PR: ClassVar[dict] = {"html_url": "https://github.com/o/r/pull/7", "number": 7, "title": "Fix <script> & stuff"}
 
-    def test_escapes_title_and_maps_slack_id(self):
-        text = rr.build_slack_text("label", "dana", self.PR, "o/r", "bob", None, {"bob": "U123"})
+    def test_escapes_title_and_puts_bare_url_on_its_own_line(self):
+        text = rr.build_slack_text("label", "dana", self.PR, "o/r", "bob", None)
         assert "Fix &lt;script&gt; &amp; stuff" in text
-        assert "<@U123> is up" in text
+        assert text.endswith("\nhttps://github.com/o/r/pull/7")
+
+    def test_no_embedded_mrkdwn_link_or_mention_syntax(self):
+        # Workflow Builder doesn't re-parse mrkdwn inside a substituted variable, so neither
+        # <url|label> nor <@id> belongs here -- see build_slack_text's docstring.
+        text = rr.build_slack_text("label", "dana", self.PR, "o/r", "bob", None)
+        assert "<@" not in text and "|" not in text
 
     def test_escapes_previous_pick(self):
-        text = rr.build_slack_text("reroll", "dana", self.PR, "o/r", "carol", "<!channel>", {})
+        text = rr.build_slack_text("reroll", "dana", self.PR, "o/r", "carol", "<!channel>")
         assert "<!channel>" not in text and "&lt;!channel&gt;" in text
 
-    def test_unmapped_user_falls_back_to_login(self):
-        text = rr.build_slack_text("reroll", "dana", self.PR, "o/r", "carol", "bob", {})
-        assert "@carol is up" in text and "(was bob)" in text
+    def test_reroll_shows_previous_pick_as_plain_text(self):
+        text = rr.build_slack_text("reroll", "dana", self.PR, "o/r", "carol", "bob")
+        assert "(was bob)" in text
 
     def test_nobody_available(self):
-        text = rr.build_slack_text("label", "dana", self.PR, "o/r", None, None, {})
+        text = rr.build_slack_text("label", "dana", self.PR, "o/r", None, None)
         assert "nobody in the rotation is available" in text
+        assert text.endswith("\nhttps://github.com/o/r/pull/7")
 
 
 class TestOpenHttps:
@@ -309,7 +316,8 @@ class TestMain:
         assert ("POST", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]}) in writes
         comment = next(body for method, path, body in writes if path == "/issues/4/comments")
         assert rr.parse_history(comment["body"]) == ["bob"]
-        assert len(slack) == 1 and "@bob is up" in slack[0]["message"]
+        assert len(slack) == 1
+        assert "ready for human review" in slack[0]["message"] and slack[0]["reviewer_id"] == ""
 
     def test_relabel_does_not_reroll(self, run):
         existing = bot_comment(["bob"], "bob")
@@ -327,7 +335,8 @@ class TestMain:
         assert writes[1] == ("DELETE", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]})
         assert writes[2][0:2] == ("PATCH", "/issues/comments/9")
         assert rr.parse_history(writes[2][2]["body"]) == ["bob", "alice"]
-        assert "@alice is up" in slack[0]["message"] and "(was bob)" in slack[0]["message"]
+        assert "rerolled the reviewer" in slack[0]["message"] and "(was bob)" in slack[0]["message"]
+        assert slack[0]["reviewer_id"] == ""
 
     def test_label_picks_engineering_only_when_pr_is_not_visual(self, run):
         # Pool order is alice, bob, carol, uxena (ux-only); pr_number=3 would land on uxena
