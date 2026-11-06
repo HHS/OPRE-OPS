@@ -192,9 +192,11 @@ class TestSlackFields:
         "user": {"login": "zara"},
     }
 
-    def test_escapes_title(self):
+    def test_pr_title_is_sent_raw_unescaped(self):
+        # No HTML-entity escaping: Workflow Builder doesn't re-parse it, so it would just
+        # show up literally (e.g. "&amp;") now that pr_title is a plain substituted field.
         fields = rr.slack_fields("label", "dana", self.PR, "o/r", "bob", None)
-        assert fields["pr_title"] == "Fix &lt;script&gt; &amp; stuff"
+        assert fields["pr_title"] == "Fix <script> & stuff"
 
     def test_includes_atomic_facts_for_slack_to_compose(self):
         fields = rr.slack_fields("reroll", "dana", self.PR, "o/r", "carol", "bob")
@@ -227,6 +229,36 @@ class TestOpenHttps:
     def test_rejects_non_https_request(self):
         with pytest.raises(ValueError):
             rr.open_https(rr.urllib.request.Request("file:///etc/passwd"), timeout=1)
+
+
+class TestPostSlack:
+    """Exercises post_slack's real request-building, not a monkeypatched stand-in for it --
+    the other tests replace post_slack entirely, so nothing else checks the actual HTTP body."""
+
+    def test_sends_fields_and_reviewer_id_as_one_json_body(self, monkeypatch):
+        captured = {}
+
+        class FakeResponse:
+            def close(self):
+                pass
+
+        def fake_open_https(req, timeout):
+            captured["url"] = req.full_url
+            captured["method"] = req.get_method()
+            captured["content_type"] = req.get_header("Content-type")
+            captured["body"] = json.loads(req.data)
+            return FakeResponse()
+
+        monkeypatch.setattr(rr, "open_https", fake_open_https)
+        monkeypatch.setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/triggers/x")
+
+        # A colliding "reviewer_id" in fields must not win over the explicit argument.
+        rr.post_slack({"pr_title": "hi", "reviewer_id": "SHOULD_NOT_WIN"}, reviewer_id="U999")
+
+        assert captured["url"] == "https://hooks.slack.com/triggers/x"
+        assert captured["method"] == "POST"
+        assert captured["content_type"] == "application/json"
+        assert captured["body"] == {"pr_title": "hi", "reviewer_id": "U999"}
 
 
 class FakeGitHub(rr.GitHub):

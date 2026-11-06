@@ -166,11 +166,6 @@ def render_comment(picked: list[str], off: set[str], current: str | None, repo: 
     return "\n".join(lines)
 
 
-def slack_escape(text: str) -> str:
-    # Slack mrkdwn treats &, <, > as syntax, so escape them per Slack's formatting spec.
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-
 def slack_id_for(login: str | None, slack_map: dict) -> str:
     return slack_map.get(login.lower(), "") if login else ""
 
@@ -183,7 +178,10 @@ def slack_fields(mode: str, actor: str, pr: dict, repo: str, new_pick: str | Non
     happen in Slack, not in a code change here. No <url|label> or <@id> syntax -- that
     doesn't survive Workflow Builder's variable substitution (shows up as literal text,
     not a working link or mention), which is also why the PR link is its own field
-    (`pr_url`, used for a button) rather than embedded in text.
+    (`pr_url`, used for a button) rather than embedded in text. `pr_title` is sent raw,
+    unescaped: the HTML-entity escaping used when the title went inside that mrkdwn link
+    syntax would, by the same "not re-parsed" reasoning, just show up literally (e.g.
+    "&amp;" instead of "&") now that it's a plain substituted field.
 
     `new_pick` is a plain-text fallback for the picked reviewer's login, shown when
     `reviewer_id` is empty (unmapped in slack_user_map.json) so the Slack message isn't
@@ -201,7 +199,7 @@ def slack_fields(mode: str, actor: str, pr: dict, repo: str, new_pick: str | Non
         "author": pr["user"]["login"],
         "repo": repo,
         "pr_number": str(pr["number"]),
-        "pr_title": slack_escape(pr["title"]),
+        "pr_title": pr["title"],
         "pr_url": pr["html_url"],
         "new_pick": new_pick or "",
         "old_pick": old_pick or "",
