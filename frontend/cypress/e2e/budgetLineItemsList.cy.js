@@ -51,8 +51,16 @@ it("pagination on the bli table works as expected", () => {
     cy.get("button").should("have.class", "usa-current").contains("1");
 });
 
-it("filter button works as expected", () => {
+// Opens the filter panel, fills every fieldset (comboboxes + budget range slider), and applies.
+// Shared by the "applying filters" and "resetting filters" tests below so resetting still
+// exercises a real apply-then-reset journey without duplicating ~40 lines of setup.
+const applyAllFilters = () => {
     cy.get("button").contains("Filter").click();
+
+    // The afterEach hook only checks the DOM after the modal is closed again, so
+    // check it here too, while it's actually open.
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
 
     // set a number of filters
 
@@ -87,32 +95,86 @@ it("filter button works as expected", () => {
         .contains("5 Year")
         .click();
 
+    // Capture into plain JS variables, not a Cypress .as() alias — aliasing a value derived
+    // from a DOM query (cy.get(...).invoke("attr", ...)) does NOT freeze it: Cypress re-runs
+    // the whole chain against the live DOM every time the alias is read later, so comparing
+    // "@initialMin" against a value read after the drag always compares the post-drag value
+    // to itself.
+    let initialMin;
+    let initialMax;
     cy.get("[data-testid='budget-range-slider']").within(() => {
-        // Get the initial values
-        cy.get(".thumb.thumb-0").invoke("attr", "aria-valuenow").as("initialMin");
-        cy.get(".thumb.thumb-1").invoke("attr", "aria-valuenow").as("initialMax");
-
-        cy.get(".thumb.thumb-0").then(($el) => {
-            const width = $el.width();
-            const height = $el.height();
-            // Split the chain to avoid unsafe subject usage
-            cy.wrap($el).trigger("mousedown", { which: 1, pageX: 0, pageY: (height || 0) / 2 });
-            cy.wrap($el).trigger("mousemove", { which: 1, pageX: (width || 0) * 0.2, pageY: (height || 0) / 2 });
-            cy.wrap($el).trigger("mouseup");
-        });
-
-        cy.get(".thumb.thumb-1").then(($el) => {
-            const width = $el.width();
-            const height = $el.height();
-            // Split the chain to avoid unsafe subject usage
-            cy.wrap($el).trigger("mousedown", { which: 1, pageX: width || 0, pageY: (height || 0) / 2 });
-            cy.wrap($el).trigger("mousemove", { which: 1, pageX: (width || 0) * 0.8, pageY: (height || 0) / 2 });
-            cy.wrap($el).trigger("mouseup");
-        });
+        cy.get(".thumb.thumb-0")
+            .invoke("attr", "aria-valuenow")
+            .then((v) => {
+                initialMin = v;
+            });
+        cy.get(".thumb.thumb-1")
+            .invoke("attr", "aria-valuenow")
+            .then((v) => {
+                initialMax = v;
+            });
     });
+
+    // The drag distance must be computed against the TRACK's width, not a thumb's own ~30px
+    // width — using the thumb's width here previously made every drag move by only ~1-2%
+    // regardless of what distance the math intended, since react-slider maps pixel delta
+    // through the track's actual DOM width to compute the percentage change. Kept to a small
+    // (~2%) nudge rather than a large swing: this spec combines the range filter with 5 other
+    // hardcoded filters (a specific agreement, FY, portfolio, etc.), and a large cut against the
+    // slider's always-global min/max bounds risks filtering that exact combination to zero rows.
+    cy.get("[data-testid='budget-range-slider']")
+        .invoke("width")
+        .then((trackWidth) => {
+            cy.get("[data-testid='budget-range-slider']").within(() => {
+                cy.get(".thumb.thumb-0").then(($el) => {
+                    const height = $el.height();
+                    // Split the chain to avoid unsafe subject usage
+                    cy.wrap($el).trigger("mousedown", { which: 1, pageX: 0, pageY: (height || 0) / 2 });
+                    cy.wrap($el).trigger("mousemove", {
+                        which: 1,
+                        pageX: trackWidth * 0.02,
+                        pageY: (height || 0) / 2
+                    });
+                    cy.wrap($el).trigger("mouseup");
+                });
+
+                cy.get(".thumb.thumb-1").then(($el) => {
+                    const height = $el.height();
+                    // Split the chain to avoid unsafe subject usage
+                    cy.wrap($el).trigger("mousedown", { which: 1, pageX: trackWidth, pageY: (height || 0) / 2 });
+                    cy.wrap($el).trigger("mousemove", {
+                        which: 1,
+                        pageX: trackWidth * 0.98,
+                        pageY: (height || 0) / 2
+                    });
+                    cy.wrap($el).trigger("mouseup");
+                });
+
+                // Confirm the drag actually moved each thumb in the right direction, not just
+                // dispatched no-op events.
+                cy.get(".thumb.thumb-0")
+                    .invoke("attr", "aria-valuenow")
+                    .should((newMin) => {
+                        expect(Number(newMin)).to.be.greaterThan(Number(initialMin));
+                    });
+                cy.get(".thumb.thumb-1")
+                    .invoke("attr", "aria-valuenow")
+                    .should((newMax) => {
+                        expect(Number(newMax)).to.be.lessThan(Number(initialMax));
+                    });
+            });
+        });
+
+    // All fieldsets filled in and the slider thumbs moved — check this populated,
+    // pre-Apply state too, not just the modal's untouched opening state above.
+    cy.checkA11y(null, null, terminalLog);
 
     // click the button that has text Apply
     cy.get("button").contains("Apply").click();
+};
+
+it("applying filters sets tags, values, and announces the result", () => {
+    applyAllFilters();
 
     // check that the correct tags are displayed
     cy.get("div").contains("Filters Applied:").should("exist");
@@ -134,6 +196,10 @@ it("filter button works as expected", () => {
     cy.get('[data-cy="filter-results-announcement"]', { timeout: 10000 })
         .invoke("text")
         .should("match", /^Filters applied\. \d+ budget lines?\.$/);
+});
+
+it("resetting filters clears tags and announces the result", () => {
+    applyAllFilters();
 
     // reset
     cy.get("button").contains("Filter").click();
@@ -165,6 +231,12 @@ it("filters budget lines by a person in Division & Staffing and clears it from t
 
     // Each division is followed by its people, so the second option is the first division's first person.
     cy.get(".division-staffing-combobox__control").click();
+
+    // The menu is open and its option list rendered — another state the
+    // afterEach-only check never sees.
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+
     cy.get(".division-staffing-combobox__option")
         .eq(1)
         .invoke("text")
@@ -228,17 +300,6 @@ it("click on agreement name and check if its routed to the correct page", () => 
     cy.url().should("match", /\/agreements\/\d+/);
 });
 
-it.skip("click on edit bli and check to see if the form is populated", () => {
-    cy.get("[data-testid='budget-line-row-15249']").trigger("mouseover");
-    cy.get("[data-testid='budget-line-row-15249']").find('[data-cy="edit-row"]').should("exist");
-    cy.get("[data-testid='budget-line-row-15249']").find('[data-cy="edit-row"]').click();
-    cy.url().should("include", "/agreements/1/budget-lines");
-    cy.get("#allServicesComponentSelect").should("have.value", "1");
-    cy.get(".can-combobox__single-value").should("have.text", "G994426");
-    cy.get("#need-by-date").should("have.value", "06/13/2043");
-    cy.get("#enteredAmount").should("have.value", "$1,000,000");
-    cy.get('[data-cy="update-budget-line"]').should("exist");
-});
 // TODO: fix this test - this takes too long to run and is indicative of a performance issue
 it.skip("Should filter all budgetlines vs my budget lines", () => {
     cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
@@ -247,15 +308,6 @@ it.skip("Should filter all budgetlines vs my budget lines", () => {
     cy.get('[data-cy="tab-not-selected"]').as("tab-selected").should("exist");
     cy.get('[data-cy="tab-not-selected"]').click();
     cy.get("@total-bli-card").contains(ALL_BLI_TOTAL_2044);
-    // cy.visit("/");
-    // cy.contains("Sign-Out").click();
-    // testLogin("basic");
-    // cy.visit("/budget-lines").wait(1000);
-    // cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
-    // cy.get('[data-cy="tab-not-selected"]').click();
-    // cy.get('[data-cy="tab-selected"]').should('exist');
-    // cy.get('@total-bli-card').should('be.visible');
-    // cy.get("@total-bli-card").should('contain', '0');
 });
 
 it("Should allow the user to export table", () => {
