@@ -46,15 +46,31 @@ Trigger phrases:
 
 ### 1. Determine the Date Range
 
-Default to the **last 2 weeks** from today. Allow overrides:
-- "latest" / "what shipped recently" / "last sprint" / "last 2 weeks" → all mean the same thing: last 14 days ending today
-- A specific date → 14 days ending on that date
-- A specific range → use the provided range as-is
+**Default: start the day after the most recently published release note, not a fixed 14 days back.** Read the first (most recent) `releaseDate` in `frontend/src/pages/home/release-notes/data.js` — that's the actual boundary of what's already been announced — and use `releaseDate + 1 day` through today. The gap between rounds isn't always 2 weeks; in one real run it was 3 weeks, and a flat 14-day lookback silently missed a week of shipped work that nobody caught until the user asked why it wasn't there. Only fall back to a flat 14-day window if there's no prior entry to anchor to (the very first time this skill runs in this repo) or the user explicitly asks for a fixed window.
 
 ```bash
-# Example: last 2 weeks — guarded by platform, since macOS's `date -v` and Linux's
-# `date -d` aren't interchangeable (running the wrong one silently produces an empty
-# START_DATE instead of erroring loudly).
+LAST_RELEASE_DATE=$(grep -m1 'releaseDate:' frontend/src/pages/home/release-notes/data.js | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+# Guarded by platform, same reasoning as the 14-day fallback below: macOS's `date -v`
+# and Linux's `date -d` aren't interchangeable.
+if [[ "$(uname)" == "Darwin" ]]; then
+    START_DATE=$(date -j -v+1d -f "%Y-%m-%d" "$LAST_RELEASE_DATE" +%Y-%m-%d)
+else
+    START_DATE=$(date -d "$LAST_RELEASE_DATE + 1 day" +%Y-%m-%d)
+fi
+END_DATE=$(date +%Y-%m-%d)
+```
+
+Allow overrides:
+- "last 2 weeks" (said explicitly, as an actual fixed-window request) → exactly 14 days ending today, overriding the default above
+- "latest" / "what shipped recently" / "last sprint" → still means "everything since the last published release" per the default above, *not* a fixed window — don't collapse these into "last 2 weeks"
+- A specific date → from that date to today
+- A specific range → use the provided range as-is
+
+If there's no prior entry in `data.js` to read a `releaseDate` from (first-ever run), fall back to a flat 14-day window:
+```bash
+# Guarded by platform, since macOS's `date -v` and Linux's `date -d` aren't
+# interchangeable (running the wrong one silently produces an empty START_DATE
+# instead of erroring loudly).
 if [[ "$(uname)" == "Darwin" ]]; then
     START_DATE=$(date -v-14d +%Y-%m-%d)
 else
