@@ -18,7 +18,7 @@
     { "id": 23, "title": "View Award & Mod Info", "status": "Currently Developing" },
     { "id": 12, "title": "Contract Modifications", "status": "Currently Developing" },
     { "id": 11, "title": "Award Grants", "status": "Not Started Yet", "upNext": true },
-    { "id": 33, "title": "Account & Permissions Improvements", "status": "Not Started Yet", "upNext": true },
+    { "id": 33, "title": "Account & Permissions", "status": "Not Started Yet", "upNext": true },
     { "id": 13, "title": "CAN Statutory Authority", "status": "Not Started Yet" },
     { "id": 24, "title": "De-obligate Funds", "status": "Not Started Yet" },
     { "id": 25, "title": "Direct Obligations", "status": "Not Started Yet" },
