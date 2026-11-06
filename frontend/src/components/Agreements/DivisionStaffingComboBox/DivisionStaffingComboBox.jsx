@@ -37,7 +37,33 @@ const GroupHighlightMenuList = (props) => {
     return <components.MenuList {...props}>{children}</components.MenuList>;
 };
 
-const MENU_COMPONENTS = { MenuList: GroupHighlightMenuList };
+// react-select's own option padding (12px) plus one indent step.
+const COR_INDENT = "1.75rem";
+
+/**
+ * Indents a division's CORs under it. Divisions and CORs with no division stay flush.
+ * @param {Object} props - react-select Option props.
+ * @returns {React.ReactElement} - The option.
+ */
+const IndentedOption = (props) => {
+    const { group, value } = props.data;
+    // A COR's group is its division's id; a division's group is its own id.
+    const isGroupMember = group && group !== value;
+
+    return isGroupMember ? (
+        <components.Option
+            {...props}
+            innerProps={{
+                ...props.innerProps,
+                style: { ...props.innerProps?.style, paddingLeft: COR_INDENT }
+            }}
+        />
+    ) : (
+        <components.Option {...props} />
+    );
+};
+
+const MENU_COMPONENTS = { MenuList: GroupHighlightMenuList, Option: IndentedOption };
 
 // Match typed text against the label only. Option values are internal ids ("cor-21", "division-1"),
 // so the shared filter's value matching would make "cor" or a digit match unrelated options.

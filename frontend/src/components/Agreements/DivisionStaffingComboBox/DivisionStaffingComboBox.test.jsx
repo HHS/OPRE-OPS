@@ -104,6 +104,30 @@ describe("DivisionStaffingComboBox", () => {
         ]);
     });
 
+    it("indents a division's CORs, but not divisions or CORs with no division", async () => {
+        const user = userEvent.setup();
+        render(<StatefulComboBox />);
+
+        await user.click(screen.getByLabelText("Division & Staffing"));
+
+        const indented = screen
+            .getAllByRole("option")
+            .filter((option) => option.style.paddingLeft === "1.75rem")
+            .map((option) => option.textContent);
+        expect(indented).toEqual(["DCFD - Hank Smith", "DCFD - Joan Wilder", "OD - Gary Gareson"]);
+    });
+
+    it("keeps a COR indented while its division's group is highlighted", async () => {
+        const user = userEvent.setup();
+        render(<StatefulComboBox />);
+
+        await user.click(screen.getByLabelText("Division & Staffing"));
+
+        const hank = screen.getByRole("option", { name: "DCFD - Hank Smith" });
+        expect(hank).toHaveStyle({ backgroundColor: "#DEEBFF" });
+        expect(hank.style.paddingLeft).toBe("1.75rem");
+    });
+
     it("matches typed text against option labels, not internal ids", async () => {
         const user = userEvent.setup();
         render(<StatefulComboBox />);
