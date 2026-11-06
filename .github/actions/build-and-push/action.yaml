@@ -65,6 +65,19 @@ runs:
       run: |
         echo "Using $(docker -v)"
 
+        # `docker push X && echo` never fails the step, so a registry error (e.g. GHCR's
+        # transient "unknown blob") used to pass silently and leave the tag missing. Retry, then
+        # fail.
+        push_with_retry() {
+          for attempt in 1 2 3; do
+            docker push "$1" && return 0
+            echo "::warning::push of $1 failed (attempt $attempt of 3)"
+            sleep $((attempt * 10))
+          done
+          echo "::error::could not push $1"
+          return 1
+        }
+
         echo "::group::Logging into the GitHub Container registry (ghcr.io) ..."
         echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
         echo "::endgroup::"
@@ -140,11 +153,13 @@ runs:
           echo "::endgroup::"
 
           echo "::group::Pushing the dependency cache layer..."
-          docker push ${{ inputs.repository }}/${IMAGE_NAME}:${DEPS_CACHE_TAG} && echo "Dependency cache pushed"
+          push_with_retry "${{ inputs.repository }}/${IMAGE_NAME}:${DEPS_CACHE_TAG}" || exit 1
+          echo "Dependency cache pushed"
           echo "::endgroup::"
 
           echo "::group::Pushing the Docker image to ${{ inputs.repository }} with tag ${TAG}..."
-          docker push ${{ inputs.repository }}/${IMAGE_NAME}:${TAG} && echo "Pushed"
+          push_with_retry "${{ inputs.repository }}/${IMAGE_NAME}:${TAG}" || exit 1
+          echo "Pushed"
           echo "::endgroup::"
         done
 
@@ -161,7 +176,8 @@ runs:
           # Push each tag to docker.io
           for TAG in "${TAGS[@]}"; do
             echo "::group::Pushing the Docker image to docker.io as ${DOCKER_IO_USER} with tag ${TAG}..."
-            docker push docker.io/${IMAGE_NAME}:${TAG} && echo "Pushed"
+            push_with_retry "docker.io/${IMAGE_NAME}:${TAG}" || exit 1
+            echo "Pushed"
             echo "::endgroup::"
           done
 
