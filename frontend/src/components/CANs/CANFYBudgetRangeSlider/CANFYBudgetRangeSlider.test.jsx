@@ -64,4 +64,18 @@ describe("CANFYBudgetRangeSlider", () => {
 
         expect(screen.getByText("FY Budget")).toHaveClass("custom-legend-class");
     });
+
+    it("gives each thumb a distinct accessible name", () => {
+        render(
+            <CANFYBudgetRangeSlider
+                fyBudgetRange={[0, 1000]}
+                budget={[100, 500]}
+                setBudget={() => {}}
+            />
+        );
+
+        const [minThumb, maxThumb] = screen.getAllByRole("slider");
+        expect(minThumb).toHaveAttribute("aria-label", "FY Budget minimum");
+        expect(maxThumb).toHaveAttribute("aria-label", "FY Budget maximum");
+    });
 });

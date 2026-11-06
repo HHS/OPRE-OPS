@@ -80,12 +80,7 @@ const PortfolioFYBudgetRangeSlider = ({
     return (
         <>
             <div className="display-flex flex-justify">
-                <label
-                    className={legendClassname}
-                    htmlFor="portfolio-FY-budget-combobox-input"
-                >
-                    FY Budget
-                </label>
+                <span className={legendClassname}>FY Budget</span>
             </div>
             <div
                 className="padding-right-10"
@@ -96,6 +91,7 @@ const PortfolioFYBudgetRangeSlider = ({
                     defaultValue={[0, 100]}
                     value={sliderValue}
                     overrideStyles={overrideStyles}
+                    ariaLabel={["FY Budget minimum", "FY Budget maximum"]}
                 />
             </div>
 
