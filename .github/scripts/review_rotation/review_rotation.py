@@ -175,7 +175,7 @@ def slack_id_for(login: str | None, slack_map: dict) -> str:
     return slack_map.get(login.lower(), "") if login else ""
 
 
-def slack_fields(mode: str, actor: str, pr: dict, repo: str, old_pick: str | None) -> dict:
+def slack_fields(mode: str, actor: str, pr: dict, repo: str, new_pick: str | None, old_pick: str | None) -> dict:
     """The fields sent to the Slack Workflow Builder trigger, besides `reviewer_id`.
 
     Deliberately atomic facts, not a pre-composed sentence: the trigger's own "Send a
@@ -185,7 +185,10 @@ def slack_fields(mode: str, actor: str, pr: dict, repo: str, old_pick: str | Non
     not a working link or mention), which is also why the PR link is its own field
     (`pr_url`, used for a button) rather than embedded in text.
 
-    `mode`, `old_pick` and `author` aren't used by the current single-template message --
+    `new_pick` is a plain-text fallback for the picked reviewer's login, shown when
+    `reviewer_id` is empty (unmapped in slack_user_map.json) so the Slack message isn't
+    missing who was picked -- mirroring the plain "@login" fallback the old slack_mention()
+    had. `mode`, `old_pick` and `author` aren't used by the current single-template message --
     the account's Slack plan doesn't support Workflow Builder's branch step, so the
     message can't vary on mode or whether a reviewer was previously picked. Sent anyway
     in case a plan upgrade or another use for them comes up later; negligible cost (a few
@@ -200,6 +203,7 @@ def slack_fields(mode: str, actor: str, pr: dict, repo: str, old_pick: str | Non
         "pr_number": str(pr["number"]),
         "pr_title": slack_escape(pr["title"]),
         "pr_url": pr["html_url"],
+        "new_pick": new_pick or "",
         "old_pick": old_pick or "",
     }
 
@@ -345,7 +349,9 @@ def main() -> int:
     # This also caps Slack posts per PR at the pool size, however many times /reroll is sent.
     if new_pick or mode == "label":
         try:
-            post_slack(slack_fields(mode, actor, pr, repo, old_pick), reviewer_id=slack_id_for(new_pick, slack_map))
+            post_slack(
+                slack_fields(mode, actor, pr, repo, new_pick, old_pick), reviewer_id=slack_id_for(new_pick, slack_map)
+            )
         except Exception as exc:  # noqa: BLE001 -- the reviewer pick and PR comment already succeeded
             print(f"::warning::Could not post to Slack ({type(exc).__name__}); the pick and PR comment stand.")
     print(f"Picked {new_pick or 'nobody'} (history: {picked}, off today: {sorted(off)})")
