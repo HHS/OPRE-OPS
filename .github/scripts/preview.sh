@@ -433,17 +433,18 @@ set_deployment_status() {
 # start takes the SHA being deployed and outputs `deployment_id`; ready and failed take that
 # id; inactive takes neither.
 cmd_deployment() {
-  local action=$1 pr=$2 id=${3:-} ref head ids
+  local action=$1 pr=$2 id=${3:-} sha ref head ids
   check_pr "$pr"
   case "$action" in
     start)
+      sha=$id
       # The head branch (not the merge ref or main) so the deployment shows on the PR for
       # label, push and reseed runs alike. GitHub records the branch's current head, which is
       # newer than what we deploy if a push landed after the stale check; the queued run for
       # that push replaces this deployment.
       read -r ref head < <(gh api "repos/$REPO/pulls/$pr" --jq '"\(.head.ref) \(.head.sha)"')
       [ -n "$ref" ] || fail "could not read PR $pr's head branch"
-      [ "$head" = "$id" ] || echo "::notice::PR $pr moved to ${head:0:7} after this run started; the deployment records the newer commit"
+      [ "$head" = "$sha" ] || echo "::notice::PR $pr moved to ${head:0:7} after this run started; the deployment records the newer commit"
       id=$(jq -n --arg ref "$ref" --arg task "$(deployment_task "$pr")" --arg desc "Preview for PR $pr" \
         --argjson pr "$pr" \
         '{ref: $ref, task: $task, environment: "preview", description: $desc, payload: {pr: $pr},
@@ -470,11 +471,12 @@ cmd_deployment() {
       set_deployment_status "$id" failure "$pr"
       ;;
     inactive)
-      # A PR that never deployed has none, which is fine.
+      # A PR that never deployed has none, which is fine. Destroy calls this on the left of
+      # `||`, where errexit is off, so each call returns its own failure.
       ids=$(gh api --paginate "repos/$REPO/deployments?environment=preview&task=$(deployment_task "$pr")&per_page=100" \
-        --jq '.[].id')
+        --jq '.[].id') || return 1
       for id in $ids; do
-        set_deployment_status "$id" inactive "$pr"
+        set_deployment_status "$id" inactive "$pr" || return 1
       done
       echo "Marked $(wc -w <<<"$ids" | tr -d ' ') deployment(s) inactive for PR $pr"
       ;;
