@@ -202,11 +202,14 @@ jobs:
         run: .github/scripts/preview.sh comment "$PR" deploying "$SHA"
 
       # Created through the API rather than the job's `environment` key, which would deploy the
-      # run's ref (the merge ref, or main for a reseed) instead of the PR's branch.
+      # run's ref (the merge ref, or main for a reseed) instead of the PR's branch. Best effort:
+      # the button is extra, and a branch cut before it existed runs a preview.sh without the
+      # `deployment` subcommand, so this must never stop a deploy.
       - name: Start the GitHub deployment
         id: deployment
         if: steps.slot.outputs.go == 'true'
-        run: .github/scripts/preview.sh deployment start "$PR"
+        continue-on-error: true
+        run: .github/scripts/preview.sh deployment start "$PR" "$SHA"
 
       - name: Seed or migrate the database
         if: steps.slot.outputs.go == 'true'
@@ -227,6 +230,7 @@ jobs:
           .github/scripts/preview.sh wait-ready frontend "$PR" "$SHA"
 
       - name: Check health through the gateway
+        id: health
         if: steps.slot.outputs.go == 'true'
         run: .github/scripts/preview.sh health "$PR"
 
@@ -236,12 +240,15 @@ jobs:
           JOB_STATUS: ${{ job.status }}
         run: .github/scripts/preview.sh comment "$PR" "$([ "$JOB_STATUS" = success ] && echo ready || echo failed)" "$SHA"
 
+      # Keyed off the health check, not job.status, so a failed comment update can't mark a
+      # healthy preview's deployment as failed.
       - name: Finish the GitHub deployment
         if: always() && steps.deployment.outputs.deployment_id != ''
+        continue-on-error: true
         env:
-          JOB_STATUS: ${{ job.status }}
+          HEALTH: ${{ steps.health.outcome }}
           DEPLOYMENT_ID: ${{ steps.deployment.outputs.deployment_id }}
-        run: .github/scripts/preview.sh deployment "$([ "$JOB_STATUS" = success ] && echo ready || echo failed)" "$PR" "$DEPLOYMENT_ID"
+        run: .github/scripts/preview.sh deployment "$([ "$HEALTH" = success ] && echo ready || echo failed)" "$PR" "$DEPLOYMENT_ID"
 
       - name: Notify Slack on failure
         if: (failure() || cancelled()) && github.event_name != 'pull_request'

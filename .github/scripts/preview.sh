@@ -10,7 +10,7 @@
 #   wait-ready <backend|frontend> <pr> <sha>
 #   health <pr>                   wait until /api/v1/health/ reports a working DB connection
 #   comment <pr> <status> [sha]   create or update the status comment
-#   deployment <start|ready|failed|inactive> <pr> [id]
+#   deployment <start|ready|failed|inactive> <pr> [sha|id]
 #                                 GitHub deployment behind the PR's "View deployment" button
 #   destroy <pr>                  delete the PR's apps and database
 #   reap-list                     list previews to reap, and post TTL warnings
@@ -416,8 +416,8 @@ cmd_comment() {
 # --- deployment ---------------------------------------------------------------------------
 
 # One `preview` environment shared by all PRs; each PR's deployments carry their own task so
-# they can be found again. transient_environment and auto_inactive=false stop one PR's deploy
-# from marking another PR's deployment inactive.
+# they can be found again. Either transient_environment or auto_inactive=false alone stops one
+# PR's deploy from marking another PR's deployment inactive; both are set to be safe.
 deployment_task() {
   echo "deploy:pr-$1"
 }
@@ -430,15 +430,20 @@ set_deployment_status() {
     gh api "repos/$REPO/deployments/$id/statuses" --input - >/dev/null
 }
 
-# Outputs `deployment_id` for start; the other actions take it (inactive takes none).
+# start takes the SHA being deployed and outputs `deployment_id`; ready and failed take that
+# id; inactive takes neither.
 cmd_deployment() {
-  local action=$1 pr=$2 id=${3:-} ref ids
+  local action=$1 pr=$2 id=${3:-} ref head ids
   check_pr "$pr"
   case "$action" in
     start)
       # The head branch (not the merge ref or main) so the deployment shows on the PR for
-      # label, push and reseed runs alike.
-      ref=$(gh api "repos/$REPO/pulls/$pr" --jq .head.ref)
+      # label, push and reseed runs alike. GitHub records the branch's current head, which is
+      # newer than what we deploy if a push landed after the stale check; the queued run for
+      # that push replaces this deployment.
+      read -r ref head < <(gh api "repos/$REPO/pulls/$pr" --jq '"\(.head.ref) \(.head.sha)"')
+      [ -n "$ref" ] || fail "could not read PR $pr's head branch"
+      [ "$head" = "$id" ] || echo "::notice::PR $pr moved to ${head:0:7} after this run started; the deployment records the newer commit"
       id=$(jq -n --arg ref "$ref" --arg task "$(deployment_task "$pr")" --arg desc "Preview for PR $pr" \
         --argjson pr "$pr" \
         '{ref: $ref, task: $task, environment: "preview", description: $desc, payload: {pr: $pr},
@@ -451,11 +456,13 @@ cmd_deployment() {
     ready)
       [[ "$id" =~ ^[0-9]+$ ]] || fail "invalid deployment id '$id'"
       set_deployment_status "$id" success "$pr"
-      # Earlier deployments of this PR now point at an older commit.
+      # Earlier deployments of this PR now point at an older commit. Delete them once inactive
+      # so the list, and this loop, stay at about one entry.
       ids=$(gh api --paginate "repos/$REPO/deployments?environment=preview&task=$(deployment_task "$pr")&per_page=100" \
         --jq ".[] | select(.id != $id) | .id")
       for other in $ids; do
         set_deployment_status "$other" inactive "$pr"
+        gh api -X DELETE "repos/$REPO/deployments/$other" >/dev/null
       done
       ;;
     failed)
@@ -490,7 +497,8 @@ cmd_destroy() {
     fi
   done
   cmd_db drop "$pr" "$IMAGES/ops-data-tools:dev"
-  cmd_deployment inactive "$pr"
+  # Cosmetic, so a GitHub error here must not fail a teardown that already succeeded.
+  cmd_deployment inactive "$pr" || echo "::warning::could not mark PR $pr's deployments inactive"
 }
 
 # --- reap-list ----------------------------------------------------------------------------
