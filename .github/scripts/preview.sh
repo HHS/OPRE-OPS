@@ -440,8 +440,10 @@ cmd_deployment() {
       # label, push and reseed runs alike.
       ref=$(gh api "repos/$REPO/pulls/$pr" --jq .head.ref)
       id=$(jq -n --arg ref "$ref" --arg task "$(deployment_task "$pr")" --arg desc "Preview for PR $pr" \
-        '{ref: $ref, task: $task, environment: "preview", description: $desc, auto_merge: false,
-          required_contexts: [], transient_environment: true}' |
+        --argjson pr "$pr" \
+        '{ref: $ref, task: $task, environment: "preview", description: $desc, payload: {pr: $pr},
+          auto_merge: false, required_contexts: [], transient_environment: true,
+          production_environment: false}' |
         gh api "repos/$REPO/deployments" --input - --jq .id)
       set_deployment_status "$id" in_progress "$pr"
       output deployment_id "$id"
