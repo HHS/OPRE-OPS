@@ -184,25 +184,40 @@ class TestComment:
         assert rr.parse_history('<!-- review-rotation: {"picked": ["bob", {"x": 1}, 3]} -->') == ["bob"]
 
 
-class TestSlackText:
-    PR: ClassVar[dict] = {"html_url": "https://github.com/o/r/pull/7", "number": 7, "title": "Fix <script> & stuff"}
+class TestSlackFields:
+    PR: ClassVar[dict] = {
+        "html_url": "https://github.com/o/r/pull/7",
+        "number": 7,
+        "title": "Fix <script> & stuff",
+        "user": {"login": "zara"},
+    }
 
-    def test_escapes_title_and_maps_slack_id(self):
-        text = rr.build_slack_text("label", "dana", self.PR, "o/r", "bob", None, {"bob": "U123"})
-        assert "Fix &lt;script&gt; &amp; stuff" in text
-        assert "<@U123> is up" in text
+    def test_pr_title_is_sent_raw_unescaped(self):
+        # No HTML-entity escaping: Workflow Builder doesn't re-parse it, so it would just
+        # show up literally (e.g. "&amp;") now that pr_title is a plain substituted field.
+        fields = rr.slack_fields("label", "dana", self.PR, "o/r", "bob", None)
+        assert fields["pr_title"] == "Fix <script> & stuff"
 
-    def test_escapes_previous_pick(self):
-        text = rr.build_slack_text("reroll", "dana", self.PR, "o/r", "carol", "<!channel>", {})
-        assert "<!channel>" not in text and "&lt;!channel&gt;" in text
+    def test_includes_atomic_facts_for_slack_to_compose(self):
+        fields = rr.slack_fields("reroll", "dana", self.PR, "o/r", "carol", "bob")
+        assert fields["mode"] == "reroll"
+        assert fields["actor"] == "dana"
+        assert fields["author"] == "zara"
+        assert fields["repo"] == "o/r"
+        assert fields["pr_number"] == "7"
+        assert fields["pr_url"] == "https://github.com/o/r/pull/7"
+        assert fields["new_pick"] == "carol"
+        assert fields["old_pick"] == "bob"
 
-    def test_unmapped_user_falls_back_to_login(self):
-        text = rr.build_slack_text("reroll", "dana", self.PR, "o/r", "carol", "bob", {})
-        assert "@carol is up" in text and "(was bob)" in text
+    def test_new_pick_and_old_pick_are_empty_string_not_none_when_absent(self):
+        fields = rr.slack_fields("label", "dana", self.PR, "o/r", None, None)
+        assert fields["new_pick"] == "" and fields["old_pick"] == ""
 
-    def test_nobody_available(self):
-        text = rr.build_slack_text("label", "dana", self.PR, "o/r", None, None, {})
-        assert "nobody in the rotation is available" in text
+    def test_no_embedded_mrkdwn_link_or_mention_syntax(self):
+        # Workflow Builder doesn't re-parse mrkdwn inside a substituted variable, so neither
+        # <url|label> nor <@id> belongs in any field -- see slack_fields' docstring.
+        fields = rr.slack_fields("label", "dana", self.PR, "o/r", "bob", "<!channel>")
+        assert all("<@" not in str(v) for v in fields.values())
 
 
 class TestOpenHttps:
@@ -214,6 +229,36 @@ class TestOpenHttps:
     def test_rejects_non_https_request(self):
         with pytest.raises(ValueError):
             rr.open_https(rr.urllib.request.Request("file:///etc/passwd"), timeout=1)
+
+
+class TestPostSlack:
+    """Exercises post_slack's real request-building, not a monkeypatched stand-in for it --
+    the other tests replace post_slack entirely, so nothing else checks the actual HTTP body."""
+
+    def test_sends_fields_and_reviewer_id_as_one_json_body(self, monkeypatch):
+        captured = {}
+
+        class FakeResponse:
+            def close(self):
+                pass
+
+        def fake_open_https(req, timeout):
+            captured["url"] = req.full_url
+            captured["method"] = req.get_method()
+            captured["content_type"] = req.get_header("Content-type")
+            captured["body"] = json.loads(req.data)
+            return FakeResponse()
+
+        monkeypatch.setattr(rr, "open_https", fake_open_https)
+        monkeypatch.setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/triggers/x")
+
+        # A colliding "reviewer_id" in fields must not win over the explicit argument.
+        rr.post_slack({"pr_title": "hi", "reviewer_id": "SHOULD_NOT_WIN"}, reviewer_id="U999")
+
+        assert captured["url"] == "https://hooks.slack.com/triggers/x"
+        assert captured["method"] == "POST"
+        assert captured["content_type"] == "application/json"
+        assert captured["body"] == {"pr_title": "hi", "reviewer_id": "U999"}
 
 
 class FakeGitHub(rr.GitHub):
@@ -253,9 +298,9 @@ BASE_CONFIG = {
 def run(tmp_path, monkeypatch):
     config = tmp_path / "rotation.json"
     slack_map_path = tmp_path / "slack.json"
-    slack_posts = []  # each entry is {"message": ..., "reviewer_id": ...}
+    slack_posts = []  # each entry is the atomic-fields dict (see slack_fields) plus "reviewer_id"
     monkeypatch.setattr(
-        rr, "post_slack", lambda message, reviewer_id="": slack_posts.append({"message": message, "reviewer_id": reviewer_id})
+        rr, "post_slack", lambda fields, reviewer_id="": slack_posts.append({**fields, "reviewer_id": reviewer_id})
     )
 
     def _run(
@@ -309,7 +354,8 @@ class TestMain:
         assert ("POST", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]}) in writes
         comment = next(body for method, path, body in writes if path == "/issues/4/comments")
         assert rr.parse_history(comment["body"]) == ["bob"]
-        assert len(slack) == 1 and "@bob is up" in slack[0]["message"]
+        assert len(slack) == 1
+        assert slack[0]["mode"] == "label" and slack[0]["new_pick"] == "bob" and slack[0]["reviewer_id"] == ""
 
     def test_relabel_does_not_reroll(self, run):
         existing = bot_comment(["bob"], "bob")
@@ -327,7 +373,8 @@ class TestMain:
         assert writes[1] == ("DELETE", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]})
         assert writes[2][0:2] == ("PATCH", "/issues/comments/9")
         assert rr.parse_history(writes[2][2]["body"]) == ["bob", "alice"]
-        assert "@alice is up" in slack[0]["message"] and "(was bob)" in slack[0]["message"]
+        assert slack[0]["mode"] == "reroll" and slack[0]["new_pick"] == "alice" and slack[0]["old_pick"] == "bob"
+        assert slack[0]["reviewer_id"] == ""
 
     def test_label_picks_engineering_only_when_pr_is_not_visual(self, run):
         # Pool order is alice, bob, carol, uxena (ux-only); pr_number=3 would land on uxena
@@ -365,7 +412,7 @@ class TestMain:
         assert not any(path == "/pulls/4/requested_reviewers" for _, path, _ in writes)
         comment = next(body for method, path, body in writes if path == "/issues/4/comments")
         assert "nobody in the rotation is available" in comment["body"]
-        assert len(slack) == 1 and "nobody in the rotation is available" in slack[0]["message"]
+        assert len(slack) == 1 and slack[0]["reviewer_id"] == ""
 
     def test_disabled_visual_prefixes_skips_the_file_list_fetch(self, run):
         run("label", make_pr(), visual_path_prefixes=[])
@@ -385,7 +432,7 @@ class TestMain:
 
     def test_broken_slack_webhook_does_not_fail_the_run(self, run, monkeypatch):
         monkeypatch.setattr(
-            rr, "post_slack", lambda message, reviewer_id="": (_ for _ in ()).throw(KeyError("SLACK_WEBHOOK_URL"))
+            rr, "post_slack", lambda fields, reviewer_id="": (_ for _ in ()).throw(KeyError("SLACK_WEBHOOK_URL"))
         )
         writes, _ = run("label", make_pr())
         assert ("POST", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]}) in writes
