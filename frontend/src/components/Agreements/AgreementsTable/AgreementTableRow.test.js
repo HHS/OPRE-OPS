@@ -354,6 +354,21 @@ describe("AgreementTableRow", () => {
             expect(deleteButton).toBeInTheDocument();
             expect(deleteButton).toBeDisabled();
         });
+
+        test("super user cannot edit when the agreement is locked after Pre-Award Approval", async () => {
+            const lockedAgreement = {
+                ...baseAgreement,
+                _meta: { ...baseAgreement._meta, isPostPreAwardLocked: true }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], lockedAgreement, true);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            expect(screen.getByTestId("edit-row")).toBeDisabled();
+        });
     });
 
     describe("Read-Only User Permissions", () => {
@@ -612,6 +627,21 @@ describe("AgreementTableRow", () => {
             const deleteButton = screen.getByTestId("delete-row");
             expect(deleteButton).toBeInTheDocument();
             expect(deleteButton).toBeDisabled();
+        });
+
+        test("regular team member cannot edit when the agreement is locked after Pre-Award Approval", async () => {
+            const lockedAgreement = {
+                ...baseAgreement,
+                _meta: { ...baseAgreement._meta, isPostPreAwardLocked: true }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], lockedAgreement);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            expect(screen.getByTestId("edit-row")).toBeDisabled();
         });
     });
 });
