@@ -1,7 +1,7 @@
 import ReactSlider from "react-slider";
 import styled from "styled-components";
 
-const DoubleRangeSlider = ({ handleChange, defaultValue = [25, 75], value, overrideStyles }) => (
+const DoubleRangeSlider = ({ handleChange, defaultValue = [25, 75], value, overrideStyles, ariaLabel }) => (
     <StyledSlider
         $overrideStyles={overrideStyles}
         onChange={handleChange}
@@ -11,6 +11,7 @@ const DoubleRangeSlider = ({ handleChange, defaultValue = [25, 75], value, overr
         defaultValue={defaultValue}
         renderTrack={Track}
         renderThumb={Thumb}
+        ariaLabel={ariaLabel}
     />
 );
 const StyledSlider = styled(ReactSlider)(({ $overrideStyles }) => ({

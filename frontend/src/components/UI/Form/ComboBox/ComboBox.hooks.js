@@ -112,6 +112,13 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             color: state.isDisabled ? "#454545" : "#565C65"
         }),
 
+        // react-select's default "No options" text (#999999 on white) fails WCAG AA contrast
+        // (2.84:1, needs 4.5:1). Match the placeholder color above, which already passes.
+        noOptionsMessage: (provided) => ({
+            ...provided,
+            color: "#565C65"
+        }),
+
         singleValue: (provided, state) => ({
             ...provided,
             color: state.isDisabled ? "#454545" : provided.color

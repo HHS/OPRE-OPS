@@ -34,7 +34,7 @@ export const BLIStatusComboBox = ({
             <div>
                 <label
                     className={legendClassname}
-                    htmlFor="project-combobox-input"
+                    htmlFor="bli-status-combobox-input"
                 >
                     Budget Lines Status
                 </label>

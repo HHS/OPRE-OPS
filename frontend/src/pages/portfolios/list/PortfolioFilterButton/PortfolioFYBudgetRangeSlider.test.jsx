@@ -131,6 +131,20 @@ describe("PortfolioFYBudgetRangeSlider", () => {
         expect(sliders).toHaveLength(2);
     });
 
+    it("gives each thumb a distinct accessible name", () => {
+        render(
+            <PortfolioFYBudgetRangeSlider
+                fyBudgetRange={[0, 100000000]}
+                budget={[10000000, 50000000]}
+                setBudget={() => {}}
+            />
+        );
+
+        const [minThumb, maxThumb] = screen.getAllByRole("slider");
+        expect(minThumb).toHaveAttribute("aria-label", "FY Budget minimum");
+        expect(maxThumb).toHaveAttribute("aria-label", "FY Budget maximum");
+    });
+
     it("should handle full range values", () => {
         const mockSetBudget = vi.fn();
         render(
