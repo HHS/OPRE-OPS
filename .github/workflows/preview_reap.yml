@@ -57,8 +57,10 @@ jobs:
   reap:
     needs: find
     if: needs.find.outputs.prs != '[]' && needs.find.outputs.prs != ''
+    # A called workflow gets at most these, so they must cover preview_destroy.yml's job.
     permissions:
       contents: read
+      deployments: write
       pull-requests: write
     strategy:
       fail-fast: false

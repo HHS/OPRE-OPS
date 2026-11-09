@@ -37,6 +37,7 @@ jobs:
         (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'preview'))))
     permissions:
       contents: read
+      deployments: write # mark the PR's deployments inactive
       pull-requests: write
     # Shared with the deploy job in preview_create.yml: one deploy or destroy at a time per PR.
     # Job-level so events skipped by the `if` above never join the group and can't replace a

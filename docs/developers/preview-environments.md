@@ -20,6 +20,8 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
 - **Same-repo PRs only.** Fork PRs never get a preview.
 - **The status comment** (one per PR, updated in place) shows the URL, the deployed commit, the status and when the
   data was last seeded.
+- **The "View deployment" button** near the bottom of the PR opens the preview once it's ready. It goes inactive when
+  the preview is removed.
 
 ## Using it
 
@@ -56,6 +58,10 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
 
 ## How it works (for maintainers)
 
+- **GitHub deployments:** the deploy job creates a deployment in the `preview` environment for the PR's branch
+  through the API, and destroy marks the PR's deployments inactive. GitHub creates the environment on the first
+  deployment. Leave it without protection rules or branch policies: those gate jobs that use the `environment` key,
+  which these workflows don't, so they'd only mislead.
 - **Routing:** the App Gateway's wildcard listener sends `pr-<N>.ops.opre.acf.gov` to the preview router, which
   proxies to `opre-ops-pr<N>-app-{frontend,backend}` in `opre-ops-dev-app-cae`.
 - **Database:** CI runners can't reach the private preview server (`opre-ops-dev-db-preview-pg-server`), so every
