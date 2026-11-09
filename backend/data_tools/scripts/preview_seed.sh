@@ -1,4 +1,5 @@
 #!/bin/ash
+# shellcheck shell=dash
 set -eo pipefail
 
 # Seed, migrate, or drop a per-PR preview database.
@@ -55,6 +56,13 @@ db_seeded() {
   [ "$out" = "$SEEDED_MARKER" ]
 }
 
+# Up to 8 previews share one B1ms server (35 usable connections). Each backend's pool
+# is 2 + 3, so 8 leaves room for migrations and a psql session while stopping one
+# preview from starving the rest. Idempotent, so it also fixes older databases.
+limit_connections() {
+  admin_psql -c "ALTER DATABASE $PGDATABASE CONNECTION LIMIT 8"
+}
+
 seed() {
   if db_exists; then
     admin_psql -c "COMMENT ON DATABASE $PGDATABASE IS NULL"
@@ -62,6 +70,7 @@ seed() {
     echo "Creating database $PGDATABASE..."
     admin_psql -c "CREATE DATABASE $PGDATABASE OWNER $PGUSER"
   fi
+  limit_connections
   ./data_tools/scripts/import_test_data.sh
   admin_psql -c "COMMENT ON DATABASE $PGDATABASE IS '$SEEDED_MARKER'"
 }
@@ -75,6 +84,7 @@ case "$MODE" in
   migrate) migrate ;;
   ensure)
     if db_seeded; then
+      limit_connections
       migrate
     else
       seed

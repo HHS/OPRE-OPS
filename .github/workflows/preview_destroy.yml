@@ -1,0 +1,97 @@
+name: Preview Destroy
+
+# Removes a PR's preview (OPS-6419, ADR 032): both container apps and the ops_pr_<N> database.
+# Runs when the `preview` label is removed or a previewed PR closes, and from
+# preview_reap.yml. Logic lives in .github/scripts/preview.sh.
+on:
+  pull_request:
+    types: [unlabeled, closed]
+  workflow_call:
+    inputs:
+      pr_number:
+        required: true
+        type: number
+      reason:
+        required: true
+        type: string
+    secrets:
+      SDLC_AZURE_CREDS:
+        required: true
+      SLACK_WEBHOOK_URL:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Same-repo only. On close, only PRs that still had the label (an unlabelled PR was
+    # already torn down by the unlabeled event).
+    # Called from preview_reap.yml, github.event_name is the caller's (schedule or dispatch).
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       ((github.event.action == 'unlabeled' && github.event.label.name == 'preview') ||
+        (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'preview'))))
+    permissions:
+      contents: read
+      deployments: write # mark the PR's deployments inactive
+      pull-requests: write
+    # Shared with the deploy job in preview_create.yml: one deploy or destroy at a time per PR.
+    # Job-level so events skipped by the `if` above never join the group and can't replace a
+    # pending deploy.
+    concurrency:
+      group: preview-pr-${{ inputs.pr_number || github.event.pull_request.number }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ inputs.pr_number || github.event.pull_request.number }}
+      REASON: ${{ inputs.reason || (github.event.action == 'closed' && 'PR closed') || 'label removed' }}
+    steps:
+      # The PR's head (not the merge ref, which a merged PR may no longer have), or the
+      # caller's ref when reaping.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/preview.sh
+            .github/actions/notify-slack-failure
+          sparse-checkout-cone-mode: false
+
+      # A branch cut before previews existed has no script of its own, but removing its label or
+      # closing it still runs this; use the default branch's copy (destroy is a no-op if nothing exists).
+      - name: Fall back to the default branch's script
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          if [ ! -f .github/scripts/preview.sh ]; then
+            echo "::notice::No preview.sh at this commit; using $DEFAULT_BRANCH's copy"
+            mkdir -p .github/scripts
+            gh api "repos/$GITHUB_REPOSITORY/contents/.github/scripts/preview.sh?ref=$DEFAULT_BRANCH" \
+              -H "Accept: application/vnd.github.raw" > .github/scripts/preview.sh
+            chmod +x .github/scripts/preview.sh
+          fi
+
+      - name: Log in to Azure
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          creds: ${{ secrets.SDLC_AZURE_CREDS }}
+
+      - name: Delete the apps and database
+        run: .github/scripts/preview.sh destroy "$PR"
+
+      # Best effort: the PR may be gone, and the preview is already removed.
+      - name: Update the status comment
+        continue-on-error: true
+        run: .github/scripts/preview.sh comment "$PR" removed
+
+      - name: Notify Slack on failure
+        if: (failure() || cancelled()) && github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}

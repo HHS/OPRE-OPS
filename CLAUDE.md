@@ -147,6 +147,7 @@ When reviewing a PR, read [`docs/REVIEW.md`](docs/REVIEW.md) first: it has the f
 GitHub Actions for CI/CD. Workflows in `.github/workflows/`.
 - Dev and staging deploy automatically on push to `main`
 - Production deploys manually via GitHub Actions
+- Same-repo PRs labelled `preview` get a temporary copy at `https://pr-<N>.ops.opre.acf.gov`; see [`docs/developers/preview-environments.md`](docs/developers/preview-environments.md)
 
 Flaky E2E test detection runs automatically in CI. Use the `/e2e-tests` skill to run, monitor, or fix E2E tests.
 

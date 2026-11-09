@@ -1,0 +1,258 @@
+name: Preview Create
+
+# Builds and deploys a same-repo PR labelled `preview` to https://pr-<N>.ops.opre.acf.gov
+# (OPS-6419, ADR 032). Logic lives in .github/scripts/preview.sh; see
+# docs/developers/preview-environments.md.
+#
+# pull_request (not pull_request_target): fork PRs get no secrets, and the gate below also
+# rejects them. Same-repo PRs already receive SDLC_AZURE_CREDS in other workflows, so running
+# the PR's own copy of this workflow and script adds no new exposure.
+on:
+  pull_request:
+    types: [labeled, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to reseed (wipes the preview's data)"
+        required: true
+        type: number
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only the `preview` label being added, a push or reopen on a PR that has it, or a dispatch.
+    # Other labels skip here, before anything touches Azure.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       ((github.event.action == 'labeled' && github.event.label.name == 'preview') ||
+        (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'preview'))))
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      go: ${{ steps.slots.outputs.go }}
+      pr: ${{ steps.gate.outputs.pr }}
+      sha: ${{ steps.gate.outputs.sha }}
+      mode: ${{ steps.gate.outputs.mode }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/preview.sh
+            .github/actions/notify-slack-failure
+          sparse-checkout-cone-mode: false
+
+      - name: Check the event
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: .github/scripts/preview.sh gate
+
+      - name: Log in to Azure
+        if: steps.gate.outputs.outdated == 'false'
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          creds: ${{ secrets.SDLC_AZURE_CREDS }}
+
+      # Checked before building so a capped PR doesn't spend 10 minutes on images.
+      - name: Check for a free slot
+        id: slots
+        if: steps.gate.outputs.outdated == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ steps.gate.outputs.pr }}
+        run: .github/scripts/preview.sh slots check "$PR"
+
+      - name: Notify Slack on failure
+        if: (failure() || cancelled()) && github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  build:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - image: ops-backend
+            context: backend
+            dockerfile: backend/Dockerfile.ops-api
+            build_args: ""
+          - image: ops-data-tools
+            context: backend
+            dockerfile: backend/Dockerfile.data-tools-import
+            build_args: ""
+          # The backend URL is baked in at build time, so each PR gets its own frontend build.
+          - image: ops-frontend
+            context: frontend
+            dockerfile: frontend/Dockerfile.azure
+            build_args: "VITE_BACKEND_DOMAIN=https://pr-${{ needs.gate.outputs.pr }}.ops.opre.acf.gov, MODE=dev, VITE_ENABLE_MSW=false, BUILD_STORYBOOK=false"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+          persist-credentials: false
+
+      - name: Build and publish ${{ matrix.image }}
+        uses: ./.github/actions/build-and-push
+        with:
+          image_name: ${{ github.repository }}/${{ matrix.image }} # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          context: ${{ github.workspace }}/${{ matrix.context }}
+          dockerfile: ${{ github.workspace }}/${{ matrix.dockerfile }}
+          image_tags: "pr-${{ needs.gate.outputs.pr }}-${{ needs.gate.outputs.sha }}"
+          build_args: ${{ matrix.build_args }}
+          # Read the shared :deps cache, but never overwrite what dev, staging and prod use.
+          deps_cache_tag: deps-pr-${{ needs.gate.outputs.pr }}
+
+      - name: Notify Slack on failure
+        if: (failure() || cancelled()) && github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  deploy:
+    needs: [gate, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      deployments: write # the PR's "View deployment" button
+      pull-requests: write
+    # One deploy or destroy at a time per PR (shared with preview_destroy.yml), never cancelled
+    # mid-run. GitHub keeps only the newest pending run in a group, so this deploy may have
+    # replaced a pending destroy; the check below then does the destroy itself. It also stops an
+    # older build from deploying over a newer one. Job-level so builds still run in parallel.
+    concurrency:
+      group: preview-pr-${{ needs.gate.outputs.pr }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ needs.gate.outputs.pr }}
+      SHA: ${{ needs.gate.outputs.sha }}
+      MODE: ${{ needs.gate.outputs.mode }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/preview.sh
+            .github/actions/notify-slack-failure
+          sparse-checkout-cone-mode: false
+
+      # current: deploy. stale: a newer push will deploy, so skip. gone: the PR closed or lost
+      # the label while we built, so remove the preview.
+      - name: Check this build is still current
+        id: current
+        run: |
+          set -euo pipefail
+          info=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR")
+          if ! jq -e '.state == "open" and any(.labels[]; .name == "preview")' <<<"$info" >/dev/null; then
+            echo "::notice::PR $PR was closed or lost the preview label; removing the preview"
+            echo "state=gone" >> "$GITHUB_OUTPUT"
+            echo "reason=$(jq -r 'if .state == "open" then "label removed" else "PR closed" end' <<<"$info")" >> "$GITHUB_OUTPUT"
+          elif jq -e --arg sha "$SHA" '.head.sha == $sha' <<<"$info" >/dev/null; then
+            echo "state=current" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::PR $PR has a newer commit; skipping this deploy"
+            echo "state=stale" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Log in to Azure
+        if: steps.current.outputs.state != 'stale'
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          creds: ${{ secrets.SDLC_AZURE_CREDS }}
+
+      - name: Remove the preview
+        if: steps.current.outputs.state == 'gone'
+        env:
+          REASON: ${{ steps.current.outputs.reason }}
+        run: |
+          .github/scripts/preview.sh destroy "$PR"
+          .github/scripts/preview.sh comment "$PR" removed
+
+      - name: Claim a slot
+        id: slot
+        if: steps.current.outputs.state == 'current'
+        run: .github/scripts/preview.sh slots claim "$PR"
+
+      - name: Post deploying status
+        if: steps.slot.outputs.go == 'true'
+        run: .github/scripts/preview.sh comment "$PR" deploying "$SHA"
+
+      # Created through the API rather than the job's `environment` key, which would deploy the
+      # run's ref (the merge ref, or main for a reseed) instead of the PR's branch. Best effort:
+      # the button is extra, and a branch cut before it existed runs a preview.sh without the
+      # `deployment` subcommand, so this must never stop a deploy.
+      - name: Start the GitHub deployment
+        id: deployment
+        if: steps.slot.outputs.go == 'true'
+        continue-on-error: true
+        run: .github/scripts/preview.sh deployment start "$PR" "$SHA"
+
+      - name: Seed or migrate the database
+        if: steps.slot.outputs.go == 'true'
+        run: .github/scripts/preview.sh db "$MODE" "$PR" "ghcr.io/hhs/opre-ops/ops-data-tools:pr-$PR-$SHA"
+
+      - name: Deploy the backend
+        if: steps.slot.outputs.go == 'true'
+        run: .github/scripts/preview.sh deploy-app backend "$PR" "$SHA" "$MODE"
+
+      - name: Deploy the frontend
+        if: steps.slot.outputs.go == 'true'
+        run: .github/scripts/preview.sh deploy-app frontend "$PR" "$SHA" "$MODE"
+
+      - name: Wait for the new revisions
+        if: steps.slot.outputs.go == 'true'
+        run: |
+          .github/scripts/preview.sh wait-ready backend "$PR" "$SHA"
+          .github/scripts/preview.sh wait-ready frontend "$PR" "$SHA"
+
+      - name: Check health through the gateway
+        id: health
+        if: steps.slot.outputs.go == 'true'
+        run: .github/scripts/preview.sh health "$PR"
+
+      - name: Post final status
+        if: always() && steps.slot.outputs.go == 'true'
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: .github/scripts/preview.sh comment "$PR" "$([ "$JOB_STATUS" = success ] && echo ready || echo failed)" "$SHA"
+
+      # Keyed off the health check, not job.status, so a failed comment update can't mark a
+      # healthy preview's deployment as failed.
+      - name: Finish the GitHub deployment
+        if: always() && steps.deployment.outputs.deployment_id != ''
+        continue-on-error: true
+        env:
+          HEALTH: ${{ steps.health.outcome }}
+          DEPLOYMENT_ID: ${{ steps.deployment.outputs.deployment_id }}
+        run: .github/scripts/preview.sh deployment "$([ "$HEALTH" = success ] && echo ready || echo failed)" "$PR" "$DEPLOYMENT_ID"
+
+      - name: Notify Slack on failure
+        if: (failure() || cancelled()) && github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -166,31 +166,44 @@ def render_comment(picked: list[str], off: set[str], current: str | None, repo: 
     return "\n".join(lines)
 
 
-def slack_escape(text: str) -> str:
-    # Slack mrkdwn treats &, <, > as syntax, so escape them per Slack's formatting spec.
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-
 def slack_id_for(login: str | None, slack_map: dict) -> str:
     return slack_map.get(login.lower(), "") if login else ""
 
 
-def slack_mention(login: str, slack_map: dict) -> str:
-    slack_id = slack_id_for(login, slack_map)
-    return f"<@{slack_id}>" if slack_id else f"@{login}"
+def slack_fields(mode: str, actor: str, pr: dict, repo: str, new_pick: str | None, old_pick: str | None) -> dict:
+    """The fields sent to the Slack Workflow Builder trigger, besides `reviewer_id`.
 
+    Deliberately atomic facts, not a pre-composed sentence: the trigger's own "Send a
+    message" step builds the single sentence it posts from these, so wording changes
+    happen in Slack, not in a code change here. No <url|label> or <@id> syntax -- that
+    doesn't survive Workflow Builder's variable substitution (shows up as literal text,
+    not a working link or mention), which is also why the PR link is its own field
+    (`pr_url`, used for a button) rather than embedded in text. `pr_title` is sent raw,
+    unescaped: the HTML-entity escaping used when the title went inside that mrkdwn link
+    syntax would, by the same "not re-parsed" reasoning, just show up literally (e.g.
+    "&amp;" instead of "&") now that it's a plain substituted field.
 
-def build_slack_text(
-    mode: str, actor: str, pr: dict, repo: str, new_pick: str | None, old_pick: str | None, slack_map: dict
-) -> str:
-    link = f"<{pr['html_url']}|{repo}#{pr['number']}: {slack_escape(pr['title'])}>"
-    if mode == "reroll":
-        action = f"*{actor}* rerolled the reviewer for {link}" + (f" (was {slack_escape(old_pick)})" if old_pick else "")
-    else:
-        action = f"*{actor}* marked {link} ready for human review"
-    if new_pick:
-        return f"{action} → {slack_mention(new_pick, slack_map)} is up for intent + risk review"
-    return f"{action}, but nobody in the rotation is available. Please pick a reviewer manually."
+    `new_pick` is a plain-text fallback for the picked reviewer's login, shown when
+    `reviewer_id` is empty (unmapped in slack_user_map.json) so the Slack message isn't
+    missing who was picked -- mirroring the plain "@login" fallback the old slack_mention()
+    had. `mode`, `old_pick` and `author` aren't used by the current single-template message --
+    the account's Slack plan doesn't support Workflow Builder's branch step, so the
+    message can't vary on mode or whether a reviewer was previously picked. Sent anyway
+    in case a plan upgrade or another use for them comes up later; negligible cost (a few
+    short strings, none sensitive -- all already visible on the PR itself), and Slack
+    ignores payload fields a trigger has no matching variable for.
+    """
+    return {
+        "mode": mode,
+        "actor": actor,
+        "author": pr["user"]["login"],
+        "repo": repo,
+        "pr_number": str(pr["number"]),
+        "pr_title": pr["title"],
+        "pr_url": pr["html_url"],
+        "new_pick": new_pick or "",
+        "old_pick": old_pick or "",
+    }
 
 
 def open_https(req: urllib.request.Request | str, timeout: int):
@@ -264,19 +277,18 @@ def fetch_calendar_off(pool: list[Member], tz: ZoneInfo, min_off_hours: float) -
         return set()
 
 
-def post_slack(message: str, reviewer_id: str = "") -> None:
+def post_slack(fields: dict, reviewer_id: str = "") -> None:
     """Posts to the review-rotation Slack Workflow Builder trigger.
 
-    The trigger defines two input variables: `message` (the formatted text) and
-    `reviewer_id` (the picked reviewer's Slack member ID, or "" when unmapped or
-    nobody was picked). This is NOT the {"text": ...} shape a classic Incoming
-    Webhook expects -- Workflow Builder triggers are keyed by their own variable
-    names, declared when the trigger was built in Slack.
+    `fields` (see slack_fields) plus `reviewer_id` (the picked reviewer's Slack member ID,
+    or "" when unmapped or nobody was picked) are the trigger's input variables. This is
+    NOT the {"text": ...} shape a classic Incoming Webhook expects -- Workflow Builder
+    triggers are keyed by their own variable names, declared when the trigger was built.
     """
     req = urllib.request.Request(
         os.environ["SLACK_WEBHOOK_URL"],
         method="POST",
-        data=json.dumps({"message": message, "reviewer_id": reviewer_id}).encode(),
+        data=json.dumps({**fields, "reviewer_id": reviewer_id}).encode(),
         headers={"Content-Type": "application/json"},
     )
     open_https(req, timeout=10).close()
@@ -335,8 +347,9 @@ def main() -> int:
     # This also caps Slack posts per PR at the pool size, however many times /reroll is sent.
     if new_pick or mode == "label":
         try:
-            text = build_slack_text(mode, actor, pr, repo, new_pick, old_pick, slack_map)
-            post_slack(text, reviewer_id=slack_id_for(new_pick, slack_map))
+            post_slack(
+                slack_fields(mode, actor, pr, repo, new_pick, old_pick), reviewer_id=slack_id_for(new_pick, slack_map)
+            )
         except Exception as exc:  # noqa: BLE001 -- the reviewer pick and PR comment already succeeded
             print(f"::warning::Could not post to Slack ({type(exc).__name__}); the pick and PR comment stand.")
     print(f"Picked {new_pick or 'nobody'} (history: {picked}, off today: {sorted(off)})")

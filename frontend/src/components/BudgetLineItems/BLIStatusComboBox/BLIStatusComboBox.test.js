@@ -19,6 +19,17 @@ describe("BLIStatusComboBox", () => {
         expect(screen.getByText("Budget Lines Status")).toBeInTheDocument();
     });
 
+    it("associates the label with the combobox input via htmlFor", () => {
+        render(
+            <BLIStatusComboBox
+                selectedBLIStatus={null}
+                setSelectedBLIStatus={mockSetSelectedBLIStatus}
+            />
+        );
+        // Only passes if the label's htmlFor actually matches the combobox input's id.
+        expect(screen.getByLabelText("Budget Lines Status")).toBeInTheDocument();
+    });
+
     it("renders the component with the correct options", () => {
         const { container } = render(
             <BLIStatusComboBox

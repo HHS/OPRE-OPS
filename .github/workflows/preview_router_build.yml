@@ -62,6 +62,71 @@ jobs:
           grep -q 'GET /api/v1/agreements/ HTTP/1.1" 502 target=opre-ops-pr12-app-backend.preview.invalid' <<< "$logs"
           grep -q 'GET /agreements HTTP/1.1" 502 target=opre-ops-pr12-app-frontend.preview.invalid' <<< "$logs"
 
+      - name: Smoke-test redirects
+        run: |
+          set -euo pipefail
+          # A stand-in backend over TLS (a throwaway CA the router trusts) that answers like
+          # Flask's trailing-slash redirect, with a Location built from the Host it receives.
+          d=$(mktemp -d)
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=test-ca \
+            -keyout "$d/ca.key" -out "$d/ca.crt" 2>/dev/null
+          openssl req -newkey rsa:2048 -nodes -subj /CN=upstream \
+            -addext 'subjectAltName=DNS:opre-ops-pr12-app-backend.preview.test,DNS:opre-ops-pr12-app-frontend.preview.test' \
+            -keyout "$d/up.key" -out "$d/up.csr" 2>/dev/null
+          printf 'subjectAltName=DNS:opre-ops-pr12-app-backend.preview.test,DNS:opre-ops-pr12-app-frontend.preview.test\n' > "$d/ext"
+          openssl x509 -req -in "$d/up.csr" -CA "$d/ca.crt" -CAkey "$d/ca.key" -CAcreateserial \
+            -days 1 -extfile "$d/ext" -out "$d/up.crt" 2>/dev/null
+          cat > "$d/up.conf" <<'CONF'
+          pid /tmp/up.pid;
+          events {}
+          http {
+            error_log /dev/stderr;
+            access_log /dev/stdout;
+            server {
+              listen 443 ssl;
+              ssl_certificate /certs/up.crt;
+              ssl_certificate_key /certs/up.key;
+              location / { return 308 https://$http_host$request_uri/; }
+            }
+          }
+          CONF
+          chmod -R a+r "$d"
+
+          # Reuse the router image's nginx for the stand-in, so no other image is pulled.
+          docker network create preview-test >/dev/null
+          docker run -d --name upstream --network preview-test --user root \
+            --network-alias opre-ops-pr12-app-backend.preview.test \
+            --network-alias opre-ops-pr12-app-frontend.preview.test -v "$d:/certs:ro" \
+            --entrypoint nginx preview-router:test -c /certs/up.conf -g 'daemon off;' >/dev/null
+          docker run -d --name router2 --network preview-test -p 8081:8080 \
+            -e ACA_DOMAIN=preview.test -v "$d/ca.crt:/etc/ssl/certs/ca-certificates.crt:ro" \
+            preview-router:test >/dev/null
+          for _ in $(seq 1 20); do curl -fs localhost:8081/healthz >/dev/null && break; sleep 0.5; done
+          curl -fs localhost:8081/healthz >/dev/null ||
+            { echo "::error::router did not start"; docker logs router2; docker logs upstream; exit 1; }
+
+          headers=$(curl -s -o /dev/null -D - -H 'x-original-host: pr-12.ops.opre.acf.gov' \
+            localhost:8081/api/v1/agreements)
+          echo "$headers"
+          location=$(awk 'tolower($1) == "location:" { print $2 }' <<< "$headers" | tr -d '\r')
+          if [ "$location" != "/api/v1/agreements/" ]; then
+            echo "::error::expected Location /api/v1/agreements/, got '$location'"
+            docker logs router2; docker logs upstream
+            exit 1
+          fi
+
+          # A raw path starting with "//" must not come back protocol-relative (another host).
+          headers=$(curl -s --path-as-is -o /dev/null -D - -H 'x-original-host: pr-12.ops.opre.acf.gov' \
+            'localhost:8081//evil.com/x')
+          echo "$headers"
+          location=$(awk 'tolower($1) == "location:" { print $2 }' <<< "$headers" | tr -d '\r')
+          # It isn't rewritten at all, so it stays an internal URL a browser can't reach.
+          case "$location" in
+            https://opre-ops-pr12-app-frontend.preview.test:443//evil.com/x/) ;;
+            *) echo "::error::expected the internal Location left as-is, got '$location'"
+               docker logs router2; exit 1 ;;
+          esac
+
       - name: Notify Slack on failure
         if: (failure() || cancelled()) && github.event_name != 'pull_request'
         continue-on-error: true

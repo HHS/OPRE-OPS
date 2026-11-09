@@ -75,12 +75,7 @@ const BudgetRangeSlider = ({
     return (
         <>
             <div className="display-flex flex-justify">
-                <label
-                    className={legendClassname}
-                    htmlFor="budget-range-slider"
-                >
-                    {label}
-                </label>
+                <span className={legendClassname}>{label}</span>
             </div>
             <div
                 className="padding-right-10"
@@ -91,6 +86,7 @@ const BudgetRangeSlider = ({
                     defaultValue={[0, 100]}
                     value={sliderValue}
                     overrideStyles={overrideStyles}
+                    ariaLabel={[`${label} minimum`, `${label} maximum`]}
                 />
             </div>
 

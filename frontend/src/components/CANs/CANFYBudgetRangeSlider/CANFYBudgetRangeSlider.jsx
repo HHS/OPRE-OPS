@@ -69,12 +69,7 @@ const CANFYBudgetRangeSlider = ({
     return (
         <>
             <div className="display-flex flex-justify">
-                <label
-                    className={legendClassname}
-                    htmlFor="can-FY-budgey-combobox-input"
-                >
-                    FY Budget
-                </label>
+                <span className={legendClassname}>FY Budget</span>
             </div>
             <div
                 className="padding-right-10"
@@ -85,6 +80,7 @@ const CANFYBudgetRangeSlider = ({
                     defaultValue={[0, 100]}
                     value={sliderValue}
                     overrideStyles={overrideStyles}
+                    ariaLabel={["FY Budget minimum", "FY Budget maximum"]}
                 />
             </div>
 
