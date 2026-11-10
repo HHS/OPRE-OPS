@@ -29,6 +29,11 @@ subtasks:
 > **Revision (round 10, 2026-10-27): SC deletes are blocked, not sent to approval.** Decided with the user: on an Awarded agreement (with `ENABLE_MODIFIED_LOE_EDITS` on), only a superuser can delete an SC that has non-Draft BLs. Everyone else, Budget Team included, gets a 400 ("Services Components with budget lines cannot be deleted on awarded agreements."), and the delete button is disabled with the tooltip "Services Components with budget lines cannot be deleted on awarded agreements" (`EDIT_DISABLED_TOOLTIPS.awardedServicesComponentDelete`). An SC with only Draft BLs, or none, is still deleted directly. A superuser's delete applies directly, and its BLs lose their SC (`SET NULL`). There's no delete `ServicesComponentChangeRequest`, no "SCx Deletion" banner/review entry, and no "Delete SC" `ContractModificationEdit` row. SC **additions** still go to approval as in round 9. Where round 9 below describes a pending delete, it's superseded.
 > - **AC2 on #6440 is replaced (PO clarification, 2026-10-27).** AC2 ("User can delete a Services Component and see that their edit will require a contract modification") no longer applies. On an Awarded agreement, only a superuser can delete an SC that has non-Draft BLs. An SC with no BLs, or only Draft BLs, can be deleted by anyone who can edit the agreement, with no contract-modification notice. No SC delete goes to approval.
 
+> **Revision (round 11, 2026-11-10): every SC add or delete on an Awarded agreement is a contract mod (fix branch `OPS-6440/sc-mods-without-bls`).** UX review on #6440 ([comment](https://github.com/HHS/OPRE-OPS/issues/6440#issuecomment-6697680029)) found that adding an SC with no BLs, on EXEC-EDIT-APPROVED in dev, never showed up on the Award & Modifications tab. Decided with the user:
+> - **Adding an SC always goes to approval.** That includes an SC with no BLs or only Draft BLs. Round 9c's "Draft BLs don't count" and the "SC has no non-Draft BLs → saved directly" row are superseded for additions.
+> - **Deleting an SC with no BLs, or only Draft BLs, goes to approval too.** This brings back a delete `ServicesComponentChangeRequest` and a "Delete SC" edit row, for that case only. Deleting an SC with non-Draft BLs stays blocked for everyone but superusers (round 10).
+> - Full design: [Round 11: Every SC Add/Delete Is a Contract Mod](#round-11-every-sc-adddelete-is-a-contract-mod).
+
 **Ticket:** #3072 — "Edit a Budget Line or Services Component on an Awarded Agreement (modified LOE contract mod)"
 **This document's scope:** The parent issue has 10 acceptance criteria. This is a **slice plan**, not a plan for the whole issue. It designs and plans **AC1 only** ("User can increase or decrease the amount of an existing budget line and see that their edit will require a contract modification") in full, then uses that design to sketch — but not fully plan — how **AC9** (Award & Modifications tab list) and **AC10** (event/history + remote IP) would extend it, since the user asked specifically to validate the approach against those two before committing to the other field-level ACs (CAN, Obligate By, add/delete BL, add/delete SC), which are expected to be near-identical repeats of the AC1 pattern (see [Generalizing](#generalizing-to-the-remaining-acceptance-criteria)).
 
@@ -790,7 +795,126 @@ From jonnalley's comment on #6406:
 - **The add CR is created when the first BL is linked, not when the SC is created.** This is the only trigger that works for both save paths (the per-resource path creates the SC before its BLs). It also stops an SC from skipping approval by being saved empty and getting BLs later.
 - **The SC CR doesn't lock BLIs.** The type-scoped `in_review_filter()` already makes sure of this. BLs on a pending SC stay editable, and their own money/time edits follow the BLI rules.
 - **On a pending delete, BLs stay linked until approval.** The frontend stops clearing the links locally. Otherwise the save would unlink them first, and the backend would see an empty SC and delete it without approval.
-- **Only approved SC changes go to the contract-modification list.** SCs added or deleted directly don't change money on the contract.
+- **Only approved SC changes go to the contract-modification list.** SCs added or deleted directly don't change money on the contract. *(Round 11: superseded. On an Awarded agreement, only superusers add or delete SCs directly.)*
+
+## Round 11: Every SC Add/Delete Is a Contract Mod
+
+**Branch:** `OPS-6440/sc-mods-without-bls`, from `main`, with one PR. **Bug:** on an Awarded agreement, adding an SC with no BLs (or only Draft BLs) saves directly with no approval. No `ContractModificationEdit` row is written, so nothing appears on the Award & Modifications tab. The cause is round 9c's rule: the add CR is created only once a non-Draft BL is linked (`ensure_services_component_add_change_request`).
+
+### The Rule (replaces the Round 9 table)
+
+This applies under the same awarded gate as before (`sc_requires_approval_gate`: flag on, `is_awarded`, not a superuser). Superusers and non-awarded agreements behave as they do today.
+
+| Action on an Awarded agreement | SC has no BLs / only Draft BLs | SC has 1+ non-Draft BLs |
+|---|---|---|
+| Add an SC | Contract-mod modal → **add CR created with the SC** → Division Director approval → "Add SC" card | Same (unchanged, except the CR is created up front, not when a BL is linked) |
+| Delete an SC | Contract-mod modal → **delete CR**, SC and its Draft BL links stay → approval → SC deleted, Draft BLs lose their SC, "Delete SC" card | Blocked for non-superusers (round 10, unchanged) |
+
+**Net-zero cases.** These delete directly with no CR:
+- An SC whose own add is still in review can't be deleted (existing in-review lock, unchanged).
+- An SC whose add was approved but isn't in a contract mod yet (a pending "Add SC" edit) is still deleted directly. `discard_pending_services_component_addition` drops its "Add SC" edit, so the add and the delete cancel out and nothing reaches the contract. *(This is the default I picked; confirm it with the PO in review.)* If that edit is already in a contract mod in review, the delete stays rejected, as it is today.
+
+### Backend
+
+**Add: create the CR at SC create time.**
+- `ServicesComponentService.create`: when `sc_requires_approval_gate(agreement)` applies, set `awaiting_add_approval=True` (as today), flush, and call `ChangeRequestService.add_services_component_create_change_request(sc, commit=commit)`.
+  - Return the CR id to the caller. The resource POST returns `201` with the SC plus `change_request_id`. The bundle's `_create_services_components` collects the id into `change_request_ids`/`deferred_notifications`.
+  - Keep the SC's `CREATE_SERVICES_COMPONENT` history line.
+- `ensure_services_component_add_change_request` becomes a refresh-only helper. When an add CR is in review, it updates `linked_budget_line_item_ids` and never creates a CR.
+  - Keep one fallback: an SC with `awaiting_add_approval=True` and no CR (made before this fix, e.g. in dev/staging) gets its CR on its next BL link.
+  - Drop `pending_planned` and its Draft→Planned call site (`change_requests.py` ~:451-459), since the CR already exists.
+  - Keep the superuser branch, which clears the flag.
+- **Remove the withdraw path.** An SC with no BLs is now a valid addition, so losing its last non-Draft BL no longer withdraws anything.
+  - Delete `withdraw_services_component_add_if_unneeded`, `_services_component_to_recheck`, and the `withdraw_check_sc_id` handling in `_handle_review_action`.
+  - In `BudgetLineItemService._sync_services_component_approval`, keep only the linked-ids refresh for the old and new SCs.
+  - Use `/dead-code-after-removal-sweep`, because the "Withdrawn" history branch in `agreement_history.py` and its frontend copy may be orphaned.
+
+**Delete: re-add a delete CR, for SCs with no BLs or only Draft BLs.**
+- `ServicesComponentChangeRequest.delete_field_name = "services_component_delete"`.
+  - `has_services_component_change` covers both keys.
+  - Don't use a bare `"delete"` key. It's read as a BLI delete (round 9 note).
+- `ChangeRequestService.add_services_component_delete_change_request(sc, commit)`:
+  - `requested_change_data = {"services_component_delete": True}`
+  - `requested_change_diff = {"services_component_delete": {"old": "SC2", "new": "Deleted"}}`
+  - `requested_change_info` = target name, `requires_contract_modification`, and `linked_budget_line_item_ids` (the Draft BLs)
+- `ServicesComponentService.delete`, in order:
+  1. Pre-award lock.
+  2. Row lock.
+  3. In-review check.
+  4. `delete_blocked`: non-Draft BLs → 400, unchanged.
+  5. If the SC has a pending "Add SC" edit → discard it and delete directly (net zero, above).
+  6. Else, if the gate applies → create the delete CR, leave the SC, and return the CR id.
+  7. Else → delete directly, as today.
+- The resource DELETE returns `202 {"change_request_id": N}` on the CR path. Skip the "Services Component Deleted" history metadata there.
+- The bundle's `_delete_services_components` collects CR ids. It runs after BL deletes, so it sees the post-delete BL state.
+- `_apply_services_component_review` handles delete:
+  - **Approved:** write the `ContractModificationEdit` row (`field="services_component_delete"`, old/new from the diff), then delete the SC last. Its Draft BLs get `SET NULL`. Publish `DELETE_SERVICES_COMPONENT` via `_delete_reviewed_services_component`.
+  - **Declined:** nothing changes.
+- **Race:** a non-Draft BL linked to an SC while its delete CR is in review. Approving the delete would then orphan a non-Draft BL. Block linking BLs to an SC with a pending delete CR, using `_check_not_in_review` on the target SC in the BLI link path, with a validation error.
+- Lists, notifications, and history get the delete branches back:
+  - `build_review_outcome_title_and_message`: "Your request to delete SC2…"
+  - `create_change_request_history_event`: "Services Component Deletion Requested", "{reviewer} approved/declined deleting SC2…"
+- `ContractModificationEditService`:
+  - `create_from_approved_change_request` handles the delete field.
+  - `_latest_per_budget_line_field` already keys SC rows by `("sc", id, field)`, so add and delete rows stay separate. Check this.
+- OpenAPI: the 201/202 shapes for SC POST/DELETE and the `services_component_delete` key. Sync it.
+- Migration: none expected. The enum value and columns exist from `39dc6a6e0303`. Confirm `services_component_id` on `change_request` is still `SET NULL`.
+
+**Contract mod execution:** `_get_executable_budget_lines` already blocks BLs in an SC awaiting approval. That now fires for every new SC on an Awarded agreement, as intended.
+
+### Frontend
+
+- **Modal trigger** (`getServicesComponentAdditionsForApproval`, `CreateBLIsAndSCs.helpers.js` ~:126):
+  - Drop the non-Draft BL condition. Every new SC, or saved `awaiting_add_approval` SC that isn't in review and has no CR yet, counts.
+  - Add `getServicesComponentDeletionsForApproval`: saved SCs in the deleted list that aren't delete-blocked and have no pending "Add SC" edit. If the client can't see that edit, count every gated delete, and the backend's direct net-zero delete just means the alert over-says. Check whether the SC payload exposes it. If not, add an `addition_pending_modification` flag to the SC schema.
+  - Fold both into `requiresContractModification` and update the comments at `CreateBLIsAndSCs.hooks.js` ~:987-1003 and the `CreateBLIsAndSCs.jsx:54` JSDoc.
+- **Keep Draft BL links on a gated delete.** `DELETE_SERVICE_COMPONENT` (`AgreementEditorContext.hooks.js` ~:170) clears `services_component_id` on the SC's BLs locally. When the delete goes to approval, keep the links, so a decline leaves them intact. The backend unlinks them on approval.
+- **Save paths:**
+  - Per-resource (`persistPartitionedEntities`, `handleDeletions`): read `change_request_id` from SC POST, and handle the SC DELETE 202.
+  - Bundle: no payload change.
+  - `buildSaveSuccessAlert` gets "• SC2 Deletion" next to "• SC3 Addition".
+  - The delete toast uses the BL-delete "queued… sent to your Division Director for approval when you click Save" wording.
+- **Banner, review card, and tooltip:**
+  - Add the delete branch back to `ServicesComponents.helpers.js` ("SC2 Deletion", and the "• Deleting: SC2" / "• Removing: BL n from SC2" tooltip lines from round 9).
+  - Add it to `changeRequests.helpers.js` (`renderChangeValues`), `utils.js` `changeToTypes` (`services_component_delete: "Delete Services Component"`), `ServicesComponentChangeReviewCard`, `AgreementChangesResponseAlert.hooks.jsx`, and `CHANGE_REQUEST_KEYS`.
+- **Award & Modifications card:** `ContractModificationEditCard.jsx` gets `services_component_delete: "Delete SC"`. The SC name comes from `old_value`, which line 47 already handles. Update the typedef.
+- **Start Modification:** `StartModification.helpers.js` already reads `awaiting_add_approval`. Check that an SC with no BLs doesn't break its grouping.
+
+### Tests (per `docs/TESTING.md`)
+
+**Backend integration** (`test_services_component_change_requests.py`): rewrite the round-9c cases that asserted "no CR".
+- Gated add, both paths:
+  - With no BLs: add CR created, `awaiting_add_approval=True`, CR id returned by the bundle and the POST.
+  - With only Draft BLs: same.
+  - Approve → "Add SC" edit row. Decline → SC removed, Draft BLs keep `services_component_id=NULL`.
+- Superuser add: direct, no CR, flag False. Non-awarded agreement: unchanged.
+- Gated delete:
+  - SC with no BLs, and SC with only Draft BLs: delete CR created, SC and links stay. Approve → SC gone, BLs unlinked, "Delete SC" edit row. Decline → nothing changes.
+- Delete of an SC with non-Draft BLs: still 400 for non-superusers.
+- Delete of an SC with a pending "Add SC" edit: deleted directly, the edit is discarded, no CR. If the edit is in a contract mod in review: rejected.
+- Linking a BL to an SC with a pending delete CR: rejected.
+- Linking BLs to an SC with an in-review add CR refreshes `linked_budget_line_item_ids`, and only one CR exists.
+- Legacy fallback: an SC with `awaiting_add_approval=True` and no CR gets one on its next BL link.
+- Remove the withdraw tests.
+- Edit list: add and delete rows for the same SC aren't collapsed.
+
+**Frontend unit:**
+- `CreateBLIsAndSCs.helpers.test.js`: the addition/deletion selectors for SCs with no BLs and with only Draft BLs, plus the superuser gate.
+- The editor reducer keeps links on a gated delete.
+- `ContractModificationEditCard` renders "Delete SC".
+- The save alert lists "• SC2 Deletion".
+
+**Manual:** on EXEC-EDIT-APPROVED and CONTRACT 523 with the flag on:
+- Add an empty SC → modal → approve → "Add SC" card.
+- Delete Optional Period 3 (no BLs) → modal → approve → "Delete SC" card.
+
+### Implementation Order
+
+1. Backend add-at-create, and removal of the withdraw path. Tests.
+2. Backend delete CR, approval handling, link guard, history, and notifications. Tests. OpenAPI.
+3. Frontend selectors, modal, reducer link-keeping, and save paths. Tests.
+4. Frontend banner, review card, response alert, and Award & Modifications card delete variant. Tests.
+5. Sweep for dead code (withdraw copy, `pending_planned`) and update the PR description's How to test.
 
 ## Notes
 
