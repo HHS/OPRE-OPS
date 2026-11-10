@@ -103,6 +103,44 @@ describe("ContractModificationRequestReviewCard", () => {
         );
     });
 
+    const COR_EDIT = {
+        ...AMOUNT_EDIT,
+        id: 2,
+        modification_type: "ADMIN_CHANGE",
+        budget_line_item_id: null,
+        field: "project_officer_id",
+        old_value: 503,
+        new_value: 512,
+        old_display_name: "Chris Fortunato",
+        new_display_name: "Tim Donaworth",
+        change_request_id: null
+    };
+
+    it.each([
+        [
+            "budget lines only",
+            { budget_line_items: [BUDGET_LINE_SUMMARY] },
+            "The selected budget lines have been moved to Executing."
+        ],
+        ["a COR change only", { edits: [COR_EDIT] }, "The COR has been updated."],
+        [
+            "a COR change and budget lines",
+            { edits: [COR_EDIT], budget_line_items: [BUDGET_LINE_SUMMARY] },
+            "The selected budget lines have been moved to Executing. The COR has been updated."
+        ],
+        ["other edits only", { edits: [AMOUNT_EDIT] }, "The Contract Modification has been approved."]
+    ])("approving %s says what the approval changed (#3269)", async (_, request, message) => {
+        mockReview.mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) });
+        useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
+
+        renderCard(request);
+        await userEvent.click(screen.getByRole("button", { name: "Approve" }));
+        const confirmButtons = screen.getAllByRole("button", { name: "Approve" });
+        await userEvent.click(confirmButtons[confirmButtons.length - 1]);
+
+        await vi.waitFor(() => expect(mockSetAlert).toHaveBeenCalledWith(expect.objectContaining({ message })));
+    });
+
     it("disables Approve/Decline after a successful review, closing the window before the refetch unmounts the card", async () => {
         const unwrap = vi.fn().mockResolvedValue({});
         mockReview.mockReturnValue({ unwrap });

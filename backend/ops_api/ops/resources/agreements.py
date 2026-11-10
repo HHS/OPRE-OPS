@@ -44,6 +44,7 @@ from ops_api.ops.services.agreements import AgreementsService, resolve_fiscal_ye
 from ops_api.ops.services.budget_line_items import (
     get_bli_is_editable_meta_data_for_agreements,
 )
+from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
 from ops_api.ops.services.ops_service import OpsService, ValidationError
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
@@ -499,12 +500,18 @@ def _serialize_agreement_with_meta(
     procurement_shop_locked_message = (
         service._get_procurement_shop_locked_message(agreement, current_user) if include_procurement_shop_lock else None
     )
+    project_officer_locked_message = (
+        ContractModificationEditService(service.db_session).project_officer_locked_message(agreement.id)
+        if include_procurement_shop_lock
+        else None
+    )
     data_for_meta = {
         "isEditable": is_editable,
         "isDeletable": locked_message is None,
         "lockedMessage": locked_message,
         "immutable_awarded_fields": agreement.immutable_awarded_fields,
         "procurementShopLockedMessage": procurement_shop_locked_message,
+        "projectOfficerLockedMessage": project_officer_locked_message,
     }
     serialized_agreement["_meta"] = meta_schema.dump(data_for_meta)
 

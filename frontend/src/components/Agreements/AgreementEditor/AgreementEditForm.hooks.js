@@ -170,7 +170,11 @@ const useAgreementEditForm = (
         nofo_number: nofoNumber,
         aln_numbers: alnNumbers,
         funding_period_months: fundingPeriodMonths,
-        _meta: { immutable_awarded_fields: immutableFields = [], procurementShopLockedMessage = null } = {}
+        _meta: {
+            immutable_awarded_fields: immutableFields = [],
+            procurementShopLockedMessage = null,
+            projectOfficerLockedMessage = null
+        } = {}
     } = agreement;
 
     const {
@@ -764,6 +768,9 @@ const useAgreementEditForm = (
     // Re-deriving it here is what caused #6312 — do not add local conditions.
     const isProcurementShopDisabled = Boolean(procurementShopLockedMessage);
     const disabledMessage = () => procurementShopLockedMessage ?? "Disabled";
+    // Also backend-owned: the COR is locked while its pending change is in a contract
+    // modification in review (#3269, ContractModificationEditService.project_officer_locked_message).
+    const isProjectOfficerDisabled = Boolean(projectOfficerLockedMessage);
 
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
@@ -893,6 +900,8 @@ const useAgreementEditForm = (
         uniquenessErrors,
         isProcurementShopDisabled,
         disabledMessage,
+        isProjectOfficerDisabled,
+        projectOfficerLockedMessage,
         fundingMethod: FUNDING_METHOD,
         agreementFilterOptions: AGREEMENT_FILTER_OPTIONS,
         handleAgreementFilterChange,

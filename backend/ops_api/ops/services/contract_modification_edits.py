@@ -33,6 +33,10 @@ SC_ADDITION_IN_MODIFICATION_MESSAGE = (
     "This Services Component's addition is in a contract modification that is in review, "
     "so it can't be deleted until the modification is approved or declined."
 )
+COR_CHANGE_IN_MODIFICATION_MESSAGE = (
+    "The COR change is in a contract modification that is in review, "
+    "so the COR can't be changed until the modification is approved or declined."
+)
 
 
 class ContractModificationEditService:
@@ -229,6 +233,50 @@ class ContractModificationEditService:
         else:
             pending.old_value = agreement.project_officer_id
         self.db_session.flush()
+
+    def project_officer_locked_message(self, agreement_id: int) -> Optional[str]:
+        """Why the COR can't be changed right now, or None (#3269): the pending COR change is in
+        a contract modification in review, and changing it would change what the Division
+        Director is reviewing."""
+        in_review_request_id = self.db_session.scalar(
+            select(ContractModificationRequest.id)
+            .join(ContractModificationRequest.edits)
+            .where(
+                ContractModificationEdit.agreement_id == agreement_id,
+                ContractModificationEdit.modification_type == ModificationEditType.ADMIN_CHANGE,
+                ContractModificationEdit.field == PROJECT_OFFICER_EDIT_FIELD,
+                ContractModificationEdit.agreement_mod_id.is_(None),
+                ContractModificationRequest.status == ContractModificationRequestStatus.IN_REVIEW,
+            )
+            .limit(1)
+        )
+        return COR_CHANGE_IN_MODIFICATION_MESSAGE if in_review_request_id is not None else None
+
+    def check_project_officer_change_not_in_review(self, agreement_id: int) -> None:
+        """Reject a COR change while :meth:`project_officer_locked_message` says it's locked."""
+        message = self.project_officer_locked_message(agreement_id)
+        if message:
+            raise ValidationError({"project_officer_id": [message]})
+
+    def apply_project_officer_change(
+        self, agreement: Agreement, edit: ContractModificationEdit, approver: User
+    ) -> dict:
+        """Apply an approved COR change from a contract modification to the agreement (#3269).
+
+        If the new COR is the agreement's Alternate COR, the Alternate COR is cleared so one
+        person isn't both. Returns what changed, for the review event's history metadata:
+        ``{"old": ..., "new": ..., "alternate_cleared": <old Alternate COR id or None>}``.
+        Does not commit.
+        """
+        old_project_officer_id = agreement.project_officer_id
+        agreement.project_officer_id = edit.new_value
+        alternate_cleared = None
+        if agreement.alternate_project_officer_id == edit.new_value:
+            alternate_cleared = agreement.alternate_project_officer_id
+            agreement.alternate_project_officer_id = None
+        edit.approved_by_id = approver.id
+        edit.approved_on = func.now()
+        return {"old": old_project_officer_id, "new": edit.new_value, "alternate_cleared": alternate_cleared}
 
     def _pending_project_officer_edit(self, agreement_id: int) -> Optional[ContractModificationEdit]:
         """The agreement's pending COR change, locked for update."""

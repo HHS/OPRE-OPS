@@ -509,6 +509,7 @@ paths:
             - The request contains invalid data
             - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
             - The request changes awarding_entity_id (Procurement Shop) while any budget line is in Executing or Obligated status, or while a procurement-shop change request is in review (see _meta.procurementShopLockedMessage)
+            - The request changes project_officer_id (COR) on an awarded Contract or AA agreement while its pending COR change is in a contract modification in review (see _meta.projectOfficerLockedMessage)
             - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
           content:
             application/json:
@@ -577,6 +578,7 @@ paths:
             - The request contains invalid data
             - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
             - The request changes awarding_entity_id (Procurement Shop) while any budget line is in Executing or Obligated status, or while a procurement-shop change request is in review (see _meta.procurementShopLockedMessage)
+            - The request changes project_officer_id (COR) on an awarded Contract or AA agreement while its pending COR change is in a contract modification in review (see _meta.projectOfficerLockedMessage)
             - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
           content:
             application/json:
@@ -956,9 +958,11 @@ paths:
       summary: Approve or decline a contract modification
       description: |
         Division Director review. Approval creates an agreement modification (type
-        MODIFIED_LOE), attaches the request's edits to it, and changes the selected
-        budget lines to Executing. A decline leaves the edits pending. The submitter is
-        notified either way.
+        MODIFIED_LOE when any Modified LOE edit is included, ADMIN when only Admin Changes
+        such as a COR change are, AS_IS when there are no edits), attaches the request's
+        edits to it, applies a COR change (clearing the Alternate COR if it is the new COR),
+        and changes the selected budget lines to Executing. A decline leaves the edits
+        pending and the COR unchanged. The submitter is notified either way.
       parameters:
         - in: path
           name: id
@@ -10513,7 +10517,8 @@ components:
 
     AgreementMetaSchema:
       description: >-
-        Agreement-specific extension of MetaSchema adding procurementShopLockedMessage.
+        Agreement-specific extension of MetaSchema adding procurementShopLockedMessage and
+        projectOfficerLockedMessage.
       allOf:
         - $ref: "#/components/schemas/MetaSchema"
         - type: object
@@ -10529,6 +10534,14 @@ components:
                 changed. Only populated on GET /agreements/{id} — always null in the
                 GET /agreements list response, since computing it there would add a database
                 query per row.
+            projectOfficerLockedMessage:
+              type: string
+              nullable: true
+              description: >-
+                Server-computed human-readable reason the COR can't be changed: the agreement's
+                pending COR change is in a contract modification that is in review. Null when
+                the COR can be changed. Like procurementShopLockedMessage, only populated on
+                GET /agreements/{id}.
 
     AgreementResponse:
       allOf:

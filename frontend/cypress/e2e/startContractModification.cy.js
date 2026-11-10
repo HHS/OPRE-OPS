@@ -116,7 +116,10 @@ describe("Start a Contract Modification", () => {
                 // The value tag is inline-block, so a wrapped value shows up as a taller box (one line
                 // is 20px, two are 34px).
                 term.querySelectorAll("dd > span").forEach((value) => {
-                    expect(value.getBoundingClientRect().height, `${label} "${value.textContent}" doesn't wrap`).to.be.below(28);
+                    expect(
+                        value.getBoundingClientRect().height,
+                        `${label} "${value.textContent}" doesn't wrap`
+                    ).to.be.below(28);
                 });
             });
         });
@@ -142,5 +145,99 @@ describe("Start a Contract Modification", () => {
         // agreement object the Budget Lines tab reads from stayed stale).
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
         cy.contains("tr", String(budgetLineId)).should("contain", "Executing");
+    });
+});
+
+describe("Start a Contract Modification for a COR change (#3269)", () => {
+    // A seeded user who is neither 523's COR nor its Alternate COR.
+    const NEW_COR_ID = 512;
+    let originalCorId;
+    let originalAlternateCorId;
+
+    const patchAgreement = (body) =>
+        apiRequest({ method: "PATCH", url: `/agreements/${AGREEMENT_ID}`, body })
+            .its("status")
+            .should("eq", 200);
+
+    /**
+     * Put 523's COR and Alternate COR back the way they were, and drop any pending COR change.
+     * Changing the COR to the saved Alternate COR applies immediately (OPS-3153) and removes a
+     * pending change that targets that person, so: promote the pending target (if any), promote
+     * the original COR, then restore the original Alternate COR.
+     */
+    const restoreCor = () => {
+        declineOpenContractModifications();
+        testLogin("system-owner");
+        apiRequest({ url: `/agreements/${AGREEMENT_ID}/contract-modification-edits/` }).then((response) => {
+            const pending = response.body.data.find((edit) => edit.field === "project_officer_id");
+            if (pending) {
+                patchAgreement({ alternate_project_officer_id: pending.new_value });
+                patchAgreement({ project_officer_id: pending.new_value });
+            }
+        });
+        apiRequest({ url: `/agreements/${AGREEMENT_ID}` }).then((response) => {
+            if (response.body.project_officer_id !== originalCorId) {
+                patchAgreement({ alternate_project_officer_id: originalCorId });
+                patchAgreement({ project_officer_id: originalCorId });
+            }
+        });
+        apiRequest({ url: `/agreements/${AGREEMENT_ID}` }).then((response) => {
+            if (response.body.alternate_project_officer_id !== originalAlternateCorId) {
+                patchAgreement({ alternate_project_officer_id: originalAlternateCorId });
+            }
+        });
+    };
+
+    before(function () {
+        testLogin("system-owner");
+        apiRequest({ url: "/version/" }).then((response) => {
+            if (!response.body.enable_modified_loe_edits) {
+                this.skip();
+            }
+        });
+        apiRequest({ url: `/agreements/${AGREEMENT_ID}` }).then((response) => {
+            originalCorId = response.body.project_officer_id;
+            originalAlternateCorId = response.body.alternate_project_officer_id;
+        });
+    });
+
+    beforeEach(() => {
+        restoreCor();
+    });
+
+    afterEach(() => {
+        restoreCor();
+    });
+
+    it("sends only a COR change to approval, locks the COR while in review, and applies it on approval", () => {
+        testLogin("system-owner");
+        patchAgreement({ project_officer_id: NEW_COR_ID });
+
+        cy.visit(`/agreements/${AGREEMENT_ID}/start-modification`);
+        cy.get('[data-cy="mod-review-changes"]').should("contain", "Admin Change").and("contain", "COR");
+        // No budget lines selected: the COR change alone is enough to send.
+        cy.get('[data-cy="send-to-approval-btn"]').should("be.enabled").click();
+        cy.contains("Contract Modification Sent to Approval").should("be.visible");
+        cy.contains('[data-cy="contract-modification-edit-card"]', "Admin Change")
+            .find('[data-cy="contract-modification-edit-in-review"]')
+            .should("be.visible");
+
+        // While it's in review the COR can't be changed; the Alternate COR still can.
+        cy.visit(`/agreements/${AGREEMENT_ID}`);
+        cy.get("#edit").click();
+        cy.get('[data-cy="project-officer-locked-message"]').should("contain", "in review");
+        cy.get("#project-officer-combobox-input").should("be.disabled");
+
+        testLogin("division-director");
+        cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
+        cy.get('[data-cy="approve-contract-modification-btn"]').click();
+        cy.get('[data-cy="confirm-action"]').click();
+        cy.contains("The COR has been updated.").should("be.visible");
+
+        apiRequest({ url: `/agreements/${AGREEMENT_ID}` })
+            .its("body.project_officer_id")
+            .should("eq", NEW_COR_ID);
+        cy.get('[data-cy="details-tab-Agreement Details"]').click();
+        cy.contains("Change to COR").should("be.visible");
     });
 });

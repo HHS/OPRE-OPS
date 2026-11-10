@@ -16,10 +16,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from models import (
+    PROJECT_OFFICER_EDIT_FIELD,
     AgreementMod,
     BudgetLineItem,
     BudgetLineItemStatus,
-    ContractModificationEdit,
     ContractModificationRequest,
     ContractModificationRequestNotification,
     ContractModificationRequestStatus,
@@ -43,6 +43,8 @@ class ContractModificationRequestService:
         self.db_session = db_session or current_app.db_session
         self._edit_service = ContractModificationEditService(self.db_session)
         self._notification_service = NotificationService(self.db_session)
+        # Set by an approval that changed the COR, for the review event's history metadata.
+        self.project_officer_change: Optional[dict] = None
 
     def get_for_agreement(self, agreement_id: int) -> list[ContractModificationRequest]:
         """Return the agreement's contract modification requests, newest first."""
@@ -88,15 +90,10 @@ class ContractModificationRequestService:
         if not agreement.is_awarded:
             raise ValidationError({"agreement_id": "Only an Awarded agreement can start a contract modification."})
 
-        # Lock the pending rows so two concurrent submissions can't both include them.
-        # Only Modified LOE edits go into the modification for now. Admin Changes (a COR change,
-        # OPS-3153) stay pending on the list until #3269 adds them to the modification flow.
+        # Lock the pending rows so two concurrent submissions can't both include them. Every
+        # pending edit goes in: Modified LOE edits and Admin Changes such as a COR change (#3269).
         pending_edits = list(
-            self.db_session.scalars(
-                self._edit_service._pending_query(agreement_id)
-                .where(ContractModificationEdit.modification_type == ModificationEditType.MODIFIED_LOE)
-                .with_for_update()
-            ).all()
+            self.db_session.scalars(self._edit_service._pending_query(agreement_id).with_for_update()).all()
         )
         if self.get_in_review(agreement_id) is not None:
             raise ValidationError({"agreement_id": _ALREADY_IN_REVIEW})
@@ -161,7 +158,7 @@ class ContractModificationRequestService:
                 raise ValidationError({"status": "This contract modification has already been reviewed."})
 
             if action == APPROVE:
-                self._approve(request)
+                self._approve(request, user)
             else:
                 request.status = ContractModificationRequestStatus.DECLINED
 
@@ -176,7 +173,7 @@ class ContractModificationRequestService:
             raise
         return request
 
-    def _approve(self, request: ContractModificationRequest) -> None:
+    def _approve(self, request: ContractModificationRequest, approver) -> None:
         # Re-run the submit-time checks before writing anything: a budget line may have been
         # executed, edited into review, or moved out of the current FY since the request was sent.
         self._get_executable_budget_lines(
@@ -192,12 +189,17 @@ class ContractModificationRequestService:
         if changed:
             raise ValidationError({"budget_line_item_ids": changed})
 
-        # As-is when the request is pure budget-line execution with no bundled edits (#1008);
-        # Modified LOE when edits ride along (#3072's existing semantics).
-        mod_type = ModType.MODIFIED_LOE if request.edits else ModType.AS_IS
-        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=mod_type)
+        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=_mod_type(request))
         self.db_session.add(agreement_mod)
         self.db_session.flush()
+
+        # Modified LOE values were applied when each change request was approved; an Admin
+        # Change (the COR, #3269) only takes effect now.
+        for edit in request.edits:
+            if edit.modification_type == ModificationEditType.ADMIN_CHANGE and edit.field == PROJECT_OFFICER_EDIT_FIELD:
+                self.project_officer_change = self._edit_service.apply_project_officer_change(
+                    request.agreement, edit, approver
+                )
 
         self._edit_service.attach_pending_edits_to_mod(
             request.agreement_id, agreement_mod.id, [edit.id for edit in request.edits]
@@ -313,3 +315,13 @@ class ContractModificationRequestService:
                 ContractModificationRequest.status == ContractModificationRequestStatus.IN_REVIEW,
             )
         )
+
+
+def _mod_type(request: ContractModificationRequest) -> ModType:
+    """As-is for pure budget-line execution (#1008), Admin when only Admin Changes such as a COR
+    change ride along (#3269), and Modified LOE when any Modified LOE edit does (#3072)."""
+    if not request.edits:
+        return ModType.AS_IS
+    if all(edit.modification_type == ModificationEditType.ADMIN_CHANGE for edit in request.edits):
+        return ModType.ADMIN
+    return ModType.MODIFIED_LOE

@@ -51,6 +51,8 @@ class AgreementMetaSchema(MetaSchema):
     """
 
     procurementShopLockedMessage = fields.Str(allow_none=True, load_default=None, dump_default=None)
+    # Why the COR can't be changed: its pending change is in a contract modification in review (#3269).
+    projectOfficerLockedMessage = fields.Str(allow_none=True, load_default=None, dump_default=None)
 
 
 class AgreementData(Schema):

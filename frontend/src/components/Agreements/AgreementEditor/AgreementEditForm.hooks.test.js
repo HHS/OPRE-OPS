@@ -988,6 +988,29 @@ describe("useAgreementEditForm - procurement shop lock from backend _meta (OPS-6
         expect(result.current.isProcurementShopDisabled).toBe(false);
     });
 
+    it("locks the COR with the backend's message while its change is in a contract modification in review (#3269)", () => {
+        const message =
+            "The COR change is in a contract modification that is in review, so the COR can't be changed until the modification is approved or declined.";
+        useSelectorMock.mockReturnValue(true); // superuser: no exemption
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ id: 523, _meta: { projectOfficerLockedMessage: message } })
+        );
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: true });
+
+        expect(result.current.isProjectOfficerDisabled).toBe(true);
+        expect(result.current.projectOfficerLockedMessage).toBe(message);
+    });
+
+    it("leaves the COR editable when projectOfficerLockedMessage is absent", () => {
+        useSelectorMock.mockReturnValue(false);
+        useEditAgreementMock.mockReturnValue(makeEditState({ id: 523, _meta: {} }));
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: true });
+
+        expect(result.current.isProjectOfficerDisabled).toBe(false);
+    });
+
     it("no longer depends on agreement.in_review — an unrelated BLI change request in review does not disable the field or show the proc-shop tooltip", () => {
         // Before #6312, disabledMessage() branched on agreement.in_review (true for ANY in-review
         // change request, including BLI-only ones), independent of isProcurementShopDisabled's

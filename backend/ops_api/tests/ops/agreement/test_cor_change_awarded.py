@@ -22,14 +22,19 @@ from models import (
     AaAgreement,
     Agreement,
     AgreementHistory,
+    AgreementHistoryType,
+    AgreementMod,
     AgreementReason,
     AgreementType,
     AwardType,
+    BudgetLineItemStatus,
     ContractAgreement,
+    ContractBudgetLineItem,
     ContractModificationEdit,
     ContractType,
     GrantAgreement,
     ModificationEditType,
+    ModType,
     OpsEvent,
     OpsEventType,
     ProcurementAction,
@@ -37,7 +42,10 @@ from models import (
     ServiceRequirementType,
     User,
 )
-from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
+from ops_api.ops.services.contract_modification_edits import (
+    COR_CHANGE_IN_MODIFICATION_MESSAGE,
+    ContractModificationEditService,
+)
 from ops_api.ops.services.ops_service import ValidationError
 
 CURRENT_COR_ID = 503
@@ -119,8 +127,13 @@ def make_agreement(loaded_db, test_project):
     loaded_db.rollback()
     for agreement_id in created:
         params = {"id": agreement_id}
+        loaded_db.execute(text("DELETE FROM contract_modification_request WHERE agreement_id = :id"), params)
         loaded_db.execute(text("DELETE FROM contract_modification_edit WHERE agreement_id = :id"), params)
+        loaded_db.execute(text("DELETE FROM agreement_mod WHERE agreement_id = :id"), params)
         loaded_db.execute(text("DELETE FROM procurement_action WHERE agreement_id = :id"), params)
+        loaded_db.commit()
+        for bli in loaded_db.query(ContractBudgetLineItem).filter_by(agreement_id=agreement_id).all():
+            loaded_db.delete(bli)
         loaded_db.commit()
         agreement = loaded_db.get(Agreement, agreement_id)
         if agreement is not None:
@@ -521,10 +534,10 @@ def test_pending_list_returns_the_cor_change_with_names(
     assert card["requested_by"]["id"] == BASIC_USER_ID
 
 
-def test_start_modification_leaves_cor_changes_pending(
+def test_start_modification_with_only_a_cor_change_puts_it_in_review(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
-    """Admin Changes go into the modification flow in #3269; until then a submit skips them."""
+    """A COR change alone is enough to start a contract modification (#3269)."""
     agreement = make_agreement()
     _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
 
@@ -532,9 +545,16 @@ def test_start_modification_leaves_cor_changes_pending(
         url_for("api.agreements-contract-modifications", id=agreement.id), json={"budget_line_item_ids": []}
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 201, response.json
     [edit] = _cor_edits(loaded_db, agreement.id)
+    assert [e["id"] for e in response.json["edits"]] == [edit.id]
     assert edit.agreement_mod_id is None
+
+    listed = basic_user_auth_client.get(url_for("api.agreements-contract-modification-edits", id=agreement.id))
+    [card] = listed.json["data"]
+    assert card["in_review"] is True
+    # Nothing is applied until the Division Director approves.
+    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
 
 
 def test_losing_a_concurrent_cor_save_raises_a_validation_error(
@@ -621,3 +641,250 @@ def test_edit_bundle_alternate_promotion_records_history(
     ).all()
     assert "Change to COR" in titles
     assert "Change to Alternate COR" in titles
+
+
+# --- Contract modification with a COR change (#3269) ------------------------------------------
+
+
+@pytest.fixture()
+def cor_change_in_review(modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, test_can):
+    """Factory: an Awarded agreement with an Obligated budget line (so the Division Director of
+    ``test_can`` reviews it), a pending COR change to ``NEW_COR_ID``, and a contract modification
+    with only that change sent to approval. Returns ``(agreement, request_id)``."""
+
+    def _make(**agreement_kwargs):
+        agreement = make_agreement(**agreement_kwargs)
+        loaded_db.add(
+            ContractBudgetLineItem(
+                agreement_id=agreement.id,
+                line_description="COR change mod test BLI",
+                amount=100000.00,
+                can_id=test_can.id,
+                date_needed=datetime.date.today(),
+                status=BudgetLineItemStatus.OBLIGATED,
+                proc_shop_fee_percentage=0,
+                created_by=BASIC_USER_ID,
+            )
+        )
+        loaded_db.commit()
+        assert _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID}).status_code == 200
+        response = _submit_mod(basic_user_auth_client, agreement.id)
+        assert response.status_code == 201, response.json
+        return agreement, response.json["id"]
+
+    return _make
+
+
+def _submit_mod(client, agreement_id, **body):
+    return client.post(
+        url_for("api.agreements-contract-modifications", id=agreement_id), json={"budget_line_item_ids": [], **body}
+    )
+
+
+def _review(client, request_id, action="APPROVE", **body):
+    return client.patch(
+        url_for("api.contract-modification-requests-item", id=request_id), json={"action": action, **body}
+    )
+
+
+def _history_titles(loaded_db, agreement_id):
+    loaded_db.expire_all()
+    return loaded_db.scalars(
+        select(AgreementHistory.history_title)
+        .where(AgreementHistory.agreement_id_record == agreement_id)
+        .order_by(AgreementHistory.id)
+    ).all()
+
+
+def test_approving_a_cor_change_applies_it(cor_change_in_review, division_director_auth_client, loaded_db, app_ctx):
+    agreement, request_id = cor_change_in_review()
+
+    response = _review(division_director_auth_client, request_id)
+
+    assert response.status_code == 200, response.json
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == NEW_COR_ID
+    assert agreement.alternate_project_officer_id == ALTERNATE_COR_ID  # not the new COR, so kept
+    mod = loaded_db.get(AgreementMod, response.json["agreement_mod_id"])
+    assert mod.mod_type == ModType.ADMIN
+    [edit] = _cor_edits(loaded_db, agreement.id)
+    assert edit.agreement_mod_id == mod.id
+    assert edit.approved_by_id == response.json["reviewed_by_id"]
+    assert edit.approved_on is not None
+
+    event = loaded_db.scalars(
+        select(OpsEvent)
+        .where(OpsEvent.event_type == OpsEventType.REVIEW_CONTRACT_MODIFICATION)
+        .order_by(OpsEvent.id.desc())
+        .limit(1)
+    ).one()
+    assert event.event_details["project_officer_change"] == {
+        "old": CURRENT_COR_ID,
+        "new": NEW_COR_ID,
+        "alternate_cleared": None,
+    }
+    assert "request.remote_addr" in event.event_details
+
+    history = loaded_db.scalars(
+        select(AgreementHistory).where(
+            AgreementHistory.agreement_id_record == agreement.id,
+            AgreementHistory.history_title == "Change to COR",
+        )
+    ).one()
+    assert history.ops_event_id == event.id
+    old_name = loaded_db.get(User, CURRENT_COR_ID).full_name
+    new_name = loaded_db.get(User, NEW_COR_ID).full_name
+    assert history.history_message.startswith(f"The COR changed from {old_name} to {new_name} when ")
+    approved = loaded_db.scalars(
+        select(AgreementHistory).where(
+            AgreementHistory.agreement_id_record == agreement.id,
+            AgreementHistory.history_type == AgreementHistoryType.CONTRACT_MODIFICATION_APPROVED,
+        )
+    ).one()
+    assert "It included changing the COR." in approved.history_message
+    started = loaded_db.scalars(
+        select(AgreementHistory).where(
+            AgreementHistory.agreement_id_record == agreement.id,
+            AgreementHistory.history_type == AgreementHistoryType.CONTRACT_MODIFICATION_STARTED,
+        )
+    ).one()
+    assert "(changing the COR)" in started.history_message
+    assert "Change to Alternate COR" not in _history_titles(loaded_db, agreement.id)
+
+
+def test_approval_clears_the_alternate_when_it_is_the_new_cor(
+    cor_change_in_review, basic_user_auth_client, division_director_auth_client, loaded_db, app_ctx
+):
+    agreement, request_id = cor_change_in_review()
+    # Alternate COR edits stay free while the COR change is in review.
+    assert _patch(basic_user_auth_client, agreement.id, {"alternate_project_officer_id": NEW_COR_ID}).status_code == 200
+
+    response = _review(division_director_auth_client, request_id)
+
+    assert response.status_code == 200, response.json
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == NEW_COR_ID
+    assert agreement.alternate_project_officer_id is None
+    assert "Change to Alternate COR" in _history_titles(loaded_db, agreement.id)[-2:]
+
+
+def test_declining_a_cor_change_leaves_the_cor_and_returns_it_to_pending(
+    cor_change_in_review, basic_user_auth_client, division_director_auth_client, loaded_db, app_ctx
+):
+    agreement, request_id = cor_change_in_review()
+
+    response = _review(division_director_auth_client, request_id, "DECLINE", reviewer_notes="Not yet")
+
+    assert response.status_code == 200, response.json
+    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
+    [edit] = _cor_edits(loaded_db, agreement.id)
+    assert edit.agreement_mod_id is None
+    assert edit.approved_by_id is None
+    assert "Change to COR" not in _history_titles(loaded_db, agreement.id)
+    # The COR can be changed again.
+    assert _patch(basic_user_auth_client, agreement.id, {"project_officer_id": OTHER_COR_ID}).status_code == 200
+    [edit] = _cor_edits(loaded_db, agreement.id)
+    assert edit.new_value == OTHER_COR_ID
+
+
+@pytest.mark.parametrize("new_cor", [OTHER_COR_ID, ALTERNATE_COR_ID], ids=["retarget", "promote_alternate"])
+def test_cor_cannot_change_while_its_change_is_in_review(
+    new_cor, cor_change_in_review, basic_user_auth_client, loaded_db, app_ctx
+):
+    agreement, _ = cor_change_in_review()
+
+    response = _patch(basic_user_auth_client, agreement.id, {"project_officer_id": new_cor})
+
+    assert response.status_code == 400, response.json
+    assert COR_CHANGE_IN_MODIFICATION_MESSAGE in str(response.json)
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == CURRENT_COR_ID
+    assert agreement.alternate_project_officer_id == ALTERNATE_COR_ID
+    [edit] = _cor_edits(loaded_db, agreement.id)
+    assert edit.new_value == NEW_COR_ID
+
+
+def test_edit_bundle_cannot_change_the_cor_while_its_change_is_in_review(
+    cor_change_in_review, basic_user_auth_client, loaded_db, app_ctx
+):
+    agreement, _ = cor_change_in_review()
+
+    response = basic_user_auth_client.patch(
+        url_for("api.agreements-edit-bundle", id=agreement.id),
+        json={"agreement": {"agreement_type": "CONTRACT", "project_officer_id": OTHER_COR_ID}},
+    )
+
+    assert response.status_code == 400, response.json
+    [edit] = _cor_edits(loaded_db, agreement.id)
+    assert edit.new_value == NEW_COR_ID
+
+
+def test_failed_approval_leaves_the_cor_unchanged(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    make_agreement,
+    test_can,
+    app_ctx,
+):
+    """A COR change sent with a budget line to execute is applied all-or-nothing: if the line
+    changed after the modification was sent, the approval fails and the COR stays."""
+    agreement = make_agreement()
+    planned = ContractBudgetLineItem(
+        agreement_id=agreement.id,
+        line_description="COR change mod test Planned BLI",
+        amount=100000.00,
+        can_id=test_can.id,
+        date_needed=datetime.date.today(),
+        status=BudgetLineItemStatus.PLANNED,
+        proc_shop_fee_percentage=0,
+        created_by=BASIC_USER_ID,
+    )
+    loaded_db.add(planned)
+    loaded_db.commit()
+    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
+    request_id = _submit_mod(basic_user_auth_client, agreement.id, budget_line_item_ids=[planned.id]).json["id"]
+    planned.line_description = "Edited after the modification was sent"
+    loaded_db.commit()
+
+    response = _review(division_director_auth_client, request_id)
+
+    assert response.status_code == 400, response.json
+    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
+    [edit] = _cor_edits(loaded_db, agreement.id)
+    assert edit.agreement_mod_id is None
+    assert edit.approved_by_id is None
+
+
+@pytest.mark.parametrize(
+    "edit_types, expected",
+    [
+        ([], ModType.AS_IS),
+        ([ModificationEditType.ADMIN_CHANGE], ModType.ADMIN),
+        ([ModificationEditType.MODIFIED_LOE], ModType.MODIFIED_LOE),
+        ([ModificationEditType.ADMIN_CHANGE, ModificationEditType.MODIFIED_LOE], ModType.MODIFIED_LOE),
+    ],
+)
+def test_mod_type_follows_the_bundled_edits(edit_types, expected):
+    from types import SimpleNamespace
+
+    from ops_api.ops.services.contract_modification_requests import _mod_type
+
+    request = SimpleNamespace(edits=[SimpleNamespace(modification_type=t) for t in edit_types])
+    assert _mod_type(request) == expected
+
+
+def test_agreement_meta_says_why_the_cor_is_locked_while_its_change_is_in_review(
+    cor_change_in_review, basic_user_auth_client, division_director_auth_client, app_ctx
+):
+    agreement, request_id = cor_change_in_review()
+
+    def locked_message():
+        response = basic_user_auth_client.get(url_for("api.agreements-item", id=agreement.id))
+        assert response.status_code == 200, response.json
+        return response.json["_meta"]["projectOfficerLockedMessage"]
+
+    assert locked_message() == COR_CHANGE_IN_MODIFICATION_MESSAGE
+    assert _review(division_director_auth_client, request_id, "DECLINE").status_code == 200
+    assert locked_message() is None

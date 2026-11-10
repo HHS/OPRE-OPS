@@ -677,6 +677,8 @@ class AgreementsService(OpsService[Agreement]):
         change kind and, for a pending change, the target COR.
         """
         cor_change = self._project_officer_change_kind(agreement, updated_fields)
+        if cor_change is not None:
+            ContractModificationEditService(self.db_session).check_project_officer_change_not_in_review(agreement.id)
         if cor_change == "pending":
             new_project_officer_id = updated_fields.pop("project_officer_id")
             # The pending edit stores the id in JSONB, so no foreign key catches a bad one.

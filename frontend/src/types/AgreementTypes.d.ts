@@ -14,6 +14,7 @@ export type Agreement = {
         lockedMessage?: string | null;
         immutable_awarded_fields?: string[];
         procurementShopLockedMessage?: string | null;
+        projectOfficerLockedMessage?: string | null;
     };
     agreement_reason?: string;
     agreement_type: AgreementType;

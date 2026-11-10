@@ -119,22 +119,26 @@ describe("useStartModification", () => {
         expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
     });
 
-    it("leaves Admin Changes such as a COR change out of the modification (OPS-3153)", async () => {
+    it("includes Admin Changes such as a COR change in the modification (#3269)", async () => {
         const loeEdit = { id: 7, modification_type: "MODIFIED_LOE", field: "amount" };
         const corEdit = { id: 8, modification_type: "ADMIN_CHANGE", field: "project_officer_id" };
         setQueries({ edits: [loeEdit, corEdit] });
         const { result } = renderHook(() => useStartModification(42));
 
         await waitFor(() => expect(result.current.budgetLines).toHaveLength(3));
-        expect(result.current.edits).toEqual([loeEdit]);
+        expect(result.current.edits).toEqual([loeEdit, corEdit]);
     });
 
-    it("can't be submitted with only a COR change pending", async () => {
+    it("can be submitted with only a COR change pending and no budget lines (#3269)", async () => {
         setQueries({ edits: [{ id: 8, modification_type: "ADMIN_CHANGE", field: "project_officer_id" }] });
+        submitMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
         const { result } = renderHook(() => useStartModification(42));
 
-        await waitFor(() => expect(result.current.budgetLines).toHaveLength(3));
-        expect(result.current.isSubmissionReady).toBe(false);
+        await waitFor(() => expect(result.current.isSubmissionReady).toBe(true));
+        await act(() => result.current.handleSendToApproval());
+
+        expect(submitMock).toHaveBeenCalledWith(expect.objectContaining({ budgetLineItemIds: [] }));
+        expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ type: "success" }));
     });
 
     it("can't start while a modification is in review", () => {

@@ -465,6 +465,9 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     ),
                 )
             )
+            history_events.extend(
+                create_contract_modification_project_officer_history_events(event, event_user, session)
+            )
     # Filter out any history_events that have agreement_id as None or agreement_id_record as None
     history_events = [
         event for event in history_events if event.agreement_id is not None and event.agreement_id_record is not None
@@ -653,12 +656,55 @@ def create_change_request_history_event(
 
 def _services_components_added_phrase(event: OpsEvent) -> str:
     """e.g. "adding SC2 and SC3" for a contract modification that includes Services Component
-    additions (OPS-6440), or "" when it has none."""
+    additions (OPS-6440), "changing the COR" for one that includes a COR change (#3269), both
+    joined with "and", or "" when it has neither."""
+    phrases = []
     names = event.event_details.get("services_components_added") or []
-    if not names:
-        return ""
-    joined = names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
-    return f"adding {joined}"
+    if names:
+        joined = names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+        phrases.append(f"adding {joined}")
+    if event.event_details.get("project_officer_change"):
+        phrases.append("changing the COR")
+    return " and ".join(phrases)
+
+
+def create_contract_modification_project_officer_history_events(
+    event: OpsEvent, event_user: User, session: Session
+) -> list[AgreementHistory]:
+    """History for the COR (and a cleared Alternate COR) changed by approving a contract
+    modification (#3269). The approval sets the agreement's fields directly, so there is no
+    UPDATE_AGREEMENT field diff to produce these."""
+    from models import Agreement
+
+    change = event.event_details.get("project_officer_change")
+    if event.event_details.get("status") != "APPROVED" or not change:
+        return []
+
+    agreement_id = event.event_details["agreement_id"]
+    agreement = session.get(Agreement, agreement_id)
+
+    def name(user_id):
+        user = session.get(User, user_id) if user_id else None
+        return user.full_name if user else "TBD"
+
+    def entry(label, old_id, new_id):
+        return AgreementHistory(
+            agreement_id=agreement_id,
+            agreement_id_record=agreement_id,
+            ops_event_id=event.id,
+            history_title=f"Change to {label}",
+            history_message=(
+                f"The {label} changed from {name(old_id)} to {name(new_id)} when "
+                f"{event_user.full_name} approved the contract modification."
+            ),
+            timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+        )
+
+    events = [entry(get_project_officer_display_name(agreement), change.get("old"), change.get("new"))]
+    if change.get("alternate_cleared"):
+        events.append(entry(get_alternate_project_officer_display_name(agreement), change["alternate_cleared"], None))
+    return events
 
 
 def create_services_component_change_request_history_event(

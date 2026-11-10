@@ -134,6 +134,8 @@ const AgreementEditForm = ({
         uniquenessErrors,
         isProcurementShopDisabled,
         disabledMessage,
+        isProjectOfficerDisabled,
+        projectOfficerLockedMessage,
         fundingMethod,
         agreementFilterOptions,
         handleAgreementFilterChange,
@@ -703,6 +705,8 @@ const AgreementEditForm = ({
                             }}
                             overrideStyles={{ width: "15em" }}
                             label={convertCodeForDisplay("projectOfficer", agreementType)}
+                            isDisabled={isProjectOfficerDisabled}
+                            disabledMessage={projectOfficerLockedMessage}
                         />
                         <ProjectOfficerComboBox
                             selectedProjectOfficer={selectedAlternateProjectOfficer}
