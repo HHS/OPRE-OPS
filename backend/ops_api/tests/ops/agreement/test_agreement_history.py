@@ -676,8 +676,11 @@ def test_services_component_period_change_with_none_value():
         },
     )
     event_user = SimpleNamespace(full_name="Amelia Popham")
+    session = SimpleNamespace(get=lambda cls, pk: None)
 
-    history_events = create_services_component_history_event(event, event_user, system_user_created_event=False)
+    history_events = create_services_component_history_event(
+        event, event_user, system_user_created_event=False, session=session
+    )
 
     messages = [h.history_message for h in history_events]
     assert len(messages) == 2

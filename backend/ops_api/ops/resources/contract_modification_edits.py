@@ -160,6 +160,7 @@ class ContractModificationRequestItemAPI(BaseItemAPI):
                     "contract_modification_request_id": mod_request.id,
                     "status": mod_request.status.name,
                     "agreement_mod_id": mod_request.agreement_mod_id,
+                    "requested_by_user_id": mod_request.created_by,
                     "contract_modification_edit_ids": [edit["id"] for edit in data["edits"]],
                     "services_components_added": _services_components_added(data["edits"]),
                     "budget_line_item_ids": data["budget_line_item_ids"],

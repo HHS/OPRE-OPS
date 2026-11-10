@@ -207,6 +207,7 @@ frontend/package-lock.json
 *.drawio.bkp
 *.db
 claude.sh
+docker-compose.override.yml
 
 
 # Local .terraform directories
