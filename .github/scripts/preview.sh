@@ -9,7 +9,8 @@
 #   deploy-app <backend|frontend> <pr> <sha> <mode>
 #   wait-ready <backend|frontend> <pr> <sha>
 #   health <pr>                   wait until /api/v1/health/ reports a working DB connection
-#   comment <pr> <status> [sha]   create or update the status comment
+#   comment <pr> <status> [sha]   create or update the status comment, on the PR and on its
+#                                 linked issues
 #   deployment <start|ready|failed|inactive> <pr> [sha|id]
 #                                 GitHub deployment behind the PR's "View deployment" button
 #   destroy <pr>                  delete the PR's apps and database
@@ -39,6 +40,8 @@ TTL_DAYS=5
 WARN_DAYS=4
 LABEL=preview
 MARKER='<!-- ops-preview -->'
+# On a linked issue, one comment per PR (an issue can have several PRs).
+ISSUE_MARKER='<!-- ops-preview-pr='
 WARN_MARKER='<!-- ops-preview-ttl-warning -->'
 BOT="github-actions[bot]"
 REPO=${GITHUB_REPOSITORY:?}
@@ -411,6 +414,81 @@ cmd_comment() {
   else
     gh api "repos/$REPO/issues/$pr/comments" -f body="$body" >/dev/null
   fi
+
+  # Best effort: a problem with an issue comment must never fail a deploy or destroy.
+  comment_issues "$pr" "$status" "$sha" ||
+    echo "::warning::Could not update the preview comment on the PR's linked issues"
+}
+
+# Issues this PR is for, in this repo: the OPS-<N>/ branch prefix the team uses, issue links or
+# #N references in the PR body's "## Issue" section, and issues linked in the Development
+# sidebar. Issues in other repos (owner/repo#N, sidebar links, transferred issues) and pull
+# requests are dropped. Fails rather than guessing if a lookup fails.
+linked_issues() {
+  local pr=$1 info sidebar n candidates
+  info=$(gh api "repos/$REPO/pulls/$pr") || return 1
+  # shellcheck disable=SC2016 # $owner, $name and $pr are GraphQL variables, not shell ones
+  sidebar=$(gh api graphql -F owner="${REPO%/*}" -F name="${REPO#*/}" -F pr="$pr" -f query='
+    query($owner: String!, $name: String!, $pr: Int!) {
+      repository(owner: $owner, name: $name) {
+        pullRequest(number: $pr) {
+          closingIssuesReferences(first: 10) { nodes { number repository { nameWithOwner } } }
+        }
+      }
+    }' --jq ".data.repository.pullRequest.closingIssuesReferences.nodes[]
+             | select((.repository.nameWithOwner | ascii_downcase) == (\"$REPO\" | ascii_downcase))
+             | .number") || return 1
+  candidates=$({
+    jq -r .head.ref <<<"$info" | sed -nE 's#^OPS-([1-9][0-9]*)/.*#\1#p'
+    # A link, $REPO#N, or a bare #N; not the #N in another repo's owner/repo#N.
+    jq -r '.body // ""' <<<"$info" | tr -d '\r' |
+      awk '/^## / { s = ($0 ~ /^## Issue/) } s' |
+      grep -oiE "(github\.com/$REPO/issues/|(^|[^[:alnum:]/._-])($REPO)?#)[1-9][0-9]*" | grep -oE '[0-9]+$' || true
+    echo "$sidebar"
+  } | grep -E '^[1-9][0-9]*$' | sort -un) || true
+  for n in $candidates; do
+    [ "$n" = "$pr" ] && continue
+    # A transferred issue redirects to its new repo, so check where the answer came from.
+    gh api "repos/$REPO/issues/$n" --jq "select(.pull_request == null
+      and ((.repository_url | ascii_downcase) | endswith(\"/repos/$REPO\" | ascii_downcase)))
+      | .number" 2>/dev/null || true
+  done | grep -E '^[1-9][0-9]*$' || true
+}
+
+# A short comment on each linked issue with the preview link, updated with the PR's status.
+# Created only once a preview is on its way; later statuses update it, never start one.
+# Called as best effort (errexit is off), so every step is checked by hand: it returns 1 if
+# any issue couldn't be updated, and never reports a write that didn't happen.
+comment_issues() {
+  local pr=$1 status=$2 sha=$3 issues issue marker id body pr_link rc=0
+  pr_link="[PR $pr](https://github.com/$REPO/pull/$pr)"
+  issues=$(linked_issues "$pr") || return 1
+  for issue in $issues; do
+    marker="$ISSUE_MARKER$pr -->"
+    # On a failed lookup, skip rather than post: an empty id would start a duplicate comment.
+    id=$(find_comment "$issue" "$marker") || { rc=1; continue; }
+    case "$status" in
+      deploying | ready) ;;
+      *) [ -n "$id" ] || continue ;;
+    esac
+    case "$status" in
+      deploying) body="**Preview for $pr_link:** deploying to $(url "$pr")." ;;
+      ready) body="**Preview for $pr_link:** $(url "$pr")." ;;
+      failed) body="**Preview for $pr_link:** the last deploy failed; see the PR for details." ;;
+      capped) body="**Preview for $pr_link:** not deployed, because all preview slots are in use." ;;
+      outdated) body="**Preview for $pr_link:** not deployed; the PR's branch needs \`main\` merged in." ;;
+      removed) body="**Preview for $pr_link:** removed (${REASON:-label removed or PR closed})." ;;
+    esac
+    body="$marker
+$body${sha:+ Commit \`${sha:0:7}\`.}"
+    if [ -n "$id" ]; then
+      gh api -X PATCH "repos/$REPO/issues/comments/$id" -f body="$body" >/dev/null || { rc=1; continue; }
+    else
+      gh api "repos/$REPO/issues/$issue/comments" -f body="$body" >/dev/null || { rc=1; continue; }
+    fi
+    echo "Updated the preview comment on issue $issue"
+  done
+  return "$rc"
 }
 
 # --- deployment ---------------------------------------------------------------------------
