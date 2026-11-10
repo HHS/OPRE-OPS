@@ -50,5 +50,10 @@ SUPER_USER = "SUPER_USER"
 # Enabled in staging for testing (overrides the default-OFF in default_settings.py).
 SKIP_CR_FOR_DRAFT_PLANNED = True
 
+# Record and list "Edits That Require a Contract Modification" on Awarded agreements, and enable
+# starting/reviewing a contract modification for them (OPS-3072, OPS-3268). The full flow has
+# merged to main; enabled in staging for testing (overrides the default-OFF in default_settings.py).
+ENABLE_MODIFIED_LOE_EDITS = True
+
 # Allow today/past Obligate By dates on non-Draft budget lines (issue 6443); see default_settings.py to turn it off.
 ALLOW_PAST_OBLIGATE_BY_DATES = True
