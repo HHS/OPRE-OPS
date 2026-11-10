@@ -440,10 +440,10 @@ linked_issues() {
              | .number") || return 1
   candidates=$({
     jq -r .head.ref <<<"$info" | sed -nE 's#^OPS-([1-9][0-9]*)/.*#\1#p'
-    # A bare #N, not the #N in owner/repo#N.
+    # A link, $REPO#N, or a bare #N; not the #N in another repo's owner/repo#N.
     jq -r '.body // ""' <<<"$info" | tr -d '\r' |
       awk '/^## / { s = ($0 ~ /^## Issue/) } s' |
-      grep -oiE "(github\.com/$REPO/issues/|(^|[^[:alnum:]/._-])#)[1-9][0-9]*" | grep -oE '[0-9]+$' || true
+      grep -oiE "(github\.com/$REPO/issues/|(^|[^[:alnum:]/._-])($REPO)?#)[1-9][0-9]*" | grep -oE '[0-9]+$' || true
     echo "$sidebar"
   } | grep -E '^[1-9][0-9]*$' | sort -un) || true
   for n in $candidates; do
@@ -472,8 +472,8 @@ comment_issues() {
       *) [ -n "$id" ] || continue ;;
     esac
     case "$status" in
-      deploying) body="**Preview for $pr_link:** deploying to $(url "$pr")" ;;
-      ready) body="**Preview for $pr_link:** $(url "$pr")" ;;
+      deploying) body="**Preview for $pr_link:** deploying to $(url "$pr")." ;;
+      ready) body="**Preview for $pr_link:** $(url "$pr")." ;;
       failed) body="**Preview for $pr_link:** the last deploy failed; see the PR for details." ;;
       capped) body="**Preview for $pr_link:** not deployed, because all preview slots are in use." ;;
       outdated) body="**Preview for $pr_link:** not deployed; the PR's branch needs \`main\` merged in." ;;
