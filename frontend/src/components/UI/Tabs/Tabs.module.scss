@@ -43,6 +43,15 @@
     text-decoration-color: #005ea2;
     color: #005ea2;
     outline: none;
+
+    // USWDS's default :focus ring (outline: .25rem solid #2491ff) is suppressed by
+    // outline: none above with nothing to replace it, so keyboard focus is invisible
+    // on these tab buttons. Restore it via :focus-visible only, so mouse clicks don't
+    // show the ring.
+    &:focus-visible {
+        outline: 0.25rem solid #2491ff;
+        outline-offset: 0;
+    }
 }
 
 .listItemNotSelected {
@@ -51,4 +60,9 @@
     text-decoration-line: none;
     color: #565c65;
     outline: none;
+
+    &:focus-visible {
+        outline: 0.25rem solid #2491ff;
+        outline-offset: 0;
+    }
 }
