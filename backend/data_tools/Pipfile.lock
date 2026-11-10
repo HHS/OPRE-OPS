@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c4d1550ef816d655697fefe715345118f7e7f3e9542c7e0ab8205fd4e80d3cb5"
+            "sha256": "5fc79e7ff5e0b689182eed6894946fd3fb45b68877f94d2c459015e91651e5f2"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -2042,12 +2042,12 @@
         },
         "sqlalchemy-continuum": {
             "hashes": [
-                "sha256:1d03bf2f0d82bd96f2811ee0282acc66620e69b26ce2988ce4b08d68164b6d37",
-                "sha256:8ab272654bc17874f8e69d8170ef98294a4140e339eec67be27b069eb3afae49"
+                "sha256:0db1f78ba4c8ebdcbdfed491fee0c3953e3c4061ff8f9828915d503a0d22f039",
+                "sha256:f725be86ea008965232377275ed1790b09e9aad7ae272f58620d2cba2db2b85b"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.11'",
-            "version": "==1.9.0"
+            "version": "==2.0.0"
         },
         "stack-data": {
             "hashes": [
@@ -2981,11 +2981,11 @@
         },
         "markdown-it-py": {
             "hashes": [
-                "sha256:04a21681d6fbb623de53f6f364d352309d4094dd4194040a10fd51833e418d49",
-                "sha256:9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a"
+                "sha256:7aa1511a46c39138de78d9eba92ce47e63124d8003fc98b3a351909e04239efa",
+                "sha256:91a58fa5b72c71a40cf7177250fd767480d7a2bb3ac426ccfb76fb90305fdaaa"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==4.2.0"
+            "version": "==4.3.0"
         },
         "matplotlib-inline": {
             "hashes": [
