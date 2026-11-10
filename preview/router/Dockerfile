@@ -1,6 +1,6 @@
 # Preview router: routes pr-<N>.ops.opre.acf.gov to that PR's container apps. See README.md.
 
-FROM alpine:3.24.3 AS deps
+FROM alpine:3.24.4 AS deps
 
 # hadolint ignore=DL3018
 RUN apk upgrade --no-cache && \
