@@ -33,6 +33,7 @@ jobs:
         (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'preview'))))
     permissions:
       contents: read
+      issues: write # the preview comment on linked issues
       pull-requests: write
     outputs:
       go: ${{ steps.slots.outputs.go }}
@@ -137,6 +138,7 @@ jobs:
     permissions:
       contents: read
       deployments: write # the PR's "View deployment" button
+      issues: write # the preview comment on linked issues
       pull-requests: write
     # One deploy or destroy at a time per PR (shared with preview_destroy.yml), never cancelled
     # mid-run. GitHub keeps only the newest pending run in a group, so this deploy may have

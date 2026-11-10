@@ -9,7 +9,8 @@
 #   deploy-app <backend|frontend> <pr> <sha> <mode>
 #   wait-ready <backend|frontend> <pr> <sha>
 #   health <pr>                   wait until /api/v1/health/ reports a working DB connection
-#   comment <pr> <status> [sha]   create or update the status comment
+#   comment <pr> <status> [sha]   create or update the status comment, on the PR and on its
+#                                 linked issues
 #   deployment <start|ready|failed|inactive> <pr> [sha|id]
 #                                 GitHub deployment behind the PR's "View deployment" button
 #   destroy <pr>                  delete the PR's apps and database
@@ -39,6 +40,8 @@ TTL_DAYS=5
 WARN_DAYS=4
 LABEL=preview
 MARKER='<!-- ops-preview -->'
+# On a linked issue, one comment per PR (an issue can have several PRs).
+ISSUE_MARKER='<!-- ops-preview-pr='
 WARN_MARKER='<!-- ops-preview-ttl-warning -->'
 BOT="github-actions[bot]"
 REPO=${GITHUB_REPOSITORY:?}
@@ -411,6 +414,64 @@ cmd_comment() {
   else
     gh api "repos/$REPO/issues/$pr/comments" -f body="$body" >/dev/null
   fi
+
+  # Best effort: a problem with an issue comment must never fail a deploy or destroy.
+  comment_issues "$pr" "$status" "$sha" "$line" ||
+    echo "::warning::Could not update the preview comment on the PR's linked issues"
+}
+
+# Issues this PR is for, in this repo: the OPS-<N>/ branch prefix the team uses, issue links or
+# #N references in the PR body's "## Issue" section, and issues linked in the Development
+# sidebar. Pull requests are dropped.
+linked_issues() {
+  local pr=$1 info n
+  info=$(gh api "repos/$REPO/pulls/$pr")
+  {
+    jq -r .head.ref <<<"$info" | sed -nE 's#^OPS-([1-9][0-9]*)/.*#\1#p'
+    jq -r '.body // ""' <<<"$info" | tr -d '\r' |
+      awk '/^## / { s = ($0 ~ /^## Issue/) } s' |
+      grep -oiE "(github\.com/$REPO/issues/|#)[1-9][0-9]*" | grep -oE '[0-9]+$' || true
+    # shellcheck disable=SC2016 # $owner, $name and $pr are GraphQL variables, not shell ones
+    gh api graphql -F owner="${REPO%/*}" -F name="${REPO#*/}" -F pr="$pr" -f query='
+      query($owner: String!, $name: String!, $pr: Int!) {
+        repository(owner: $owner, name: $name) {
+          pullRequest(number: $pr) { closingIssuesReferences(first: 10) { nodes { number } } }
+        }
+      }' --jq '.data.repository.pullRequest.closingIssuesReferences.nodes[].number'
+  } | sort -un | while read -r n; do
+    [ "$n" = "$pr" ] && continue
+    gh api "repos/$REPO/issues/$n" --jq 'select(.pull_request == null) | .number // empty' 2>/dev/null || true
+  done | grep -E '^[1-9][0-9]*$' || true
+}
+
+# A short comment on each linked issue with the preview link, updated with the PR's status.
+# Created only once a preview is on its way; later statuses update it, never start one.
+comment_issues() {
+  local pr=$1 status=$2 sha=$3 line=$4 issue marker id body pr_link
+  pr_link="[PR $pr](https://github.com/$REPO/pull/$pr)"
+  for issue in $(linked_issues "$pr"); do
+    marker="$ISSUE_MARKER$pr -->"
+    id=$(find_comment "$issue" "$marker")
+    case "$status" in
+      deploying | ready) ;;
+      *) [ -n "$id" ] || continue ;;
+    esac
+    if [ "$status" = removed ]; then
+      body="$marker
+**Preview for $pr_link:** $line"
+    else
+      body="$marker
+**Preview for $pr_link:** $(url "$pr")
+
+**Status:** $line${sha:+ (commit \`${sha:0:7}\`)}. Details and login roles are in the PR's preview comment."
+    fi
+    if [ -n "$id" ]; then
+      gh api -X PATCH "repos/$REPO/issues/comments/$id" -f body="$body" >/dev/null
+    else
+      gh api "repos/$REPO/issues/$issue/comments" -f body="$body" >/dev/null
+    fi
+    echo "Updated the preview comment on issue $issue"
+  done
 }
 
 # --- deployment ---------------------------------------------------------------------------
