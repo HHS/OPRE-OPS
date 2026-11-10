@@ -43,5 +43,6 @@ export const KEY_NAMES = {
     STATUS: "status",
     PROC_SHOP: "awarding_entity_id",
     DELETE: "delete",
-    SERVICES_COMPONENT_CREATE: "services_component_create"
+    SERVICES_COMPONENT_CREATE: "services_component_create",
+    SERVICES_COMPONENT_DELETE: "services_component_delete"
 };

@@ -17,6 +17,7 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import { keepLinkToServicesComponentPendingDelete } from "./CreateBLIsAndSCs.helpers";
 import { findDescription, findIfOptional } from "../../../helpers/servicesComponent.helpers";
 import { findGrantDescription, findGrantPeriodEnd, findGrantPeriodStart } from "../../../helpers/budgetLines.helpers";
 import { cleanBudgetLineItemForApi, CONTRACT_MODIFICATION_APPROVAL_HEADING } from "../../../helpers/agreement.helpers";
@@ -51,7 +52,7 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {function} [props.onValidityChange] - Called with `true` when the budget-lines form is valid (no vest errors and the user is allowed to edit), `false` otherwise. Only meaningful in review mode. - optional
  * @param {React.MutableRefObject<{getSlice: () => object}|null>} [props.bundleSliceRef] - When provided, the component populates `ref.current = { getSlice }`. `getSlice()` returns `{ services_components: { create, update, delete }, budget_line_items: { create, update, delete } }` reflecting the user's current edits, suitable for the agreement edit-bundle endpoint. Used by the review-flow edit page so it can fire one atomic mutation instead of fanning out per-resource calls. - optional
  * @param {function(boolean): void} [props.onFinancialChangeStateChange] - Called with `true` when the current edits contain financial-snapshot changes to PLANNED/IN_EXECUTION BLIs that require Division Director approval, `false` otherwise. Non-superusers only — super users always receive `false`. Used by the review-flow edit page to gate the save behind a confirmation modal. - optional
- * @param {function(boolean): void} [props.onContractModificationStateChange] - Called with `true` when the agreement is Awarded and the current edits will require a contract modification once approved (OPS-3072), `false` otherwise: an amount/CAN/date edit or a delete of a non-Draft BL, or adding a services component that has non-Draft BLs (OPS-6440). Used by the hosting page to swap the pre-save confirmation modal's copy. - optional
+ * @param {function(boolean): void} [props.onContractModificationStateChange] - Called with `true` when the agreement is Awarded and the current edits will require a contract modification once approved (OPS-3072), `false` otherwise: an amount/CAN/date edit or a delete of a non-Draft BL, or adding or deleting a services component (OPS-6440). Used by the hosting page to swap the pre-save confirmation modal's copy. - optional
  * @param {function(boolean): void} [props.onHasUnsavedChangesChange] - Called whenever the internal `hasUnsavedChanges` flag changes. Used by the review-flow edit page to track page-level dirty state for the nav-away modal. - optional
  * @returns {JSX.Element} - The rendered component.
  */
@@ -127,6 +128,8 @@ export const CreateBLIsAndSCs = ({
         scFormSuite,
         nonDraftBudgetLines,
         isServicesComponentDeleteDisabled,
+        isServicesComponentDeleteSentToApproval,
+        servicesComponentIdsPendingDelete,
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
         setHasUnsavedChanges,
@@ -349,7 +352,12 @@ export const CreateBLIsAndSCs = ({
                         // stamps services_component_number (a UI-only field clean() strips), not
                         // services_component_id — so comparing the pre-link payload would treat a
                         // newly-assigned SC as "unchanged" and silently drop it from the update.
-                        const linked = applyBliLink(cleaned, bli);
+                        // An SC whose delete goes to approval keeps its budget lines until approved (OPS-6440).
+                        const linked = keepLinkToServicesComponentPendingDelete(
+                            applyBliLink(cleaned, bli),
+                            baseline,
+                            servicesComponentIdsPendingDelete
+                        );
                         if (baseline) {
                             const { data: cleanedBaseline } = cleanBudgetLineItemForApi(baseline);
                             if (JSON.stringify(linked) === JSON.stringify(cleanedBaseline)) {
@@ -445,6 +453,7 @@ export const CreateBLIsAndSCs = ({
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
                                 isDeleteDisabled={isServicesComponentDeleteDisabled}
+                                isDeleteSentToApproval={isServicesComponentDeleteSentToApproval}
                             />
                         ))}
                     {!isGrant && (
@@ -512,6 +521,7 @@ export const CreateBLIsAndSCs = ({
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
                                 isDeleteDisabled={isServicesComponentDeleteDisabled}
+                                isDeleteSentToApproval={isServicesComponentDeleteSentToApproval}
                             />
                         ))}
                     {/* This is already the budget-line edit surface, so no inline Edit button belongs here. */}

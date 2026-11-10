@@ -123,8 +123,9 @@ export const isServicesComponentDeleteBlocked = ({
 
 /**
  * The services component additions in this save that go to Division Director approval (OPS-6440):
- * on an Awarded agreement, a new SC, or one still awaiting approval of its addition, needs approval
- * once a non-Draft line points at it. The caller applies the awarded / non-superuser gate.
+ * on an Awarded agreement, every new SC, with or without budget lines. A saved SC still awaiting
+ * approval of its addition but with no request yet (saved before every addition needed approval)
+ * goes too once a budget line points at it. The caller applies the awarded / non-superuser gate.
  * @param {Object} args
  * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} args.servicesComponents
  * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} args.tempBudgetLines
@@ -133,12 +134,52 @@ export const isServicesComponentDeleteBlocked = ({
 export const getServicesComponentAdditionsForApproval = ({ servicesComponents, tempBudgetLines }) =>
     servicesComponents.filter(
         (sc) =>
-            (!("created_on" in sc) || sc.awaiting_add_approval) &&
-            !sc.in_review &&
-            tempBudgetLines.some(
-                (bli) => isNonDraftBudgetLine(bli) && findServicesComponentForBudgetLine(bli, servicesComponents) === sc
-            )
+            !("created_on" in sc) ||
+            (sc.awaiting_add_approval &&
+                !sc.in_review &&
+                tempBudgetLines.some((bli) => findServicesComponentForBudgetLine(bli, servicesComponents) === sc))
     );
+
+/**
+ * The saved services components deleted in this save that go to Division Director approval
+ * (OPS-6440). On an Awarded agreement that's every delete the user can make, except an SC added
+ * after award whose addition isn't in a modification yet: the addition and the delete cancel
+ * out, so it's deleted directly. Mirrors the backend's check. The caller applies the awarded /
+ * non-superuser gate; SCs whose delete is blocked can't be deleted in the editor.
+ * @param {Object} args
+ * @param {Array<number>} args.deletedServicesComponentsIds
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} args.savedServicesComponents - The agreement's services components as saved
+ * @param {Set<number>} args.servicesComponentIdsWithPendingAddition - SCs with an approved "Add SC" edit not yet in a modification
+ * @returns {Array<import("../../../types/ServicesComponents").ServicesComponents>}
+ */
+export const getServicesComponentDeletionsForApproval = ({
+    deletedServicesComponentsIds,
+    savedServicesComponents,
+    servicesComponentIdsWithPendingAddition
+}) =>
+    savedServicesComponents.filter(
+        (sc) =>
+            deletedServicesComponentsIds.includes(sc.id) &&
+            !sc.awaiting_add_approval &&
+            !servicesComponentIdsWithPendingAddition.has(sc.id)
+    );
+
+/**
+ * Keep a saved budget line linked to a services component whose delete is going to approval
+ * (OPS-6440). The editor clears the link when the SC is deleted, but the SC and its budget lines
+ * stay until the Division Director approves; unlinking them now would also survive a decline.
+ * @template {{services_component_id?: number | null}} T
+ * @param {T} bli - The budget line as it will be saved
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine | undefined} baseline - The saved budget line
+ * @param {Set<number>} servicesComponentIdsPendingDelete
+ * @returns {T}
+ */
+export const keepLinkToServicesComponentPendingDelete = (bli, baseline, servicesComponentIdsPendingDelete) =>
+    bli.services_component_id == null &&
+    baseline?.services_component_id != null &&
+    servicesComponentIdsPendingDelete.has(baseline.services_component_id)
+        ? { ...bli, services_component_id: baseline.services_component_id }
+        : bli;
 
 /**
  * Derive the effective SC window across all services components (saved and unsaved).

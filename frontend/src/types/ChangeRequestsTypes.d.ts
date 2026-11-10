@@ -27,6 +27,7 @@ export type ChangeRequest = {
         awarding_entity_id?: number;
         delete?: boolean;
         services_component_create?: boolean;
+        services_component_delete?: boolean;
     };
     requested_change_diff: {
         amount?: {
@@ -56,6 +57,10 @@ export type ChangeRequest = {
         services_component_create?: {
             new: string;
             old: null;
+        };
+        services_component_delete?: {
+            new: string;
+            old: string;
         };
     };
     requested_change_info?: {

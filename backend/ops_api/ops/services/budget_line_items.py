@@ -29,6 +29,7 @@ from models import (
     ProcurementShop,
     ProcurementTracker,
     ServicesComponent,
+    ServicesComponentChangeRequest,
     User,
 )
 from ops_api.ops.schemas.agreements import MetaSchema
@@ -64,6 +65,10 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     validate_no_execution_status_change_on_awarded,
 )
 from ops_api.ops.utils.users import is_budget_team, is_super_user
+
+SERVICES_COMPONENT_PENDING_DELETE_MESSAGE = (
+    "This services component's deletion is pending approval, so budget lines can't be added to it."
+)
 
 
 @dataclass
@@ -155,6 +160,7 @@ class BudgetLineItemService:
                 raise ResourceNotFoundError("CAN", create_request["can_id"])
 
         self._validate_grant_number_ownership(create_request.get("grant_number_id"), agreement_id)
+        self._check_services_component_not_pending_delete(create_request.get("services_component_id"))
 
         agreement = self.db_session.get(Agreement, agreement_id)
 
@@ -813,26 +819,39 @@ class BudgetLineItemService:
     ) -> list[int]:
         """Keep pending Services Components' add requests in step with a budget line's link (OPS-6440).
 
-        Linking to a pending SC can send its addition to approval; unlinking can leave the old SC
-        with nothing needing approval, which withdraws its add request. Returns new change request ids.
+        Refreshes the linked budget lines on the add requests of the SCs the line left and joined.
+        Returns the ids of any change requests created.
         """
         change_request_service = ChangeRequestService(self.db_session)
         change_request_ids: list[int] = []
-        to_ensure = [new_services_component_id]
-        if old_services_component_id is not None and not (
-            change_request_service.withdraw_services_component_add_if_unneeded(old_services_component_id, commit=commit)
-        ):
-            # Still pending: refresh the request's linked budget lines.
-            to_ensure.append(old_services_component_id)
-        for services_component_id in to_ensure:
+        for services_component_id in (new_services_component_id, old_services_component_id):
             if services_component_id is None:
                 continue
-            change_request_id = change_request_service.ensure_services_component_add_change_request(
+            change_request_id = change_request_service.sync_services_component_add_change_request(
                 self.db_session.get(ServicesComponent, services_component_id), commit=commit
             )
             if change_request_id is not None:
                 change_request_ids.append(change_request_id)
         return change_request_ids
+
+    def _check_services_component_not_pending_delete(self, services_component_id: int | None) -> None:
+        """A budget line can't join an SC whose deletion is in review (OPS-6440): approving the
+        delete would leave the line without an SC."""
+        if services_component_id is None:
+            return
+        pending_delete = self.db_session.scalar(
+            select(ServicesComponentChangeRequest.id)
+            .where(
+                ServicesComponentChangeRequest.in_review_filter(),
+                ServicesComponentChangeRequest.services_component_id == services_component_id,
+                ServicesComponentChangeRequest.requested_change_data.has_key(
+                    ServicesComponentChangeRequest.delete_field_name
+                ),
+            )
+            .limit(1)
+        )
+        if pending_delete is not None:
+            raise ValidationError({"services_component_id": [SERVICES_COMPONENT_PENDING_DELETE_MESSAGE]})
 
     def _get_budget_line_item(self, id: int) -> BudgetLineItem:
         """Retrieve budget line item by ID or raise appropriate error"""
@@ -1174,6 +1193,8 @@ class BudgetLineItemService:
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
         if sc and sc.agreement_id != budget_line_item.agreement_id:
             raise ValidationError({"services_component_id": "Services Component does not belong to the Agreement."})
+        if sc and sc.id != budget_line_item.services_component_id:
+            self._check_services_component_not_pending_delete(sc.id)
 
         self._validate_grant_number_ownership(updated_fields.get("grant_number_id"), budget_line_item.agreement_id)
 

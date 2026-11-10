@@ -19,6 +19,7 @@ const POP_DELETE_CONFIRMATION_MESSAGE =
  * @param {Function} setHasUnsavedChanges - Function to mark the parent form dirty.
  * @param {import('vest').Suite<any, any>} [scFormSuite] - Vest suite for the SC form's required fields.
  * @param {import('../../types/BudgetLineTypes').BudgetLine[]} [nonDraftBudgetLines] - Non-draft BLIs used by the PoP validation suite.
+ * @param {function(number): boolean} [isDeleteSentToApproval] - Whether deleting the saved services component with this id goes to Division Director approval on save (OPS-6440).
  */
 const useServicesComponents = (
     agreementId,
@@ -26,7 +27,8 @@ const useServicesComponents = (
     continueBtnText,
     setHasUnsavedChanges,
     scFormSuite,
-    nonDraftBudgetLines = []
+    nonDraftBudgetLines = [],
+    isDeleteSentToApproval = () => false
 ) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
@@ -174,9 +176,14 @@ const useServicesComponents = (
         setFormKey(Date.now());
         popValidationSuite.reset();
         setFormData(initialFormData);
+        // On an Awarded agreement the delete can go to approval on save (OPS-6440), so don't claim
+        // it was deleted.
+        const message = isDeleteSentToApproval(selectedServicesComponent.id)
+            ? `The deletion of ${selectedServicesComponent.display_title} has been queued and will be sent to your Division Director for approval when you click ${continueBtnText} below.`
+            : `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`;
         setAlert({
             type: "success",
-            message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
+            message,
             isCloseable: false,
             isToastMessage: true
         });

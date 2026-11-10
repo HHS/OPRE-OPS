@@ -1,9 +1,10 @@
 """Integration tests for Services Component add/delete on Awarded agreements (OPS-6440, AC6/AC7).
 
-On an Awarded agreement, adding an SC that has non-Draft budget lines goes to Division Director
-approval through a ``ServicesComponentChangeRequest``, and deleting one is blocked for everyone but
-superusers. These tests cover creating the add requests, approving/declining them, withdrawing a
-pending SC's add request once nothing on it needs approval any more, and the delete block.
+On an Awarded agreement, adding an SC goes to Division Director approval through a
+``ServicesComponentChangeRequest``, with or without budget lines. Deleting an SC with no budget
+lines, or only Draft ones, goes to approval too; deleting one with non-Draft budget lines is
+blocked for everyone but superusers. These tests cover creating the requests, approving/declining
+them, keeping a pending SC's add request in step with its budget lines, and the delete block.
 
 ``basic_user_auth_client`` (user 521) is a team member on the test agreements and submits the
 changes; ``division_director_auth_client`` (user 522) directs division 5, which manages
@@ -380,23 +381,6 @@ def _bli_change_request(loaded_db, bli_id):
     )
 
 
-def test_draft_to_planned_on_pending_sc_requests_sc_addition_too(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
-):
-    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
-    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT)
-    sc2_id = sc2.id
-
-    _request_planned(basic_user_auth_client, bli.id)
-
-    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
-    assert cr.services_component_id == sc2_id
-    assert cr.has_services_component_change is True
-    assert cr.created_by == BASIC_USER_ID
-    assert _bli_change_request(loaded_db, bli.id).has_status_change is True
-    assert "Services Component Addition Requested" in _history_titles(loaded_db, awarded_agreement.id)
-
-
 def test_draft_to_planned_on_normal_sc_requests_no_sc_addition(
     modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
 ):
@@ -408,7 +392,10 @@ def test_draft_to_planned_on_normal_sc_requests_no_sc_addition(
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
 
 
-def test_approved_draft_to_planned_keeps_sc_addition_in_review(
+@pytest.mark.parametrize("action", ["APPROVE", "REJECT"])
+def test_reviewing_draft_to_planned_on_pending_sc_keeps_sc_addition_in_review(
+    app,
+    action,
     modified_loe_enabled,
     basic_user_auth_client,
     division_director_auth_client,
@@ -419,49 +406,19 @@ def test_approved_draft_to_planned_keeps_sc_addition_in_review(
 ):
     sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
     bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT)
+    _request(app, loaded_db, sc2)
     _request_planned(basic_user_auth_client, bli.id)
 
-    _review(division_director_auth_client, _bli_change_request(loaded_db, bli.id).id)
+    _review(division_director_auth_client, _bli_change_request(loaded_db, bli.id).id, action=action)
 
     (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
     assert cr.status == ChangeRequestStatus.IN_REVIEW
 
 
-# ---=== Withdrawing a pending SC's add request ===---
+# ---=== Keeping a pending SC's add request in step with its budget lines ===---
 
 
-def test_declined_draft_to_planned_withdraws_sc_addition(
-    modified_loe_enabled,
-    basic_user_auth_client,
-    division_director_auth_client,
-    loaded_db,
-    test_can,
-    awarded_agreement,
-    app_ctx,
-):
-    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
-    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT)
-    sc2_id = sc2.id
-    _request_planned(basic_user_auth_client, bli.id)
-    (sc_cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
-    sc_cr_id = sc_cr.id
-
-    _review(division_director_auth_client, _bli_change_request(loaded_db, bli.id).id, action="REJECT")
-
-    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
-    assert (
-        loaded_db.scalar(
-            select(ChangeRequestNotification).where(ChangeRequestNotification.change_request_id == sc_cr_id)
-        )
-        is None
-    )
-    sc2 = loaded_db.get(ServicesComponent, sc2_id)
-    assert sc2.awaiting_add_approval is True
-    assert sc2.in_review is False
-    assert "Services Component Addition Withdrawn" in _history_titles(loaded_db, awarded_agreement.id)
-
-
-def test_approved_budget_line_delete_withdraws_sc_addition(
+def test_approved_budget_line_delete_keeps_sc_addition_in_review(
     app,
     modified_loe_enabled,
     basic_user_auth_client,
@@ -480,44 +437,27 @@ def test_approved_budget_line_delete_withdraws_sc_addition(
     assert response.status_code == 202, response.json
     _review(division_director_auth_client, _bli_change_request(loaded_db, bli_id).id)
 
-    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    assert cr.status == ChangeRequestStatus.IN_REVIEW
 
 
-def test_withdraw_keeps_request_while_a_non_draft_budget_line_remains(
-    app, modified_loe_enabled, loaded_db, test_can, awarded_agreement, app_ctx
+def test_pending_sc_without_a_request_gets_one_on_its_next_budget_line_link(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
 ):
+    """An SC left pending with no request (saved before every addition needed approval)."""
     sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
-    _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
-    second = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
-    _request(app, loaded_db, sc2)
+    bli = _add_bli(loaded_db, awarded_agreement, None, test_can, BudgetLineItemStatus.DRAFT)
+    sc2_id, bli_id = sc2.id, bli.id
 
-    second.services_component_id = None
-    loaded_db.commit()
-    with app.test_request_context():
-        withdrawn = ChangeRequestService(loaded_db).withdraw_services_component_add_if_unneeded(sc2.id)
+    response = _patch_bli(basic_user_auth_client, bli_id, {"services_component_id": sc2_id})
+    assert response.status_code == 202, response.json
 
-    assert withdrawn is False
-    assert len(_sc_change_requests(loaded_db, awarded_agreement.id)) == 1
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    assert cr.services_component_id == sc2_id
+    assert cr.requested_change_info["linked_budget_line_item_ids"] == [bli_id]
 
 
-def test_withdraw_when_last_non_draft_budget_line_is_unlinked(
-    app, modified_loe_enabled, loaded_db, test_can, awarded_agreement, app_ctx
-):
-    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
-    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
-    _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT)
-    _request(app, loaded_db, sc2)
-
-    bli.services_component_id = None
-    loaded_db.commit()
-    with app.test_request_context():
-        withdrawn = ChangeRequestService(loaded_db).withdraw_services_component_add_if_unneeded(sc2.id)
-
-    assert withdrawn is True
-    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
-
-
-def test_ensure_add_request_rereads_flag_after_lock(
+def test_sync_add_request_rereads_flag_after_lock(
     app, mocker, modified_loe_enabled, loaded_db, test_can, awarded_agreement, app_ctx
 ):
     mocker.patch("ops_api.ops.utils.budget_line_items_helpers.is_super_user", return_value=False)
@@ -531,13 +471,13 @@ def test_ensure_add_request_rereads_flag_after_lock(
     assert sc2.awaiting_add_approval is True
 
     with app.test_request_context():
-        change_request_id = ChangeRequestService(loaded_db).ensure_services_component_add_change_request(sc2)
+        change_request_id = ChangeRequestService(loaded_db).sync_services_component_add_change_request(sc2)
 
     assert change_request_id is None
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
 
 
-# ---=== Services Component service and resource (step 3) ===---
+# ---=== Services Component service and resource ===---
 
 
 def _post_sc(client, agreement_id, number):
@@ -553,14 +493,50 @@ def _patch_bli(client, bli_id, body):
     return client.patch(url_for("api.budget-line-items-item", id=bli_id), json=body)
 
 
-def test_sc_added_after_award_is_pending_without_a_request(
+def test_sc_added_after_award_with_no_budget_lines_goes_to_approval(
     modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
 ):
     data = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)
 
     assert data["awaiting_add_approval"] is True
-    assert data["in_review"] is False
-    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    assert data["in_review"] is True
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    assert data["change_requests_in_review"][0]["id"] == cr.id
+    assert cr.services_component_id == data["id"]
+    assert cr.requested_change_data == {"services_component_create": True}
+    assert cr.requested_change_info["linked_budget_line_item_ids"] == []
+    assert cr.requires_contract_modification is True
+    assert cr.created_by == BASIC_USER_ID
+    notification = loaded_db.scalar(
+        select(ChangeRequestNotification).where(ChangeRequestNotification.change_request_id == cr.id)
+    )
+    assert notification.recipient_id == DIVISION_DIRECTOR_USER_ID
+    titles = _history_titles(loaded_db, awarded_agreement.id)
+    assert "New Services Component Added" in titles
+    assert "Services Component Addition Requested" in titles
+
+
+def test_approved_add_of_sc_with_no_budget_lines_shows_on_award_and_modifications(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    awarded_agreement,
+    app_ctx,
+):
+    sc2_id = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)["id"]
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+
+    _review(division_director_auth_client, cr.id)
+
+    response = basic_user_auth_client.get(
+        url_for("api.agreements-contract-modification-edits", id=awarded_agreement.id)
+    )
+    assert response.status_code == 200, response.json
+    (record,) = response.json["data"]
+    assert record["services_component_id"] == sc2_id
+    assert record["field"] == "services_component_create"
+    assert record["new_value"] == "SC2"
 
 
 def test_sc_added_with_flag_off_is_not_pending(basic_user_auth_client, loaded_db, awarded_agreement, app, app_ctx):
@@ -569,34 +545,28 @@ def test_sc_added_with_flag_off_is_not_pending(basic_user_auth_client, loaded_db
     data = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)
 
     assert data["awaiting_add_approval"] is False
+    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
 
 
-def test_linking_planned_budget_lines_to_pending_sc_creates_one_request(
+def test_superuser_adding_an_sc_applies_directly(
+    modified_loe_enabled, power_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    data = _post_sc(power_user_auth_client, awarded_agreement.id, 2)
+
+    assert data["awaiting_add_approval"] is False
+    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+
+
+def test_linking_budget_lines_to_pending_sc_refreshes_its_one_request(
     modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
 ):
     """Per-resource path: the SC is POSTed first and its budget lines are linked afterwards."""
     sc2_id = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)["id"]
-    first = _add_bli(loaded_db, awarded_agreement, None, test_can, BudgetLineItemStatus.PLANNED)
-    second = _add_bli(loaded_db, awarded_agreement, None, test_can, BudgetLineItemStatus.PLANNED)
-    first_id, second_id = first.id, second.id
+    planned = _add_bli(loaded_db, awarded_agreement, None, test_can, BudgetLineItemStatus.PLANNED)
+    planned_id = planned.id
 
-    response = _patch_bli(basic_user_auth_client, first_id, {"services_component_id": sc2_id})
-    assert response.status_code == 202, response.json
-    response = _patch_bli(basic_user_auth_client, second_id, {"services_component_id": sc2_id})
-    assert response.status_code in (200, 202), response.json
-
-    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
-    assert cr.has_services_component_change is True
-    assert cr.requested_change_info["linked_budget_line_item_ids"] == [first_id, second_id]
-    response = basic_user_auth_client.get(url_for("api.services-component-item", id=sc2_id))
-    assert response.json["in_review"] is True
-
-
-def test_draft_budget_line_on_pending_sc_creates_no_request(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
-):
-    sc2_id = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)["id"]
-
+    response = _patch_bli(basic_user_auth_client, planned_id, {"services_component_id": sc2_id})
+    assert response.status_code == 200, response.json
     response = basic_user_auth_client.post(
         url_for("api.budget-line-items-group"),
         json={
@@ -609,11 +579,13 @@ def test_draft_budget_line_on_pending_sc_creates_no_request(
         },
     )
     assert response.status_code == 201, response.json
+    draft_id = response.json["id"]
 
-    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    assert cr.requested_change_info["linked_budget_line_item_ids"] == [planned_id, draft_id]
 
 
-def test_moving_the_last_planned_budget_line_off_a_pending_sc_withdraws_its_request(
+def test_moving_the_last_budget_line_off_a_pending_sc_keeps_its_request(
     app, modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
 ):
     sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
@@ -628,38 +600,9 @@ def test_moving_the_last_planned_budget_line_off_a_pending_sc_withdraws_its_requ
     response = _patch_bli(basic_user_auth_client, bli.id, {"services_component_id": sc1_id})
     assert response.status_code in (200, 202), response.json
 
-    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
-
-
-def test_deleting_the_draft_budget_line_behind_a_pending_sc_withdraws_its_request(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
-):
-    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
-    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT)
-    sc2_id, bli_id = sc2.id, bli.id
-    _request_planned(basic_user_auth_client, bli_id)
-    assert len(_sc_change_requests(loaded_db, awarded_agreement.id)) == 1
-
-    response = basic_user_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
-    assert response.status_code == 200, response.json
-
-    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
-    assert loaded_db.get(ServicesComponent, sc2_id).awaiting_add_approval is True
-    assert "Services Component Addition Withdrawn" in _history_titles(loaded_db, awarded_agreement.id)
-
-
-def test_superuser_deleting_the_last_planned_budget_line_withdraws_the_sc_request(
-    app, modified_loe_enabled, power_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
-):
-    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
-    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
-    _request(app, loaded_db, sc2)
-    bli_id = bli.id
-
-    response = power_user_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
-    assert response.status_code == 200, response.json
-
-    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    assert cr.status == ChangeRequestStatus.IN_REVIEW
+    assert cr.requested_change_info["linked_budget_line_item_ids"] == []
 
 
 def test_superuser_linking_a_planned_budget_line_applies_the_sc_addition(
@@ -712,19 +655,179 @@ def test_deleting_sc_with_planned_budget_lines_applies_directly_when_flag_off(
     assert loaded_db.get(ServicesComponent, sc2_id) is None
 
 
-def test_deleting_sc_with_only_draft_budget_lines_applies_directly(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
+def _delete_sc(client, sc_id, status_code):
+    response = client.delete(url_for("api.services-component-item", id=sc_id))
+    assert response.status_code == status_code, response.json
+    return response.json
+
+
+@pytest.mark.parametrize("draft_budget_line", [False, True])
+def test_deleting_sc_with_no_non_draft_budget_lines_goes_to_approval(
+    draft_budget_line, modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2)
+    bli = (
+        _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT) if draft_budget_line else None
+    )
+    sc2_id = sc2.id
+    bli_ids = [bli.id] if bli else []
+
+    data = _delete_sc(basic_user_auth_client, sc2_id, 202)
+
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    assert data["change_request_id"] == cr.id
+    assert cr.requested_change_data == {"services_component_delete": True}
+    assert cr.requested_change_diff == {"services_component_delete": {"old": "SC2", "new": "Deleted"}}
+    assert cr.requested_change_info["linked_budget_line_item_ids"] == bli_ids
+    assert cr.has_services_component_change is True
+    assert cr.requires_contract_modification is True
+    sc2 = loaded_db.get(ServicesComponent, sc2_id)
+    assert sc2 is not None
+    assert sc2.in_review is True
+    if bli:
+        assert loaded_db.get(ContractBudgetLineItem, bli.id).services_component_id == sc2_id
+    notification = loaded_db.scalar(
+        select(ChangeRequestNotification).where(ChangeRequestNotification.change_request_id == cr.id)
+    )
+    assert notification.recipient_id == DIVISION_DIRECTOR_USER_ID
+    titles = _history_titles(loaded_db, awarded_agreement.id)
+    assert "Services Component Deletion Requested" in titles
+    assert "Services Component Deleted" not in titles
+
+
+def test_approved_sc_delete_removes_sc_unlinks_draft_lines_and_records_edit(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    awarded_agreement,
+    app_ctx,
 ):
     sc2 = _add_sc(loaded_db, awarded_agreement, 2)
     bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT)
     sc2_id, bli_id = sc2.id, bli.id
+    cr_id = _delete_sc(basic_user_auth_client, sc2_id, 202)["change_request_id"]
 
-    response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
+    _review(division_director_auth_client, cr_id)
 
-    assert response.status_code == 200, response.json
     loaded_db.expire_all()
     assert loaded_db.get(ServicesComponent, sc2_id) is None
     assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id is None
+    cr = loaded_db.get(ServicesComponentChangeRequest, cr_id)
+    assert cr.status == ChangeRequestStatus.APPROVED
+    assert cr.services_component_id is None
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert edit.services_component_id == sc2_id
+    assert edit.field == "services_component_delete"
+    assert edit.old_value == "SC2"
+    assert edit.new_value == "Deleted"
+    notification = loaded_db.scalar(
+        select(ChangeRequestNotification).where(
+            ChangeRequestNotification.change_request_id == cr_id,
+            ChangeRequestNotification.recipient_id == BASIC_USER_ID,
+        )
+    )
+    assert notification.message == "Your request to delete SC2 has been approved."
+    titles = _history_titles(loaded_db, awarded_agreement.id)
+    assert "Services Component Deletion Approved" in titles
+    assert "Services Component Deleted" in titles
+
+    response = basic_user_auth_client.get(
+        url_for("api.agreements-contract-modification-edits", id=awarded_agreement.id)
+    )
+    assert response.status_code == 200, response.json
+    (record,) = response.json["data"]
+    assert record["field"] == "services_component_delete"
+    assert record["old_value"] == "SC2"
+
+
+def test_declined_sc_delete_keeps_sc_and_its_links(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    awarded_agreement,
+    app_ctx,
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2)
+    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT)
+    sc2_id, bli_id = sc2.id, bli.id
+    cr_id = _delete_sc(basic_user_auth_client, sc2_id, 202)["change_request_id"]
+
+    _review(division_director_auth_client, cr_id, action="REJECT")
+
+    loaded_db.expire_all()
+    sc2 = loaded_db.get(ServicesComponent, sc2_id)
+    assert sc2 is not None
+    assert sc2.in_review is False
+    assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id == sc2_id
+    assert _edits(loaded_db, awarded_agreement.id) == []
+    assert "Services Component Deletion Declined" in _history_titles(loaded_db, awarded_agreement.id)
+
+
+def test_budget_lines_cannot_join_an_sc_whose_delete_is_in_review(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2)
+    bli = _add_bli(loaded_db, awarded_agreement, None, test_can, BudgetLineItemStatus.PLANNED)
+    sc2_id, bli_id = sc2.id, bli.id
+    _delete_sc(basic_user_auth_client, sc2_id, 202)
+
+    response = _patch_bli(basic_user_auth_client, bli_id, {"services_component_id": sc2_id})
+    assert response.status_code == 400, response.json
+    response = basic_user_auth_client.post(
+        url_for("api.budget-line-items-group"),
+        json={
+            "agreement_id": awarded_agreement.id,
+            "line_description": "Draft on SC pending delete",
+            "amount": 1000.0,
+            "can_id": test_can.id,
+            "status": "DRAFT",
+            "services_component_id": sc2_id,
+        },
+    )
+    assert response.status_code == 400, response.json
+
+    loaded_db.expire_all()
+    assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id is None
+
+
+def test_deleting_sc_whose_approved_addition_is_pending_applies_directly(
+    app,
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    awarded_agreement,
+    app_ctx,
+):
+    """The addition and the delete cancel out, so nothing goes to the contract."""
+    sc2_id = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)["id"]
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    _review(division_director_auth_client, cr.id)
+    assert len(_edits(loaded_db, awarded_agreement.id)) == 1
+
+    _delete_sc(basic_user_auth_client, sc2_id, 200)
+
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is None
+    assert _edits(loaded_db, awarded_agreement.id) == []
+    assert len(_sc_change_requests(loaded_db, awarded_agreement.id)) == 1
+    assert "Services Component Deleted" in _history_titles(loaded_db, awarded_agreement.id)
+
+
+def test_deleting_pending_sc_without_a_request_applies_directly(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
+    sc2_id = sc2.id
+
+    _delete_sc(basic_user_auth_client, sc2_id, 200)
+
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is None
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
 
 
@@ -781,7 +884,24 @@ def test_bundle_new_sc_with_planned_budget_line_creates_request(
     )
 
 
-def test_bundle_deleting_draft_budget_lines_then_their_sc_applies_directly(
+def test_bundle_new_sc_without_budget_lines_creates_request(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    response = basic_user_auth_client.patch(
+        url_for("api.agreements-edit-bundle", id=awarded_agreement.id),
+        json={"services_components": {"create": [{"ref": "sc2", "number": 2, "optional": False}]}},
+    )
+
+    assert response.status_code == 202, response.json
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    assert response.json["change_request_ids"] == [cr.id]
+    assert (
+        loaded_db.scalar(select(ChangeRequestNotification).where(ChangeRequestNotification.change_request_id == cr.id))
+        is not None
+    )
+
+
+def test_bundle_deleting_draft_budget_lines_then_their_sc_sends_the_delete_to_approval(
     modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
 ):
     sc2 = _add_sc(loaded_db, awarded_agreement, 2)
@@ -793,10 +913,14 @@ def test_bundle_deleting_draft_budget_lines_then_their_sc_applies_directly(
         json={"services_components": {"delete": [sc2_id]}, "budget_line_items": {"delete": [bli.id]}},
     )
 
-    assert response.status_code == 200, response.json
+    assert response.status_code == 202, response.json
+    assert response.json["services_components_deleted"] == 0
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    assert response.json["change_request_ids"] == [cr.id]
+    assert cr.requested_change_data == {"services_component_delete": True}
+    assert cr.requested_change_info["linked_budget_line_item_ids"] == []
     loaded_db.expire_all()
-    assert loaded_db.get(ServicesComponent, sc2_id) is None
-    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
 
 
 def test_bundle_sc_delete_with_planned_budget_line_is_blocked_and_rolls_back(

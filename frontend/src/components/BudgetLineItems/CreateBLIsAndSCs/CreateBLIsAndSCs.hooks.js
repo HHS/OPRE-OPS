@@ -11,6 +11,8 @@ import {
     useDeleteBudgetLineItemMutation,
     useDeleteGrantNumberMutation,
     useDeleteServicesComponentMutation,
+    useGetAgreementContractModificationEditsByIdQuery,
+    useGetServicesComponentsListQuery,
     useGetVersionQuery,
     useUpdateBudgetLineItemMutation,
     useUpdateGrantNumberMutation,
@@ -47,7 +49,9 @@ import {
     buildNewBudgetLineItem,
     buildSaveSuccessAlert,
     getServicesComponentAdditionsForApproval,
+    getServicesComponentDeletionsForApproval,
     isServicesComponentDeleteBlocked,
+    keepLinkToServicesComponentPendingDelete,
     computeBudgetLinePageErrors,
     feesForCards,
     getBudgetLinesUrl,
@@ -184,10 +188,27 @@ const useCreateBLIsAndSCs = (
     // Contract-modification tracking (OPS-3072) only applies on an Awarded agreement with the
     // backend's ENABLE_MODIFIED_LOE_EDITS capability on.
     const tracksContractModifications = enableModifiedLoeEdits && Boolean(selectedAgreement?.is_awarded);
-    // On an Awarded agreement, services components with non-Draft budget lines are gated (OPS-6440):
-    // an addition goes to Division Director approval, and a deletion is blocked. Only superusers
-    // bypass this, matching the backend.
+    // On an Awarded agreement, services component changes are gated (OPS-6440): every addition goes
+    // to Division Director approval, a deletion of an SC with non-Draft budget lines is blocked,
+    // and any other deletion goes to approval. Only superusers bypass this, matching the backend.
     const scChangesRequireApproval = tracksContractModifications && !isSuperUser;
+    const { data: savedServicesComponents } = useGetServicesComponentsListQuery(selectedAgreement?.id, {
+        skip: !scChangesRequireApproval || !selectedAgreement?.id
+    });
+    const { data: contractModificationEdits } = useGetAgreementContractModificationEditsByIdQuery(
+        selectedAgreement?.id,
+        { skip: !scChangesRequireApproval || !selectedAgreement?.id }
+    );
+    // SCs whose approved addition isn't in a modification yet: deleting one cancels the addition.
+    const servicesComponentIdsWithPendingAddition = React.useMemo(
+        () =>
+            new Set(
+                (contractModificationEdits ?? [])
+                    .filter((edit) => edit.field === "services_component_create")
+                    .map((edit) => edit.services_component_id)
+            ),
+        [contractModificationEdits]
+    );
     const pendingServicesComponentAdditions = React.useMemo(
         () =>
             scChangesRequireApproval
@@ -195,15 +216,49 @@ const useCreateBLIsAndSCs = (
                 : [],
         [scChangesRequireApproval, servicesComponents, tempBudgetLines]
     );
-    const hasServicesComponentChangesForApproval = pendingServicesComponentAdditions.length > 0;
-    const servicesComponentChangeMessages = React.useMemo(
+    const pendingServicesComponentDeletions = React.useMemo(
         () =>
-            pendingServicesComponentAdditions.map(
-                (sc) =>
-                    `• ${sc.display_name ?? formatServiceComponent(sc.number, sc.optional, agreement?.service_requirement_type, true)} Addition`
-            ),
-        [pendingServicesComponentAdditions, agreement?.service_requirement_type]
+            scChangesRequireApproval
+                ? getServicesComponentDeletionsForApproval({
+                      deletedServicesComponentsIds,
+                      savedServicesComponents: savedServicesComponents ?? [],
+                      servicesComponentIdsWithPendingAddition
+                  })
+                : [],
+        [
+            scChangesRequireApproval,
+            deletedServicesComponentsIds,
+            savedServicesComponents,
+            servicesComponentIdsWithPendingAddition
+        ]
     );
+    const servicesComponentIdsPendingDelete = React.useMemo(
+        () => new Set(pendingServicesComponentDeletions.map((sc) => sc.id)),
+        [pendingServicesComponentDeletions]
+    );
+    const hasServicesComponentChangesForApproval =
+        pendingServicesComponentAdditions.length > 0 || pendingServicesComponentDeletions.length > 0;
+    const servicesComponentChangeMessages = React.useMemo(() => {
+        const name = (sc) =>
+            sc.display_name ??
+            formatServiceComponent(sc.number, sc.optional, agreement?.service_requirement_type, true);
+        return [
+            ...pendingServicesComponentAdditions.map((sc) => `• ${name(sc)} Addition`),
+            ...pendingServicesComponentDeletions.map((sc) => `• ${name(sc)} Deletion`)
+        ];
+    }, [pendingServicesComponentAdditions, pendingServicesComponentDeletions, agreement?.service_requirement_type]);
+    /**
+     * Whether deleting this saved services component goes to Division Director approval on save
+     * (OPS-6440), so the delete toast doesn't claim it was deleted.
+     * @param {number | undefined} servicesComponentId
+     * @returns {boolean}
+     */
+    const isServicesComponentDeleteSentToApproval = (servicesComponentId) =>
+        getServicesComponentDeletionsForApproval({
+            deletedServicesComponentsIds: [servicesComponentId],
+            savedServicesComponents: scChangesRequireApproval ? (savedServicesComponents ?? []) : [],
+            servicesComponentIdsWithPendingAddition
+        }).length > 0;
     /**
      * Whether this saved services component can't be deleted: on an Awarded agreement it still has
      * non-Draft budget lines and the user isn't a superuser (OPS-6440). Its delete button is disabled.
@@ -865,14 +920,22 @@ const useCreateBLIsAndSCs = (
             const { createdItems: createdGrantNumbers, existingItems: existingGrantNumbers } =
                 await persistPartitionedEntities(grantNumbers, addGrantNumber, updateGrantNumber);
 
-            const { newBudgetLineItemsWithIds, existingBudgetLineItemsWithIds } = linkBudgetLinesToApi({
-                tempBudgetLines,
-                isGrant,
-                createdServiceComponents,
-                existingServicesComponents,
-                createdGrantNumbers,
-                existingGrantNumbers
-            });
+            const { newBudgetLineItemsWithIds, existingBudgetLineItemsWithIds: linkedExistingBudgetLineItems } =
+                linkBudgetLinesToApi({
+                    tempBudgetLines,
+                    isGrant,
+                    createdServiceComponents,
+                    existingServicesComponents,
+                    createdGrantNumbers,
+                    existingGrantNumbers
+                });
+            const existingBudgetLineItemsWithIds = linkedExistingBudgetLineItems.map((bli) =>
+                keepLinkToServicesComponentPendingDelete(
+                    bli,
+                    budgetLines.find((baseline) => baseline.id === bli.id),
+                    servicesComponentIdsPendingDelete
+                )
+            );
             // Create new budget line items
             const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
                 const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
@@ -911,6 +974,8 @@ const useCreateBLIsAndSCs = (
             updateGrantNumber,
             tempBudgetLines,
             isGrant,
+            budgetLines,
+            servicesComponentIdsPendingDelete,
             addBudgetLineItem,
             canEditDirectly,
             handleFinancialSnapshotChanges,
@@ -990,9 +1055,9 @@ const useCreateBLIsAndSCs = (
     // `requiresFinancialApproval` already gates (Decision 10: not a second, stacked approval).
     // Draft BLs are added, edited, and deleted freely; they only require a contract modification
     // once changed to Planned (on the Change BL Status page). New BLs are always created as Draft,
-    // so adding one isn't counted here. Adding a services component counts when it has non-Draft
-    // budget lines (OPS-6440); deleting one isn't, since that's blocked for everyone but superusers.
-    // Only superusers bypass the addition, so it isn't gated on canEditDirectly.
+    // so adding one isn't counted here. Adding a services component always counts, and so does
+    // deleting one unless its addition hasn't reached a modification yet (OPS-6440). Only
+    // superusers bypass SC changes, so they aren't gated on canEditDirectly.
     // Only persisted BLs count: deleting a never-saved BL leaves its temp id in the deleted list.
     const hasDeletedNonDraftBLIs = deletedBudgetLines.some((id) => {
         const bli = budgetLines?.find((b) => b.id === id);
@@ -1026,6 +1091,8 @@ const useCreateBLIsAndSCs = (
         scFormSuite,
         nonDraftBudgetLines,
         isServicesComponentDeleteDisabled,
+        isServicesComponentDeleteSentToApproval,
+        servicesComponentIdsPendingDelete,
         deletedBudgetLines,
         enteredAmount,
         enteredDescription,

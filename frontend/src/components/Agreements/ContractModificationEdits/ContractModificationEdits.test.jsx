@@ -338,6 +338,18 @@ describe("ContractModificationEdits", () => {
         expect(within(addCard).queryByText("From")).not.toBeInTheDocument();
     });
 
+    it("renders a Services Component deletion with the deleted SC and no From/To (OPS-6440)", () => {
+        const scEdit = { ...AMOUNT_EDIT, budget_line_item_id: null, services_component_id: 21 };
+        mockQuery({
+            data: [{ ...scEdit, id: 6, field: "services_component_delete", old_value: "SC2", new_value: "Deleted" }]
+        });
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        const [deleteCard] = getCards();
+        expect(cardValues(deleteCard)).toEqual(["First Last Name", "Modified Level of Effort", "SC2", "Delete SC"]);
+    });
+
     it("renders a COR change as an Admin Change with the From and To names and no BL ID (OPS-3153)", () => {
         mockQuery({
             data: [

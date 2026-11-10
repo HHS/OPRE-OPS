@@ -31,7 +31,8 @@ const bli = (date_needed) => ({ date_needed });
 const renderUseServicesComponents = (
     setHasUnsavedChanges = vi.fn(),
     scFormSuite = undefined,
-    nonDraftBudgetLines = []
+    nonDraftBudgetLines = [],
+    isDeleteSentToApproval = undefined
 ) =>
     renderHook(() =>
         useServicesComponents(
@@ -40,7 +41,8 @@ const renderUseServicesComponents = (
             CONTINUE_BTN_TEXT,
             setHasUnsavedChanges,
             scFormSuite,
-            nonDraftBudgetLines
+            nonDraftBudgetLines,
+            isDeleteSentToApproval
         )
     );
 
@@ -351,6 +353,30 @@ describe("useServicesComponents", () => {
                 payload: expect.objectContaining({ number: 1 })
             });
             expect(result.current.showModal).toBe(false);
+            expect(setAlertMock.mock.calls.at(-1)[0].message).toBe(
+                "SC1 has been successfully deleted. When you're done editing, click Continue below."
+            );
+        });
+
+        it("says the deletion is queued for approval when it goes to the Division Director (OPS-6440)", () => {
+            useEditAgreementMock.mockReturnValue({
+                services_components: [
+                    { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" }
+                ]
+            });
+            const isDeleteSentToApproval = vi.fn((id) => id === 1);
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [], isDeleteSentToApproval);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(setAlertMock.mock.calls.at(-1)[0].message).toBe(
+                "The deletion of SC1 has been queued and will be sent to your Division Director for approval when you click Continue below."
+            );
         });
     });
 

@@ -34,6 +34,11 @@ def _services_components_added(edits: list[dict]) -> list[str]:
     return [edit["new_value"] for edit in edits if edit["field"] == ServicesComponentChangeRequest.create_field_name]
 
 
+def _services_components_deleted(edits: list[dict]) -> list[str]:
+    """Names of the Services Components deleted by the given serialized edits, for history (OPS-6440)."""
+    return [edit["old_value"] for edit in edits if edit["field"] == ServicesComponentChangeRequest.delete_field_name]
+
+
 class AgreementContractModificationEditsAPI(BaseItemAPI):
     """Pending edits on an Awarded agreement that require a contract modification."""
 
@@ -118,6 +123,7 @@ class AgreementContractModificationsAPI(BaseItemAPI):
                     "contract_modification_request_id": mod_request.id,
                     "contract_modification_edit_ids": [edit["id"] for edit in data["edits"]],
                     "services_components_added": _services_components_added(data["edits"]),
+                    "services_components_deleted": _services_components_deleted(data["edits"]),
                     "budget_line_item_ids": data["budget_line_item_ids"],
                 }
             )
@@ -162,6 +168,7 @@ class ContractModificationRequestItemAPI(BaseItemAPI):
                     "agreement_mod_id": mod_request.agreement_mod_id,
                     "contract_modification_edit_ids": [edit["id"] for edit in data["edits"]],
                     "services_components_added": _services_components_added(data["edits"]),
+                    "services_components_deleted": _services_components_deleted(data["edits"]),
                     "budget_line_item_ids": data["budget_line_item_ids"],
                     "reviewer_notes": mod_request.reviewer_notes,
                 }

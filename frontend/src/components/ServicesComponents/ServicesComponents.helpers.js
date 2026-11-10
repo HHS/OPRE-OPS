@@ -43,9 +43,10 @@ const SERVICES_COMPONENT_PENDING_TITLE =
     "This services component has pending edits that will require a contract modification:";
 
 /**
- * Describe a Services Component add change request (OPS-6440) as display lines, without bullets:
- * "Adding: SC3 BL 15012, BL 15013". Read from the request's frozen diff, so it works after the SC
- * itself is gone.
+ * Describe a Services Component add or delete change request (OPS-6440) as display lines, without
+ * bullets: "Adding: SC3 BL 15012, BL 15013", or "Deleting: SC2" then "Removing: BL 15010 from SC2"
+ * per linked budget line (the SC is deleted, but its budget lines are only removed from it). Read
+ * from the request's frozen diff, so it works after the SC itself is gone.
  *
  * @param {import("../../types/ChangeRequestsTypes").ChangeRequest} changeRequest
  * @returns {string[]}
@@ -59,12 +60,16 @@ export function getServicesComponentChangeLines(changeRequest) {
         const name = diff.services_component_create.new;
         return [[`Adding: ${name}`, budgetLines.join(", ")].filter(Boolean).join(" ")];
     }
+    if (diff.services_component_delete) {
+        const name = diff.services_component_delete.old;
+        return [`Deleting: ${name}`, ...budgetLines.map((budgetLine) => `Removing: ${budgetLine} from ${name}`)];
+    }
     return [];
 }
 
 /**
- * "Changes In Review" banner entries for an agreement's Services Component additions in review
- * (OPS-6440), e.g. "SC3 Addition".
+ * "Changes In Review" banner entries for an agreement's Services Component additions and deletions
+ * in review (OPS-6440), e.g. "SC3 Addition" or "SC2 Deletion".
  *
  * @param {Array<any>} changeRequests - The agreement's change_requests_in_review.
  * @returns {string[]}
@@ -74,11 +79,13 @@ export const getServicesComponentChangeMessages = (changeRequests) =>
         .filter((changeRequest) => changeRequest?.has_services_component_change)
         .map(
             (changeRequest) =>
-                `${changeRequest.requested_change_info?.target_display_name ?? "Services Component"} Addition`
+                `${changeRequest.requested_change_info?.target_display_name ?? "Services Component"} ${
+                    changeRequest.requested_change_diff?.services_component_delete ? "Deletion" : "Addition"
+                }`
         );
 
 /**
- * Tooltip for a services component whose addition is in review (OPS-6440), in the same
+ * Tooltip for a services component whose addition or deletion is in review (OPS-6440), in the same
  * format as a budget line's pending-edits tooltip.
  *
  * @param {object} servicesComponent - A services component as returned by the API.

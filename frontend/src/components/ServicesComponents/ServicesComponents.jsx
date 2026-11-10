@@ -17,6 +17,7 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param {import('vest').Suite<any, any>} [props.scFormSuite] - Vest validation suite for the SC form.
  * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.nonDraftBudgetLines] - Non-draft BLIs used by the SC form suite for PoP validation.
  * @param {function(number): boolean} [props.isDeleteDisabled] - Whether the saved services component with this id can't be deleted because it has non-Draft budget lines on an awarded agreement (OPS-6440).
+ * @param {function(number): boolean} [props.isDeleteSentToApproval] - Whether deleting the saved services component with this id goes to Division Director approval on save (OPS-6440).
  * @returns {React.ReactElement}
  *
  * @example
@@ -33,7 +34,8 @@ const ServicesComponents = ({
     hasUnsavedChanges,
     scFormSuite,
     nonDraftBudgetLines = [],
-    isDeleteDisabled
+    isDeleteDisabled,
+    isDeleteSentToApproval
 }) => {
     const {
         formData,
@@ -54,7 +56,8 @@ const ServicesComponents = ({
         continueBtnText,
         setHasUnsavedChanges,
         scFormSuite,
-        nonDraftBudgetLines
+        nonDraftBudgetLines,
+        isDeleteSentToApproval
     );
 
     return (

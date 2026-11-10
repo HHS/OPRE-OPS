@@ -866,9 +866,9 @@ This applies under the same awarded gate as before (`sc_requires_approval_gate`:
 
 - **Modal trigger** (`getServicesComponentAdditionsForApproval`, `CreateBLIsAndSCs.helpers.js` ~:126):
   - Drop the non-Draft BL condition. Every new SC, or saved `awaiting_add_approval` SC that isn't in review and has no CR yet, counts.
-  - Add `getServicesComponentDeletionsForApproval`: saved SCs in the deleted list that aren't delete-blocked and have no pending "Add SC" edit. If the client can't see that edit, count every gated delete, and the backend's direct net-zero delete just means the alert over-says. Check whether the SC payload exposes it. If not, add an `addition_pending_modification` flag to the SC schema.
+  - Add `getServicesComponentDeletionsForApproval`: saved SCs in the deleted list that aren't `awaiting_add_approval` and have no pending "Add SC" edit. The hook reads pending edits from the existing `useGetAgreementContractModificationEditsByIdQuery` and saved SCs from `useGetServicesComponentsListQuery`, so no new SC schema field is needed.
   - Fold both into `requiresContractModification` and update the comments at `CreateBLIsAndSCs.hooks.js` ~:987-1003 and the `CreateBLIsAndSCs.jsx:54` JSDoc.
-- **Keep Draft BL links on a gated delete.** `DELETE_SERVICE_COMPONENT` (`AgreementEditorContext.hooks.js` ~:170) clears `services_component_id` on the SC's BLs locally. When the delete goes to approval, keep the links, so a decline leaves them intact. The backend unlinks them on approval.
+- **Keep Draft BL links on a gated delete.** The editor still clears the links locally when an SC is deleted, so the list shows them without an SC. Both save paths restore a saved BL's link to an SC whose delete goes to approval (`keepLinkToServicesComponentPendingDelete`), so no unlink is sent and a decline leaves the links intact. The backend unlinks them on approval.
 - **Save paths:**
   - Per-resource (`persistPartitionedEntities`, `handleDeletions`): read `change_request_id` from SC POST, and handle the SC DELETE 202.
   - Bundle: no payload change.

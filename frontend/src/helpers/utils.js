@@ -238,6 +238,7 @@ export const codesToDisplayText = {
         status: "Status",
         delete: "Deleted",
         services_component_create: "Add Services Component",
+        services_component_delete: "Delete Services Component",
         project_officer_id: "COR"
     },
     modificationEditType: {

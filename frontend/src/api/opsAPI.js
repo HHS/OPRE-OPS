@@ -1222,7 +1222,13 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+            invalidatesTags: [
+                "ServicesComponents",
+                "Agreements",
+                "BudgetLineItems",
+                "AgreementHistory",
+                "ChangeRequests"
+            ]
         }),
         updateServicesComponent: builder.mutation({
             query: ({ id, data }) => {
@@ -1248,7 +1254,13 @@ export const opsApi = createApi({
                 url: `/services-components/${id}`,
                 method: "DELETE"
             }),
-            invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+            invalidatesTags: [
+                "ServicesComponents",
+                "Agreements",
+                "BudgetLineItems",
+                "AgreementHistory",
+                "ChangeRequests"
+            ]
         }),
         addGrantNumber: builder.mutation({
             query: (data) => {

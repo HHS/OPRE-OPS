@@ -7,7 +7,9 @@ import {
     feesForCards,
     getEffectiveScDateRange,
     getServicesComponentAdditionsForApproval,
+    getServicesComponentDeletionsForApproval,
     isServicesComponentDeleteBlocked,
+    keepLinkToServicesComponentPendingDelete,
     totalsForCards
 } from "./CreateBLIsAndSCs.helpers";
 
@@ -165,17 +167,60 @@ describe("services component approval (OPS-6440)", () => {
     const sc2 = { id: 21, number: 2, created_on: "2026-01-01" };
     const sc3 = { number: 3 };
 
-    it("an SC addition needs approval only when a non-Draft line points at it", () => {
-        const pendingSc2 = { ...sc2, awaiting_add_approval: true };
+    it("every new SC needs approval, with or without budget lines", () => {
+        const sc4 = { number: 4 };
         const additions = getServicesComponentAdditionsForApproval({
-            servicesComponents: [pendingSc2, sc3],
-            tempBudgetLines: [
-                { id: 1, status: BLI_STATUS.PLANNED, services_component_id: 21 },
-                { id: 2, status: BLI_STATUS.DRAFT, services_component_number: 3 }
-            ]
+            servicesComponents: [sc2, sc3, sc4],
+            tempBudgetLines: [{ id: 2, status: BLI_STATUS.DRAFT, services_component_number: 3 }]
         });
 
-        expect(additions).toEqual([pendingSc2]);
+        expect(additions).toEqual([sc3, sc4]);
+    });
+
+    it("a saved SC awaiting approval with no request yet needs approval once a line points at it", () => {
+        const pendingSc2 = { ...sc2, awaiting_add_approval: true };
+        const inReviewSc2 = { ...pendingSc2, in_review: true };
+        const lines = [{ id: 1, status: BLI_STATUS.DRAFT, services_component_id: 21 }];
+
+        expect(
+            getServicesComponentAdditionsForApproval({ servicesComponents: [pendingSc2], tempBudgetLines: lines })
+        ).toEqual([pendingSc2]);
+        expect(
+            getServicesComponentAdditionsForApproval({ servicesComponents: [pendingSc2], tempBudgetLines: [] })
+        ).toEqual([]);
+        expect(
+            getServicesComponentAdditionsForApproval({ servicesComponents: [inReviewSc2], tempBudgetLines: lines })
+        ).toEqual([]);
+    });
+
+    it("a saved SC's delete needs approval unless its addition hasn't reached a modification", () => {
+        const sc5 = { id: 51, number: 5, created_on: "2026-01-01", awaiting_add_approval: true };
+        const sc6 = { id: 61, number: 6, created_on: "2026-01-01" };
+        const sc7 = { id: 71, number: 7, created_on: "2026-01-01" };
+
+        const deletions = getServicesComponentDeletionsForApproval({
+            deletedServicesComponentsIds: [21, 51, 61],
+            savedServicesComponents: [sc2, sc5, sc6, sc7],
+            servicesComponentIdsWithPendingAddition: new Set([61])
+        });
+
+        expect(deletions).toEqual([sc2]);
+    });
+
+    it("keeps a saved line's link to an SC whose delete goes to approval", () => {
+        const pendingDelete = new Set([21]);
+        const baseline = { id: 1, services_component_id: 21 };
+
+        expect(
+            keepLinkToServicesComponentPendingDelete({ id: 1, services_component_id: null }, baseline, pendingDelete)
+        ).toEqual({ id: 1, services_component_id: 21 });
+        // Moved to another SC, or its old SC is deleted directly: the change stands.
+        expect(
+            keepLinkToServicesComponentPendingDelete({ id: 1, services_component_id: 31 }, baseline, pendingDelete)
+        ).toEqual({ id: 1, services_component_id: 31 });
+        expect(
+            keepLinkToServicesComponentPendingDelete({ id: 1, services_component_id: null }, baseline, new Set())
+        ).toEqual({ id: 1, services_component_id: null });
     });
 
     it("a line regrouped under another SC no longer blocks deleting the SC", () => {

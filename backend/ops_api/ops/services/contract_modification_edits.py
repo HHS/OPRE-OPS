@@ -63,7 +63,7 @@ class ContractModificationEditService:
 
         # Each budget line change request carries exactly one field (add_bli_change_requests
         # creates one per field; a delete request carries the "delete" sentinel). A Services
-        # Component request carries "services_component_create".
+        # Component request carries "services_component_create" or "services_component_delete".
         field = next(iter(change_request.requested_change_data))
         diff = (change_request.requested_change_diff or {}).get(field, {})
 
@@ -143,6 +143,19 @@ class ContractModificationEditService:
         )
         return result.rowcount
 
+    def has_pending_services_component_addition(self, services_component_id: int) -> bool:
+        """Whether the SC's addition was approved but isn't in a started modification yet (OPS-6440)."""
+        query = self._pending_services_component_addition_query(services_component_id).limit(1)
+        return self.db_session.scalar(query) is not None
+
+    @staticmethod
+    def _pending_services_component_addition_query(services_component_id: int):
+        return select(ContractModificationEdit).where(
+            ContractModificationEdit.services_component_id == services_component_id,
+            ContractModificationEdit.field == ServicesComponentChangeRequest.create_field_name,
+            ContractModificationEdit.agreement_mod_id.is_(None),
+        )
+
     def discard_pending_services_component_addition(self, services_component_id: int) -> None:
         """Remove the pending "Add SC" edit of a Services Component being deleted (OPS-6440).
 
@@ -151,13 +164,7 @@ class ContractModificationEditService:
         change what the Division Director is reviewing, so the delete is rejected instead.
         Does not commit.
         """
-        edits = self.db_session.scalars(
-            select(ContractModificationEdit).where(
-                ContractModificationEdit.services_component_id == services_component_id,
-                ContractModificationEdit.field == ServicesComponentChangeRequest.create_field_name,
-                ContractModificationEdit.agreement_mod_id.is_(None),
-            )
-        ).all()
+        edits = self.db_session.scalars(self._pending_services_component_addition_query(services_component_id)).all()
         if not edits:
             return
         in_review_request_id = self.db_session.scalar(

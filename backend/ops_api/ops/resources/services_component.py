@@ -96,15 +96,30 @@ class ServicesComponentItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.DELETE, Permission.SERVICES_COMPONENT)
     def delete(self, id: int) -> Response:
-        with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
-            service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
-            old_services_component = service.get(id)
-            sc_id = id
-            service.delete(id)
+        service = ServicesComponentService(current_app.db_session)
+        old_services_component = service.get(id)
 
-            meta.metadata.update({"service_component": old_services_component.to_dict()})
+        # On an Awarded agreement the delete can go to approval (OPS-6440). Only emit the
+        # DELETE_SERVICES_COMPONENT event for an actual delete, so a request doesn't record a
+        # "Services Component Deleted" history line; it records its own change request event.
+        if service.delete_blocked(old_services_component) or not service.delete_requires_approval(
+            old_services_component
+        ):
+            with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
+                old_services_component_dict = old_services_component.to_dict()
+                service.delete(id)
+                meta.metadata.update({"service_component": old_services_component_dict})
+                return make_response_with_headers({"message": "ServicesComponent deleted", "id": id}, 200)
 
-            return make_response_with_headers({"message": "ServicesComponent deleted", "id": sc_id}, 200)
+        change_request_id = service.delete(id)
+        return make_response_with_headers(
+            {
+                "message": "ServicesComponent deletion submitted for approval",
+                "id": id,
+                "change_request_id": change_request_id,
+            },
+            202,
+        )
 
 
 class ServicesComponentListAPI(BaseListAPI):

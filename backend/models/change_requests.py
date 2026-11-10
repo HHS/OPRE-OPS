@@ -3,7 +3,7 @@
 from enum import Enum, auto
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, and_, event, text
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, and_, event, or_, text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -175,11 +175,12 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
 
 
 class ServicesComponentChangeRequest(AgreementChangeRequest):
-    """A request to add a Services Component on an Awarded agreement (OPS-6440).
+    """A request to add or delete a Services Component on an Awarded agreement (OPS-6440).
 
-    Only SCs with non-Draft budget lines need approval. ``services_component_id`` is
-    ``SET NULL`` so the request keeps its history after a declined add (or a later delete)
-    removes the SC; the display name is frozen in ``requested_change_diff``.
+    Every add needs approval; a delete needs it when the SC has no non-Draft budget lines
+    (with them, the delete is blocked). ``services_component_id`` is ``SET NULL`` so the
+    request keeps its history after a declined add or an approved delete removes the SC;
+    the display name is frozen in ``requested_change_diff``.
     """
 
     services_component_id: Mapped[Optional[int]] = mapped_column(
@@ -203,14 +204,22 @@ class ServicesComponentChangeRequest(AgreementChangeRequest):
         )
 
     create_field_name = "services_component_create"
+    delete_field_name = "services_component_delete"
 
     @hybrid_property
     def has_services_component_change(self):
-        return self.create_field_name in self.requested_change_data
+        return self.create_field_name in self.requested_change_data or self.is_delete
 
     @has_services_component_change.expression
     def has_services_component_change(cls):
-        return cls.requested_change_data.has_key(cls.create_field_name)
+        return or_(
+            cls.requested_change_data.has_key(cls.create_field_name),
+            cls.requested_change_data.has_key(cls.delete_field_name),
+        )
+
+    @property
+    def is_delete(self) -> bool:
+        return self.delete_field_name in (self.requested_change_data or {})
 
     @hybrid_property
     def requires_contract_modification(self):

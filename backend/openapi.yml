@@ -5339,6 +5339,10 @@ paths:
         - Service Components
       operationId: createServicesComponent
       summary: Create a new Service Component
+      description: >-
+        Creates the services component. On an Awarded agreement, for anyone but a superuser, its
+        addition goes to Division Director approval: the response has awaiting_add_approval and
+        in_review true, and change_requests_in_review holds the add request.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
       requestBody:
@@ -5459,7 +5463,10 @@ paths:
       summary: Delete a Service Component
       description: >-
         Deletes the services component. On an Awarded agreement, a services component that has
-        non-Draft budget lines can only be deleted by a superuser; anyone else gets a 400. A services
+        non-Draft budget lines can only be deleted by a superuser; anyone else gets a 400. For anyone
+        but a superuser, any other delete on an Awarded agreement goes to Division Director approval
+        (202): the services component stays until approved. A services component added after award
+        whose addition isn't in a contract modification yet is deleted directly (200). A services
         component with a change request in review can't be deleted (400).
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -5475,6 +5482,22 @@ paths:
       responses:
         "200":
           description: OK
+        "202":
+          description: The deletion was sent to Division Director approval.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ServicesComponent deletion submitted for approval
+                  id:
+                    type: integer
+                    example: 1
+                  change_request_id:
+                    type: integer
+                    example: 12
         "400":
           description: Bad Request
         "401":
@@ -7534,13 +7557,13 @@ components:
         services_component_id:
           type: integer
           nullable: true
-          description: Set for services component add rows. Kept after the services component is deleted.
+          description: Set for services component add and delete rows. Kept after the services component is deleted.
           example: null
         field:
           type: string
           description: >-
             The edited field, i.e. "Change To" (amount, can_id, date_needed, status, delete,
-            services_component_create; project_officer_id for a COR change).
+            services_component_create, services_component_delete; project_officer_id for a COR change).
           example: amount
         old_value:
           nullable: true
@@ -8696,7 +8719,7 @@ components:
         has_services_component_change:
           type: boolean
           example: false
-          description: True for a services component add request.
+          description: True for a services component add or delete request.
         requested_change_info:
           type: object
           nullable: true
@@ -8867,7 +8890,7 @@ components:
           example: false
           description: >-
             True for a services component added on an Awarded agreement whose addition hasn't been
-            approved. Its addition goes to Division Director approval once it has a non-Draft budget line.
+            approved. Its addition goes to Division Director approval when it's created.
         in_review:
           type: boolean
           example: false

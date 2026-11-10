@@ -111,10 +111,13 @@ class AgreementEditBundleService:
 
             # 2. SC creates → flush to populate IDs so later BLI creates can resolve
             #    services_component_ref to the new SC ids.
-            sc_ref_map, created_sc_count = self._create_services_components(
+            # On an Awarded agreement each new SC's addition goes to approval (OPS-6440).
+            sc_ref_map, created_sc_count, sc_create_change_request_ids = self._create_services_components(
                 agreement_id, sc_payload.get("create", []) or []
             )
             result.services_components_created = created_sc_count
+            result.change_request_ids.extend(sc_create_change_request_ids)
+            deferred_notifications.extend(sc_create_change_request_ids)
 
             # 3. SC updates
             result.services_components_updated = self._update_services_components(sc_payload.get("update", []) or [])
@@ -154,7 +157,13 @@ class AgreementEditBundleService:
             deferred_notifications.extend(delete_change_request_ids)
 
             # 7. SC deletes and grant number deletes (after BLI deletes — BLIs reference both)
-            result.services_components_deleted = self._delete_services_components(sc_payload.get("delete", []) or [])
+            #    On an Awarded agreement an SC delete can go to approval (OPS-6440).
+            sc_deleted_count, sc_delete_change_request_ids = self._delete_services_components(
+                sc_payload.get("delete", []) or []
+            )
+            result.services_components_deleted = sc_deleted_count
+            result.change_request_ids.extend(sc_delete_change_request_ids)
+            deferred_notifications.extend(sc_delete_change_request_ids)
             result.grant_numbers_deleted = self._delete_grant_numbers(agreement_id, gn_payload.get("delete", []) or [])
 
             # 8. Commit the entire bundle
@@ -248,8 +257,11 @@ class AgreementEditBundleService:
     # Services Components
     # ------------------------------------------------------------------
 
-    def _create_services_components(self, agreement_id: int, items: list[dict[str, Any]]) -> tuple[dict[str, int], int]:
+    def _create_services_components(
+        self, agreement_id: int, items: list[dict[str, Any]]
+    ) -> tuple[dict[str, int], int, list[int]]:
         sc_ref_map: dict[str, int] = {}
+        change_request_ids: list[int] = []
         sc_create_schema = NestedServicesComponentRequestSchema()
         for idx, sc_data in enumerate(items):
             loaded = sc_create_schema.load(sc_data, unknown=EXCLUDE)
@@ -257,7 +269,8 @@ class AgreementEditBundleService:
             loaded["agreement_id"] = agreement_id
             new_sc = self._scs.create(loaded, commit=False)
             sc_ref_map[temp_ref] = new_sc.id
-        return sc_ref_map, len(items)
+            change_request_ids.extend(change_request.id for change_request in new_sc.change_requests_in_review or [])
+        return sc_ref_map, len(items), change_request_ids
 
     def _update_services_components(self, items: list[dict[str, Any]]) -> int:
         sc_update_schema = ServicesComponentUpdateSchema()
@@ -270,10 +283,14 @@ class AgreementEditBundleService:
             self._scs.update(sc_id, loaded, commit=False)
         return len(items)
 
-    def _delete_services_components(self, ids: list[int]) -> int:
+    def _delete_services_components(self, ids: list[int]) -> tuple[int, list[int]]:
+        """Returns the number deleted directly and the ids of deletes sent to approval."""
+        change_request_ids: list[int] = []
         for sc_id in ids:
-            self._scs.delete(sc_id, commit=False)
-        return len(ids)
+            change_request_id = self._scs.delete(sc_id, commit=False)
+            if change_request_id is not None:
+                change_request_ids.append(change_request_id)
+        return len(ids) - len(change_request_ids), change_request_ids
 
     # ------------------------------------------------------------------
     # Grant Numbers

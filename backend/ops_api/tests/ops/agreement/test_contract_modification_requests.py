@@ -31,7 +31,7 @@ from models import (
     ServicesComponentChangeRequest,
     User,
 )
-from models.agreement_history import _services_components_added_phrase
+from models.agreement_history import _services_components_changed_phrase
 from models.utils.fiscal_year import get_current_fiscal_year
 from tests.ops.agreement.test_contract_modification_edits import (  # noqa: F401 (fixtures)
     BASIC_USER_ID,
@@ -344,20 +344,23 @@ def test_declined_modification_leaves_the_sc_addition_edit_pending(
 
 
 @pytest.mark.parametrize(
-    "names, expected",
+    "added, deleted, expected",
     [
-        ([], ""),
-        (["SC2"], "adding SC2"),
-        (["SC2", "OSC3"], "adding SC2 and OSC3"),
-        (["SC2", "SC3", "OSC4"], "adding SC2, SC3 and OSC4"),
+        ([], [], ""),
+        (["SC2"], [], "adding SC2"),
+        (["SC2", "OSC3"], [], "adding SC2 and OSC3"),
+        (["SC2", "SC3", "OSC4"], [], "adding SC2, SC3 and OSC4"),
+        ([], ["SC1"], "deleting SC1"),
+        (["SC2"], ["SC1", "OSC3"], "adding SC2 and deleting SC1 and OSC3"),
     ],
 )
-def test_services_components_added_phrase(names, expected):
+def test_services_components_changed_phrase(added, deleted, expected):
     event = OpsEvent(
-        event_type=OpsEventType.START_CONTRACT_MODIFICATION, event_details={"services_components_added": names}
+        event_type=OpsEventType.START_CONTRACT_MODIFICATION,
+        event_details={"services_components_added": added, "services_components_deleted": deleted},
     )
 
-    assert _services_components_added_phrase(event) == expected
+    assert _services_components_changed_phrase(event) == expected
 
 
 def _approved_sc_addition_emptied(client, director_client, loaded_db, agreement, bli, sc1_id):

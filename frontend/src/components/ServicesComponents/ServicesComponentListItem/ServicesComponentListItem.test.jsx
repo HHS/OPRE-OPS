@@ -23,6 +23,22 @@ describe("getServicesComponentLockedMessage (OPS-6440)", () => {
         expect(getServicesComponentLockedMessage(sc)).toBe(`${TITLE}\n • Adding: SC2`);
     });
 
+    it("lists a pending deletion and each budget line it removes from the SC", () => {
+        const sc = {
+            in_review: true,
+            change_requests_in_review: [
+                {
+                    requested_change_diff: { services_component_delete: { old: "SC2", new: "Deleted" } },
+                    requested_change_info: { target_display_name: "SC2", linked_budget_line_item_ids: [15010] }
+                }
+            ]
+        };
+
+        expect(getServicesComponentLockedMessage(sc)).toBe(
+            `${TITLE}\n • Deleting: SC2\n • Removing: BL 15010 from SC2`
+        );
+    });
+
     it("is empty when nothing is in review", () => {
         expect(getServicesComponentLockedMessage({ in_review: false, change_requests_in_review: null })).toBe("");
     });
@@ -93,16 +109,21 @@ describe("ServicesComponentListItem", () => {
 });
 
 describe("getServicesComponentChangeMessages (OPS-6440)", () => {
-    it("lists Services Component additions for the Changes In Review banner", () => {
+    it("lists Services Component additions and deletions for the Changes In Review banner", () => {
         const changeRequests = [
             {
                 has_services_component_change: true,
                 requested_change_info: { target_display_name: "SC3" }
             },
+            {
+                has_services_component_change: true,
+                requested_change_diff: { services_component_delete: { old: "SC2", new: "Deleted" } },
+                requested_change_info: { target_display_name: "SC2" }
+            },
             { has_proc_shop_change: true }
         ];
 
-        expect(getServicesComponentChangeMessages(changeRequests)).toEqual(["SC3 Addition"]);
+        expect(getServicesComponentChangeMessages(changeRequests)).toEqual(["SC3 Addition", "SC2 Deletion"]);
     });
 
     it("returns nothing without change requests", () => {

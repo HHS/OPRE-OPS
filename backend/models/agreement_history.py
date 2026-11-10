@@ -323,26 +323,6 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
             )
             if history_event:
                 history_events.append(history_event)
-        case OpsEventType.DELETE_CHANGE_REQUEST:
-            # Only a withdrawn Services Component add request records history today (OPS-6440).
-            change_request = event.event_details.get("change_request")
-            if event.event_details.get("withdrawn") and change_request:
-                agreement_id = change_request["agreement_id"]
-                name = (change_request.get("requested_change_info") or {}).get("target_display_name")
-                history_events.append(
-                    AgreementHistory(
-                        agreement_id=agreement_id if session.get(Agreement, agreement_id) else None,
-                        agreement_id_record=agreement_id,
-                        ops_event_id=event.id,
-                        history_title="Services Component Addition Withdrawn",
-                        history_message=(
-                            f"The request to add {name} was withdrawn because it no longer has "
-                            "budget lines that need approval."
-                        ),
-                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                        history_type=AgreementHistoryType.CHANGE_REQUEST_DELETED,
-                    )
-                )
         case OpsEventType.CREATE_SERVICES_COMPONENT:
             history_events.append(
                 AgreementHistory(
@@ -418,7 +398,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
         case OpsEventType.START_CONTRACT_MODIFICATION:
             edit_count = len(event.event_details.get("contract_modification_edit_ids", []))
             bli_count = len(event.event_details.get("budget_line_item_ids", []))
-            sc_added = _services_components_added_phrase(event)
+            sc_changes = _services_components_changed_phrase(event)
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["agreement_id"],
@@ -428,7 +408,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     history_message=(
                         f"{event_user.full_name} sent a contract modification to approval including "
                         f"{edit_count} edit{'' if edit_count == 1 else 's'}"
-                        f"{f' ({sc_added})' if sc_added else ''} and "
+                        f"{f' ({sc_changes})' if sc_changes else ''} and "
                         f"{bli_count} budget line{'' if bli_count == 1 else 's'} to execute."
                     ),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -444,7 +424,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 if executed_ids
                 else ""
             )
-            sc_added = _services_components_added_phrase(event)
+            sc_changes = _services_components_changed_phrase(event)
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["agreement_id"],
@@ -453,7 +433,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     history_title=f"Contract Modification {'Approved' if approved else 'Declined'}",
                     history_message=(
                         f"{event_user.full_name} {'approved' if approved else 'declined'} the contract modification."
-                        + (f" It included {sc_added}." if sc_added else "")
+                        + (f" It included {sc_changes}." if sc_changes else "")
                         + executed
                         + (f" Notes: {reviewer_notes}" if reviewer_notes else "")
                     ),
@@ -487,7 +467,7 @@ def create_change_request_history_event(
             reviewer_user = User(id=-1, full_name="Unknown User")
             logger.error(f"Reviewer user for change request {change_request['id']} is None. Using placeholder user.")
         change_request_status = "approved" if change_request["status"] == "APPROVED" else "declined"
-        if property_changed == "services_component_create":
+        if property_changed in ("services_component_create", "services_component_delete"):
             return create_services_component_change_request_history_event(
                 change_request, event, session, new_change_request, reviewer_user
             )
@@ -651,35 +631,51 @@ def create_change_request_history_event(
     )
 
 
-def _services_components_added_phrase(event: OpsEvent) -> str:
-    """e.g. "adding SC2 and SC3" for a contract modification that includes Services Component
-    additions (OPS-6440), or "" when it has none."""
-    names = event.event_details.get("services_components_added") or []
-    if not names:
-        return ""
-    joined = names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
-    return f"adding {joined}"
+def _services_components_changed_phrase(event: OpsEvent) -> str:
+    """e.g. "adding SC2 and SC3 and deleting SC1" for a contract modification that includes
+    Services Component additions or deletions (OPS-6440), or "" when it has none."""
+    phrases = [
+        f"{verb} {_join_names(names)}"
+        for verb, names in (
+            ("adding", event.event_details.get("services_components_added") or []),
+            ("deleting", event.event_details.get("services_components_deleted") or []),
+        )
+        if names
+    ]
+    return " and ".join(phrases)
+
+
+def _join_names(names: list[str]) -> str:
+    return names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
 
 
 def create_services_component_change_request_history_event(
     change_request: dict, event: OpsEvent, session: Session, new_change_request: bool, reviewer_user
 ) -> AgreementHistory:
-    """History for a Services Component add request (OPS-6440), requested or reviewed.
+    """History for a Services Component add or delete request (OPS-6440), requested or reviewed.
 
     The requestor is resolved via created_by, and the SC name from the frozen diff, because a
-    declined add removes the SC (the request's SC id is then NULL).
+    declined add or an approved delete removes the SC (the request's SC id is then NULL).
     """
-    name = (change_request.get("requested_change_diff") or {}).get("services_component_create", {}).get("new")
+    diff = change_request.get("requested_change_diff") or {}
+    is_delete = "services_component_delete" in diff
+    name = (
+        diff["services_component_delete"].get("old")
+        if is_delete
+        else diff.get("services_component_create", {}).get("new")
+    )
+    noun, verb = ("Deletion", "delete") if is_delete else ("Addition", "add")
+    gerund = "deleting" if is_delete else "adding"
     requestor_user = session.get(User, change_request["created_by"])
     requestor_name = requestor_user.full_name if requestor_user else "Unknown User"
 
     if new_change_request:
-        title = "Services Component Addition Requested"
-        message = f"{requestor_name} requested to add {name} and it's currently In Review for approval."
+        title = f"Services Component {noun} Requested"
+        message = f"{requestor_name} requested to {verb} {name} and it's currently In Review for approval."
     else:
         change_request_status = "approved" if change_request["status"] == "APPROVED" else "declined"
-        title = f"Services Component Addition {change_request_status.capitalize()}"
-        message = f"{reviewer_user.full_name} {change_request_status} adding {name} as requested by {requestor_name}."
+        title = f"Services Component {noun} {change_request_status.capitalize()}"
+        message = f"{reviewer_user.full_name} {change_request_status} {gerund} {name} as requested by {requestor_name}."
 
     agreement_id = change_request["agreement_id"]
     agreement = session.get(Agreement, agreement_id)

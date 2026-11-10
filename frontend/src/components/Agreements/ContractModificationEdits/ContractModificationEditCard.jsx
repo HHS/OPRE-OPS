@@ -12,8 +12,8 @@ import styles from "./ContractModificationEditCard.module.scss";
  * @property {number} id
  * @property {string} modification_type - "MODIFIED_LOE" or "ADMIN_CHANGE"
  * @property {number | null} budget_line_item_id
- * @property {number | null} [services_component_id] - Set for a Services Component addition
- * @property {string} field - The edited field ("amount", "can_id", "date_needed", "delete", "services_component_create", or "project_officer_id" for a COR change)
+ * @property {number | null} [services_component_id] - Set for a Services Component addition or deletion
+ * @property {string} field - The edited field ("amount", "can_id", "date_needed", "delete", "services_component_create", "services_component_delete", or "project_officer_id" for a COR change)
  * @property {*} old_value
  * @property {*} new_value
  * @property {string | null} [old_display_name] - The "From" user's name for a COR change
@@ -23,10 +23,11 @@ import styles from "./ContractModificationEditCard.module.scss";
  * @property {boolean} [in_review] - Part of the contract modification that is in review
  */
 
-// Services Component additions (OPS-6440) show the SC and what happened to it, with no From/To,
-// per the design.
+// Services Component additions and deletions (OPS-6440) show the SC and what happened to it, with
+// no From/To, per the design.
 const SERVICES_COMPONENT_CHANGE_LABELS = {
-    services_component_create: "Add SC"
+    services_component_create: "Add SC",
+    services_component_delete: "Delete SC"
 };
 
 /**
