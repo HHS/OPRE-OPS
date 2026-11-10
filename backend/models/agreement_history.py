@@ -68,8 +68,12 @@ class AgreementHistory(BaseModel):
 
 def _awarded_mod_notice(agreement: Optional[Agreement]) -> str:
     """Appended to a history message for an edit that applies immediately but still means
-    the agreement will need a paper contract modification, once it's awarded."""
-    if agreement and agreement.is_awarded:
+    the agreement will need a paper contract modification, once it's awarded.
+
+    Contract modifications (OPS-3072/3153) only exist for Contract and AA agreements -- a
+    Grant, Direct Obligation, or IAA agreement has no such process, awarded or not.
+    """
+    if agreement and agreement.is_awarded and agreement.agreement_type in (AgreementType.CONTRACT, AgreementType.AA):
         return " This agreement is awarded and will require a contract modification in order to make changes to the contract."
     return ""
 

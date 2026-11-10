@@ -14,6 +14,7 @@ Pure unit tests — no DB or Docker required.
 
 from unittest.mock import MagicMock, patch
 
+from models import AgreementType
 from models.agreement_history import (
     _awarded_mod_notice,
     agreement_history_trigger_func,
@@ -35,10 +36,13 @@ def _make_user(full_name, user_id=503):
     return u
 
 
-def _make_agreement(is_awarded, agreement_id=1):
+def _make_agreement(is_awarded, agreement_id=1, agreement_type=AgreementType.CONTRACT):
+    """Defaults to Contract, since contract modifications don't exist for other agreement
+    types (OPS-3072/3153) -- see TestAwardedModNoticeAgreementTypeGating below."""
     agreement = MagicMock()
     agreement.is_awarded = is_awarded
     agreement.id = agreement_id
+    agreement.agreement_type = agreement_type
     return agreement
 
 
@@ -72,6 +76,29 @@ class TestAwardedModNotice:
 
     def test_empty_when_agreement_is_none(self):
         assert _awarded_mod_notice(None) == ""
+
+
+class TestAwardedModNoticeAgreementTypeGating:
+    """Contract modifications (OPS-3072/3153) only exist for Contract and AA agreements --
+    a Grant, Direct Obligation, or IAA agreement has no such process, awarded or not. An
+    awarded Grant's COR change applies directly with no pending modification created (see
+    test_cor_change_awarded.py::test_awarded_grant_project_officer_change_applies_directly),
+    so the notice must never claim one is needed for these types."""
+
+    def test_awarded_contract_gets_notice(self):
+        assert _awarded_mod_notice(_make_agreement(True, agreement_type=AgreementType.CONTRACT)) == AWARDED_NOTICE
+
+    def test_awarded_aa_gets_notice(self):
+        assert _awarded_mod_notice(_make_agreement(True, agreement_type=AgreementType.AA)) == AWARDED_NOTICE
+
+    def test_awarded_grant_has_no_notice(self):
+        assert _awarded_mod_notice(_make_agreement(True, agreement_type=AgreementType.GRANT)) == ""
+
+    def test_awarded_direct_obligation_has_no_notice(self):
+        assert _awarded_mod_notice(_make_agreement(True, agreement_type=AgreementType.DIRECT_OBLIGATION)) == ""
+
+    def test_awarded_iaa_has_no_notice(self):
+        assert _awarded_mod_notice(_make_agreement(True, agreement_type=AgreementType.IAA)) == ""
 
 
 class TestCreateAgreementUpdateHistoryEventAwardedNotice:
