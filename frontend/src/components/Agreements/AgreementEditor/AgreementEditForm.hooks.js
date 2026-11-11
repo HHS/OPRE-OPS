@@ -539,7 +539,13 @@ const useAgreementEditForm = (
                     }
                     return true;
                 } catch (rejected) {
-                    if (!suppressErrorAlert) {
+                    // A COR change can be refused because its tracked change went into a contract
+                    // modification in review after this form was opened (#3269). Say why, and stay
+                    // on the form so the other edits aren't lost.
+                    const corLockedReason = rejected?.data?.errors?.project_officer_id?.[0];
+                    if (!suppressErrorAlert && corLockedReason) {
+                        setAlert({ type: "error", heading: "Error", message: corLockedReason });
+                    } else if (!suppressErrorAlert) {
                         setAlert({
                             type: "error",
                             heading: "Error",

@@ -29,16 +29,6 @@ import ContractModificationEditCard from "./ContractModificationEditCard";
  */
 
 /**
- * The Division Director's Approve/Decline card for the agreement's in-review contract
- * modification (#1008). Shown instead of the read-only "In Review" alert when the viewer is
- * authorized to review it (`request.can_review`).
- *
- * @component
- * @param {Object} props
- * @param {ContractModificationRequest} props.request
- * @returns {React.ReactElement}
- */
-/**
  * The approval alert says what the approval changed. Only executing budget lines changes
  * anything in OPS; the bundled edits, a COR change included (#3269), were applied when saved.
  * @param {Object} request - The contract modification request being approved.
@@ -49,6 +39,16 @@ const approvedMessage = (request) =>
         ? "The selected budget lines have been moved to Executing."
         : "The Contract Modification has been approved.";
 
+/**
+ * The Division Director's Approve/Decline card for the agreement's in-review contract
+ * modification (#1008). Shown instead of the read-only "In Review" alert when the viewer is
+ * authorized to review it (`request.can_review`).
+ *
+ * @component
+ * @param {Object} props
+ * @param {ContractModificationRequest} props.request
+ * @returns {React.ReactElement}
+ */
 const ContractModificationRequestReviewCard = ({ request }) => {
     const [reviewContractModification, { isLoading }] = useReviewContractModificationMutation();
     const { setAlert } = useAlert();

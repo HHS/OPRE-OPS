@@ -27,7 +27,7 @@ def test_director_approves_cor_change_modification(app):
     """``app`` makes pytest-flask push a request context, which url_for needs."""
 
 
-@given("I have an Awarded contract with a pending COR change", target_fixture="agreement")
+@given("I have an Awarded contract whose COR I changed", target_fixture="agreement")
 def awarded_contract_with_pending_cor_change(
     modified_loe_enabled,  # noqa: F811
     make_agreement,  # noqa: F811
@@ -90,7 +90,7 @@ def director_approves(mod_request, division_director_auth_client):
     return response.json
 
 
-@then("the agreement's COR is the new COR")
+@then("the agreement's COR is still the new COR")
 def cor_applied(agreement, loaded_db):
     assert _reload(loaded_db, agreement.id).project_officer_id == NEW_COR_ID
 

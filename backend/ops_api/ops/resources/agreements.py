@@ -40,12 +40,14 @@ from ops_api.ops.schemas.agreements import (
     AgreementSearchRequestSchema,
     AgreementSearchResponseSchema,
 )
+from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
 from ops_api.ops.services.agreements import AgreementsService, resolve_fiscal_year, search_agreements
 from ops_api.ops.services.budget_line_items import (
     get_bli_is_editable_meta_data_for_agreements,
 )
 from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
 from ops_api.ops.services.ops_service import OpsService, ValidationError
+from ops_api.ops.utils.budget_line_items_helpers import agreement_tracks_contract_modifications
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -84,7 +86,7 @@ class AgreementItemAPI(BaseItemAPI):
                 item,
                 AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING,
                 context={"fiscal_year": effective_fy},
-                include_procurement_shop_lock=True,
+                include_edit_locks=True,
             )
 
             response = make_response_with_headers(serialized_agreement)
@@ -459,7 +461,7 @@ def _serialize_agreement_with_meta(
     schema_mapping: dict[AgreementType, Any],
     context: dict = None,
     include_budget_lines: bool = True,
-    include_procurement_shop_lock: bool = False,
+    include_edit_locks: bool = False,
 ) -> dict:
     """
     Serialize an agreement with its metadata.
@@ -468,11 +470,14 @@ def _serialize_agreement_with_meta(
     because we need to compute isEditable based on the current user's permissions
     and the agreement's awarded state.
 
-    ``include_procurement_shop_lock`` is False by default (the list endpoint, which shares this
-    function, doesn't set it): ``Agreement.change_requests_in_review`` is a property that issues
-    its own SELECT on every access and isn't eager-loaded for the list query, so computing it for
-    every row would add a query per agreement to the list response. Only the single-agreement GET
-    (used by all three edit screens) opts in. See AgreementsService._get_procurement_shop_locked_message.
+    ``include_edit_locks`` is False by default (the list endpoint, which shares this function,
+    doesn't set it). The Procurement Shop and COR lock messages each need their own query:
+    ``Agreement.change_requests_in_review`` is a property that issues its own SELECT on every
+    access and isn't eager-loaded for the list query, and the COR lock looks up the agreement's
+    contract modification in review. Computing them for every row would add queries per agreement
+    to the list response, so only the single-agreement GET (used by all three edit screens) opts in.
+    See AgreementsService._get_procurement_shop_locked_message and
+    ContractModificationEditService.project_officer_locked_message.
     """
     schema_type = schema_mapping.get(agreement.agreement_type)
     if schema_type is None:
@@ -496,11 +501,14 @@ def _serialize_agreement_with_meta(
     is_editable = service._is_editable(agreement, current_user)
     locked_message = service._get_locked_message(agreement, current_user, is_editable)
     procurement_shop_locked_message = (
-        service._get_procurement_shop_locked_message(agreement, current_user) if include_procurement_shop_lock else None
+        service._get_procurement_shop_locked_message(agreement, current_user) if include_edit_locks else None
     )
+    # Only an agreement that tracks contract modifications (#3269) can have its COR locked.
     project_officer_locked_message = (
         ContractModificationEditService(service.db_session).project_officer_locked_message(agreement.id)
-        if include_procurement_shop_lock
+        if include_edit_locks
+        and agreement.agreement_type in _SUPPORTED_AGREEMENT_TYPES
+        and agreement_tracks_contract_modifications(agreement)
         else None
     )
     data_for_meta = {

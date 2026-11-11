@@ -179,15 +179,14 @@ class ContractModificationEditService:
             self.db_session.delete(edit)
 
     def record_project_officer_change(
-        self, agreement: Agreement, old_project_officer_id: int, new_project_officer_id: int, user: User
-    ) -> Optional[ContractModificationEdit]:
+        self, agreement: Agreement, old_project_officer_id: Optional[int], new_project_officer_id: int, user: User
+    ) -> None:
         """Track a COR change on an Awarded agreement as an ADMIN_CHANGE edit (OPS-3153, #3269).
 
         The COR change itself is applied by the caller; this records that the contract still
         needs a modification for it. There is one card per agreement showing the net change, from
         the COR on the contract to the current COR: a further change updates its To, and changing
-        back to the COR on the contract removes it. Returns the edit, or None when the card was
-        removed. Does not commit.
+        back to the COR on the contract removes it. Does not commit.
 
         A card in a modification that is in review is never changed here: the COR is locked
         until the modification is approved or declined (``check_project_officer_change_not_in_review``).
@@ -197,12 +196,12 @@ class ContractModificationEditService:
             if pending.old_value == new_project_officer_id:
                 self.db_session.delete(pending)
                 self.db_session.flush()
-                return None
+                return
             pending.new_value = new_project_officer_id
             pending.requested_by_id = user.id
             pending.requested_on = func.now()
             self.db_session.flush()
-            return pending
+            return
 
         edit = ContractModificationEdit(
             agreement_id=agreement.id,
@@ -222,7 +221,6 @@ class ContractModificationEditService:
             raise ValidationError(
                 {"project_officer_id": ["Another COR change was saved at the same time. Refresh and try again."]}
             ) from None
-        return edit
 
     def project_officer_locked_message(self, agreement_id: int) -> Optional[str]:
         """Why the COR can't be changed right now, or None (#3269): the pending COR change is in
@@ -243,7 +241,13 @@ class ContractModificationEditService:
         return COR_CHANGE_IN_MODIFICATION_MESSAGE if in_review_request_id is not None else None
 
     def check_project_officer_change_not_in_review(self, agreement_id: int) -> None:
-        """Reject a COR change while :meth:`project_officer_locked_message` says it's locked."""
+        """Reject a COR change while :meth:`project_officer_locked_message` says it's locked.
+
+        Locks the pending COR card first. Sending a contract modification to approval locks the
+        same row, so a save and a send are serialized: the save sees the card in review once the
+        send has committed, rather than changing it under the Division Director.
+        """
+        self._pending_project_officer_edit(agreement_id)
         message = self.project_officer_locked_message(agreement_id)
         if message:
             raise ValidationError({"project_officer_id": [message]})

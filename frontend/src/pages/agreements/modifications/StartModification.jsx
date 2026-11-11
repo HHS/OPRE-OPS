@@ -29,8 +29,9 @@ const CAN_REVIEW_INSTRUCTIONS =
     "The budget lines you are executing are using funds from the CANs displayed below. If you have not selected any budget lines, there will be no CANs to review.";
 
 /**
- * @component - Start a Contract Modification for a Modified LOE (#3268): review the edits that
- * require a modification, pick Planned budget lines to execute, and send it to approval.
+ * @component - Start a Contract Modification (#3268, #3269): review the edits that require a
+ * modification (Modified LOE edits and Admin Changes such as a COR change), pick Planned budget
+ * lines to execute, and send it to approval.
  * @returns {React.ReactElement}
  */
 export const StartModification = () => {

@@ -532,6 +532,60 @@ def test_losing_a_concurrent_cor_save_raises_a_validation_error(
     assert edit.new_value == NEW_COR_ID
 
 
+def _commit_cor_in_another_session(loaded_db, agreement_id, project_officer_id, delete_cor_card=False):
+    """Simulates an overlapping save that committed after this session loaded the agreement."""
+    from sqlalchemy.orm import Session
+
+    with Session(bind=loaded_db.get_bind()) as other:
+        other.get(Agreement, agreement_id).project_officer_id = project_officer_id
+        if delete_cor_card:
+            other.execute(text("DELETE FROM contract_modification_edit WHERE agreement_id = :id"), {"id": agreement_id})
+        other.commit()
+
+
+def test_overlapping_revert_does_not_record_a_card_from_a_stale_cor(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
+):
+    """Card A→B and COR B. Two overlapping saves both change the COR back to A. The second one
+    loaded COR B before the first committed; it must re-read COR A under the lock and track
+    nothing, not insert a card B→A."""
+    from ops_api.ops.services.agreements import AgreementsService
+
+    agreement = make_agreement()
+    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == NEW_COR_ID  # this session loaded COR B
+    # The first save's revert commits elsewhere: COR back to A, card removed.
+    _commit_cor_in_another_session(loaded_db, agreement.id, CURRENT_COR_ID, delete_cor_card=True)
+
+    tracked = AgreementsService(loaded_db)._prepare_project_officer_change(
+        agreement, {"project_officer_id": CURRENT_COR_ID}
+    )
+
+    assert tracked is None
+    loaded_db.rollback()
+
+
+def test_overlapping_change_records_the_card_from_the_current_cor(
+    modified_loe_enabled, loaded_db, make_agreement, app_ctx
+):
+    """The second of two overlapping saves records its card from the COR the first one saved,
+    not from the COR it loaded."""
+    from ops_api.ops.services.agreements import AgreementsService
+
+    agreement = make_agreement()  # COR A in this session's copy
+    _commit_cor_in_another_session(loaded_db, agreement.id, NEW_COR_ID)  # the other save: COR B
+    agreement = loaded_db.get(Agreement, agreement.id)
+    assert agreement.project_officer_id == CURRENT_COR_ID  # stale
+
+    tracked = AgreementsService(loaded_db)._prepare_project_officer_change(
+        agreement, {"project_officer_id": OTHER_COR_ID}
+    )
+
+    assert tracked == (NEW_COR_ID, OTHER_COR_ID)
+    loaded_db.rollback()
+
+
 def test_one_pending_cor_card_per_agreement_is_enforced(modified_loe_enabled, loaded_db, make_agreement, app_ctx):
     agreement = make_agreement()
     service = ContractModificationEditService(loaded_db)
@@ -883,6 +937,8 @@ def test_migration_applies_cor_changes_recorded_under_the_old_rule(loaded_db, ma
     loaded_db.add(mod)
     loaded_db.commit()
     _old_rule_cor_edit(loaded_db, already_in_a_mod, NEW_COR_ID, agreement_mod_id=mod.id)
+    to_missing_user = make_agreement()
+    _old_rule_cor_edit(loaded_db, to_missing_user, 999999)
 
     loaded_db.execute(_load_apply_pending_cor_changes_sql())
     loaded_db.commit()
@@ -895,3 +951,5 @@ def test_migration_applies_cor_changes_recorded_under_the_old_rule(loaded_db, ma
     assert to_other.alternate_project_officer_id == ALTERNATE_COR_ID
     # An edit already in an approved modification is left alone.
     assert _reload(loaded_db, already_in_a_mod.id).project_officer_id == CURRENT_COR_ID
+    # A target user who no longer exists is skipped instead of failing the migration.
+    assert _reload(loaded_db, to_missing_user.id).project_officer_id == CURRENT_COR_ID

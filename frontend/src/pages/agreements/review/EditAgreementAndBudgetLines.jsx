@@ -22,6 +22,7 @@ import {
     COR_CONTRACT_MODIFICATION_HEADING
 } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
+import { extractBackendErrorMessage } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
@@ -266,6 +267,9 @@ const EditAgreementAndBudgetLines = () => {
         } catch (error) {
             const detail =
                 error?.data?.error ||
+                // Validation errors come back as {message, errors: {field: [reason]}}, e.g. a COR
+                // that can't change while its tracked change is in review (#3269).
+                extractBackendErrorMessage(error) ||
                 error?.message ||
                 "If you continue to experience this issue, please submit a Budget Support Request through ORBIT.";
             setAlert({

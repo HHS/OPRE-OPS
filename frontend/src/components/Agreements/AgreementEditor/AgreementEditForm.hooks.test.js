@@ -560,6 +560,31 @@ describe("useAgreementEditForm - handleDraft creates new agreements", () => {
         );
         expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
     });
+
+    it("says why a COR change was refused and stays on the form (#3269)", async () => {
+        const reason =
+            "The COR change is in a contract modification that is in review, so the COR can't be changed until the modification is approved or declined.";
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Existing Agreement",
+                agreement_type: "CONTRACT",
+                team_members: [{ id: 1, full_name: "Test User" }]
+            })
+        );
+        updateAgreementMock.mockReturnValue({
+            unwrap: () => Promise.reject({ status: 400, data: { errors: { project_officer_id: [reason] } } })
+        });
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.handleDraft();
+        });
+
+        expect(setAlertMock).toHaveBeenCalledTimes(1);
+        expect(setAlertMock).toHaveBeenCalledWith({ type: "error", heading: "Error", message: reason });
+    });
 });
 
 describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () => {

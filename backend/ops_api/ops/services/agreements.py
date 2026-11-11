@@ -670,6 +670,12 @@ class AgreementsService(OpsService[Agreement]):
         """
         if not self._tracks_project_officer_change(agreement, updated_fields):
             return None
+        # Lock and re-read the agreement so overlapping COR saves are serialized: the second one
+        # then sees the first one's COR instead of a stale one, so it neither tracks a change that
+        # is no longer one nor records a card from the wrong COR.
+        self.db_session.refresh(agreement, with_for_update=True)
+        if not self._tracks_project_officer_change(agreement, updated_fields):
+            return None
         ContractModificationEditService(self.db_session).check_project_officer_change_not_in_review(agreement.id)
         new_project_officer_id = updated_fields["project_officer_id"]
         # The tracked edit stores the id in JSONB, so give a clear error rather than a foreign key one.

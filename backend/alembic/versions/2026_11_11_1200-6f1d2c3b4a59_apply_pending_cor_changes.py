@@ -7,7 +7,9 @@ set the COR to each unattached edit's new value, and clear the Alternate COR whe
 same person (as saving the change would). Data only; no schema change.
 
 Only environments with ENABLE_MODIFIED_LOE_EDITS on (dev, staging) have such edits. The update
-bypasses the ORM, so it writes no agreement history or version rows.
+bypasses the ORM, so it writes no agreement history or version rows, and the old "Change to COR
+Pending Contract Modification" history entries (which say the COR changes once the modification is
+approved) are left as they were. An edit whose target user no longer exists is skipped.
 
 Revision ID: 6f1d2c3b4a59
 Revises: bacd8725cb2d
@@ -41,6 +43,7 @@ WHERE e.agreement_id = a.id
   AND e.agreement_mod_id IS NULL
   AND jsonb_typeof(e.new_value) = 'number'
   AND a.project_officer_id IS DISTINCT FROM (e.new_value #>> '{}')::integer
+  AND EXISTS (SELECT 1 FROM ops.ops_user AS u WHERE u.id = (e.new_value #>> '{}')::integer)
 """
 
 

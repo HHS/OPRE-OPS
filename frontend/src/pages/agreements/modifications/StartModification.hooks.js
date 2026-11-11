@@ -18,8 +18,9 @@ import { getModBudgetLineDisabledReason } from "./StartModification.helpers";
 export const PLANNED_TO_EXECUTING = { status: { old: BLI_STATUS.PLANNED, new: BLI_STATUS.EXECUTING } };
 
 /**
- * Start Modification page (#3268): select Planned budget lines to execute and send the
- * agreement's pending modified-LOE edits to the Division Director as a Contract Modification.
+ * Start Modification page (#3268, #3269): select Planned budget lines to execute and send the
+ * agreement's pending edits (Modified LOE edits and Admin Changes such as a COR change) to the
+ * Division Director as a Contract Modification.
  * @param {number} agreementId
  */
 const useStartModification = (agreementId) => {
