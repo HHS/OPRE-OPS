@@ -196,7 +196,7 @@ describe("edit an existing Grant agreement", () => {
             cy.get("#aln-numbers-combobox-input").type("93.575{enter}");
 
             // FPO (project_officer_id): Chris Fortunato -> Dave Director
-            cy.get("#project-officer-combobox-input").eq(0).type("Dave Director{enter}");
+            cy.get("#project-officer-combobox-input").type("Dave Director{enter}");
 
             // Project Specialist (alternate_project_officer_id): TBD -> Amy Madigan
             cy.get("#alternate-project-officer-combobox-input").type("Amy Madigan{enter}");

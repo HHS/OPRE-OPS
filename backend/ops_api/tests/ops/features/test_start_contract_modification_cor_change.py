@@ -28,7 +28,7 @@ def test_director_approves_cor_change_modification(app):
 
 
 @given("I have an Awarded contract whose COR I changed", target_fixture="agreement")
-def awarded_contract_with_pending_cor_change(
+def awarded_contract_whose_cor_changed(
     modified_loe_enabled,  # noqa: F811
     make_agreement,  # noqa: F811
     basic_user_auth_client,
@@ -91,7 +91,7 @@ def director_approves(mod_request, division_director_auth_client):
 
 
 @then("the agreement's COR is still the new COR")
-def cor_applied(agreement, loaded_db):
+def cor_is_still_the_new_cor(agreement, loaded_db):
     assert _reload(loaded_db, agreement.id).project_officer_id == NEW_COR_ID
 
 

@@ -547,8 +547,8 @@ def test_overlapping_revert_does_not_record_a_card_from_a_stale_cor(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     """Card A→B and COR B. Two overlapping saves both change the COR back to A. The second one
-    loaded COR B before the first committed; it must re-read COR A under the lock and track
-    nothing, not insert a card B→A."""
+    loaded COR B before the first committed; it must re-read COR A and track nothing, not insert a
+    card B→A. (This checks the re-read; the lock itself is checked by the SQL test below.)"""
     from ops_api.ops.services.agreements import AgreementsService
 
     agreement = make_agreement()
@@ -584,6 +584,71 @@ def test_overlapping_change_records_the_card_from_the_current_cor(
 
     assert tracked == (NEW_COR_ID, OTHER_COR_ID)
     loaded_db.rollback()
+
+
+def test_stale_cor_equal_to_the_incoming_one_is_still_tracked(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
+):
+    """The request loaded COR A, another save then committed COR B, and this save sends A. The
+    check runs after the re-read, so it's tracked as a change back to A, not skipped."""
+    from ops_api.ops.services.agreements import AgreementsService
+
+    agreement = make_agreement()
+    assert agreement.project_officer_id == CURRENT_COR_ID  # this session loaded COR A
+    _commit_cor_in_another_session(loaded_db, agreement.id, NEW_COR_ID)
+
+    tracked = AgreementsService(loaded_db)._prepare_project_officer_change(
+        agreement, {"project_officer_id": CURRENT_COR_ID}
+    )
+
+    assert tracked == (NEW_COR_ID, CURRENT_COR_ID)
+    loaded_db.rollback()
+
+
+def test_cor_save_locks_the_agreement_then_the_card_before_the_in_review_check(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
+):
+    """Locks behind the re-read and the in-review check (#3269):
+    - The agreement row is locked FOR NO KEY UPDATE, not FOR UPDATE. That serializes COR saves
+      without blocking the foreign key check of a contract modification being sent, which holds
+      the card lock, so the two can't deadlock.
+    - The pending card is locked before the in-review query, so a save and a send take turns.
+    The tests above share one connection, so they can't see locks; this checks the SQL."""
+    import re
+
+    from sqlalchemy import event
+
+    from ops_api.ops.services.agreements import AgreementsService
+
+    agreement = make_agreement()
+    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
+    agreement = _reload(loaded_db, agreement.id)
+    statements = []
+
+    def capture(conn, cursor, statement, parameters, context, executemany):
+        statements.append(" ".join(statement.split()))
+
+    event.listen(loaded_db.get_bind(), "before_cursor_execute", capture)
+    try:
+        AgreementsService(loaded_db)._prepare_project_officer_change(agreement, {"project_officer_id": OTHER_COR_ID})
+    finally:
+        event.remove(loaded_db.get_bind(), "before_cursor_execute", capture)
+        loaded_db.rollback()
+
+    def first(predicate):
+        return next(i for i, statement in enumerate(statements) if predicate(statement))
+
+    agreement_lock = first(lambda q: re.search(r"FROM (ops\.)?agreement\b", q) and "FOR NO KEY UPDATE" in q)
+    card_lock = first(
+        lambda q: re.search(r"FROM (ops\.)?contract_modification_edit\b", q)
+        and q.endswith("FOR UPDATE")
+        and "contract_mod_request_edits" not in q
+    )
+    in_review_check = first(lambda q: "contract_mod_request_edits" in q)
+    assert agreement_lock < card_lock < in_review_check
+    assert not any(
+        re.search(r"FROM (ops\.)?agreement\b", q) and q.endswith(" FOR UPDATE") for q in statements[: card_lock + 1]
+    ), "the agreement must not be locked FOR UPDATE (it would block the foreign key check of a send)"
 
 
 def test_one_pending_cor_card_per_agreement_is_enforced(modified_loe_enabled, loaded_db, make_agreement, app_ctx):

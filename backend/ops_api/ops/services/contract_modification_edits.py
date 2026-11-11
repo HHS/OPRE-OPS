@@ -28,6 +28,7 @@ from models import (
 )
 from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
+from ops_api.ops.utils.budget_line_items_helpers import agreement_tracks_contract_modifications
 
 SC_ADDITION_IN_MODIFICATION_MESSAGE = (
     "This Services Component's addition is in a contract modification that is in review, "
@@ -37,6 +38,13 @@ COR_CHANGE_IN_MODIFICATION_MESSAGE = (
     "The COR change is in a contract modification that is in review, "
     "so the COR can't be changed until the modification is approved or declined."
 )
+
+
+def tracks_cor_changes(agreement: Agreement) -> bool:
+    """Whether a COR change on this agreement is tracked as an "Edit That Requires a Contract
+    Modification" (OPS-3153): an Awarded Contract or AA agreement with ENABLE_MODIFIED_LOE_EDITS on.
+    Shared by the save path and the agreement's lock message, so the two can't drift apart."""
+    return agreement.agreement_type in _SUPPORTED_AGREEMENT_TYPES and agreement_tracks_contract_modifications(agreement)
 
 
 class ContractModificationEditService:
@@ -243,9 +251,11 @@ class ContractModificationEditService:
     def check_project_officer_change_not_in_review(self, agreement_id: int) -> None:
         """Reject a COR change while :meth:`project_officer_locked_message` says it's locked.
 
-        Locks the pending COR card first. Sending a contract modification to approval locks the
-        same row, so a save and a send are serialized: the save sees the card in review once the
-        send has committed, rather than changing it under the Division Director.
+        Locks the pending COR card first, when there is one. Sending a contract modification to
+        approval locks the same row, so a save and a send are serialized: the save sees the card
+        in review once the send has committed, rather than changing it under the Division Director.
+        With no card yet there is nothing to lock or change; a new card just waits for the next
+        modification.
         """
         self._pending_project_officer_edit(agreement_id)
         message = self.project_officer_locked_message(agreement_id)

@@ -39,9 +39,8 @@ from models.procurement_action import AwardType, ProcurementAction, ProcurementA
 from models.procurement_tracker import ProcurementTrackerStatus
 from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
-from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
 from ops_api.ops.services.change_requests import ChangeRequestService
-from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
+from ops_api.ops.services.contract_modification_edits import ContractModificationEditService, tracks_cor_changes
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     OpsService,
@@ -56,10 +55,7 @@ from ops_api.ops.utils.agreements_helpers import (
     has_proc_shop_blocking_bli,
     is_agreement_name_unique_violation,
 )
-from ops_api.ops.utils.budget_line_items_helpers import (
-    agreement_tracks_contract_modifications,
-    create_budget_line_item_instance,
-)
+from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.validation.agreement_validator import AgreementValidator
 from ops_api.ops.validation.awarded_agreement_validator import AwardedAgreementValidator
@@ -650,9 +646,7 @@ class AgreementsService(OpsService[Agreement]):
         new_value = updated_fields["project_officer_id"]
         if new_value == agreement.project_officer_id:
             return False  # a PUT always sends the field
-        if agreement.agreement_type not in _SUPPORTED_AGREEMENT_TYPES:
-            return False
-        if not agreement_tracks_contract_modifications(agreement):
+        if not tracks_cor_changes(agreement):
             return False
         if new_value is None:
             raise ValidationError({"project_officer_id": ["The COR cannot be removed on an awarded agreement."]})
@@ -668,12 +662,16 @@ class AgreementsService(OpsService[Agreement]):
         the update sets a new one, so one person isn't both. Returns ``(old COR, new COR)`` for a
         change that must be tracked as a contract modification edit, else None.
         """
-        if not self._tracks_project_officer_change(agreement, updated_fields):
+        if "project_officer_id" not in updated_fields or not tracks_cor_changes(agreement):
             return None
-        # Lock and re-read the agreement so overlapping COR saves are serialized: the second one
-        # then sees the first one's COR instead of a stale one, so it neither tracks a change that
-        # is no longer one nor records a card from the wrong COR.
-        self.db_session.refresh(agreement, with_for_update=True)
+        # Lock and re-read the agreement before deciding anything, so overlapping COR saves are
+        # serialized: the second one then sees the first one's COR instead of the one it loaded,
+        # so it neither skips nor tracks a change wrongly, nor records a card from the wrong COR.
+        # FOR NO KEY UPDATE (key_share), the same lock the agreement UPDATE takes anyway: it
+        # still serializes COR saves, and it doesn't block the foreign key check of a contract
+        # modification being sent at the same time (which holds the card lock), so the two can't
+        # deadlock.
+        self.db_session.refresh(agreement, with_for_update={"key_share": True})
         if not self._tracks_project_officer_change(agreement, updated_fields):
             return None
         ContractModificationEditService(self.db_session).check_project_officer_change_not_in_review(agreement.id)

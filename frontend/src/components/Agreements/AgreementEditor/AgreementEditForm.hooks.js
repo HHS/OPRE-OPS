@@ -553,7 +553,8 @@ const useAgreementEditForm = (
                             redirectUrl: "/error"
                         });
                     }
-                    // Don't call scrollToTop on error - let the redirect happen
+                    // Don't call scrollToTop on error: the generic error redirects to /error, and a
+                    // refused COR change leaves the user on the form with its alert
                     throw rejected; // Re-throw to prevent further execution
                 }
             }
@@ -628,7 +629,8 @@ const useAgreementEditForm = (
                 await goToNext({ agreement });
                 // eslint-disable-next-line no-unused-vars
             } catch (error) {
-                // Error already handled in saveAgreement with alert and redirect
+                // saveAgreement already showed the alert (and redirected to /error unless it was a
+                // refused COR change); stay put instead of leaving edit mode or moving on
                 return;
             }
         };

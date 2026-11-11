@@ -1288,6 +1288,33 @@ describe("useAgreementEditForm - COR change on an Awarded agreement (OPS-3153)",
         expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ heading: "Agreement Updated" }));
     });
 
+    it("keeps the user on the form with the reason when Save Changes is refused because the COR locked (#3269)", async () => {
+        const reason =
+            "The COR change is in a contract modification that is in review, so the COR can't be changed until the modification is approved or declined.";
+        updateAgreementMock.mockReturnValue({
+            unwrap: vi.fn().mockRejectedValue({ status: 400, data: { errors: { project_officer_id: [reason] } } })
+        });
+        const goToNext = vi.fn();
+        const setIsEditMode = vi.fn();
+        const { result } = renderWithCor(
+            { project_officer_id: NEW_COR },
+            { isAgreementAwarded: true, isEditMode: true, setIsEditMode, goToNext }
+        );
+
+        await act(async () => {
+            await result.current.handleContinue();
+        });
+        await act(async () => {
+            await result.current.modalProps.handleConfirm();
+        });
+
+        expect(updateAgreementMock).toHaveBeenCalled();
+        expect(setAlertMock).toHaveBeenCalledTimes(1);
+        expect(setAlertMock).toHaveBeenCalledWith({ type: "error", heading: "Error", message: reason });
+        expect(setIsEditMode).not.toHaveBeenCalled();
+        expect(goToNext).not.toHaveBeenCalled();
+    });
+
     it("tells the unsaved-changes dialog that a COR change is pending", () => {
         renderWithCor({ project_officer_id: NEW_COR });
 

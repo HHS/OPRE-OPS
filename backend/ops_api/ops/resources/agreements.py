@@ -40,14 +40,12 @@ from ops_api.ops.schemas.agreements import (
     AgreementSearchRequestSchema,
     AgreementSearchResponseSchema,
 )
-from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
 from ops_api.ops.services.agreements import AgreementsService, resolve_fiscal_year, search_agreements
 from ops_api.ops.services.budget_line_items import (
     get_bli_is_editable_meta_data_for_agreements,
 )
-from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
+from ops_api.ops.services.contract_modification_edits import ContractModificationEditService, tracks_cor_changes
 from ops_api.ops.services.ops_service import OpsService, ValidationError
-from ops_api.ops.utils.budget_line_items_helpers import agreement_tracks_contract_modifications
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -503,12 +501,9 @@ def _serialize_agreement_with_meta(
     procurement_shop_locked_message = (
         service._get_procurement_shop_locked_message(agreement, current_user) if include_edit_locks else None
     )
-    # Only an agreement that tracks contract modifications (#3269) can have its COR locked.
     project_officer_locked_message = (
         ContractModificationEditService(service.db_session).project_officer_locked_message(agreement.id)
-        if include_edit_locks
-        and agreement.agreement_type in _SUPPORTED_AGREEMENT_TYPES
-        and agreement_tracks_contract_modifications(agreement)
+        if include_edit_locks and tracks_cor_changes(agreement)
         else None
     )
     data_for_meta = {
