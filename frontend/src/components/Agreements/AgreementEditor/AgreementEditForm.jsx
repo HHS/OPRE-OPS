@@ -507,6 +507,7 @@ const AgreementEditForm = ({
                         <ProjectOfficerComboBox
                             selectedProjectOfficer={selectedAlternateProjectOfficer}
                             setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
+                            idPrefix="alternate-project-officer"
                             className="margin-left-4"
                             legendClassname="usa-label margin-top-0 margin-bottom-1"
                             overrideStyles={{ width: "15em" }}
@@ -711,6 +712,7 @@ const AgreementEditForm = ({
                         <ProjectOfficerComboBox
                             selectedProjectOfficer={selectedAlternateProjectOfficer}
                             setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
+                            idPrefix="alternate-project-officer"
                             className="margin-left-4"
                             legendClassname="usa-label margin-top-0 margin-bottom-1"
                             overrideStyles={{ width: "15em" }}

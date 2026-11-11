@@ -199,7 +199,7 @@ describe("edit an existing Grant agreement", () => {
             cy.get("#project-officer-combobox-input").eq(0).type("Dave Director{enter}");
 
             // Project Specialist (alternate_project_officer_id): TBD -> Amy Madigan
-            cy.get(".margin-left-4 #project-officer-combobox-input").type("Amy Madigan{enter}");
+            cy.get("#alternate-project-officer-combobox-input").type("Amy Madigan{enter}");
 
             cy.get("[data-cy='continue-btn']").click();
             cy.wait("@patchAgreement").then((interception) => {

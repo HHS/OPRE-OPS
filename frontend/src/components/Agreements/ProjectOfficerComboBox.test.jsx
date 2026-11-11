@@ -12,12 +12,14 @@ vi.mock("../../api/opsAPI", () => ({
 }));
 
 vi.mock("../UI/Form/ComboBox", () => ({
-    default: ({ selectedData, setSelectedData, isDisabled, tooltipMsg }) => (
+    default: ({ namespace, selectedData, setSelectedData, isDisabled, tooltipMsg }) => (
         <div
             data-testid="combobox"
             data-disabled={String(Boolean(isDisabled))}
             title={tooltipMsg}
         >
+            {/* The real ComboBox gives react-select inputId `${namespace}-input`. */}
+            <input id={`${namespace}-input`} />
             <button
                 data-testid="select-user"
                 onClick={() => setSelectedData({ id: 5, display_name: "Jane Doe" })}
@@ -149,5 +151,29 @@ describe("ProjectOfficerComboBox", () => {
         expect(screen.queryByTestId("combobox")).toHaveAttribute("data-disabled", "false");
         expect(screen.queryByRole("group")).not.toBeInTheDocument();
         expect(screen.queryByText(/contract modification/i)).not.toBeInTheDocument();
+    });
+
+    it("gives each box its own ids, so each label names its own input", () => {
+        render(
+            <>
+                <ProjectOfficerComboBox
+                    selectedProjectOfficer={null}
+                    setSelectedProjectOfficer={mockSetSelectedProjectOfficer}
+                    label="COR"
+                />
+                <ProjectOfficerComboBox
+                    selectedProjectOfficer={null}
+                    setSelectedProjectOfficer={mockSetSelectedProjectOfficer}
+                    label="Alternate COR"
+                    idPrefix="alternate-project-officer"
+                />
+            </>
+        );
+
+        const cor = screen.getByLabelText("COR");
+        const alternate = screen.getByLabelText("Alternate COR");
+        expect(cor).toHaveAttribute("id", "project-officer-combobox-input");
+        expect(alternate).toHaveAttribute("id", "alternate-project-officer-combobox-input");
+        expect(cor).not.toBe(alternate);
     });
 });

@@ -2,8 +2,6 @@ import cx from "clsx";
 import { useGetUsersQuery } from "../../api/opsAPI";
 import ComboBox from "../UI/Form/ComboBox";
 import { useNavigate } from "react-router-dom";
-const LOCKED_MESSAGE_ID = "project-officer-combobox-input-locked-message";
-
 /**
  *  A comboBox for choosing a project officer.
  * @param {Object} props - The component props.
@@ -19,6 +17,8 @@ const LOCKED_MESSAGE_ID = "project-officer-combobox-input-locked-message";
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {boolean} [props.isDisabled] - Whether the selection is locked (optional).
  * @param {string} [props.disabledMessage] - Why it's locked, shown as a hint and tooltip (optional).
+ * @param {string} [props.idPrefix] - Prefix for the element ids, unique per instance on a page, so each
+ * box's label names its own input (optional, defaults to "project-officer").
  * @returns {React.ReactElement} - The rendered component.
  */
 export const ProjectOfficerComboBox = ({
@@ -33,7 +33,8 @@ export const ProjectOfficerComboBox = ({
     className,
     label,
     isDisabled = false,
-    disabledMessage = ""
+    disabledMessage = "",
+    idPrefix = "project-officer"
 }) => {
     const navigate = useNavigate();
     const {
@@ -51,6 +52,10 @@ export const ProjectOfficerComboBox = ({
     }
 
     const showLockedMessage = Boolean(isDisabled && disabledMessage);
+    const namespace = `${idPrefix}-combobox`;
+    const inputId = `${namespace}-input`;
+    const labelId = `${idPrefix}-label`;
+    const lockedMessageId = `${inputId}-locked-message`;
 
     const handleChange = (user) => {
         setSelectedProjectOfficer(user);
@@ -68,25 +73,23 @@ export const ProjectOfficerComboBox = ({
             // react-select hides a disabled input from assistive tech (visibility: hidden), so
             // aria on the input is never read. When locked, name the field's group and describe
             // it with the reason instead; the reason also follows the value in reading order.
-            // aria-label rather than aria-labelledby: the COR and Alternate COR boxes share
-            // the label's id.
             {...(showLockedMessage && {
                 role: "group",
-                "aria-label": label,
-                "aria-describedby": LOCKED_MESSAGE_ID
+                "aria-labelledby": labelId,
+                "aria-describedby": lockedMessageId
             })}
         >
             <label
                 className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
-                htmlFor="project-officer-combobox-input"
-                id="project-officer-label"
+                htmlFor={inputId}
+                id={labelId}
             >
                 {label}
             </label>
             {messages?.length > 0 && (
                 <span
                     className="usa-error-message"
-                    id="project-officer-combobox-input-error-message"
+                    id={`${inputId}-error-message`}
                     role="alert"
                 >
                     {messages[0]}
@@ -94,7 +97,7 @@ export const ProjectOfficerComboBox = ({
             )}
             <div>
                 <ComboBox
-                    namespace="project-officer-combobox"
+                    namespace={namespace}
                     data={users}
                     selectedData={selectedProjectOfficer}
                     setSelectedData={handleChange}
@@ -110,7 +113,7 @@ export const ProjectOfficerComboBox = ({
             {showLockedMessage && (
                 <span
                     className="usa-hint display-block margin-top-1"
-                    id={LOCKED_MESSAGE_ID}
+                    id={lockedMessageId}
                     data-cy="project-officer-locked-message"
                     style={{ maxWidth: overrideStyles.width }}
                 >
