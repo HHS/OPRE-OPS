@@ -71,6 +71,14 @@ describe("Tabs", () => {
         expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { preventScrollReset: true });
     });
 
+    it("does not navigate when clicking the already-active tab", () => {
+        render(<Tabs paths={mockPaths} />);
+
+        fireEvent.click(screen.getByText("Path 1"));
+
+        expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
     it("keeps the breadcrumb trail when switching between tabs of the same resource", () => {
         const trailState = buildTrailState("/cans/1", [{ label: "Portfolios", to: "/portfolios" }]);
         mockUseLocation.mockReturnValue({ pathname: "/cans/1", state: trailState });
@@ -131,6 +139,23 @@ describe("Tabs", () => {
             vi.spyOn(screen.getByRole("navigation"), "getBoundingClientRect").mockReturnValue({ top: -300 });
 
             mockUseLocation.mockReturnValue({ pathname: "/test/path3" });
+            rerender(<Tabs paths={mockPaths} />);
+
+            expect(scrollIntoView).not.toHaveBeenCalled();
+        });
+
+        it("does not scroll on a later Back/Forward after clicking the already-active tab", () => {
+            // Regression test: clicking the already-active tab must not leave clickedPathRef
+            // stuck on this path, where an unrelated later Back/Forward landing here would
+            // wrongly be mistaken for a tab click and trigger scrollIntoView.
+            const { rerender } = render(<Tabs paths={mockPaths} />);
+            vi.spyOn(screen.getByRole("navigation"), "getBoundingClientRect").mockReturnValue({ top: -300 });
+
+            fireEvent.click(screen.getByText("Path 1"));
+
+            mockUseLocation.mockReturnValue({ pathname: "/test/path2" });
+            rerender(<Tabs paths={mockPaths} />);
+            mockUseLocation.mockReturnValue({ pathname: "/test/path1" });
             rerender(<Tabs paths={mockPaths} />);
 
             expect(scrollIntoView).not.toHaveBeenCalled();

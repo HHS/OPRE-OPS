@@ -52,6 +52,10 @@ const Tabs = ({ paths, rightContent }) => {
         /** @param {React.MouseEvent} e */
         (e) => {
             const pathName = e.currentTarget.getAttribute("data-value") || "";
+            // Clicking the already-active tab would navigate without changing location.pathname,
+            // so the effect above (keyed on location.pathname) would never clear clickedPathRef —
+            // leaving it stuck and able to fire scrollIntoView on a later, unrelated Back/Forward.
+            if (pathName === location.pathname) return;
             clickedPathRef.current = pathName;
             navigate(pathName, { preventScrollReset: true });
         };
