@@ -1218,8 +1218,11 @@ def create_bli_update_history_events(
     agreement = session.get(Agreement, agreement_id)
     # Only a Planned/Executing budget line's direct edit (always a super-user bypass, since
     # a Draft line's own direct-edit path never needs Division Director approval) means a paper
-    # mod is still needed on an awarded agreement; a Draft line's edit never does.
-    bli_notice = _awarded_mod_notice(agreement) if bli and bli.status != BudgetLineItemStatus.DRAFT else ""
+    # mod is still needed on an awarded agreement; a Draft line's edit never does. A line's
+    # status can be null if it was created without one (e.g. a POST that omits status), so
+    # null must be treated the same as Draft, not as "past Draft".
+    bli_status = bli.status if bli else None
+    bli_notice = _awarded_mod_notice(agreement) if bli_status not in (None, BudgetLineItemStatus.DRAFT) else ""
     for key in bli_change_dict:
         old_value = bli_change_dict[key]["old_value"]
         new_value = bli_change_dict[key]["new_value"]

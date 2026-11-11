@@ -316,6 +316,15 @@ class TestCreateBliUpdateHistoryEventsDraftVsPlannedNotice:
         result = self._call({"amount": {"old_value": "100", "new_value": "200"}}, agreement, bli)
         assert AWARDED_NOTICE not in result[0].history_message
 
+    def test_amount_change_on_null_status_line_of_awarded_agreement_has_no_notice(self):
+        """A line with no status set (e.g. created without one) must be treated as Draft,
+        not as "past Draft" -- bli.status != BudgetLineItemStatus.DRAFT would otherwise be
+        true for None."""
+        agreement = _make_agreement(True)
+        bli = _make_bli(None)
+        result = self._call({"amount": {"old_value": "100", "new_value": "200"}}, agreement, bli)
+        assert AWARDED_NOTICE not in result[0].history_message
+
     def test_amount_change_on_planned_line_of_awarded_agreement_gets_notice(self):
         agreement = _make_agreement(True)
         bli = _make_bli("PLANNED")
