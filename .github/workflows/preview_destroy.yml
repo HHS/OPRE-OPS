@@ -38,6 +38,7 @@ jobs:
     permissions:
       contents: read
       deployments: write # mark the PR's deployments inactive
+      issues: write # the preview comment on linked issues
       pull-requests: write
     # Shared with the deploy job in preview_create.yml: one deploy or destroy at a time per PR.
     # Job-level so events skipped by the `if` above never join the group and can't replace a

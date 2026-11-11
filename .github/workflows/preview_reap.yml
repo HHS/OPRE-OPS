@@ -61,6 +61,7 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      issues: write # the preview comment on linked issues
       pull-requests: write
     strategy:
       fail-fast: false

@@ -20,6 +20,12 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
 - **Same-repo PRs only.** Fork PRs never get a preview.
 - **The status comment** (one per PR, updated in place) shows the URL, the deployed commit, the status and when the
   data was last seeded.
+- **Linked issues get the link too.** The workflow finds the issue from the `OPS-<N>/` branch prefix, links or
+  `#N` references in the PR description's *Issue* section, and issues linked in the Development sidebar or by a
+  closing keyword such as "Fixes #N". It keeps only issues in this repo: another repo's `owner/repo#N` or an issue
+  moved to another repo is skipped. It posts one short comment per PR on each issue, with the URL and status, and
+  updates it in place as the preview deploys, fails or is removed.
+  An issue unlinked later keeps its last comment.
 - **The "View deployment" button** near the bottom of the PR opens the preview once it's ready. It goes inactive when
   the preview is removed.
 
