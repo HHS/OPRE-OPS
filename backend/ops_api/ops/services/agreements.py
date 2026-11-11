@@ -470,10 +470,7 @@ class AgreementsService(OpsService[Agreement]):
 
             self.db_session.merge(agreement_data)
             # Before the commit, so a failed COR record doesn't leave the rest of the update saved.
-            if tracked_cor_change is not None:
-                ContractModificationEditService(self.db_session).record_project_officer_change(
-                    agreement, *tracked_cor_change, get_current_user()
-                )
+            self._record_project_officer_change(agreement, tracked_cor_change)
             if commit:
                 self.db_session.commit()
             else:
@@ -684,6 +681,17 @@ class AgreementsService(OpsService[Agreement]):
             if updated_fields.get("alternate_project_officer_id", saved_alternate) == saved_alternate:
                 updated_fields["alternate_project_officer_id"] = None
         return agreement.project_officer_id, new_project_officer_id
+
+    def _record_project_officer_change(
+        self, agreement: Agreement, tracked_cor_change: Optional[tuple[int, int]]
+    ) -> None:
+        """Track a COR change returned by ``_prepare_project_officer_change`` on the Award &
+        Modifications tab (OPS-3153, #3269). Does nothing when there's no tracked change."""
+        if tracked_cor_change is None:
+            return
+        ContractModificationEditService(self.db_session).record_project_officer_change(
+            agreement, *tracked_cor_change, get_current_user()
+        )
 
     def _handle_proc_shop_change(self, agreement: Agreement, new_value: int, commit: bool = True) -> int | None:
         if agreement.awarding_entity_id == new_value:
