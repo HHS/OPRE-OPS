@@ -35,6 +35,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="details-tab-Documents"]').should("be.disabled");
         cy.get("h2").eq(1).contains("Agreement Details");
         cy.get('[data-cy="agreement-description"]').contains("Test description");
+        cy.get('[data-cy="agreement-nickname-tag"]').contains("TBD");
         cy.get('[data-cy="agreement-title-tag"]').contains("MIHOPE Check-In");
         cy.get('[data-cy="agreement-type-tag"]').contains("Contract");
         cy.get('[data-cy="contract-type-tag"]').contains("Time & Materials (T&M)");
@@ -88,6 +89,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="details-right-col"]').within(() => {
             cy.contains("Agreement Type").should("exist");
             cy.get('[data-cy="agreement-type-tag"]').should("contain", "Partner (IAA, AA, IDDA, IPA)");
+            cy.get('[data-cy="agreement-nickname-tag"]').contains("AA1");
             cy.get('[data-cy="agreement-title-tag"]').contains("AA #1: Fathers and Continuous Learning (FCL)");
             cy.contains("Partner Type").should("exist");
             cy.get('[data-cy="partner-type-tag"]').should("contain", "Assisted Acquisition (AA)");
@@ -215,6 +217,7 @@ describe("agreement details", () => {
         cy.visit("/agreements/3");
         cy.get("h1").contains("Grant #1: Early Care and Education Leadership Study (ExCELS)");
         cy.get('[data-cy="agreement-description"]').contains("Test description");
+        cy.get('[data-cy="agreement-nickname-tag"]').contains(NO_DATA);
         cy.get('[data-cy="agreement-title-tag"]').contains(
             "Grant #1: Early Care and Education Leadership Study (ExCELS)"
         );

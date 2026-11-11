@@ -398,8 +398,8 @@ describe("AgreementDetailsView", () => {
         });
     });
 
-    describe("Agreement Title Tag", () => {
-        it("renders the title Tag as the raw agreement.name, never the nickname or display_name", () => {
+    describe("Agreement Nickname and Title Tags", () => {
+        it("renders both the nickname Tag and the title Tag as their own raw fields, never a nickname-preferred display_name", () => {
             const nicknamedAgreement = {
                 ...agreement,
                 agreement_type: "CONTRACT",
@@ -417,9 +417,11 @@ describe("AgreementDetailsView", () => {
                 />
             );
 
+            const nicknameTag = screen.getByText("FLT");
+            expect(nicknameTag.getAttribute("data-cy")).toBe("agreement-nickname-tag");
+
             const titleTag = screen.getByText("Full Legal Title For Testing");
             expect(titleTag.getAttribute("data-cy")).toBe("agreement-title-tag");
-            expect(screen.queryByText("FLT")).not.toBeInTheDocument();
         });
     });
 

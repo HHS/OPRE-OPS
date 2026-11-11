@@ -12,7 +12,7 @@ import {
 } from "../../../helpers/agreement.helpers";
 import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { AgreementFields, PERIOD_OF_PERFORMANCE_TOOLTIP } from "../agreements.constants";
+import { AGREEMENT_NICKNAME_LABEL, AgreementFields, PERIOD_OF_PERFORMANCE_TOOLTIP } from "../agreements.constants";
 import {
     getAlnTitle,
     sortAlnNumbers
@@ -93,6 +93,16 @@ const AgreementDetailsView = ({
                     {/* // NOTE: Right Column */}
                     {isFieldVisible(agreement.agreement_type, AgreementFields.NickName) && (
                         <>
+                            <dl className="margin-0 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">{AGREEMENT_NICKNAME_LABEL}</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        dataCy="agreement-nickname-tag"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={agreement?.nick_name ?? NO_DATA}
+                                    />
+                                </dd>
+                            </dl>
                             <dl className="margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Agreement Title</dt>
                                 <dd className="margin-0 margin-top-1">
