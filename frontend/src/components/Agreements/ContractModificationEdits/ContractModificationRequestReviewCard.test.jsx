@@ -122,14 +122,15 @@ describe("ContractModificationRequestReviewCard", () => {
             { budget_line_items: [BUDGET_LINE_SUMMARY] },
             "The selected budget lines have been moved to Executing."
         ],
-        ["a COR change only", { edits: [COR_EDIT] }, "The COR has been updated."],
         [
             "a COR change and budget lines",
             { edits: [COR_EDIT], budget_line_items: [BUDGET_LINE_SUMMARY] },
-            "The selected budget lines have been moved to Executing. The COR has been updated."
+            "The selected budget lines have been moved to Executing."
         ],
+        // The COR changed when it was saved (#3269), so a COR-only approval changes nothing else.
+        ["a COR change only", { edits: [COR_EDIT] }, "The Contract Modification has been approved."],
         ["other edits only", { edits: [AMOUNT_EDIT] }, "The Contract Modification has been approved."]
-    ])("approving %s says what the approval changed (#3269)", async (_, request, message) => {
+    ])("approving %s says what the approval changed", async (_, request, message) => {
         mockReview.mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) });
         useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
 

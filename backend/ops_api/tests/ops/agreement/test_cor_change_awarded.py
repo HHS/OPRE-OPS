@@ -1,12 +1,12 @@
-"""Integration tests for editing the COR on an Awarded agreement (OPS-3153).
+"""Integration tests for editing the COR on an Awarded agreement (OPS-3153, #3269).
 
-On an Awarded Contract or AA agreement (with ``ENABLE_MODIFIED_LOE_EDITS`` on):
-
-- Changing the COR to the saved Alternate COR applies immediately and clears the Alternate COR,
-  unless the same save picks a new one.
-- Changing the COR to anyone else needs no approval but is *not* applied: it is recorded as one
-  pending ADMIN_CHANGE ``ContractModificationEdit``, and the COR changes only once the contract
-  modification is approved (#3269). A new target replaces the pending one.
+On an Awarded Contract or AA agreement (with ``ENABLE_MODIFIED_LOE_EDITS`` on), a COR change needs
+no approval and applies immediately. It is also tracked as one ADMIN_CHANGE
+``ContractModificationEdit`` (a card on the Award & Modifications tab), showing the net change from
+the COR on the contract to the current COR: a further change updates it, and changing back removes
+it. Promoting the saved Alternate COR clears the Alternate COR, unless the same save picks a new
+one. While the card is in a contract modification in review, the COR can't change; approving or
+declining the modification doesn't change the COR.
 
 ``basic_user_auth_client`` (user 521) is a team member on the test agreement.
 ``power_user_auth_client`` (user 528) is a superuser and gets no bypass.
@@ -164,10 +164,10 @@ def _reload(loaded_db, agreement_id):
     return loaded_db.get(Agreement, agreement_id)
 
 
-# --- Pending COR change -----------------------------------------------------------------------
+# --- COR change applies and is tracked --------------------------------------------------------
 
 
-def test_cor_change_is_recorded_as_pending_and_not_applied(
+def test_cor_change_applies_and_is_tracked(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -176,7 +176,7 @@ def test_cor_change_is_recorded_as_pending_and_not_applied(
 
     assert response.status_code == 200, response.json
     agreement = _reload(loaded_db, agreement.id)
-    assert agreement.project_officer_id == CURRENT_COR_ID
+    assert agreement.project_officer_id == NEW_COR_ID
     assert agreement.alternate_project_officer_id == ALTERNATE_COR_ID
     [edit] = _cor_edits(loaded_db, agreement.id)
     assert edit.field == "project_officer_id"
@@ -185,11 +185,10 @@ def test_cor_change_is_recorded_as_pending_and_not_applied(
     assert edit.requested_by_id == BASIC_USER_ID
     assert edit.requested_on is not None
     assert edit.change_request_id is None
-    assert edit.approved_by_id is None
     assert edit.agreement_mod_id is None
 
 
-def test_superuser_cor_change_is_also_pending(
+def test_superuser_cor_change_is_also_tracked(
     modified_loe_enabled, power_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -197,11 +196,11 @@ def test_superuser_cor_change_is_also_pending(
     response = _patch(power_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
 
     assert response.status_code == 200, response.json
-    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
+    assert _reload(loaded_db, agreement.id).project_officer_id == NEW_COR_ID
     assert len(_cor_edits(loaded_db, agreement.id)) == 1
 
 
-def test_new_target_replaces_the_pending_change(
+def test_a_further_change_updates_the_card_to_the_net_change(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -211,22 +210,35 @@ def test_new_target_replaces_the_pending_change(
     response = _patch(basic_user_auth_client, agreement.id, {"project_officer_id": OTHER_COR_ID})
 
     assert response.status_code == 200, response.json
+    assert _reload(loaded_db, agreement.id).project_officer_id == OTHER_COR_ID
     [edit] = _cor_edits(loaded_db, agreement.id)
     assert edit.id == first.id
-    assert edit.old_value == CURRENT_COR_ID
+    assert edit.old_value == CURRENT_COR_ID  # still the COR on the contract
     assert edit.new_value == OTHER_COR_ID
-    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
 
 
-def test_saving_the_current_cor_leaves_the_pending_change(
+def test_changing_back_to_the_cor_on_the_contract_removes_the_card(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
-    """The form shows the current COR, so every save sends it; that is not a withdrawal."""
+    agreement = make_agreement()
+    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
+
+    response = _patch(basic_user_auth_client, agreement.id, {"project_officer_id": CURRENT_COR_ID})
+
+    assert response.status_code == 200, response.json
+    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
+    assert _cor_edits(loaded_db, agreement.id) == []
+
+
+def test_saving_the_current_cor_leaves_the_card(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
+):
+    """The form sends the current COR on every save; that isn't a change."""
     agreement = make_agreement()
     _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
 
     response = _patch(
-        basic_user_auth_client, agreement.id, {"project_officer_id": CURRENT_COR_ID, "description": "Updated"}
+        basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID, "description": "Updated"}
     )
 
     assert response.status_code == 200, response.json
@@ -235,7 +247,7 @@ def test_saving_the_current_cor_leaves_the_pending_change(
     assert _reload(loaded_db, agreement.id).description == "Updated"
 
 
-def test_mixed_save_applies_other_fields_and_records_the_cor(
+def test_mixed_save_applies_every_field_and_tracks_the_cor(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -250,27 +262,7 @@ def test_mixed_save_applies_other_fields_and_records_the_cor(
     agreement = _reload(loaded_db, agreement.id)
     assert agreement.description == "Mixed save"
     assert agreement.alternate_project_officer_id == OTHER_COR_ID
-    assert agreement.project_officer_id == CURRENT_COR_ID
-    [edit] = _cor_edits(loaded_db, agreement.id)
-    assert edit.new_value == NEW_COR_ID
-
-
-def test_new_alternate_set_as_cor_in_one_save_is_pending(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
-):
-    """The free promotion compares against the saved Alternate COR, not one set in the same save."""
-    agreement = make_agreement()
-
-    response = _patch(
-        basic_user_auth_client,
-        agreement.id,
-        {"project_officer_id": NEW_COR_ID, "alternate_project_officer_id": NEW_COR_ID},
-    )
-
-    assert response.status_code == 200, response.json
-    agreement = _reload(loaded_db, agreement.id)
-    assert agreement.project_officer_id == CURRENT_COR_ID
-    assert agreement.alternate_project_officer_id == NEW_COR_ID
+    assert agreement.project_officer_id == NEW_COR_ID
     [edit] = _cor_edits(loaded_db, agreement.id)
     assert edit.new_value == NEW_COR_ID
 
@@ -283,14 +275,15 @@ def test_cor_change_to_a_nonexistent_user_is_rejected(
     response = _patch(basic_user_auth_client, agreement.id, {"project_officer_id": 999999})
 
     assert response.status_code == 400
+    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
     assert _cor_edits(loaded_db, agreement.id) == []
 
 
 def test_failed_cor_record_rolls_back_the_whole_save(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx, monkeypatch
 ):
-    """The COR is recorded before the commit, so when recording fails, the other fields in the
-    same save aren't committed either."""
+    """The card is recorded before the commit, so when recording fails, nothing in the save is
+    committed: not the COR, and not the other fields."""
     agreement = make_agreement()
     original_description = agreement.description
 
@@ -306,7 +299,9 @@ def test_failed_cor_record_rolls_back_the_whole_save(
     )
 
     assert response.status_code == 400
-    assert _reload(loaded_db, agreement.id).description == original_description
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.description == original_description
+    assert agreement.project_officer_id == CURRENT_COR_ID
     assert _cor_edits(loaded_db, agreement.id) == []
 
 
@@ -354,7 +349,7 @@ def test_put_with_unchanged_cor_records_nothing(
 # --- Alternate COR promotion ------------------------------------------------------------------
 
 
-def test_promoting_the_alternate_applies_now_and_clears_it(
+def test_promoting_the_alternate_clears_it_and_is_tracked(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -365,7 +360,9 @@ def test_promoting_the_alternate_applies_now_and_clears_it(
     agreement = _reload(loaded_db, agreement.id)
     assert agreement.project_officer_id == ALTERNATE_COR_ID
     assert agreement.alternate_project_officer_id is None
-    assert _cor_edits(loaded_db, agreement.id) == []
+    [edit] = _cor_edits(loaded_db, agreement.id)
+    assert edit.old_value == CURRENT_COR_ID
+    assert edit.new_value == ALTERNATE_COR_ID
 
 
 def test_promoting_the_alternate_keeps_a_new_alternate_from_the_same_save(
@@ -385,7 +382,7 @@ def test_promoting_the_alternate_keeps_a_new_alternate_from_the_same_save(
     assert agreement.alternate_project_officer_id == OTHER_COR_ID
 
 
-def test_promoting_the_alternate_updates_the_pending_change_from(
+def test_promoting_the_alternate_after_a_change_tracks_the_net_change(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -396,25 +393,11 @@ def test_promoting_the_alternate_updates_the_pending_change_from(
     assert response.status_code == 200, response.json
     assert _reload(loaded_db, agreement.id).project_officer_id == ALTERNATE_COR_ID
     [edit] = _cor_edits(loaded_db, agreement.id)
-    assert edit.old_value == ALTERNATE_COR_ID
-    assert edit.new_value == NEW_COR_ID
+    assert edit.old_value == CURRENT_COR_ID
+    assert edit.new_value == ALTERNATE_COR_ID
 
 
-def test_promoting_the_pending_target_removes_the_pending_change(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
-):
-    agreement = make_agreement()
-    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
-    _patch(basic_user_auth_client, agreement.id, {"alternate_project_officer_id": NEW_COR_ID})
-
-    response = _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
-
-    assert response.status_code == 200, response.json
-    assert _reload(loaded_db, agreement.id).project_officer_id == NEW_COR_ID
-    assert _cor_edits(loaded_db, agreement.id) == []
-
-
-def test_alternate_cor_edits_stay_free(
+def test_alternate_cor_edits_are_not_tracked(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -429,7 +412,7 @@ def test_alternate_cor_edits_stay_free(
 # --- Outside the gate -------------------------------------------------------------------------
 
 
-def test_flag_off_applies_the_cor_change_directly(
+def test_flag_off_cor_change_is_not_tracked(
     modified_loe_disabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -441,7 +424,7 @@ def test_flag_off_applies_the_cor_change_directly(
     assert _cor_edits(loaded_db, agreement.id) == []
 
 
-def test_awarded_aa_cor_change_is_pending(
+def test_awarded_aa_cor_change_is_tracked(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement(agreement_type=AgreementType.AA)
@@ -449,12 +432,12 @@ def test_awarded_aa_cor_change_is_pending(
     response = _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
 
     assert response.status_code == 200, response.json
-    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
+    assert _reload(loaded_db, agreement.id).project_officer_id == NEW_COR_ID
     [edit] = _cor_edits(loaded_db, agreement.id)
     assert edit.new_value == NEW_COR_ID
 
 
-def test_awarded_grant_project_officer_change_applies_directly(
+def test_awarded_grant_project_officer_change_is_not_tracked(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     """Contract modifications cover Contract and AA agreements only."""
@@ -469,7 +452,7 @@ def test_awarded_grant_project_officer_change_applies_directly(
     assert _cor_edits(loaded_db, agreement.id) == []
 
 
-def test_not_awarded_applies_the_cor_change_directly(
+def test_not_awarded_cor_change_is_not_tracked(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement(awarded=False)
@@ -481,10 +464,10 @@ def test_not_awarded_applies_the_cor_change_directly(
     assert _cor_edits(loaded_db, agreement.id) == []
 
 
-# --- History, list and Start Modification -----------------------------------------------------
+# --- History, list and concurrency ------------------------------------------------------------
 
 
-def test_pending_cor_change_records_history_and_event(
+def test_cor_change_records_history_and_event(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -492,31 +475,24 @@ def test_pending_cor_change_records_history_and_event(
     _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
 
     loaded_db.expire_all()
-    history = loaded_db.scalars(
+    [history] = loaded_db.scalars(
         select(AgreementHistory).where(
             AgreementHistory.agreement_id_record == agreement.id,
-            AgreementHistory.history_title == "Change to COR Pending Contract Modification",
+            AgreementHistory.history_title == "Change to COR",
         )
     ).all()
-    assert len(history) == 1
     requestor = loaded_db.get(User, BASIC_USER_ID).full_name
     old_name = loaded_db.get(User, CURRENT_COR_ID).full_name
     new_name = loaded_db.get(User, NEW_COR_ID).full_name
-    assert history[0].history_message == (
-        f"{requestor} requested a COR change from {old_name} to {new_name}. "
-        "This agreement is awarded, so the COR will change once the contract modification is approved."
-    )
-    event = loaded_db.get(OpsEvent, history[0].ops_event_id)
+    assert history.history_message.startswith(f"{requestor} changed the COR from {old_name} to {new_name}.")
+    event = loaded_db.get(OpsEvent, history.ops_event_id)
     assert event.event_type == OpsEventType.UPDATE_AGREEMENT
     assert event.created_by == BASIC_USER_ID
     assert "request.remote_addr" in event.event_details
-    assert event.event_details["agreement_updates"]["pending_project_officer_change"] == {
-        "old": CURRENT_COR_ID,
-        "new": NEW_COR_ID,
-    }
+    assert "Change to COR Pending Contract Modification" not in _history_titles(loaded_db, agreement.id)
 
 
-def test_pending_list_returns_the_cor_change_with_names(
+def test_list_returns_the_cor_card_with_names(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -534,44 +510,21 @@ def test_pending_list_returns_the_cor_change_with_names(
     assert card["requested_by"]["id"] == BASIC_USER_ID
 
 
-def test_start_modification_with_only_a_cor_change_puts_it_in_review(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
-):
-    """A COR change alone is enough to start a contract modification (#3269)."""
-    agreement = make_agreement()
-    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID})
-
-    response = basic_user_auth_client.post(
-        url_for("api.agreements-contract-modifications", id=agreement.id), json={"budget_line_item_ids": []}
-    )
-
-    assert response.status_code == 201, response.json
-    [edit] = _cor_edits(loaded_db, agreement.id)
-    assert [e["id"] for e in response.json["edits"]] == [edit.id]
-    assert edit.agreement_mod_id is None
-
-    listed = basic_user_auth_client.get(url_for("api.agreements-contract-modification-edits", id=agreement.id))
-    [card] = listed.json["data"]
-    assert card["in_review"] is True
-    # Nothing is applied until the Division Director approves.
-    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
-
-
 def test_losing_a_concurrent_cor_save_raises_a_validation_error(
     modified_loe_enabled, loaded_db, make_agreement, app_ctx, monkeypatch
 ):
-    """Two saves that both see no pending row: the second hits the unique index and gets a
+    """Two saves that both see no card: the second hits the unique index and gets a
     ValidationError (a 400 at the API), not an IntegrityError (a 500)."""
     agreement = make_agreement()
     service = ContractModificationEditService(loaded_db)
     user = loaded_db.get(User, BASIC_USER_ID)
-    service.record_project_officer_change(agreement, NEW_COR_ID, user)
+    service.record_project_officer_change(agreement, CURRENT_COR_ID, NEW_COR_ID, user)
     loaded_db.commit()
-    # The second save read before the first committed, so it doesn't see the pending row.
+    # The second save read before the first committed, so it doesn't see the card.
     monkeypatch.setattr(service, "_pending_project_officer_edit", lambda *args, **kwargs: None)
 
     with pytest.raises(ValidationError) as error:
-        service.record_project_officer_change(agreement, OTHER_COR_ID, user)
+        service.record_project_officer_change(agreement, CURRENT_COR_ID, OTHER_COR_ID, user)
 
     assert "project_officer_id" in error.value.validation_errors
     loaded_db.rollback()
@@ -579,11 +532,11 @@ def test_losing_a_concurrent_cor_save_raises_a_validation_error(
     assert edit.new_value == NEW_COR_ID
 
 
-def test_one_pending_cor_change_per_agreement_is_enforced(modified_loe_enabled, loaded_db, make_agreement, app_ctx):
+def test_one_pending_cor_card_per_agreement_is_enforced(modified_loe_enabled, loaded_db, make_agreement, app_ctx):
     agreement = make_agreement()
     service = ContractModificationEditService(loaded_db)
     user = loaded_db.get(User, BASIC_USER_ID)
-    service.record_project_officer_change(agreement, NEW_COR_ID, user)
+    service.record_project_officer_change(agreement, CURRENT_COR_ID, NEW_COR_ID, user)
     loaded_db.commit()
 
     # Simulates a concurrent save that didn't see the first row.
@@ -602,7 +555,7 @@ def test_one_pending_cor_change_per_agreement_is_enforced(modified_loe_enabled, 
     loaded_db.rollback()
 
 
-def test_edit_bundle_records_the_pending_cor_change_and_history(
+def test_edit_bundle_applies_and_tracks_the_cor_change(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):
     agreement = make_agreement()
@@ -613,13 +566,10 @@ def test_edit_bundle_records_the_pending_cor_change_and_history(
     )
 
     assert response.status_code == 200, response.json
-    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
+    assert _reload(loaded_db, agreement.id).project_officer_id == NEW_COR_ID
     [edit] = _cor_edits(loaded_db, agreement.id)
     assert edit.new_value == NEW_COR_ID
-    titles = loaded_db.scalars(
-        select(AgreementHistory.history_title).where(AgreementHistory.agreement_id_record == agreement.id)
-    ).all()
-    assert "Change to COR Pending Contract Modification" in titles
+    assert "Change to COR" in _history_titles(loaded_db, agreement.id)
 
 
 def test_edit_bundle_alternate_promotion_records_history(
@@ -636,9 +586,8 @@ def test_edit_bundle_alternate_promotion_records_history(
     agreement = _reload(loaded_db, agreement.id)
     assert agreement.project_officer_id == ALTERNATE_COR_ID
     assert agreement.alternate_project_officer_id is None
-    titles = loaded_db.scalars(
-        select(AgreementHistory.history_title).where(AgreementHistory.agreement_id_record == agreement.id)
-    ).all()
+    assert len(_cor_edits(loaded_db, agreement.id)) == 1
+    titles = _history_titles(loaded_db, agreement.id)
     assert "Change to COR" in titles
     assert "Change to Alternate COR" in titles
 
@@ -649,8 +598,8 @@ def test_edit_bundle_alternate_promotion_records_history(
 @pytest.fixture()
 def cor_change_in_review(modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, test_can):
     """Factory: an Awarded agreement with an Obligated budget line (so the Division Director of
-    ``test_can`` reviews it), a pending COR change to ``NEW_COR_ID``, and a contract modification
-    with only that change sent to approval. Returns ``(agreement, request_id)``."""
+    ``test_can`` reviews it), its COR changed to ``NEW_COR_ID``, and a contract modification with
+    only that change sent to approval. Returns ``(agreement, request_id)``."""
 
     def _make(**agreement_kwargs):
         agreement = make_agreement(**agreement_kwargs)
@@ -696,52 +645,18 @@ def _history_titles(loaded_db, agreement_id):
     ).all()
 
 
-def test_approving_a_cor_change_applies_it(cor_change_in_review, division_director_auth_client, loaded_db, app_ctx):
+def test_start_modification_with_only_a_cor_change_puts_it_in_review(
+    cor_change_in_review, basic_user_auth_client, loaded_db, app_ctx
+):
     agreement, request_id = cor_change_in_review()
 
-    response = _review(division_director_auth_client, request_id)
-
-    assert response.status_code == 200, response.json
-    agreement = _reload(loaded_db, agreement.id)
-    assert agreement.project_officer_id == NEW_COR_ID
-    assert agreement.alternate_project_officer_id == ALTERNATE_COR_ID  # not the new COR, so kept
-    mod = loaded_db.get(AgreementMod, response.json["agreement_mod_id"])
-    assert mod.mod_type == ModType.ADMIN
     [edit] = _cor_edits(loaded_db, agreement.id)
-    assert edit.agreement_mod_id == mod.id
-    assert edit.approved_by_id == response.json["reviewed_by_id"]
-    assert edit.approved_on is not None
-
-    event = loaded_db.scalars(
-        select(OpsEvent)
-        .where(OpsEvent.event_type == OpsEventType.REVIEW_CONTRACT_MODIFICATION)
-        .order_by(OpsEvent.id.desc())
-        .limit(1)
-    ).one()
-    assert event.event_details["project_officer_change"] == {
-        "old": CURRENT_COR_ID,
-        "new": NEW_COR_ID,
-        "alternate_cleared": None,
-    }
-    assert "request.remote_addr" in event.event_details
-
-    history = loaded_db.scalars(
-        select(AgreementHistory).where(
-            AgreementHistory.agreement_id_record == agreement.id,
-            AgreementHistory.history_title == "Change to COR",
-        )
-    ).one()
-    assert history.ops_event_id == event.id
-    old_name = loaded_db.get(User, CURRENT_COR_ID).full_name
-    new_name = loaded_db.get(User, NEW_COR_ID).full_name
-    assert history.history_message.startswith(f"The COR changed from {old_name} to {new_name} when ")
-    approved = loaded_db.scalars(
-        select(AgreementHistory).where(
-            AgreementHistory.agreement_id_record == agreement.id,
-            AgreementHistory.history_type == AgreementHistoryType.CONTRACT_MODIFICATION_APPROVED,
-        )
-    ).one()
-    assert "It included changing the COR." in approved.history_message
+    response = basic_user_auth_client.get(url_for("api.agreements-contract-modifications", id=agreement.id))
+    [request] = [r for r in response.json["data"] if r["id"] == request_id]
+    assert [e["id"] for e in request["edits"]] == [edit.id]
+    listed = basic_user_auth_client.get(url_for("api.agreements-contract-modification-edits", id=agreement.id))
+    [card] = listed.json["data"]
+    assert card["in_review"] is True
     started = loaded_db.scalars(
         select(AgreementHistory).where(
             AgreementHistory.agreement_id_record == agreement.id,
@@ -749,26 +664,60 @@ def test_approving_a_cor_change_applies_it(cor_change_in_review, division_direct
         )
     ).one()
     assert "(changing the COR)" in started.history_message
-    assert "Change to Alternate COR" not in _history_titles(loaded_db, agreement.id)
 
 
-def test_approval_clears_the_alternate_when_it_is_the_new_cor(
+def test_approving_a_cor_change_attaches_it_and_leaves_the_cor(
+    cor_change_in_review, division_director_auth_client, loaded_db, app_ctx
+):
+    agreement, request_id = cor_change_in_review()
+
+    response = _review(division_director_auth_client, request_id)
+
+    assert response.status_code == 200, response.json
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == NEW_COR_ID  # applied when it was saved
+    assert agreement.alternate_project_officer_id == ALTERNATE_COR_ID
+    mod = loaded_db.get(AgreementMod, response.json["agreement_mod_id"])
+    assert mod.mod_type == ModType.ADMIN
+    [edit] = _cor_edits(loaded_db, agreement.id)
+    assert edit.agreement_mod_id == mod.id
+
+    event = loaded_db.scalars(
+        select(OpsEvent)
+        .where(OpsEvent.event_type == OpsEventType.REVIEW_CONTRACT_MODIFICATION)
+        .order_by(OpsEvent.id.desc())
+        .limit(1)
+    ).one()
+    assert event.event_details["project_officer_change"] == {"old": CURRENT_COR_ID, "new": NEW_COR_ID}
+    assert "request.remote_addr" in event.event_details
+    # The approval writes only its own entry; the COR change was recorded when it was saved.
+    [approved] = loaded_db.scalars(
+        select(AgreementHistory).where(
+            AgreementHistory.agreement_id_record == agreement.id, AgreementHistory.ops_event_id == event.id
+        )
+    ).all()
+    assert approved.history_type == AgreementHistoryType.CONTRACT_MODIFICATION_APPROVED
+    assert "It included changing the COR." in approved.history_message
+
+
+def test_approval_does_not_change_the_cor_or_the_alternate(
     cor_change_in_review, basic_user_auth_client, division_director_auth_client, loaded_db, app_ctx
 ):
     agreement, request_id = cor_change_in_review()
     # Alternate COR edits stay free while the COR change is in review.
-    assert _patch(basic_user_auth_client, agreement.id, {"alternate_project_officer_id": NEW_COR_ID}).status_code == 200
+    assert (
+        _patch(basic_user_auth_client, agreement.id, {"alternate_project_officer_id": OTHER_COR_ID}).status_code == 200
+    )
 
     response = _review(division_director_auth_client, request_id)
 
     assert response.status_code == 200, response.json
     agreement = _reload(loaded_db, agreement.id)
     assert agreement.project_officer_id == NEW_COR_ID
-    assert agreement.alternate_project_officer_id is None
-    assert "Change to Alternate COR" in _history_titles(loaded_db, agreement.id)[-2:]
+    assert agreement.alternate_project_officer_id == OTHER_COR_ID
 
 
-def test_declining_a_cor_change_leaves_the_cor_and_returns_it_to_pending(
+def test_declining_a_cor_change_leaves_the_cor_and_returns_the_card_to_pending(
     cor_change_in_review, basic_user_auth_client, division_director_auth_client, loaded_db, app_ctx
 ):
     agreement, request_id = cor_change_in_review()
@@ -776,18 +725,17 @@ def test_declining_a_cor_change_leaves_the_cor_and_returns_it_to_pending(
     response = _review(division_director_auth_client, request_id, "DECLINE", reviewer_notes="Not yet")
 
     assert response.status_code == 200, response.json
-    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
+    assert _reload(loaded_db, agreement.id).project_officer_id == NEW_COR_ID
     [edit] = _cor_edits(loaded_db, agreement.id)
     assert edit.agreement_mod_id is None
-    assert edit.approved_by_id is None
-    assert "Change to COR" not in _history_titles(loaded_db, agreement.id)
-    # The COR can be changed again.
+    # The COR can be changed again; the card keeps the COR on the contract as its From.
     assert _patch(basic_user_auth_client, agreement.id, {"project_officer_id": OTHER_COR_ID}).status_code == 200
     [edit] = _cor_edits(loaded_db, agreement.id)
+    assert edit.old_value == CURRENT_COR_ID
     assert edit.new_value == OTHER_COR_ID
 
 
-@pytest.mark.parametrize("new_cor", [OTHER_COR_ID, ALTERNATE_COR_ID], ids=["retarget", "promote_alternate"])
+@pytest.mark.parametrize("new_cor", [OTHER_COR_ID, ALTERNATE_COR_ID], ids=["change", "promote_alternate"])
 def test_cor_cannot_change_while_its_change_is_in_review(
     new_cor, cor_change_in_review, basic_user_auth_client, loaded_db, app_ctx
 ):
@@ -798,7 +746,7 @@ def test_cor_cannot_change_while_its_change_is_in_review(
     assert response.status_code == 400, response.json
     assert COR_CHANGE_IN_MODIFICATION_MESSAGE in str(response.json)
     agreement = _reload(loaded_db, agreement.id)
-    assert agreement.project_officer_id == CURRENT_COR_ID
+    assert agreement.project_officer_id == NEW_COR_ID
     assert agreement.alternate_project_officer_id == ALTERNATE_COR_ID
     [edit] = _cor_edits(loaded_db, agreement.id)
     assert edit.new_value == NEW_COR_ID
@@ -815,11 +763,12 @@ def test_edit_bundle_cannot_change_the_cor_while_its_change_is_in_review(
     )
 
     assert response.status_code == 400, response.json
+    assert _reload(loaded_db, agreement.id).project_officer_id == NEW_COR_ID
     [edit] = _cor_edits(loaded_db, agreement.id)
     assert edit.new_value == NEW_COR_ID
 
 
-def test_failed_approval_leaves_the_cor_unchanged(
+def test_failed_approval_leaves_the_card_unattached(
     modified_loe_enabled,
     basic_user_auth_client,
     division_director_auth_client,
@@ -828,8 +777,8 @@ def test_failed_approval_leaves_the_cor_unchanged(
     test_can,
     app_ctx,
 ):
-    """A COR change sent with a budget line to execute is applied all-or-nothing: if the line
-    changed after the modification was sent, the approval fails and the COR stays."""
+    """Approval is all-or-nothing: if a budget line sent with the COR change changed after the
+    modification was sent, the approval fails and the card stays unattached."""
     agreement = make_agreement()
     planned = ContractBudgetLineItem(
         agreement_id=agreement.id,
@@ -851,10 +800,9 @@ def test_failed_approval_leaves_the_cor_unchanged(
     response = _review(division_director_auth_client, request_id)
 
     assert response.status_code == 400, response.json
-    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
     [edit] = _cor_edits(loaded_db, agreement.id)
     assert edit.agreement_mod_id is None
-    assert edit.approved_by_id is None
+    assert loaded_db.scalars(select(AgreementMod).where(AgreementMod.agreement_id == agreement.id)).all() == []
 
 
 @pytest.mark.parametrize(
@@ -888,3 +836,62 @@ def test_agreement_meta_says_why_the_cor_is_locked_while_its_change_is_in_review
     assert locked_message() == COR_CHANGE_IN_MODIFICATION_MESSAGE
     assert _review(division_director_auth_client, request_id, "DECLINE").status_code == 200
     assert locked_message() is None
+
+
+# --- Data migration 6f1d2c3b4a59 (#3269) ------------------------------------------------------
+
+
+def _load_apply_pending_cor_changes_sql():
+    import importlib.util
+    from pathlib import Path
+
+    path = (
+        Path(__file__).resolve().parents[4]
+        / "alembic"
+        / "versions"
+        / "2026_11_11_1200-6f1d2c3b4a59_apply_pending_cor_changes.py"
+    )
+    spec = importlib.util.spec_from_file_location("_apply_pending_cor_changes", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return text(module.APPLY_PENDING_COR_CHANGES_SQL)
+
+
+def _old_rule_cor_edit(loaded_db, agreement, new_value, agreement_mod_id=None):
+    """A COR edit as OPS-3153's earlier rule recorded it: the agreement's COR was left unchanged."""
+    loaded_db.add(
+        ContractModificationEdit(
+            agreement_id=agreement.id,
+            modification_type=ModificationEditType.ADMIN_CHANGE,
+            field="project_officer_id",
+            old_value=agreement.project_officer_id,
+            new_value=new_value,
+            requested_by_id=BASIC_USER_ID,
+            agreement_mod_id=agreement_mod_id,
+        )
+    )
+    loaded_db.commit()
+
+
+def test_migration_applies_cor_changes_recorded_under_the_old_rule(loaded_db, make_agreement, app_ctx):
+    to_alternate = make_agreement()
+    _old_rule_cor_edit(loaded_db, to_alternate, ALTERNATE_COR_ID)
+    to_other = make_agreement()
+    _old_rule_cor_edit(loaded_db, to_other, NEW_COR_ID)
+    already_in_a_mod = make_agreement()
+    mod = AgreementMod(agreement_id=already_in_a_mod.id, mod_type=ModType.ADMIN)
+    loaded_db.add(mod)
+    loaded_db.commit()
+    _old_rule_cor_edit(loaded_db, already_in_a_mod, NEW_COR_ID, agreement_mod_id=mod.id)
+
+    loaded_db.execute(_load_apply_pending_cor_changes_sql())
+    loaded_db.commit()
+
+    to_alternate = _reload(loaded_db, to_alternate.id)
+    assert to_alternate.project_officer_id == ALTERNATE_COR_ID
+    assert to_alternate.alternate_project_officer_id is None  # one person isn't both
+    to_other = _reload(loaded_db, to_other.id)
+    assert to_other.project_officer_id == NEW_COR_ID
+    assert to_other.alternate_project_officer_id == ALTERNATE_COR_ID
+    # An edit already in an approved modification is left alone.
+    assert _reload(loaded_db, already_in_a_mod.id).project_officer_id == CURRENT_COR_ID

@@ -17,7 +17,7 @@ import {
     cleanAgreementForApi,
     COR_CONTRACT_MODIFICATION_HEADING,
     formatTeamMember,
-    isCorChangePendingContractModification
+    isCorChangeTrackedAsContractModification
 } from "../../../helpers/agreement.helpers.js";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
@@ -241,9 +241,9 @@ const useAgreementEditForm = (
         // it would lead to can never succeed anyway (OPS-6312).
         !procurementShopLockedMessage;
 
-    // OPS-3153: on an Awarded Contract/AA agreement, a COR change to anyone other than the saved
-    // Alternate COR is not applied on save. It is tracked as a pending contract modification edit
-    // on the Award & Modifications Tab, so the save is confirmed first. No approval, no bypass.
+    // OPS-3153, #3269: on an Awarded Contract/AA agreement, any COR change (including promoting the
+    // Alternate COR) applies on save and is tracked on the Award & Modifications Tab as an edit that
+    // requires a contract modification, so the save is confirmed first. No approval, no bypass.
     const tracksContractModifications = Boolean(
         versionData?.enable_modified_loe_edits &&
         isAgreementAwarded &&
@@ -251,10 +251,9 @@ const useAgreementEditForm = (
     );
     const savedProjectOfficerId = originalAgreementRef.current?.project_officer_id ?? null;
     const savedAlternateProjectOfficerId = originalAgreementRef.current?.alternate_project_officer_id ?? null;
-    const requiresCorModification = isCorChangePendingContractModification({
+    const requiresCorModification = isCorChangeTrackedAsContractModification({
         tracksContractModifications,
         savedProjectOfficerId,
-        savedAlternateProjectOfficerId,
         projectOfficerId: agreement?.project_officer_id
     });
 

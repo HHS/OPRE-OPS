@@ -186,17 +186,6 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 )
                 if history_item:
                     history_events.append(history_item)
-            if agreement_updates.get("pending_project_officer_change"):
-                history_events.append(
-                    create_pending_project_officer_change_history_event(
-                        agreement_updates["pending_project_officer_change"],
-                        event_user,
-                        event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                        agreement_updates["owner_id"],
-                        event.id,
-                        session,
-                    )
-                )
             if agreement_updates.get("team_member_changes"):
                 # Handle team member changes
                 team_member_changes = agreement_updates["team_member_changes"]
@@ -465,9 +454,6 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     ),
                 )
             )
-            history_events.extend(
-                create_contract_modification_project_officer_history_events(event, event_user, session)
-            )
     # Filter out any history_events that have agreement_id as None or agreement_id_record as None
     history_events = [
         event for event in history_events if event.agreement_id is not None and event.agreement_id_record is not None
@@ -666,45 +652,6 @@ def _services_components_added_phrase(event: OpsEvent) -> str:
     if event.event_details.get("project_officer_change"):
         phrases.append("changing the COR")
     return " and ".join(phrases)
-
-
-def create_contract_modification_project_officer_history_events(
-    event: OpsEvent, event_user: User, session: Session
-) -> list[AgreementHistory]:
-    """History for the COR (and a cleared Alternate COR) changed by approving a contract
-    modification (#3269). The approval sets the agreement's fields directly, so there is no
-    UPDATE_AGREEMENT field diff to produce these."""
-    from models import Agreement
-
-    change = event.event_details.get("project_officer_change")
-    if event.event_details.get("status") != "APPROVED" or not change:
-        return []
-
-    agreement_id = event.event_details["agreement_id"]
-    agreement = session.get(Agreement, agreement_id)
-
-    def name(user_id):
-        user = session.get(User, user_id) if user_id else None
-        return user.full_name if user else "TBD"
-
-    def entry(label, old_id, new_id):
-        return AgreementHistory(
-            agreement_id=agreement_id,
-            agreement_id_record=agreement_id,
-            ops_event_id=event.id,
-            history_title=f"Change to {label}",
-            history_message=(
-                f"The {label} changed from {name(old_id)} to {name(new_id)} when "
-                f"{event_user.full_name} approved the contract modification."
-            ),
-            timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-        )
-
-    events = [entry(get_project_officer_display_name(agreement), change.get("old"), change.get("new"))]
-    if change.get("alternate_cleared"):
-        events.append(entry(get_alternate_project_officer_display_name(agreement), change["alternate_cleared"], None))
-    return events
 
 
 def create_services_component_change_request_history_event(
@@ -1129,38 +1076,6 @@ def get_aln_display_name(aln_number: str) -> str:
     """Format an ALN number for display, including its descriptive label if known."""
     description = ALN_NUMBER_DESCRIPTIONS.get(aln_number)
     return f"{aln_number} ({description})" if description else aln_number
-
-
-def create_pending_project_officer_change_history_event(
-    pending_change: dict,
-    updated_by_user: User,
-    updated_on: str,
-    agreement_id: int,
-    ops_event_id: int,
-    session: Session,
-) -> AgreementHistory:
-    """History for a COR change on an Awarded agreement, recorded as pending until the contract
-    modification is approved (OPS-3153). The COR itself is unchanged, so the field diff has no entry."""
-    from models import Agreement
-
-    agreement = session.get(Agreement, agreement_id)
-    old_user = session.get(User, pending_change["old"]) if pending_change.get("old") else None
-    new_user = session.get(User, pending_change["new"]) if pending_change.get("new") else None
-    old_name = old_user.full_name if old_user else "TBD"
-    new_name = new_user.full_name if new_user else "TBD"
-    po_label = get_project_officer_display_name(agreement)
-    return AgreementHistory(
-        agreement_id=get_agreement_id_from_agreement(agreement),
-        agreement_id_record=agreement_id,
-        ops_event_id=ops_event_id,
-        history_title=f"Change to {po_label} Pending Contract Modification",
-        history_message=(
-            f"{updated_by_user.full_name} requested a {po_label} change from {old_name} to {new_name}. "
-            f"This agreement is awarded, so the {po_label} will change once the contract modification is approved."
-        ),
-        timestamp=updated_on,
-        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-    )
 
 
 def get_agreement_id_from_agreement(agreement: Agreement) -> int | None:

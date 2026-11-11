@@ -960,9 +960,8 @@ paths:
         Division Director review. Approval creates an agreement modification (type
         MODIFIED_LOE when any Modified LOE edit is included, ADMIN when only Admin Changes
         such as a COR change are, AS_IS when there are no edits), attaches the request's
-        edits to it, applies a COR change (clearing the Alternate COR if it is the new COR),
-        and changes the selected budget lines to Executing. A decline leaves the edits
-        pending and the COR unchanged. The submitter is notified either way.
+        edits to it, and changes the selected budget lines to Executing. A decline leaves the
+        edits pending. The submitter is notified either way.
       parameters:
         - in: path
           name: id
@@ -7514,9 +7513,9 @@ components:
       description: >-
         An edit on an Awarded agreement that requires a contract modification (one card under
         "Edits That Require a Contract Modification"). MODIFIED_LOE edits were approved and already
-        applied in OPS. ADMIN_CHANGE edits (a COR change) are recorded on save with no approval and
-        are not applied until the contract modification is approved; at most one is pending per
-        agreement.
+        applied in OPS. ADMIN_CHANGE edits (a COR change) are applied and recorded on save with no
+        approval; at most one is pending per agreement, showing the net change from the COR on the
+        contract to the current COR.
       properties:
         id:
           type: integer

@@ -502,37 +502,30 @@ export const CONTRACT_MODIFICATION_APPROVAL_HEADING =
 
 /**
  * Heading for the confirmation shown before saving a COR change on an Awarded agreement
- * (OPS-3153). No approval is needed: the change is tracked on the Award & Modifications Tab
- * and the COR changes once the contract modification is approved.
+ * (OPS-3153). No approval is needed: the change applies on save and is tracked on the Award &
+ * Modifications Tab until a contract modification includes it.
  */
 export const COR_CONTRACT_MODIFICATION_HEADING =
     "This agreement has already been awarded and any changes will require a contract modification. Changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action.";
 
 /**
- * Whether a COR change on an agreement is recorded as a pending contract modification edit
- * instead of applied (OPS-3153). Mirrors AgreementsService._project_officer_change_kind; the
- * backend enforces it, this only drives the confirmation modal.
+ * Whether a COR change on an agreement will be tracked as an "Edit That Requires a Contract
+ * Modification" (OPS-3153, #3269): any COR change on an Awarded Contract/AA agreement with the
+ * flag on, including promoting the Alternate COR. Mirrors
+ * AgreementsService._tracks_project_officer_change; the backend enforces it, this only drives the
+ * confirmation modal.
  *
  * @param {Object} params
  * @param {boolean} params.tracksContractModifications - Awarded Contract/AA with the flag on.
  * @param {number|null|undefined} params.savedProjectOfficerId - The COR saved on the agreement.
- * @param {number|null|undefined} params.savedAlternateProjectOfficerId - The saved Alternate COR.
  * @param {number|null|undefined} params.projectOfficerId - The COR in the form.
  * @returns {boolean}
  */
-export const isCorChangePendingContractModification = ({
+export const isCorChangeTrackedAsContractModification = ({
     tracksContractModifications,
     savedProjectOfficerId,
-    savedAlternateProjectOfficerId,
     projectOfficerId
-}) =>
-    Boolean(
-        tracksContractModifications &&
-        projectOfficerId &&
-        projectOfficerId !== savedProjectOfficerId &&
-        // Promoting the saved Alternate COR applies immediately.
-        projectOfficerId !== savedAlternateProjectOfficerId
-    );
+}) => Boolean(tracksContractModifications && projectOfficerId && projectOfficerId !== savedProjectOfficerId);
 
 /**
  * Selects the tooltip shown on a disabled Edit button based on why editing is blocked.

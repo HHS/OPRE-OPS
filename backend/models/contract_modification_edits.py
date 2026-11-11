@@ -13,8 +13,8 @@ from models.base import BaseModel
 
 class ModificationEditType(Enum):
     MODIFIED_LOE = auto()
-    # An administrative change, e.g. a COR change (OPS-3153). Recorded on save, with no
-    # change request, and applied to the agreement once the contract modification is approved.
+    # An administrative change, e.g. a COR change (OPS-3153). Applied and recorded on save, with
+    # no change request; the row tracks that the contract still needs a modification for it.
     ADMIN_CHANGE = auto()
 
 
@@ -31,8 +31,9 @@ class ContractModificationEdit(BaseModel):
     OPS; the row tracks that the actual contract still needs a modification.
 
     An ADMIN_CHANGE row (a COR change, OPS-3153) is written when the user saves the change,
-    with no change request and no approval. The change is *not* applied in OPS yet: the COR
-    keeps its current value until the contract modification is approved (#3269).
+    with no change request and no approval. The change is applied in OPS right away; like a
+    MODIFIED_LOE row, the row tracks that the contract still needs a modification (#3269). There
+    is one per agreement, showing the net change from the COR on the contract to the current COR.
 
     Either way the row stays pending (``agreement_mod_id IS NULL``) until a modification takes it.
 

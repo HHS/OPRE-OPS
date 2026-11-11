@@ -149,10 +149,8 @@ describe("Start a Contract Modification", () => {
 });
 
 describe("Start a Contract Modification for a COR change (#3269)", () => {
-    // A seeded user who is neither 523's COR nor its Alternate COR.
-    const NEW_COR_ID = 512;
-    let originalCorId;
-    let originalAlternateCorId;
+    // Seeded users to change 523's COR to; the test uses one that isn't its COR or Alternate COR.
+    const CANDIDATE_COR_IDS = [512, 513, 514];
 
     const patchAgreement = (body) =>
         apiRequest({ method: "PATCH", url: `/agreements/${AGREEMENT_ID}`, body })
@@ -160,30 +158,18 @@ describe("Start a Contract Modification for a COR change (#3269)", () => {
             .should("eq", 200);
 
     /**
-     * Put 523's COR and Alternate COR back the way they were, and drop any pending COR change.
-     * Changing the COR to the saved Alternate COR applies immediately (OPS-3153) and removes a
-     * pending change that targets that person, so: promote the pending target (if any), promote
-     * the original COR, then restore the original Alternate COR.
+     * Leave 523 with no COR change waiting for a contract modification. A COR change applies on
+     * save and is tracked as one card; changing back to the card's From (the COR on the contract)
+     * removes it (OPS-3153, #3269). An approved change can't be undone this way (the new COR is
+     * then on the contract), so the COR may differ between runs.
      */
-    const restoreCor = () => {
+    const clearPendingCorChange = () => {
         declineOpenContractModifications();
         testLogin("system-owner");
         apiRequest({ url: `/agreements/${AGREEMENT_ID}/contract-modification-edits/` }).then((response) => {
             const pending = response.body.data.find((edit) => edit.field === "project_officer_id");
             if (pending) {
-                patchAgreement({ alternate_project_officer_id: pending.new_value });
-                patchAgreement({ project_officer_id: pending.new_value });
-            }
-        });
-        apiRequest({ url: `/agreements/${AGREEMENT_ID}` }).then((response) => {
-            if (response.body.project_officer_id !== originalCorId) {
-                patchAgreement({ alternate_project_officer_id: originalCorId });
-                patchAgreement({ project_officer_id: originalCorId });
-            }
-        });
-        apiRequest({ url: `/agreements/${AGREEMENT_ID}` }).then((response) => {
-            if (response.body.alternate_project_officer_id !== originalAlternateCorId) {
-                patchAgreement({ alternate_project_officer_id: originalAlternateCorId });
+                patchAgreement({ project_officer_id: pending.old_value });
             }
         });
     };
@@ -195,23 +181,29 @@ describe("Start a Contract Modification for a COR change (#3269)", () => {
                 this.skip();
             }
         });
-        apiRequest({ url: `/agreements/${AGREEMENT_ID}` }).then((response) => {
-            originalCorId = response.body.project_officer_id;
-            originalAlternateCorId = response.body.alternate_project_officer_id;
-        });
     });
 
     beforeEach(() => {
-        restoreCor();
+        clearPendingCorChange();
     });
 
     afterEach(() => {
-        restoreCor();
+        clearPendingCorChange();
     });
 
-    it("sends only a COR change to approval, locks the COR while in review, and applies it on approval", () => {
+    it("sends only a COR change to approval and locks the COR while it's in review", () => {
         testLogin("system-owner");
-        patchAgreement({ project_officer_id: NEW_COR_ID });
+        apiRequest({ url: `/agreements/${AGREEMENT_ID}` }).then((response) => {
+            const { project_officer_id: cor, alternate_project_officer_id: alternate } = response.body;
+            cy.wrap(CANDIDATE_COR_IDS.find((id) => id !== cor && id !== alternate)).as("newCorId");
+        });
+        cy.get("@newCorId").then((newCorId) => {
+            patchAgreement({ project_officer_id: newCorId });
+            // The change applies on save; the card only tracks that the contract needs a modification.
+            apiRequest({ url: `/agreements/${AGREEMENT_ID}` })
+                .its("body.project_officer_id")
+                .should("eq", newCorId);
+        });
 
         cy.visit(`/agreements/${AGREEMENT_ID}/start-modification`);
         cy.get('[data-cy="mod-review-changes"]').should("contain", "Admin Change").and("contain", "COR");
@@ -232,12 +224,13 @@ describe("Start a Contract Modification for a COR change (#3269)", () => {
         cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
         cy.get('[data-cy="approve-contract-modification-btn"]').click();
         cy.get('[data-cy="confirm-action"]').click();
-        cy.contains("The COR has been updated.").should("be.visible");
+        cy.contains("Contract Modification Approved").should("be.visible");
 
-        apiRequest({ url: `/agreements/${AGREEMENT_ID}` })
-            .its("body.project_officer_id")
-            .should("eq", NEW_COR_ID);
-        cy.get('[data-cy="details-tab-Agreement Details"]').click();
-        cy.contains("Change to COR").should("be.visible");
+        // Approval doesn't change the COR again.
+        cy.get("@newCorId").then((newCorId) => {
+            apiRequest({ url: `/agreements/${AGREEMENT_ID}` })
+                .its("body.project_officer_id")
+                .should("eq", newCorId);
+        });
     });
 });

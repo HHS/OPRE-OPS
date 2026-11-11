@@ -39,21 +39,15 @@ import ContractModificationEditCard from "./ContractModificationEditCard";
  * @returns {React.ReactElement}
  */
 /**
- * The approval alert says what the approval changed: the budget lines it executed and/or the COR
- * it updated (#3269). A modification can carry either, both, or only other edits.
+ * The approval alert says what the approval changed. Only executing budget lines changes
+ * anything in OPS; the bundled edits, a COR change included (#3269), were applied when saved.
  * @param {Object} request - The contract modification request being approved.
  * @returns {string}
  */
-const approvedMessage = (request) => {
-    const parts = [];
-    if (request.budget_line_items?.length) {
-        parts.push("The selected budget lines have been moved to Executing.");
-    }
-    if (request.edits?.some((edit) => edit.field === "project_officer_id")) {
-        parts.push("The COR has been updated.");
-    }
-    return parts.length ? parts.join(" ") : "The Contract Modification has been approved.";
-};
+const approvedMessage = (request) =>
+    request.budget_line_items?.length
+        ? "The selected budget lines have been moved to Executing."
+        : "The Contract Modification has been approved.";
 
 const ContractModificationRequestReviewCard = ({ request }) => {
     const [reviewContractModification, { isLoading }] = useReviewContractModificationMutation();

@@ -16,7 +16,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from models import (
-    PROJECT_OFFICER_EDIT_FIELD,
     AgreementMod,
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -43,8 +42,6 @@ class ContractModificationRequestService:
         self.db_session = db_session or current_app.db_session
         self._edit_service = ContractModificationEditService(self.db_session)
         self._notification_service = NotificationService(self.db_session)
-        # Set by an approval that changed the COR, for the review event's history metadata.
-        self.project_officer_change: Optional[dict] = None
 
     def get_for_agreement(self, agreement_id: int) -> list[ContractModificationRequest]:
         """Return the agreement's contract modification requests, newest first."""
@@ -158,7 +155,7 @@ class ContractModificationRequestService:
                 raise ValidationError({"status": "This contract modification has already been reviewed."})
 
             if action == APPROVE:
-                self._approve(request, user)
+                self._approve(request)
             else:
                 request.status = ContractModificationRequestStatus.DECLINED
 
@@ -173,7 +170,7 @@ class ContractModificationRequestService:
             raise
         return request
 
-    def _approve(self, request: ContractModificationRequest, approver) -> None:
+    def _approve(self, request: ContractModificationRequest) -> None:
         # Re-run the submit-time checks before writing anything: a budget line may have been
         # executed, edited into review, or moved out of the current FY since the request was sent.
         self._get_executable_budget_lines(
@@ -192,14 +189,6 @@ class ContractModificationRequestService:
         agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=_mod_type(request))
         self.db_session.add(agreement_mod)
         self.db_session.flush()
-
-        # Modified LOE values were applied when each change request was approved; an Admin
-        # Change (the COR, #3269) only takes effect now.
-        for edit in request.edits:
-            if edit.modification_type == ModificationEditType.ADMIN_CHANGE and edit.field == PROJECT_OFFICER_EDIT_FIELD:
-                self.project_officer_change = self._edit_service.apply_project_officer_change(
-                    request.agreement, edit, approver
-                )
 
         self._edit_service.attach_pending_edits_to_mod(
             request.agreement_id, agreement_mod.id, [edit.id for edit in request.edits]

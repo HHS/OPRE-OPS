@@ -1279,17 +1279,17 @@ describe("useAgreementEditForm - COR change on an Awarded agreement (OPS-3153)",
         expect(result.current.requiresCorModification).toBe(true);
     });
 
-    it("saves without a modal when the COR is changed to the saved Alternate COR", async () => {
+    it("confirms first when the COR is changed to the saved Alternate COR too (#3269)", async () => {
         const { result } = renderWithCor({ project_officer_id: SAVED_ALTERNATE });
 
-        expect(result.current.requiresCorModification).toBe(false);
+        expect(result.current.requiresCorModification).toBe(true);
 
         await act(async () => {
             await result.current.handleContinue();
         });
 
-        expect(result.current.showModal).toBe(false);
-        expect(updateAgreementMock).toHaveBeenCalled();
+        expect(result.current.showModal).toBe(true);
+        expect(updateAgreementMock).not.toHaveBeenCalled();
     });
 
     it("still confirms when the new COR is an Alternate COR picked in the same edit", () => {
