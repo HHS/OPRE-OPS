@@ -3,13 +3,15 @@ import { render, screen, fireEvent, within } from "@testing-library/react";
 import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import Tabs from "./Tabs";
 
-// Mock the router hooks. useLocation is a vi.fn() (rather than a fixed return value) so tests
-// can simulate the route changing some other way while Tabs stays mounted.
+// Mock the router hooks. useLocation and useNavigationType are vi.fn()s (rather than fixed return
+// values) so tests can simulate the route changing some other way while Tabs stays mounted.
 const mockNavigate = vi.fn();
 const mockUseLocation = vi.fn(() => ({ pathname: "/test/path1" }));
+const mockUseNavigationType = vi.fn(() => "PUSH");
 vi.mock("react-router-dom", () => ({
     useLocation: () => mockUseLocation(),
-    useNavigate: () => mockNavigate
+    useNavigate: () => mockNavigate,
+    useNavigationType: () => mockUseNavigationType()
 }));
 
 describe("Tabs", () => {
@@ -31,6 +33,7 @@ describe("Tabs", () => {
     beforeEach(() => {
         mockNavigate.mockClear();
         mockUseLocation.mockReturnValue({ pathname: "/test/path1" });
+        mockUseNavigationType.mockReturnValue("PUSH");
     });
 
     afterEach(() => {
@@ -134,29 +137,53 @@ describe("Tabs", () => {
             expect(scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: "start" });
         });
 
-        it("does not scroll when the route changes without a tab click (Back/Forward)", () => {
+        // Renders Tabs with the tab bar above the viewport, then returns a function that moves the
+        // route to `pathname` with the given navigation type, the way the router would.
+        const mountScrolledPast = () => {
             const { rerender } = render(<Tabs paths={mockPaths} />);
             vi.spyOn(screen.getByRole("navigation"), "getBoundingClientRect").mockReturnValue({ top: -300 });
+            return (pathname, navigationType) => {
+                mockUseLocation.mockReturnValue({ pathname });
+                mockUseNavigationType.mockReturnValue(navigationType);
+                rerender(<Tabs paths={mockPaths} />);
+            };
+        };
 
-            mockUseLocation.mockReturnValue({ pathname: "/test/path3" });
-            rerender(<Tabs paths={mockPaths} />);
+        it("does not scroll when the route changes without a tab click (Back/Forward)", () => {
+            const goTo = mountScrolledPast();
+
+            goTo("/test/path3", "POP");
 
             expect(scrollIntoView).not.toHaveBeenCalled();
         });
 
         it("does not scroll on a later Back/Forward after clicking the already-active tab", () => {
-            // Regression test: clicking the already-active tab must not leave clickedPathRef
-            // stuck on this path, where an unrelated later Back/Forward landing here would
-            // wrongly be mistaken for a tab click and trigger scrollIntoView.
-            const { rerender } = render(<Tabs paths={mockPaths} />);
-            vi.spyOn(screen.getByRole("navigation"), "getBoundingClientRect").mockReturnValue({ top: -300 });
+            const goTo = mountScrolledPast();
 
             fireEvent.click(screen.getByText("Path 1"));
+            goTo("/test/path2", "POP");
+            goTo("/test/path1", "POP");
 
-            mockUseLocation.mockReturnValue({ pathname: "/test/path2" });
-            rerender(<Tabs paths={mockPaths} />);
-            mockUseLocation.mockReturnValue({ pathname: "/test/path1" });
-            rerender(<Tabs paths={mockPaths} />);
+            expect(scrollIntoView).not.toHaveBeenCalled();
+        });
+
+        it("does not scroll on a later Back/Forward to a tab whose click was blocked", () => {
+            const goTo = mountScrolledPast();
+
+            // The unsaved-changes guard blocks this click, so the route never changes...
+            fireEvent.click(screen.getByText("Path 2"));
+            // ...and the user later reaches that tab with the browser's Back button.
+            goTo("/test/path2", "POP");
+
+            expect(scrollIntoView).not.toHaveBeenCalled();
+        });
+
+        it("does not scroll on a later link to a tab whose click was blocked, once the route has moved", () => {
+            const goTo = mountScrolledPast();
+
+            fireEvent.click(screen.getByText("Path 2"));
+            goTo("/test/path3", "PUSH");
+            goTo("/test/path2", "PUSH");
 
             expect(scrollIntoView).not.toHaveBeenCalled();
         });

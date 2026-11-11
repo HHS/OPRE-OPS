@@ -7,7 +7,8 @@ import CanDetailTabs from "./CanDetailTabs";
 vi.mock("react-router-dom", () => ({
     BrowserRouter: ({ children }) => <div>{children}</div>,
     useLocation: () => mockLocation,
-    useNavigate: () => mockNavigate
+    useNavigate: () => mockNavigate,
+    useNavigationType: () => "PUSH"
 }));
 
 // Create a mock navigate function outside
