@@ -316,8 +316,14 @@ describe("usePortfolioList", () => {
         const applyCall = (n, prev) => setSearchParams.mock.calls[n][0](new URLSearchParams(prev)).toString();
         expect(applyCall(0, "fy=2025")).toBe("fy=2025&tab=my");
         expect(applyCall(1, "fy=2025&tab=my")).toBe("fy=2025");
-        expect(setSearchParams).toHaveBeenNthCalledWith(1, expect.any(Function), { replace: true });
-        expect(setSearchParams).toHaveBeenNthCalledWith(2, expect.any(Function), { replace: true });
+        expect(setSearchParams).toHaveBeenNthCalledWith(1, expect.any(Function), {
+            replace: true,
+            preventScrollReset: true
+        });
+        expect(setSearchParams).toHaveBeenNthCalledWith(2, expect.any(Function), {
+            replace: true,
+            preventScrollReset: true
+        });
     });
 
     it("should initialize filters as empty", () => {

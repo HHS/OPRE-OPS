@@ -58,6 +58,7 @@ const AgreementTabs = () => {
                     <Link
                         to={queryString}
                         className={getClassName(queryString)}
+                        preventScrollReset
                     >
                         {path.label}
                     </Link>

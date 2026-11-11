@@ -35,7 +35,7 @@ export const usePortfolioList = ({ currentUserId, searchParams, setSearchParams 
                 else next.set("tab", tabId);
                 return next;
             },
-            { replace: true }
+            { replace: true, preventScrollReset: true }
         );
 
     const fiscalYear = Number(selectedFiscalYear);

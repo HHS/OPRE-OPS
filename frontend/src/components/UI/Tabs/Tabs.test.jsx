@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import Tabs from "./Tabs";
@@ -34,8 +34,6 @@ describe("Tabs", () => {
     });
 
     afterEach(() => {
-        Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
-        vi.useRealTimers();
         vi.restoreAllMocks();
     });
 
@@ -64,13 +62,13 @@ describe("Tabs", () => {
         expect(notSelectedButton.className).toContain("listItemNotSelected");
     });
 
-    it("navigates when a tab is clicked", () => {
+    it("navigates without resetting the page scroll when a tab is clicked", () => {
         render(<Tabs paths={mockPaths} />);
 
         const secondTab = screen.getByText("Path 2");
         fireEvent.click(secondTab);
 
-        expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { preventScrollReset: true });
     });
 
     it("keeps the breadcrumb trail when switching between tabs of the same resource", () => {
@@ -87,147 +85,55 @@ describe("Tabs", () => {
 
         fireEvent.click(screen.getByText("Spending"));
 
-        expect(mockNavigate).toHaveBeenCalledWith("/cans/1/spending", { state: trailState });
+        expect(mockNavigate).toHaveBeenCalledWith("/cans/1/spending", {
+            preventScrollReset: true,
+            state: trailState
+        });
     });
 
-    it("navigates immediately when scrolled, by default (scrollToTopOnChange not set)", () => {
-        render(<Tabs paths={mockPaths} />);
-        Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
-        const scrollToSpy = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    describe("keeping the tab bar in view after a tab switch", () => {
+        const scrollIntoView = vi.fn();
 
-        fireEvent.click(screen.getByText("Path 2"));
-
-        expect(scrollToSpy).not.toHaveBeenCalled();
-        expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
-    });
-
-    describe("scrollToTopOnChange", () => {
-        it("scrolls to top and waits for the scroll to settle before navigating when scrolled", () => {
-            vi.useFakeTimers();
-            render(
-                <Tabs
-                    paths={mockPaths}
-                    scrollToTopOnChange
-                />
-            );
-            Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
-            const scrollToSpy = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-
-            fireEvent.click(screen.getByText("Path 2"));
-
-            expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: "smooth", block: "start" });
-            expect(mockNavigate).not.toHaveBeenCalled();
-
-            // First poll tick — still scrolled, hasn't settled yet.
-            vi.advanceTimersByTime(20);
-            expect(mockNavigate).not.toHaveBeenCalled();
-
-            // Simulate the smooth scroll finishing.
-            Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
-            vi.advanceTimersByTime(20);
-
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+        beforeEach(() => {
+            scrollIntoView.mockClear();
+            Element.prototype.scrollIntoView = scrollIntoView;
         });
 
-        it("falls back to navigating on a timeout if the scroll never settles", () => {
-            vi.useFakeTimers();
-            render(
-                <Tabs
-                    paths={mockPaths}
-                    scrollToTopOnChange
-                />
-            );
-            Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
-            vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-
-            fireEvent.click(screen.getByText("Path 2"));
-            expect(mockNavigate).not.toHaveBeenCalled();
-
-            vi.advanceTimersByTime(2000);
-
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+        afterEach(() => {
+            delete Element.prototype.scrollIntoView;
         });
 
-        it("navigates immediately when already scrolled to the top", () => {
-            render(
-                <Tabs
-                    paths={mockPaths}
-                    scrollToTopOnChange
-                />
-            );
-            const scrollToSpy = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+        // Clicks a tab, then re-renders at the new route the way the router would, with the
+        // tab bar's top at `navTop` px from the top of the viewport.
+        const switchTab = (navTop) => {
+            const { rerender } = render(<Tabs paths={mockPaths} />);
+            vi.spyOn(screen.getByRole("navigation"), "getBoundingClientRect").mockReturnValue({ top: navTop });
 
             fireEvent.click(screen.getByText("Path 2"));
+            mockUseLocation.mockReturnValue({ pathname: "/test/path2" });
+            rerender(<Tabs paths={mockPaths} />);
+        };
 
-            expect(scrollToSpy).not.toHaveBeenCalled();
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+        it("does not scroll when the tab bar is still in view", () => {
+            switchTab(120);
+
+            expect(scrollIntoView).not.toHaveBeenCalled();
         });
 
-        it("cancels the pending transition when a different tab is clicked before it settles", () => {
-            vi.useFakeTimers();
-            render(
-                <Tabs
-                    paths={mockPaths}
-                    scrollToTopOnChange
-                />
-            );
-            Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
-            vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+        it("scrolls the tab bar back into view when the new tab leaves it above the viewport", () => {
+            switchTab(-300);
 
-            fireEvent.click(screen.getByText("Path 2"));
-            fireEvent.click(screen.getByText("Path 3"));
-
-            Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
-            vi.advanceTimersByTime(50);
-
-            expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2");
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path3");
+            expect(scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: "start" });
         });
 
-        it("does not navigate for a pending transition after the component unmounts", () => {
-            vi.useFakeTimers();
-            const { unmount } = render(
-                <Tabs
-                    paths={mockPaths}
-                    scrollToTopOnChange
-                />
-            );
-            Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
-            vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+        it("does not scroll when the route changes without a tab click (Back/Forward)", () => {
+            const { rerender } = render(<Tabs paths={mockPaths} />);
+            vi.spyOn(screen.getByRole("navigation"), "getBoundingClientRect").mockReturnValue({ top: -300 });
 
-            fireEvent.click(screen.getByText("Path 2"));
-            unmount();
-            vi.advanceTimersByTime(2000);
+            mockUseLocation.mockReturnValue({ pathname: "/test/path3" });
+            rerender(<Tabs paths={mockPaths} />);
 
-            expect(mockNavigate).not.toHaveBeenCalled();
-        });
-
-        it("cancels a pending transition when the route changes some other way while Tabs stays mounted", () => {
-            vi.useFakeTimers();
-            const { rerender } = render(
-                <Tabs
-                    paths={mockPaths}
-                    scrollToTopOnChange
-                />
-            );
-            Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
-            vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-
-            fireEvent.click(screen.getByText("Path 2"));
-
-            // Simulate the browser Back button (or a link elsewhere in the same layout)
-            // changing the route without going through this component's own click handler.
-            mockUseLocation.mockReturnValue({ pathname: "/elsewhere" });
-            rerender(
-                <Tabs
-                    paths={mockPaths}
-                    scrollToTopOnChange
-                />
-            );
-
-            vi.advanceTimersByTime(2000);
-
-            expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2");
+            expect(scrollIntoView).not.toHaveBeenCalled();
         });
     });
 

@@ -61,6 +61,7 @@ const ProcurementDashboardTabs = () => {
                     key={queryString || "all"}
                     to={`${basePath}${queryString}`}
                     className={getClassName(queryString)}
+                    preventScrollReset
                 >
                     {path.label}
                 </Link>
