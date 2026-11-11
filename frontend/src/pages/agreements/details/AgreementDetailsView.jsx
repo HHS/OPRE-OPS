@@ -12,7 +12,7 @@ import {
 } from "../../../helpers/agreement.helpers";
 import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { AGREEMENT_NICKNAME_LABEL, AgreementFields, PERIOD_OF_PERFORMANCE_TOOLTIP } from "../agreements.constants";
+import { AgreementFields, PERIOD_OF_PERFORMANCE_TOOLTIP } from "../agreements.constants";
 import {
     getAlnTitle,
     sortAlnNumbers
@@ -94,15 +94,12 @@ const AgreementDetailsView = ({
                     {isFieldVisible(agreement.agreement_type, AgreementFields.NickName) && (
                         <>
                             <dl className="margin-0 font-12px">
-                                <dt className="margin-0 text-base-dark margin-top-3">{AGREEMENT_NICKNAME_LABEL}</dt>
+                                <dt className="margin-0 text-base-dark margin-top-3">Agreement Title</dt>
                                 <dd className="margin-0 margin-top-1">
-                                    {/* Must stay raw agreement.nick_name (never nickname-preferred
-                                        display_name) — this Tag IS the nickname field itself.
-                                        Ref: issue #6144 F7. */}
                                     <Tag
-                                        dataCy="agreement-nickname-tag"
+                                        dataCy="agreement-title-tag"
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={agreement?.nick_name ?? NO_DATA}
+                                        text={agreement?.name ?? NO_DATA}
                                     />
                                 </dd>
                             </dl>

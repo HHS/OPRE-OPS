@@ -398,8 +398,8 @@ describe("AgreementDetailsView", () => {
         });
     });
 
-    describe("Negative AC — nickname Tag unchanged (issue #6144)", () => {
-        it("renders the nickname Tag as the raw agreement.nick_name, never a nickname-preferred value", () => {
+    describe("Agreement Title Tag", () => {
+        it("renders the title Tag as the raw agreement.name, never the nickname or display_name", () => {
             const nicknamedAgreement = {
                 ...agreement,
                 agreement_type: "CONTRACT",
@@ -417,9 +417,9 @@ describe("AgreementDetailsView", () => {
                 />
             );
 
-            const nicknameTag = screen.getByText("FLT");
-            expect(nicknameTag.getAttribute("data-cy")).toBe("agreement-nickname-tag");
-            expect(screen.queryByText("Full Legal Title For Testing")).not.toBeInTheDocument();
+            const titleTag = screen.getByText("Full Legal Title For Testing");
+            expect(titleTag.getAttribute("data-cy")).toBe("agreement-title-tag");
+            expect(screen.queryByText("FLT")).not.toBeInTheDocument();
         });
     });
 
