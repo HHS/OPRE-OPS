@@ -399,11 +399,33 @@ class TestDispatcherLevelAwardedNotice:
         )
         assert events[0].history_message.endswith(AWARDED_NOTICE)
 
+    def test_create_bli_null_status_on_awarded_agreement_has_no_notice(self):
+        """A missing/None status (e.g. a blank STATUS cell in a spreadsheet import) must be
+        treated as Draft, not as "past Draft" -- `.get("status")` returning None should not
+        make the `!= "DRAFT"` comparison true."""
+        agreement = _make_agreement(True)
+        events = self._run(
+            "CREATE_BLI",
+            {"new_bli": {"agreement_id": agreement.id, "id": 42, "status": None}},
+            agreement,
+        )
+        assert AWARDED_NOTICE not in events[0].history_message
+
     def test_delete_bli_draft_on_awarded_agreement_has_no_notice(self):
         agreement = _make_agreement(True)
         events = self._run(
             "DELETE_BLI",
             {"deleted_bli": {"agreement_id": agreement.id, "id": 42, "status": "DRAFT"}},
+            agreement,
+        )
+        assert AWARDED_NOTICE not in events[0].history_message
+
+    def test_delete_bli_null_status_on_awarded_agreement_has_no_notice(self):
+        """Same null-status gap as the CREATE_BLI case above."""
+        agreement = _make_agreement(True)
+        events = self._run(
+            "DELETE_BLI",
+            {"deleted_bli": {"agreement_id": agreement.id, "id": 42, "status": None}},
             agreement,
         )
         assert AWARDED_NOTICE not in events[0].history_message

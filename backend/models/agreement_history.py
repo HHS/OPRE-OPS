@@ -125,7 +125,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
             new_bli_agreement = session.get(Agreement, event.event_details["new_bli"]["agreement_id"])
             new_bli_notice = (
                 _awarded_mod_notice(new_bli_agreement)
-                if event.event_details["new_bli"].get("status") != "DRAFT"
+                if (event.event_details["new_bli"].get("status") or "DRAFT") != "DRAFT"
                 else ""
             )
             history_events.append(
@@ -156,7 +156,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
             deleted_bli_agreement = session.get(Agreement, event.event_details["deleted_bli"]["agreement_id"])
             deleted_bli_notice = (
                 _awarded_mod_notice(deleted_bli_agreement)
-                if event.event_details["deleted_bli"].get("status") != "DRAFT"
+                if (event.event_details["deleted_bli"].get("status") or "DRAFT") != "DRAFT"
                 else ""
             )
             history_events.append(
