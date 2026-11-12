@@ -489,23 +489,16 @@ export const EDIT_DISABLED_TOOLTIPS = {
     awardInReview: "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time",
     postPreAwardLocked: "This agreement has completed Pre-Award Approval and is locked from further edits",
     allBudgetLinesInReview: "Budget lines In Review Status cannot be sent for status changes",
-    awardedNoDraftBLIs: "Awarded agreements require a Contract Modification to execute Planned Budget Lines",
-    awardedServicesComponentDelete: "Services Components with budget lines cannot be deleted on awarded agreements"
+    awardedNoDraftBLIs: "Awarded agreements require a Contract Modification to execute Planned Budget Lines"
 };
 
 /**
- * Heading for the confirmation shown before sending edits on an Awarded agreement to approval,
- * when they will require a contract modification (OPS-3072). Shared by every save path.
+ * Heading for the informational confirmation shown before saving edits on an Awarded agreement
+ * (OPS-3072/OPS-3268): they apply directly, with no Division Director approval, and are tracked
+ * on the Award & Modifications Tab for the next contract modification. Shared by every save path,
+ * including a COR change (OPS-3153), which is recorded pending instead of applied.
  */
-export const CONTRACT_MODIFICATION_APPROVAL_HEADING =
-    "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?";
-
-/**
- * Heading for the confirmation shown before saving a COR change on an Awarded agreement
- * (OPS-3153). No approval is needed: the change is tracked on the Award & Modifications Tab
- * and the COR changes once the contract modification is approved.
- */
-export const COR_CONTRACT_MODIFICATION_HEADING =
+export const CONTRACT_MODIFICATION_NOTICE_HEADING =
     "This agreement has already been awarded and any changes will require a contract modification. Changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action.";
 
 /**

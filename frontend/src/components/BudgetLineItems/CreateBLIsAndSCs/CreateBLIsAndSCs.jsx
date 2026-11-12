@@ -19,7 +19,7 @@ import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findDescription, findIfOptional } from "../../../helpers/servicesComponent.helpers";
 import { findGrantDescription, findGrantPeriodEnd, findGrantPeriodStart } from "../../../helpers/budgetLines.helpers";
-import { cleanBudgetLineItemForApi, CONTRACT_MODIFICATION_APPROVAL_HEADING } from "../../../helpers/agreement.helpers";
+import { cleanBudgetLineItemForApi, CONTRACT_MODIFICATION_NOTICE_HEADING } from "../../../helpers/agreement.helpers";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
@@ -126,7 +126,6 @@ export const CreateBLIsAndSCs = ({
         datePickerSuite,
         scFormSuite,
         nonDraftBudgetLines,
-        isServicesComponentDeleteDisabled,
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
         setHasUnsavedChanges,
@@ -444,7 +443,6 @@ export const CreateBLIsAndSCs = ({
                                 hasUnsavedChanges={hasUnsavedChanges}
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
-                                isDeleteDisabled={isServicesComponentDeleteDisabled}
                             />
                         ))}
                     {!isGrant && (
@@ -511,7 +509,6 @@ export const CreateBLIsAndSCs = ({
                                 hasUnsavedChanges={hasUnsavedChanges}
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
-                                isDeleteDisabled={isServicesComponentDeleteDisabled}
                             />
                         ))}
                     {/* This is already the budget-line edit surface, so no inline Edit button belongs here. */}
@@ -696,20 +693,17 @@ export const CreateBLIsAndSCs = ({
                             className="usa-button"
                             data-cy="continue-btn"
                             onClick={() => {
-                                // OPS-3072 (Modified LOE): this standalone footer button has no
+                                // OPS-3072/OPS-3268 (Modified LOE): this standalone footer button has no
                                 // hosting page to intercept it (unlike EditAgreementAndBudgetLines'
-                                // external Save button) -- when the pending edits require a
-                                // contract modification, confirm here before saving, reusing the
-                                // same generic modal plumbing this component already uses elsewhere.
-                                // Pass `approvalConfirmed` on confirm so the inner Division-Director
-                                // approval modal does NOT fire again (Decision 10: one modal, not
-                                // two stacked confirmations for the same underlying approval).
-                                // Not `savedViaModal`: that path redirects to the blocker's target.
+                                // external Save button) -- when the pending edits on an Awarded
+                                // agreement will be tracked for a contract modification, show an
+                                // informational confirmation here before saving (no Division
+                                // Director approval of any kind).
                                 if (requiresContractModification) {
                                     setModalProps({
-                                        heading: CONTRACT_MODIFICATION_APPROVAL_HEADING,
-                                        actionButtonText: "Send to Approval",
-                                        secondaryButtonText: "Continue Editing",
+                                        heading: CONTRACT_MODIFICATION_NOTICE_HEADING,
+                                        actionButtonText: "Save changes",
+                                        secondaryButtonText: "Continue editing",
                                         handleConfirm: () => handleSave(false, false, false, true)
                                     });
                                     setShowModal(true);

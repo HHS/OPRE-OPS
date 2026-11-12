@@ -23,10 +23,12 @@ import styles from "./ContractModificationEditCard.module.scss";
  * @property {boolean} [in_review] - Part of the contract modification that is in review
  */
 
-// Services Component additions (OPS-6440) show the SC and what happened to it, with no From/To,
-// per the design.
+// Services Component add/delete (OPS-6440/OPS-3072) show the SC and what happened to it, with no
+// From/To, per the design. "delete" is shared with a budget-line delete; which branch renders is
+// decided by edit.services_component_id, not the field name.
 const SERVICES_COMPONENT_CHANGE_LABELS = {
-    services_component_create: "Add SC"
+    services_component_create: "Add SC",
+    delete: "Delete SC"
 };
 
 /**
@@ -42,7 +44,8 @@ const ContractModificationEditCard = ({ edit }) => {
     const oldCan = useGetNameForCanId(edit.field === "can_id" ? edit.old_value : undefined);
     const newCan = useGetNameForCanId(edit.field === "can_id" ? edit.new_value : undefined);
     const { oldValue, newValue } = renderChangeValues(edit.field, changeTo, oldCan, newCan);
-    const servicesComponentChange = SERVICES_COMPONENT_CHANGE_LABELS[edit.field];
+    const servicesComponentChange =
+        edit.services_component_id != null ? SERVICES_COMPONENT_CHANGE_LABELS[edit.field] : undefined;
     // The SC's display name, frozen on the row: the new SC for an addition, the deleted one otherwise.
     const servicesComponentName = edit.field === "services_component_create" ? edit.new_value : edit.old_value;
     // A COR change (OPS-3153) is agreement-level: no budget line, and From/To are user names.

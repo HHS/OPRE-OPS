@@ -600,6 +600,7 @@ describe("Agreement page — details page nickname display (issue #6144)", () =>
         opsAPI.useGetNotificationsByUserIdAndAgreementIdQuery.mockReturnValue({ data: [] });
         opsAPI.useGetProcurementShopByIdQuery.mockReturnValue({ data: undefined });
         opsAPI.useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({ data: { data: [] } });
+        opsAPI.useGetAgreementContractModificationsByIdQuery.mockReturnValue({ data: [] });
     };
 
     const renderAgreementPage = (id) =>

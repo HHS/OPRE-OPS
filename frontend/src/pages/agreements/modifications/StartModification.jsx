@@ -7,7 +7,6 @@ import AgreementMetaAccordion from "../../../components/Agreements/AgreementMeta
 import ContractModificationEditCard from "../../../components/Agreements/ContractModificationEdits/ContractModificationEditCard";
 import ModificationDocumentUploads from "../../../components/Agreements/ModificationDocumentUploads";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
-import StatusChangeReviewCard from "../../../components/ChangeRequests/StatusChangeReviewCard";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
@@ -118,15 +117,17 @@ export const StartModification = () => {
                     ))}
                     {selectedBudgetLines.map((budgetLine) => (
                         <li key={`execute-${budgetLine.id}`}>
-                            <StatusChangeReviewCard
-                                isCondensed={true}
-                                agreementId={budgetLine.agreement_id}
-                                bliId={budgetLine.id}
-                                requestDate={budgetLine.date_needed}
-                                changeTo={PLANNED_TO_EXECUTING}
-                                handleReviewChangeRequest={() => {}}
-                                changeRequestId={budgetLine.id}
-                                createdById={budgetLine.created_by}
+                            <ContractModificationEditCard
+                                edit={{
+                                    id: `execute-${budgetLine.id}`,
+                                    modification_type: "MODIFIED_LOE",
+                                    budget_line_item_id: budgetLine.id,
+                                    field: "status",
+                                    old_value: PLANNED_TO_EXECUTING.status.old,
+                                    new_value: PLANNED_TO_EXECUTING.status.new,
+                                    requested_by: budgetLine.created_by_user,
+                                    requested_on: budgetLine.date_needed
+                                }}
                             />
                         </li>
                     ))}

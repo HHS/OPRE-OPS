@@ -18,8 +18,7 @@ import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLi
 import { safeRedirectPath } from "../../../helpers/safeRedirect.helpers";
 import {
     buildProcurementShopChangeAlert,
-    CONTRACT_MODIFICATION_APPROVAL_HEADING,
-    COR_CONTRACT_MODIFICATION_HEADING
+    CONTRACT_MODIFICATION_NOTICE_HEADING
 } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -153,14 +152,15 @@ const EditAgreementAndBudgetLines = () => {
     // Nav-away blocker. Shows one of two modals depending on whether the pending changes
     // require DD approval. `saveChanges` receives the intended destination so the success
     // alert redirects there instead of the fixed returnTo URL.
-    const requiresApproval =
-        requiresFinancialApproval || requiresContractModification || procurementShopChangeState.shouldRequestChange;
+    // An Awarded agreement's contract-modification-tracked changes need no approval of any kind
+    // (OPS-3072/OPS-3268) -- requiresContractModification only decides the confirmation's copy,
+    // never requiresApproval, so it doesn't fold the informational case into the approval one.
+    const requiresApproval = requiresFinancialApproval || procurementShopChangeState.shouldRequestChange;
     // One confirmation covers every case. Edits that need Division Director approval take
-    // precedence; a COR change alone needs no approval (OPS-3153).
-    let approvalModalHeading = COR_CONTRACT_MODIFICATION_HEADING;
-    if (requiresContractModification) {
-        approvalModalHeading = CONTRACT_MODIFICATION_APPROVAL_HEADING;
-    } else if (requiresFinancialApproval || procurementShopChangeState.shouldRequestChange) {
+    // precedence; a contract-modification-tracked or COR change alone needs no approval
+    // (OPS-3072/OPS-3153).
+    let approvalModalHeading = CONTRACT_MODIFICATION_NOTICE_HEADING;
+    if (requiresFinancialApproval || procurementShopChangeState.shouldRequestChange) {
         approvalModalHeading =
             "Budget changes require approval from your Division Director. Do you want to send it to approval?";
     }

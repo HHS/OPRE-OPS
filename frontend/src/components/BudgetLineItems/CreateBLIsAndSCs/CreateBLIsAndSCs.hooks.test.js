@@ -654,19 +654,6 @@ describe("useCreateBLIsAndSCs", () => {
                 expect(result.current.requiresContractModification).toBe(false);
             });
 
-            it("disables deleting a saved SC that has a Planned budget line", () => {
-                useEditAgreementMock.mockReturnValue({
-                    ...editAgreementMockData,
-                    services_components: [savedSc()],
-                    budget_line_items: [
-                        { id: 710, status: "PLANNED", services_component_id: 21, created_on: "2026-01-01" }
-                    ]
-                });
-                const { result } = renderSubject({ selectedAgreement: awardedContract });
-
-                expect(result.current.isServicesComponentDeleteDisabled(21)).toBe(true);
-            });
-
             const renderAwarded = (budgetLines = []) =>
                 renderHook(() =>
                     useCreateBLIsAndSCs(
@@ -687,7 +674,7 @@ describe("useCreateBLIsAndSCs", () => {
                     )
                 );
 
-            it("names a new SC by its short name in the save alert", async () => {
+            it("saves a new SC addition directly, with the plain 'Agreement Updated' alert (OPS-3072)", async () => {
                 useEditAgreementMock.mockReturnValue({
                     ...editAgreementMockData,
                     agreement: { id: 1, team_members: [], service_requirement_type: "NON_SEVERABLE" },
@@ -702,9 +689,9 @@ describe("useCreateBLIsAndSCs", () => {
                     await result.current.handleSave(false);
                 });
 
-                const message = setAlertMock.mock.calls.at(-1)[0].message;
-                expect(message).toContain("• SC3 Addition");
-                expect(message).not.toContain("Services Component 3 Addition");
+                const alert = setAlertMock.mock.calls.at(-1)[0];
+                expect(alert.heading).toBe("Agreement Updated");
+                expect(alert.message).not.toContain("Services Component 3 Addition");
             });
 
             it("shows the backend's reason, not a success alert, when an SC delete is rejected", async () => {
@@ -758,49 +745,6 @@ describe("useCreateBLIsAndSCs", () => {
                 expect(deleteServicesComponentMock).toHaveBeenCalledWith(21);
             });
 
-            it("disables deleting a saved SC whose Planned budget line's own deletion is going to approval", () => {
-                // The deleted line is gone from context but still linked in the saved budget lines.
-                useEditAgreementMock.mockReturnValue({
-                    ...editAgreementMockData,
-                    services_components: [savedSc()],
-                    deleted_budget_line_items_ids: [711],
-                    budget_line_items: []
-                });
-                const { result } = renderHook(() =>
-                    useCreateBLIsAndSCs(
-                        true,
-                        false,
-                        [{ id: 711, status: "PLANNED", services_component_id: 21, created_on: "2026-01-01" }],
-                        vi.fn(),
-                        goBackMock,
-                        vi.fn(),
-                        { id: 1, display_name: "AGR-1", ...awardedContract },
-                        { fee_percentage: 5, abbr: "PSC" },
-                        setIsEditModeMock,
-                        "none",
-                        true,
-                        false,
-                        "Save & Exit",
-                        1
-                    )
-                );
-
-                expect(result.current.isServicesComponentDeleteDisabled(21)).toBe(true);
-            });
-
-            it("allows deleting a saved SC whose budget lines are all Draft", () => {
-                useEditAgreementMock.mockReturnValue({
-                    ...editAgreementMockData,
-                    services_components: [savedSc()],
-                    budget_line_items: [
-                        { id: 712, status: "DRAFT", services_component_id: 21, created_on: "2026-01-01" }
-                    ]
-                });
-                const { result } = renderSubject({ selectedAgreement: awardedContract });
-
-                expect(result.current.isServicesComponentDeleteDisabled(21)).toBe(false);
-            });
-
             it("does not flag SC changes for a superuser", () => {
                 useSelectorMock.mockImplementation((selector) =>
                     selector({ auth: { activeUser: { id: 1, is_superuser: true, roles: [{ name: "SYSTEM_OWNER" }] } } })
@@ -813,39 +757,6 @@ describe("useCreateBLIsAndSCs", () => {
                 const { result } = renderSubject({ selectedAgreement: awardedContract });
 
                 expect(result.current.requiresContractModification).toBe(false);
-            });
-
-            it("lets a superuser delete a saved SC that has a Planned budget line", () => {
-                useSelectorMock.mockImplementation((selector) =>
-                    selector({ auth: { activeUser: { id: 1, is_superuser: true, roles: [{ name: "SYSTEM_OWNER" }] } } })
-                );
-                useEditAgreementMock.mockReturnValue({
-                    ...editAgreementMockData,
-                    services_components: [savedSc()],
-                    budget_line_items: [
-                        { id: 710, status: "PLANNED", services_component_id: 21, created_on: "2026-01-01" }
-                    ]
-                });
-                const { result } = renderSubject({ selectedAgreement: awardedContract });
-
-                expect(result.current.isServicesComponentDeleteDisabled(21)).toBe(false);
-            });
-
-            it("allows deleting a saved SC that has a Planned budget line when the capability is OFF", () => {
-                useGetVersionQueryMock.mockReturnValue({
-                    data: { version: "1.0.0", skip_cr_for_draft_planned: false, enable_modified_loe_edits: false },
-                    isSuccess: true
-                });
-                useEditAgreementMock.mockReturnValue({
-                    ...editAgreementMockData,
-                    services_components: [savedSc()],
-                    budget_line_items: [
-                        { id: 710, status: "PLANNED", services_component_id: 21, created_on: "2026-01-01" }
-                    ]
-                });
-                const { result } = renderSubject({ selectedAgreement: awardedContract });
-
-                expect(result.current.isServicesComponentDeleteDisabled(21)).toBe(false);
             });
 
             it("does not flag SC changes on an agreement that isn't Awarded", () => {
