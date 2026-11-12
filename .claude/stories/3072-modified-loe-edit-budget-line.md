@@ -810,9 +810,9 @@ This applies under the same awarded gate as before (`sc_requires_approval_gate`:
 | Add an SC | Contract-mod modal → **add CR created with the SC** → Division Director approval → "Add SC" card | Same (unchanged, except the CR is created up front, not when a BL is linked) |
 | Delete an SC | Contract-mod modal → **delete CR**, SC and its Draft BL links stay → approval → SC deleted, Draft BLs lose their SC, "Delete SC" card | Blocked for non-superusers (round 10, unchanged) |
 
-**Net-zero cases.** These delete directly with no CR:
+**Net-zero cases.**
 - An SC whose own add is still in review can't be deleted (existing in-review lock, unchanged).
-- An SC whose add was approved but isn't in a contract mod yet (a pending "Add SC" edit) is still deleted directly. `discard_pending_services_component_addition` drops its "Add SC" edit, so the add and the delete cancel out and nothing reaches the contract. *(This is the default I picked; confirm it with the PO in review.)* If that edit is already in a contract mod in review, the delete stays rejected, as it is today.
+- *(Revised 2026-11-12, decided by the user.)* An SC whose add was approved but isn't in a contract mod yet (a pending "Add SC" edit) **still goes to approval**, so the Division Director knows the user wants to remove it. On approval the SC is deleted and `discard_pending_services_component_addition` drops its "Add SC" edit; no "Delete SC" edit is written, since the SC never reached the contract. On decline, the SC and its "Add SC" edit stay. If the "Add SC" edit is already in a contract mod in review, the delete is rejected, as before. If it goes into a contract mod while the delete is waiting, approving the delete keeps the "Add SC" edit and also writes a "Delete SC" edit.
 
 ### Backend
 
@@ -891,7 +891,7 @@ This applies under the same awarded gate as before (`sc_requires_approval_gate`:
 - Gated delete:
   - SC with no BLs, and SC with only Draft BLs: delete CR created, SC and links stay. Approve → SC gone, BLs unlinked, "Delete SC" edit row. Decline → nothing changes.
 - Delete of an SC with non-Draft BLs: still 400 for non-superusers.
-- Delete of an SC with a pending "Add SC" edit: deleted directly, the edit is discarded, no CR. If the edit is in a contract mod in review: rejected.
+- Delete of an SC with a pending "Add SC" edit: delete CR. Approve → SC gone, "Add SC" edit removed, no "Delete SC" edit. Decline → SC and "Add SC" edit stay. If the edit is in a contract mod in review: rejected. If it goes into one while the delete waits: approval writes "Delete SC" and keeps "Add SC".
 - Linking a BL to an SC with a pending delete CR: rejected.
 - Linking BLs to an SC with an in-review add CR refreshes `linked_budget_line_item_ids`, and only one CR exists.
 - Legacy fallback: an SC with `awaiting_add_approval=True` and no CR gets one on its next BL link.

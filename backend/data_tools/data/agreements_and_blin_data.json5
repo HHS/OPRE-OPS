@@ -1164,7 +1164,7 @@
     },
     {
       // SC3 on CONTRACT #523 has no budget lines, for manual testing of OPS-6440: deleting it
-      // applies directly, while deleting SC2 (which has non-Draft BLs) is blocked for non-superusers.
+      // goes to approval, while deleting SC2 (which has non-Draft BLs) is blocked for non-superusers.
       id: 60,
       number: 3,
       optional: false,
@@ -1175,7 +1175,8 @@
     },
     {
       // SC4 on CONTRACT #523, added after award and approved, for manual testing of OPS-3268: its
-      // pending "Add SC" edit is seeded under contract_modification_edit. No budget lines.
+      // pending "Add SC" edit is seeded under contract_modification_edit. No budget lines. Deleting
+      // it goes to approval; approving the delete removes that "Add SC" edit.
       id: 61,
       number: 4,
       optional: false,

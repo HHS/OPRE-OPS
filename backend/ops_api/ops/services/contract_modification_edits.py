@@ -143,11 +143,6 @@ class ContractModificationEditService:
         )
         return result.rowcount
 
-    def has_pending_services_component_addition(self, services_component_id: int) -> bool:
-        """Whether the SC's addition was approved but isn't in a started modification yet (OPS-6440)."""
-        query = self._pending_services_component_addition_query(services_component_id).limit(1)
-        return self.db_session.scalar(query) is not None
-
     @staticmethod
     def _pending_services_component_addition_query(services_component_id: int):
         return select(ContractModificationEdit).where(
@@ -156,30 +151,43 @@ class ContractModificationEditService:
             ContractModificationEdit.agreement_mod_id.is_(None),
         )
 
-    def discard_pending_services_component_addition(self, services_component_id: int) -> None:
-        """Remove the pending "Add SC" edit of a Services Component being deleted (OPS-6440).
-
-        Otherwise the edit stays pending and goes into the next modification for an SC that no
-        longer exists. If the edit is in a contract modification in review, removing it would
-        change what the Division Director is reviewing, so the delete is rejected instead.
-        Does not commit.
-        """
-        edits = self.db_session.scalars(self._pending_services_component_addition_query(services_component_id)).all()
-        if not edits:
-            return
-        in_review_request_id = self.db_session.scalar(
+    def services_component_addition_in_review(self, services_component_id: int) -> bool:
+        """Whether the SC's pending "Add SC" edit is in a contract modification in review (OPS-6440)."""
+        query = (
             select(ContractModificationRequest.id)
             .join(ContractModificationRequest.edits)
             .where(
-                ContractModificationEdit.id.in_([edit.id for edit in edits]),
+                ContractModificationEdit.id.in_(
+                    self._pending_services_component_addition_query(services_component_id)
+                    .with_only_columns(ContractModificationEdit.id)
+                    .scalar_subquery()
+                ),
                 ContractModificationRequest.status == ContractModificationRequestStatus.IN_REVIEW,
             )
             .limit(1)
         )
-        if in_review_request_id is not None:
+        return self.db_session.scalar(query) is not None
+
+    def check_services_component_addition_not_in_review(self, services_component_id: int) -> None:
+        """Reject deleting an SC whose "Add SC" edit is in a contract modification in review: removing
+        the SC would change what the Division Director is reviewing (OPS-6440)."""
+        if self.services_component_addition_in_review(services_component_id):
             raise ValidationError({"services_component": [SC_ADDITION_IN_MODIFICATION_MESSAGE]})
+
+    def discard_pending_services_component_addition(self, services_component_id: int) -> bool:
+        """Remove the pending "Add SC" edit of a Services Component being deleted (OPS-6440).
+
+        Otherwise the edit stays pending and goes into the next modification for an SC that no
+        longer exists. Rejects the delete if the edit is in a contract modification in review.
+        Returns whether an edit was removed. Does not commit.
+        """
+        edits = self.db_session.scalars(self._pending_services_component_addition_query(services_component_id)).all()
+        if not edits:
+            return False
+        self.check_services_component_addition_not_in_review(services_component_id)
         for edit in edits:
             self.db_session.delete(edit)
+        return True
 
     def record_project_officer_change(
         self, agreement: Agreement, new_project_officer_id: Optional[int], user: User

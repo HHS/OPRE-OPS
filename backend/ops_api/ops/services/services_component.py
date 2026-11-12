@@ -177,8 +177,9 @@ class ServicesComponentService:
 
         On an Awarded agreement (OPS-6440), an SC with non-Draft budget lines can only be deleted
         by a superuser, and any other delete goes to Division Director approval: the SC stays
-        until approved. An SC whose approved addition isn't in a modification yet is deleted
-        directly, and its pending "Add SC" edit is removed with it, since the two cancel out.
+        until approved. That includes an SC whose approved addition isn't in a modification yet,
+        so the Division Director knows it's being removed; on approval, its pending "Add SC" edit
+        is removed with it (see ``ChangeRequestService._apply_services_component_review``).
 
         Args:
             obj_id: The ID of the services component to delete
@@ -204,6 +205,7 @@ class ServicesComponentService:
         if self.delete_blocked(services_component):
             raise ValidationError({"services_component": [AWARDED_DELETE_BLOCKED_MESSAGE]})
         if self.delete_requires_approval(services_component):
+            ContractModificationEditService(self.db_session).check_services_component_addition_not_in_review(obj_id)
             return change_request_service.add_services_component_delete_change_request(
                 services_component, commit=commit
             )
@@ -217,17 +219,14 @@ class ServicesComponentService:
     def delete_requires_approval(self, services_component: ServicesComponent) -> bool:
         """Whether deleting this (not blocked) SC goes to Division Director approval (OPS-6440).
 
-        It does on a gated Awarded agreement, unless the SC was added after award and that
-        addition isn't in a modification yet (still pending, or approved and pending a
-        modification): then nothing reaches the contract, so the delete is direct.
+        It does on a gated Awarded agreement, unless the SC's own addition hasn't been approved
+        yet: the Division Director never approved it, so the delete is direct. An SC whose
+        addition was approved still goes to approval, even if that addition isn't in a
+        modification yet.
         """
         if not sc_requires_approval_gate(services_component.agreement):
             return False
-        if services_component.awaiting_add_approval:
-            return False
-        return not ContractModificationEditService(self.db_session).has_pending_services_component_addition(
-            services_component.id
-        )
+        return not services_component.awaiting_add_approval
 
     @staticmethod
     def delete_blocked(services_component: ServicesComponent) -> bool:

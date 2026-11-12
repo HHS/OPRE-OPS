@@ -375,7 +375,14 @@ def _approved_sc_addition_emptied(client, director_client, loaded_db, agreement,
     return sc2_id
 
 
-def test_deleting_an_approved_sc_removes_its_pending_addition_edit(
+def _request_sc_delete(client, sc_id):
+    """Delete an SC whose delete goes to approval; returns the delete change request id."""
+    response = client.delete(url_for("api.services-component-item", id=sc_id))
+    assert response.status_code == 202, response.json
+    return response.json["change_request_id"]
+
+
+def test_deleting_an_approved_sc_whose_addition_is_pending_goes_to_approval(
     awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
 ):
     agreement, first, _ = awarded_with_edit
@@ -389,12 +396,100 @@ def test_deleting_an_approved_sc_removes_its_pending_addition_edit(
         first.services_component_id,
     )
 
-    response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
+    change_request_id = _request_sc_delete(basic_user_auth_client, sc2_id)
+
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
+    change_request = loaded_db.get(ServicesComponentChangeRequest, change_request_id)
+    assert change_request.is_delete
+    assert [e.field for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id] == [
+        "services_component_create"
+    ]
+
+
+def test_approved_delete_of_an_sc_whose_addition_is_pending_cancels_the_addition(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+):
+    agreement, first, _ = awarded_with_edit
+    executable = _executable_bli(loaded_db, agreement, test_can)
+    sc2_id = _approved_sc_addition_emptied(
+        basic_user_auth_client,
+        division_director_auth_client,
+        loaded_db,
+        agreement,
+        executable,
+        first.services_component_id,
+    )
+    change_request_id = _request_sc_delete(basic_user_auth_client, sc2_id)
+
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=change_request_id), json={"action": "APPROVE"}
+    )
 
     assert response.status_code == 200, response.json
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is None
+    # Neither "Add SC" nor "Delete SC": the SC never reached the contract.
     assert [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id] == []
     pending = _get_pending(basic_user_auth_client, agreement.id).json["data"]
     assert [e for e in pending if e["services_component_id"] == sc2_id] == []
+
+
+def test_declined_delete_of_an_sc_whose_addition_is_pending_keeps_the_addition(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+):
+    agreement, first, _ = awarded_with_edit
+    executable = _executable_bli(loaded_db, agreement, test_can)
+    sc2_id = _approved_sc_addition_emptied(
+        basic_user_auth_client,
+        division_director_auth_client,
+        loaded_db,
+        agreement,
+        executable,
+        first.services_component_id,
+    )
+    change_request_id = _request_sc_delete(basic_user_auth_client, sc2_id)
+
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=change_request_id), json={"action": "DECLINE"}
+    )
+
+    assert response.status_code == 200, response.json
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
+    assert [e.field for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id] == [
+        "services_component_create"
+    ]
+
+
+def test_approved_delete_of_an_sc_whose_addition_went_into_review_records_both_edits(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+):
+    agreement, first, _ = awarded_with_edit
+    executable = _executable_bli(loaded_db, agreement, test_can)
+    sc2_id = _approved_sc_addition_emptied(
+        basic_user_auth_client,
+        division_director_auth_client,
+        loaded_db,
+        agreement,
+        executable,
+        first.services_component_id,
+    )
+    change_request_id = _request_sc_delete(basic_user_auth_client, sc2_id)
+    # The "Add SC" edit goes into a modification while the delete waits for approval.
+    assert _submit(basic_user_auth_client, agreement.id).status_code == 201
+
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=change_request_id), json={"action": "APPROVE"}
+    )
+
+    assert response.status_code == 200, response.json
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is None
+    assert sorted(e.field for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id) == [
+        "services_component_create",
+        "services_component_delete",
+    ]
 
 
 def test_deleting_an_sc_whose_addition_is_in_a_modification_in_review_returns_400(

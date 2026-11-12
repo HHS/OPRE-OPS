@@ -794,7 +794,7 @@ def test_budget_lines_cannot_join_an_sc_whose_delete_is_in_review(
     assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id is None
 
 
-def test_deleting_sc_whose_approved_addition_is_pending_applies_directly(
+def test_deleting_sc_whose_approved_addition_is_pending_goes_to_approval(
     app,
     modified_loe_enabled,
     basic_user_auth_client,
@@ -803,18 +803,20 @@ def test_deleting_sc_whose_approved_addition_is_pending_applies_directly(
     awarded_agreement,
     app_ctx,
 ):
-    """The addition and the delete cancel out, so nothing goes to the contract."""
+    """The Division Director approves the delete; the addition and the delete then cancel out,
+    so nothing goes to the contract."""
     sc2_id = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)["id"]
-    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
-    _review(division_director_auth_client, cr.id)
+    (add_cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    _review(division_director_auth_client, add_cr.id)
     assert len(_edits(loaded_db, awarded_agreement.id)) == 1
 
-    _delete_sc(basic_user_auth_client, sc2_id, 200)
+    delete_cr_id = _delete_sc(basic_user_auth_client, sc2_id, 202)["change_request_id"]
 
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
+    _review(division_director_auth_client, delete_cr_id)
     loaded_db.expire_all()
     assert loaded_db.get(ServicesComponent, sc2_id) is None
     assert _edits(loaded_db, awarded_agreement.id) == []
-    assert len(_sc_change_requests(loaded_db, awarded_agreement.id)) == 1
     assert "Services Component Deleted" in _history_titles(loaded_db, awarded_agreement.id)
 
 

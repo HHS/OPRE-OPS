@@ -142,27 +142,17 @@ export const getServicesComponentAdditionsForApproval = ({ servicesComponents, t
 
 /**
  * The saved services components deleted in this save that go to Division Director approval
- * (OPS-6440). On an Awarded agreement that's every delete the user can make, except an SC added
- * after award whose addition isn't in a modification yet: the addition and the delete cancel
- * out, so it's deleted directly. Mirrors the backend's check. The caller applies the awarded /
- * non-superuser gate; SCs whose delete is blocked can't be deleted in the editor.
+ * (OPS-6440). On an Awarded agreement that's every delete the user can make, except an SC whose
+ * own addition hasn't been approved yet, which is deleted directly. An SC whose approved addition
+ * isn't in a modification yet still goes to approval. Mirrors the backend's check. The caller
+ * applies the awarded / non-superuser gate; SCs whose delete is blocked can't be deleted in the editor.
  * @param {Object} args
  * @param {Array<number>} args.deletedServicesComponentsIds
  * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} args.savedServicesComponents - The agreement's services components as saved
- * @param {Set<number>} args.servicesComponentIdsWithPendingAddition - SCs with an approved "Add SC" edit not yet in a modification
  * @returns {Array<import("../../../types/ServicesComponents").ServicesComponents>}
  */
-export const getServicesComponentDeletionsForApproval = ({
-    deletedServicesComponentsIds,
-    savedServicesComponents,
-    servicesComponentIdsWithPendingAddition
-}) =>
-    savedServicesComponents.filter(
-        (sc) =>
-            deletedServicesComponentsIds.includes(sc.id) &&
-            !sc.awaiting_add_approval &&
-            !servicesComponentIdsWithPendingAddition.has(sc.id)
-    );
+export const getServicesComponentDeletionsForApproval = ({ deletedServicesComponentsIds, savedServicesComponents }) =>
+    savedServicesComponents.filter((sc) => deletedServicesComponentsIds.includes(sc.id) && !sc.awaiting_add_approval);
 
 /**
  * Keep a saved budget line linked to a services component whose delete is going to approval

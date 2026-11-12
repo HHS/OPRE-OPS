@@ -21,7 +21,6 @@ const updateGrantNumberMock = vi.fn();
 const deleteGrantNumberMock = vi.fn();
 const useGetVersionQueryMock = vi.fn();
 const useGetServicesComponentsListQueryMock = vi.fn();
-const useGetAgreementContractModificationEditsByIdQueryMock = vi.fn();
 
 const goBackMock = vi.fn();
 const setIsEditModeMock = vi.fn();
@@ -69,9 +68,7 @@ vi.mock("../../../api/opsAPI", () => ({
     useUpdateGrantNumberMutation: () => [updateGrantNumberMock],
     useDeleteGrantNumberMutation: () => [deleteGrantNumberMock],
     useGetVersionQuery: (...args) => useGetVersionQueryMock(...args),
-    useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args),
-    useGetAgreementContractModificationEditsByIdQuery: (...args) =>
-        useGetAgreementContractModificationEditsByIdQueryMock(...args)
+    useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args)
 }));
 
 vi.mock("../../../helpers/agreement.helpers", () => ({
@@ -195,7 +192,6 @@ describe("useCreateBLIsAndSCs", () => {
         );
         deleteAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
         useGetServicesComponentsListQueryMock.mockReturnValue({ data: undefined });
-        useGetAgreementContractModificationEditsByIdQueryMock.mockReturnValue({ data: undefined });
         // Default: capability OFF and version query resolved.
         useGetVersionQueryMock.mockReturnValue({
             data: { version: "1.0.0", skip_cr_for_draft_planned: false },
@@ -704,16 +700,8 @@ describe("useCreateBLIsAndSCs", () => {
                 expect([...result.current.servicesComponentIdsPendingDelete]).toEqual([21]);
             });
 
-            it.each([
-                ["its addition is still awaiting approval", { awaiting_add_approval: true }, []],
-                [
-                    "its approved addition isn't in a modification yet",
-                    {},
-                    [{ id: 5, field: "services_component_create", services_component_id: 21 }]
-                ]
-            ])("deletes a saved SC directly when %s", (_label, scOverrides, edits) => {
-                withDeletedSavedSc(scOverrides);
-                useGetAgreementContractModificationEditsByIdQueryMock.mockReturnValue({ data: edits });
+            it("deletes a saved SC directly when its addition is still awaiting approval", () => {
+                withDeletedSavedSc({ awaiting_add_approval: true });
                 const { result } = renderAwarded();
 
                 expect(result.current.requiresContractModification).toBe(false);

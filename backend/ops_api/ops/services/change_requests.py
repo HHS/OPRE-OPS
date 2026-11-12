@@ -643,7 +643,9 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         """Apply a reviewed SC request. Returns the SC to delete last, if any.
 
         Add: approved, the SC becomes a normal SC; declined, the SC is removed.
-        Delete: approved, the SC is removed; declined, nothing changes.
+        Delete: approved, the SC is removed; declined, nothing changes. If the SC's "Add SC" edit
+        is still pending and not in review, the approved delete removes that edit and records no
+        "Delete SC" edit: the SC never reached the contract, so there's nothing to modify.
         """
         services_component = self.db_session.get(
             ServicesComponent, change_request.services_component_id, with_for_update=True, populate_existing=True
@@ -653,7 +655,14 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         approved = change_request.status == ChangeRequestStatus.APPROVED
         if approved:
-            ContractModificationEditService(self.db_session).create_from_approved_change_request(change_request)
+            edit_service = ContractModificationEditService(self.db_session)
+            addition_cancelled = (
+                change_request.is_delete
+                and not edit_service.services_component_addition_in_review(services_component.id)
+                and edit_service.discard_pending_services_component_addition(services_component.id)
+            )
+            if not addition_cancelled:
+                edit_service.create_from_approved_change_request(change_request)
         if change_request.is_delete:
             return services_component if approved else None
         if approved:

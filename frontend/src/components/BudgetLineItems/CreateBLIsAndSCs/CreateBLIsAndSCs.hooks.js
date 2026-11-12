@@ -11,7 +11,6 @@ import {
     useDeleteBudgetLineItemMutation,
     useDeleteGrantNumberMutation,
     useDeleteServicesComponentMutation,
-    useGetAgreementContractModificationEditsByIdQuery,
     useGetServicesComponentsListQuery,
     useGetVersionQuery,
     useUpdateBudgetLineItemMutation,
@@ -195,20 +194,6 @@ const useCreateBLIsAndSCs = (
     const { data: savedServicesComponents } = useGetServicesComponentsListQuery(selectedAgreement?.id, {
         skip: !scChangesRequireApproval || !selectedAgreement?.id
     });
-    const { data: contractModificationEdits } = useGetAgreementContractModificationEditsByIdQuery(
-        selectedAgreement?.id,
-        { skip: !scChangesRequireApproval || !selectedAgreement?.id }
-    );
-    // SCs whose approved addition isn't in a modification yet: deleting one cancels the addition.
-    const servicesComponentIdsWithPendingAddition = React.useMemo(
-        () =>
-            new Set(
-                (contractModificationEdits ?? [])
-                    .filter((edit) => edit.field === "services_component_create")
-                    .map((edit) => edit.services_component_id)
-            ),
-        [contractModificationEdits]
-    );
     const pendingServicesComponentAdditions = React.useMemo(
         () =>
             scChangesRequireApproval
@@ -221,16 +206,10 @@ const useCreateBLIsAndSCs = (
             scChangesRequireApproval
                 ? getServicesComponentDeletionsForApproval({
                       deletedServicesComponentsIds,
-                      savedServicesComponents: savedServicesComponents ?? [],
-                      servicesComponentIdsWithPendingAddition
+                      savedServicesComponents: savedServicesComponents ?? []
                   })
                 : [],
-        [
-            scChangesRequireApproval,
-            deletedServicesComponentsIds,
-            savedServicesComponents,
-            servicesComponentIdsWithPendingAddition
-        ]
+        [scChangesRequireApproval, deletedServicesComponentsIds, savedServicesComponents]
     );
     const servicesComponentIdsPendingDelete = React.useMemo(
         () => new Set(pendingServicesComponentDeletions.map((sc) => sc.id)),
@@ -256,8 +235,7 @@ const useCreateBLIsAndSCs = (
     const isServicesComponentDeleteSentToApproval = (servicesComponentId) =>
         getServicesComponentDeletionsForApproval({
             deletedServicesComponentsIds: [servicesComponentId],
-            savedServicesComponents: scChangesRequireApproval ? (savedServicesComponents ?? []) : [],
-            servicesComponentIdsWithPendingAddition
+            savedServicesComponents: scChangesRequireApproval ? (savedServicesComponents ?? []) : []
         }).length > 0;
     /**
      * Whether this saved services component can't be deleted: on an Awarded agreement it still has

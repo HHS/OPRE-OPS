@@ -193,15 +193,13 @@ describe("services component approval (OPS-6440)", () => {
         ).toEqual([]);
     });
 
-    it("a saved SC's delete needs approval unless its addition hasn't reached a modification", () => {
+    it("a saved SC's delete needs approval unless its own addition is still awaiting approval", () => {
         const sc5 = { id: 51, number: 5, created_on: "2026-01-01", awaiting_add_approval: true };
-        const sc6 = { id: 61, number: 6, created_on: "2026-01-01" };
         const sc7 = { id: 71, number: 7, created_on: "2026-01-01" };
 
         const deletions = getServicesComponentDeletionsForApproval({
-            deletedServicesComponentsIds: [21, 51, 61],
-            savedServicesComponents: [sc2, sc5, sc6, sc7],
-            servicesComponentIdsWithPendingAddition: new Set([61])
+            deletedServicesComponentsIds: [21, 51],
+            savedServicesComponents: [sc2, sc5, sc7]
         });
 
         expect(deletions).toEqual([sc2]);
