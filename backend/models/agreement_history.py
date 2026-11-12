@@ -11,6 +11,7 @@ from models import (
     CAN,
     Agreement,
     AgreementType,
+    BudgetLineItemStatus,
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
@@ -130,19 +131,31 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 create_bli_update_history_events(event, event_user, updated_by_system_user, session, system_user)
             )
         case OpsEventType.DELETE_BLI:
+            deleted_bli = event.event_details["deleted_bli"]
+            deleted_bli_agreement = session.get(Agreement, deleted_bli["agreement_id"])
+            delete_message = (
+                f"Changes made to the OPRE budget spreadsheet deleted the BL {deleted_bli['id']}."
+                if updated_by_system_user
+                else f"{event_user.full_name} deleted the BL {deleted_bli['id']}."
+            )
+            if (
+                deleted_bli_agreement
+                and deleted_bli_agreement.is_awarded
+                and deleted_bli.get("status") != BudgetLineItemStatus.DRAFT.value
+            ):
+                delete_message += (
+                    " This agreement is awarded and will require a contract modification in"
+                    " order to make changes to the contract."
+                )
             history_events.append(
                 AgreementHistory(
-                    agreement_id=event.event_details["deleted_bli"]["agreement_id"],
-                    agreement_id_record=event.event_details["deleted_bli"]["agreement_id"],
+                    agreement_id=deleted_bli["agreement_id"],
+                    agreement_id_record=deleted_bli["agreement_id"],
                     budget_line_id=None,
-                    budget_line_id_record=event.event_details["deleted_bli"]["id"],
+                    budget_line_id_record=deleted_bli["id"],
                     ops_event_id=event.id,
                     history_title="Budget Line Deleted",
-                    history_message=(
-                        f"Changes made to the OPRE budget spreadsheet deleted the BL {event.event_details['deleted_bli']['id']}."
-                        if updated_by_system_user
-                        else f"{event_user.full_name} deleted the BL {event.event_details['deleted_bli']['id']}."
-                    ),
+                    history_message=delete_message,
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.BUDGET_LINE_ITEM_DELETED,
                 )
@@ -344,17 +357,24 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     )
                 )
         case OpsEventType.CREATE_SERVICES_COMPONENT:
+            new_sc_agreement = session.get(Agreement, event.event_details["new_sc"]["agreement_id"])
+            create_sc_message = (
+                f"Changes made to the OPRE budget spreadsheet added new services component {event.event_details['new_sc']['display_name']}."
+                if updated_by_system_user
+                else f"{event_user.full_name} added a new services component {event.event_details['new_sc']['display_name']}."
+            )
+            if new_sc_agreement and new_sc_agreement.is_awarded:
+                create_sc_message += (
+                    " This agreement is awarded and will require a contract modification in"
+                    " order to make changes to the contract."
+                )
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["new_sc"]["agreement_id"],
                     agreement_id_record=event.event_details["new_sc"]["agreement_id"],
                     ops_event_id=event.id,
                     history_title="New Services Component Added",
-                    history_message=(
-                        f"Changes made to the OPRE budget spreadsheet added new services component {event.event_details['new_sc']['display_name']}."
-                        if updated_by_system_user
-                        else f"{event_user.full_name} added a new services component {event.event_details['new_sc']['display_name']}."
-                    ),
+                    history_message=create_sc_message,
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.SERVICE_COMPONENT_CREATED,
                 )
@@ -362,17 +382,24 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
         case OpsEventType.UPDATE_SERVICES_COMPONENT:
             history_events.extend(create_services_component_history_event(event, event_user, updated_by_system_user))
         case OpsEventType.DELETE_SERVICES_COMPONENT:
+            deleted_sc_agreement = session.get(Agreement, event.event_details["service_component"]["agreement_id"])
+            delete_sc_message = (
+                f"Changes made to the OPRE budget spreadsheet deleted services component {event.event_details['service_component']['display_name']}."
+                if updated_by_system_user
+                else f"{event_user.full_name} deleted services component {event.event_details['service_component']['display_name']}."
+            )
+            if deleted_sc_agreement and deleted_sc_agreement.is_awarded:
+                delete_sc_message += (
+                    " This agreement is awarded and will require a contract modification in"
+                    " order to make changes to the contract."
+                )
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["service_component"]["agreement_id"],
                     agreement_id_record=event.event_details["service_component"]["agreement_id"],
                     ops_event_id=event.id,
                     history_title="Services Component Deleted",
-                    history_message=(
-                        f"Changes made to the OPRE budget spreadsheet deleted services component {event.event_details['service_component']['display_name']}."
-                        if updated_by_system_user
-                        else f"{event_user.full_name} deleted services component {event.event_details['service_component']['display_name']}."
-                    ),
+                    history_message=delete_sc_message,
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.SERVICE_COMPONENT_DELETED,
                 )
@@ -1173,6 +1200,20 @@ def create_bli_update_history_events(
     agreement_id = event.event_details["bli"]["agreement_id"]
     bli = session.get(BudgetLineItem, bli_id)
     agreement = session.get(Agreement, agreement_id)
+    # The real contract still needs an actual modification to reflect any change once the
+    # agreement is Awarded (OPS-3072/OPS-3268) -- true regardless of who made the edit or
+    # whether OPS happens to track it. A Draft line was never on the awarded contract, so its
+    # edits get no such note (matching the Figma history spec).
+    requires_contract_modification_note = bool(
+        agreement
+        and agreement.is_awarded
+        and bli
+        and bli.status != BudgetLineItemStatus.DRAFT
+    )
+    CONTRACT_MODIFICATION_HISTORY_NOTE = (
+        " This agreement is awarded and will require a contract modification in order to make"
+        " changes to the contract."
+    )
     for key in bli_change_dict:
         old_value = bli_change_dict[key]["old_value"]
         new_value = bli_change_dict[key]["new_value"]
@@ -1243,6 +1284,8 @@ def create_bli_update_history_events(
             else:
                 history_message = f"{event_user.full_name} changed the budget line status on BL {bli_id} from {old_status} to {new_status}."
         if history_title and history_message:
+            if requires_contract_modification_note and key in ("can_id", "date_needed", "amount", "status"):
+                history_message += CONTRACT_MODIFICATION_HISTORY_NOTE
             history_events.append(
                 AgreementHistory(
                     agreement_id=agreement_id if agreement else None,

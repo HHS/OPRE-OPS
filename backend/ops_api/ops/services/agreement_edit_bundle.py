@@ -18,8 +18,8 @@ from loguru import logger
 from marshmallow import EXCLUDE
 from sqlalchemy.exc import IntegrityError
 
-from models import Agreement, GrantNumber
-from models.utils import generate_agreement_events_update
+from models import Agreement, BudgetLineItem, GrantNumber, OpsEventType, ServicesComponent
+from models.utils import generate_agreement_events_update, generate_events_update
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENT_TYPE_TO_DATACLASS_MAPPING,
@@ -43,6 +43,10 @@ from ops_api.ops.services.grant_number import GrantNumberService
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 from ops_api.ops.services.services_component import ServicesComponentService
 from ops_api.ops.utils.agreements_helpers import is_agreement_name_unique_violation
+from ops_api.ops.utils.budget_line_items_helpers import (
+    agreement_tracks_contract_modifications,
+    tracks_contract_modifications,
+)
 
 
 @dataclass
@@ -81,6 +85,11 @@ class AgreementEditBundleService:
         # (scoped to awarding_entity_id only) when a procurement-shop change is applied directly
         # via this bundle; the resource reads it into the event metadata. See _apply_agreement_update.
         self.agreement_updates: dict | None = None
+        # (event_type, metadata) pairs for Awarded, tracked BLI/SC edits applied directly by this
+        # bundle (OPS-3072/OPS-3268) — the bundle itself emits no per-entity history events, so
+        # without this, a direct-apply edit made through the bundle leaves no history at all. The
+        # resource publishes these via OpsEventHandler after the bundle commits.
+        self.budget_line_history: list[tuple[OpsEventType, dict]] = []
 
     def update(self, agreement_id: int, payload: dict[str, Any]) -> BundleResult:
         """Apply every section of ``payload`` to ``agreement_id`` atomically.
@@ -251,12 +260,16 @@ class AgreementEditBundleService:
     def _create_services_components(self, agreement_id: int, items: list[dict[str, Any]]) -> tuple[dict[str, int], int]:
         sc_ref_map: dict[str, int] = {}
         sc_create_schema = NestedServicesComponentRequestSchema()
+        agreement = self.db_session.get(Agreement, agreement_id)
+        track_history = agreement_tracks_contract_modifications(agreement)
         for idx, sc_data in enumerate(items):
             loaded = sc_create_schema.load(sc_data, unknown=EXCLUDE)
             temp_ref = loaded.pop("ref", None) or str(idx)
             loaded["agreement_id"] = agreement_id
             new_sc = self._scs.create(loaded, commit=False)
             sc_ref_map[temp_ref] = new_sc.id
+            if track_history:
+                self.budget_line_history.append((OpsEventType.CREATE_SERVICES_COMPONENT, {"new_sc": new_sc.to_dict()}))
         return sc_ref_map, len(items)
 
     def _update_services_components(self, items: list[dict[str, Any]]) -> int:
@@ -272,7 +285,14 @@ class AgreementEditBundleService:
 
     def _delete_services_components(self, ids: list[int]) -> int:
         for sc_id in ids:
+            sc = self.db_session.get(ServicesComponent, sc_id)
+            track_history = sc is not None and agreement_tracks_contract_modifications(sc.agreement)
+            old_sc_dict = sc.to_dict() if track_history else None
             self._scs.delete(sc_id, commit=False)
+            if track_history:
+                self.budget_line_history.append(
+                    (OpsEventType.DELETE_SERVICES_COMPONENT, {"service_component": old_sc_dict})
+                )
         return len(ids)
 
     # ------------------------------------------------------------------
@@ -417,21 +437,48 @@ class AgreementEditBundleService:
                 "schema": patch_schema,
                 "request": fake_request,
             }
+            # Snapshot before the update: an Awarded, tracked agreement's direct-apply edit gets
+            # no history otherwise, since this bundle doesn't wrap per-BLI updates in an
+            # OpsEventHandler the way the single-resource PATCH/PUT endpoints do.
+            old_bli = self.db_session.get(BudgetLineItem, bli_id)
+            track_history = old_bli is not None and tracks_contract_modifications(old_bli)
+            old_bli_dict = old_bli.to_dict() if track_history else None
             _, _, ids = self._blis.update_with_change_request_ids(bli_id, updated_fields, commit=False)
             change_request_ids.extend(ids)
+            if track_history:
+                new_bli_dict = old_bli.to_dict()
+                current_user = get_current_user()
+                events_update = generate_events_update(
+                    old_bli_dict, new_bli_dict, old_bli.agreement_id, current_user.id if current_user else None
+                )
+                if events_update.get("changes"):
+                    self.budget_line_history.append(
+                        (OpsEventType.UPDATE_BLI, {"bli_updates": events_update, "bli": new_bli_dict})
+                    )
         return len(items), change_request_ids
 
     def _delete_budget_line_items(self, ids: list[int]) -> tuple[int, list[int]]:
         """Delete BLIs as part of the bundle.
 
-        DRAFT lines (and super-user deletes) are hard-deleted in-transaction. PLANNED/IN_EXECUTION
-        lines route to a deletion change request created WITHOUT committing/notifying; the returned
-        CR ids are notified post-commit alongside edit-driven change requests. Returns
+        DRAFT lines (and super-user deletes) are hard-deleted in-transaction. An Awarded, tracked
+        agreement's PLANNED/IN_EXECUTION line is also hard-deleted in-transaction and recorded for
+        history (see ``budget_line_history``). Any other PLANNED/IN_EXECUTION line routes to a
+        deletion change request created WITHOUT committing/notifying; the returned CR ids are
+        notified post-commit alongside edit-driven change requests. Returns
         ``(count, change_request_ids)``.
         """
         change_request_ids: list[int] = []
         for bli_id in ids:
+            old_bli = self.db_session.get(BudgetLineItem, bli_id)
+            track_history = (
+                old_bli is not None
+                and BudgetLineItemService.is_immediate_delete(old_bli)
+                and tracks_contract_modifications(old_bli)
+            )
+            old_bli_dict = old_bli.to_dict() if track_history else None
             _, _, change_request_id = self._blis.delete(bli_id, commit=False)
             if change_request_id is not None:
                 change_request_ids.append(change_request_id)
+            if track_history:
+                self.budget_line_history.append((OpsEventType.DELETE_BLI, {"deleted_bli": old_bli_dict}))
         return len(ids), change_request_ids

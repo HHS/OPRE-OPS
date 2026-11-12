@@ -52,6 +52,15 @@ class AgreementEditBundleAPI(BaseItemAPI):
 
             meta.metadata.update({"bundle_result": asdict(result)})
 
+            # Publish history for Awarded, tracked BLI/SC edits applied directly by the bundle
+            # (OPS-3072/OPS-3268), now that the bundle has committed. Each is its own event, same
+            # as the single-resource PATCH/PUT/DELETE endpoints that normally emit these — the
+            # bundle itself doesn't, so without this a direct-apply edit through the bundle would
+            # leave no history. A rolled-back bundle never reaches here, so it publishes none.
+            for event_type, event_metadata in service.budget_line_history:
+                with OpsEventHandler(event_type) as bli_meta:
+                    bli_meta.metadata.update(event_metadata)
+
             # Surface the agreement field diff (scoped to procurement shop, COR and Alternate COR
             # changes, plus a COR change recorded as pending on an Awarded agreement, OPS-3153) so
             # the UPDATE_AGREEMENT history subscriber records them. None when the bundle changed

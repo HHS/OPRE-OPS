@@ -210,33 +210,12 @@ def test_requires_contract_modification_is_snapshotted_at_creation(
     assert flagged_ids == []
 
 
-def test_requires_contract_modification_sql_expression_matches_awarded_crs(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
-):
-    agreement, bli = make_agreement(test_can)
-
-    response = basic_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"amount": 500000.00}
-    )
-    assert response.status_code == 202, response.json
-    (cr,) = _change_requests(loaded_db, bli.id)
-
-    flagged_ids = loaded_db.scalars(
-        select(BudgetLineItemChangeRequest.id).where(
-            BudgetLineItemChangeRequest.agreement_id == agreement.id,
-            BudgetLineItemChangeRequest.requires_contract_modification,
-        )
-    ).all()
-    assert flagged_ids == [cr.id]
+# ---=== Direct-apply writes the edit row immediately (OPS-3072/OPS-3268) ===---
 
 
-# ---=== Approval writes the edit row (Decisions 12, 13) ===---
-
-
-def test_approved_planned_amount_edit_is_applied_and_recorded(
+def test_awarded_amount_edit_applies_directly_and_is_recorded(
     modified_loe_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
     make_agreement,
@@ -247,37 +226,31 @@ def test_approved_planned_amount_edit_is_applied_and_recorded(
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id), json={"amount": 500000.00}
     )
-    assert response.status_code == 202, response.json
-    (cr,) = _change_requests(loaded_db, bli.id)
+    assert response.status_code == 200, response.json
+    assert _change_requests(loaded_db, bli.id) == []
 
-    # Nothing is listed while the request is still in review.
-    assert _edits(loaded_db, agreement.id) == []
-
-    _review(division_director_auth_client, cr.id)
-
-    # The edit is applied in OPS immediately, as for any approved change request ...
+    # The edit is applied in OPS immediately ...
     loaded_db.expire_all()
     assert float(loaded_db.get(ContractBudgetLineItem, bli.id).amount) == 500000.00
 
-    # ... and tracked as requiring a contract modification.
+    # ... and tracked as requiring a contract modification, with no approver.
     (edit,) = _edits(loaded_db, agreement.id)
     assert edit.modification_type == ModificationEditType.MODIFIED_LOE
-    assert edit.change_request_id == cr.id
+    assert edit.change_request_id is None
     assert edit.budget_line_item_id == bli.id
     assert edit.field == "amount"
     assert edit.old_value == 600000.0
     assert edit.new_value == 500000.0
     assert edit.requested_by_id == BASIC_USER_ID
-    assert edit.requested_on == cr.created_on
-    assert edit.approved_by_id == DIVISION_DIRECTOR_USER_ID
-    assert edit.approved_on is not None
+    assert edit.requested_on is not None
+    assert edit.approved_by_id is None
+    assert edit.approved_on is None
     assert edit.agreement_mod_id is None
 
 
 def test_get_pending_edits_returns_card_shape(
     modified_loe_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
     make_agreement,
@@ -285,8 +258,6 @@ def test_get_pending_edits_returns_card_shape(
 ):
     agreement, bli = make_agreement(test_can)
     basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 500000.00})
-    (cr,) = _change_requests(loaded_db, bli.id)
-    _review(division_director_auth_client, cr.id)
 
     response = _get_pending(basic_user_auth_client, agreement.id)
     assert response.status_code == 200, response.json
@@ -299,32 +270,28 @@ def test_get_pending_edits_returns_card_shape(
     assert record["new_value"] == 500000.0
     assert record["requested_by"] == {"id": BASIC_USER_ID, "full_name": basic_user.full_name}
     assert record["requested_on"] is not None
-    assert record["change_request_id"] == cr.id
+    assert record["change_request_id"] is None
     assert record["agreement_mod_id"] is None
 
 
 def test_multi_field_save_records_one_edit_per_field(
     modified_loe_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
     test_cans,
     make_agreement,
     app_ctx,
 ):
-    """One save changing amount + CAN + Obligate By is three change requests -> three edits."""
+    """One save changing amount + CAN + Obligate By applies directly and records three edits."""
     agreement, bli = make_agreement(test_can)
 
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": 500000.00, "can_id": test_cans[1].id, "date_needed": "2043-06-01"},
     )
-    assert response.status_code == 202, response.json
-    crs = _change_requests(loaded_db, bli.id)
-    assert len(crs) == 3
-    for cr in crs:
-        _review(division_director_auth_client, cr.id)
+    assert response.status_code == 200, response.json
+    assert _change_requests(loaded_db, bli.id) == []
 
     edits = _edits(loaded_db, agreement.id)
     assert sorted(edit.field for edit in edits) == ["amount", "can_id", "date_needed"]
@@ -332,39 +299,56 @@ def test_multi_field_save_records_one_edit_per_field(
     assert {edit.requested_by_id for edit in edits} == {BASIC_USER_ID}
 
 
-def test_consecutive_edits_on_same_bl_list_only_the_latest(
+def test_consecutive_edits_on_the_same_field_merge_into_one_row(
     modified_loe_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
     make_agreement,
     app_ctx,
 ):
-    """The BL's current value is what goes into the modification, so only its latest edit is listed."""
+    """Repeated edits to the same field merge into one row: the From stays the awarded value,
+    so a modification never carries more than the net change."""
     agreement, bli = make_agreement(test_can)
     for amount in (500000.00, 100000.00):
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id), json={"amount": amount}
         )
-        assert response.status_code == 202, response.json
-        _review(division_director_auth_client, _change_requests(loaded_db, bli.id)[-1].id)
+        assert response.status_code == 200, response.json
 
-    # every approved edit is still recorded
-    edits = _edits(loaded_db, agreement.id)
-    assert [(e.old_value, e.new_value) for e in edits] == [(600000.0, 500000.0), (500000.0, 100000.0)]
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert (edit.old_value, edit.new_value) == (600000.0, 100000.0)
 
     response = _get_pending(basic_user_auth_client, agreement.id)
     assert response.status_code == 200, response.json
     (record,) = response.json["data"]
-    assert (record["old_value"], record["new_value"]) == (500000.0, 100000.0)
-    assert record["id"] == edits[-1].id
+    assert (record["old_value"], record["new_value"]) == (600000.0, 100000.0)
+    assert record["id"] == edit.id
 
 
-def test_latest_edit_is_kept_per_field_on_the_same_bl(
+def test_an_edit_that_nets_to_no_change_drops_the_pending_edit(
     modified_loe_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """Editing a field back to its awarded value drops the pending edit entirely -- there is
+    nothing left for a contract modification to carry."""
+    agreement, bli = make_agreement(test_can)
+    for amount in (500000.00, 600000.00):
+        response = basic_user_auth_client.patch(
+            url_for("api.budget-line-items-item", id=bli.id), json={"amount": amount}
+        )
+        assert response.status_code == 200, response.json
+
+    assert _edits(loaded_db, agreement.id) == []
+
+
+def test_each_field_tracks_its_own_edit_on_the_same_bl(
+    modified_loe_enabled,
+    basic_user_auth_client,
     loaded_db,
     test_can,
     test_cans,
@@ -374,21 +358,19 @@ def test_latest_edit_is_kept_per_field_on_the_same_bl(
     agreement, bli = make_agreement(test_can)
     for payload in ({"amount": 500000.00}, {"can_id": test_cans[1].id}, {"amount": 100000.00}):
         response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=payload)
-        assert response.status_code == 202, response.json
-        _review(division_director_auth_client, _change_requests(loaded_db, bli.id)[-1].id)
+        assert response.status_code == 200, response.json
 
     response = _get_pending(basic_user_auth_client, agreement.id)
     assert response.status_code == 200, response.json
-    assert [(r["field"], r["new_value"]) for r in response.json["data"]] == [
-        ("can_id", test_cans[1].id),
+    assert sorted((r["field"], r["new_value"]) for r in response.json["data"]) == [
         ("amount", 100000.0),
+        ("can_id", test_cans[1].id),
     ]
 
 
 def test_delete_supersedes_earlier_edits_on_the_bl(
     modified_loe_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
     make_agreement,
@@ -399,25 +381,22 @@ def test_delete_supersedes_earlier_edits_on_the_bl(
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli_id), json={"amount": 500000.00}
     )
-    assert response.status_code == 202, response.json
-    _review(division_director_auth_client, _change_requests(loaded_db, bli_id)[-1].id)
+    assert response.status_code == 200, response.json
 
     response = basic_user_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
-    assert response.status_code == 202, response.json
-    _review(division_director_auth_client, _change_requests(loaded_db, bli_id)[-1].id)
-
-    assert len(_edits(loaded_db, agreement.id)) == 2
-    response = _get_pending(basic_user_auth_client, agreement.id)
     assert response.status_code == 200, response.json
-    (record,) = response.json["data"]
-    assert record["field"] == "delete"
-    assert record["budget_line_item_id"] == bli_id
+
+    # The earlier amount edit is superseded by the delete, which carries the awarded amount.
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert edit.field == "delete"
+    assert edit.budget_line_item_id == bli_id
+    assert edit.old_value == 600000.0
+    assert edit.new_value == "Deleted"
 
 
-def test_approved_delete_edit_survives_bli_and_change_request_deletion(
+def test_delete_edit_survives_the_bli_deletion(
     modified_loe_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
     make_agreement,
@@ -427,15 +406,11 @@ def test_approved_delete_edit_survives_bli_and_change_request_deletion(
     bli_id = bli.id
 
     response = basic_user_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
-    assert response.status_code == 202, response.json
-    (cr,) = _change_requests(loaded_db, bli_id)
-    assert cr.requires_contract_modification is True
-
-    _review(division_director_auth_client, cr.id)
+    assert response.status_code == 200, response.json
+    assert _change_requests(loaded_db, bli_id) == []
 
     loaded_db.expire_all()
     assert loaded_db.get(ContractBudgetLineItem, bli_id) is None
-    assert loaded_db.get(BudgetLineItemChangeRequest, cr.id) is None
 
     (edit,) = _edits(loaded_db, agreement.id)
     assert edit.field == "delete"
@@ -443,24 +418,6 @@ def test_approved_delete_edit_survives_bli_and_change_request_deletion(
     assert edit.old_value == 600000.0
     assert edit.new_value == "Deleted"
     assert edit.change_request_id is None
-
-
-def test_rejected_change_request_records_no_edit(
-    modified_loe_enabled,
-    basic_user_auth_client,
-    division_director_auth_client,
-    loaded_db,
-    test_can,
-    make_agreement,
-    app_ctx,
-):
-    agreement, bli = make_agreement(test_can)
-    basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 500000.00})
-    (cr,) = _change_requests(loaded_db, bli.id)
-
-    _review(division_director_auth_client, cr.id, action="REJECT")
-
-    assert _edits(loaded_db, agreement.id) == []
 
 
 def test_non_awarded_agreement_records_no_edit(
@@ -502,35 +459,22 @@ def test_flag_off_records_no_edit(
     assert _edits(loaded_db, agreement.id) == []
 
 
-@pytest.fixture()
-def skip_cr_for_draft_planned_enabled(app):
-    original = app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False)
-    app.config["SKIP_CR_FOR_DRAFT_PLANNED"] = True
-    yield
-    app.config["SKIP_CR_FOR_DRAFT_PLANNED"] = original
-
-
 def test_draft_to_planned_on_awarded_agreement_records_edit(
     modified_loe_enabled,
-    skip_cr_for_draft_planned_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
     make_agreement,
     app_ctx,
 ):
-    """Draft -> Planned on an Awarded agreement requires a contract modification, so it goes to
-    Division Director approval even when SKIP_CR_FOR_DRAFT_PLANNED is on."""
+    """Draft -> Planned on an Awarded agreement applies directly and is tracked for the next
+    contract modification, independent of SKIP_CR_FOR_DRAFT_PLANNED."""
     agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.DRAFT)
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id), json={"status": "PLANNED"}
     )
-    assert response.status_code == 202, response.json
-    (cr,) = _change_requests(loaded_db, bli.id)
-    assert cr.requires_contract_modification is True
-
-    _review(division_director_auth_client, cr.id)
+    assert response.status_code == 200, response.json
+    assert _change_requests(loaded_db, bli.id) == []
 
     (edit,) = _edits(loaded_db, agreement.id)
     assert edit.field == "status"
@@ -596,114 +540,95 @@ def test_get_pending_edits_requires_auth(client, app_ctx):
 # ---=== POST start modification (Decision 18) ===---
 
 
-def _approved_amount_edit(basic_client, director_client, loaded_db, bli, amount=500000.00):
+def _direct_amount_edit(basic_client, loaded_db, bli, amount=500000.00):
     response = basic_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": amount})
-    assert response.status_code == 202, response.json
-    _review(director_client, _change_requests(loaded_db, bli.id)[-1].id)
+    assert response.status_code == 200, response.json
 
 
 # ---=== AC10: who / when / what / remote IP for the modified-LOE amount edit ===---
 
 
-def test_planned_amount_edit_request_and_approval_are_recorded(
+def test_amount_edit_on_awarded_agreement_is_recorded_with_who_when_what(
     modified_loe_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
     make_agreement,
     app_ctx,
 ):
-    """The edit flows through the existing change-request pipeline, which records who, when,
-    and what on the agreement history and the remote IP on the linked OpsEvent."""
+    """A direct amount edit on an Awarded agreement records who, when, and what on the agreement
+    history, and the remote IP on the linked OpsEvent."""
     agreement, bli = make_agreement(test_can)
-    basic_client_event_ip = {"REMOTE_ADDR": "10.1.2.3"}
-    director_event_ip = {"REMOTE_ADDR": "10.4.5.6"}
+    event_ip = {"REMOTE_ADDR": "10.1.2.3"}
 
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": 500000.00},
-        environ_base=basic_client_event_ip,
-    )
-    assert response.status_code == 202, response.json
-    (cr,) = _change_requests(loaded_db, bli.id)
-    response = division_director_auth_client.patch(
-        url_for("api.change-requests-item", id=cr.id),
-        json={"action": "APPROVE"},
-        environ_base=director_event_ip,
+        environ_base=event_ip,
     )
     assert response.status_code == 200, response.json
 
     loaded_db.expire_all()
-    history = loaded_db.scalars(
-        select(AgreementHistory)
-        .where(
+    (entry,) = loaded_db.scalars(
+        select(AgreementHistory).where(
             AgreementHistory.agreement_id == agreement.id,
-            AgreementHistory.history_type.in_(
-                [AgreementHistoryType.CHANGE_REQUEST_CREATED, AgreementHistoryType.CHANGE_REQUEST_UPDATED]
-            ),
+            AgreementHistory.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED,
         )
-        .order_by(AgreementHistory.id)
     ).all()
-    assert len(history) == 2
-    requested, approved = history
 
     basic_user = loaded_db.get(User, BASIC_USER_ID)
-    director = loaded_db.get(User, DIVISION_DIRECTOR_USER_ID)
-    for entry, user, ip in ((requested, basic_user, "10.1.2.3"), (approved, director, "10.4.5.6")):
-        # what + who
-        assert f"BL {bli.id}" in entry.history_message
-        assert "$600,000.00" in entry.history_message
-        assert "$500,000.00" in entry.history_message
-        assert user.full_name in entry.history_message
-        # when
-        assert entry.timestamp
-        # who + remote IP, on the linked event
-        event = loaded_db.get(OpsEvent, entry.ops_event_id)
-        assert event.created_by == user.id
-        assert event.event_details["request.remote_addr"] == ip
+    # what + who
+    assert f"BL {bli.id}" in entry.history_message
+    assert "$600,000.00" in entry.history_message
+    assert "$500,000.00" in entry.history_message
+    assert basic_user.full_name in entry.history_message
+    # when
+    assert entry.timestamp
+    # who + remote IP, on the linked event
+    event = loaded_db.get(OpsEvent, entry.ops_event_id)
+    assert event.created_by == basic_user.id
+    assert event.event_details["request.remote_addr"] == "10.1.2.3"
 
 
 def test_attach_pending_edits_to_mod_only_attaches_the_given_edits(
     modified_loe_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
+    test_cans,
     make_agreement,
     app_ctx,
 ):
-    """An edit approved after the modification request was submitted must stay pending rather
-    than be silently swept into the modification when the request is approved."""
+    """An edit attached to a modification request must stay attached, separate from any other
+    pending edit on the same budget line."""
     agreement, bli = make_agreement(test_can)
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 550000.00)
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 500000.00)
-    read_edit, late_edit = _edits(loaded_db, agreement.id)
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 550000.00)
+    basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"can_id": test_cans[1].id})
+    amount_edit, can_edit = _edits(loaded_db, agreement.id)
 
     agreement_mod = AgreementMod(agreement_id=agreement.id)
     loaded_db.add(agreement_mod)
     loaded_db.flush()
     attached = ContractModificationEditService(loaded_db).attach_pending_edits_to_mod(
-        agreement.id, agreement_mod.id, [read_edit.id]
+        agreement.id, agreement_mod.id, [amount_edit.id]
     )
     loaded_db.commit()
 
     assert attached == 1
     edits = {edit.id: edit.agreement_mod_id for edit in _edits(loaded_db, agreement.id)}
-    assert edits == {read_edit.id: agreement_mod.id, late_edit.id: None}
+    assert edits == {amount_edit.id: agreement_mod.id, can_edit.id: None}
 
 
 def test_get_pending_edits_eager_loads_requested_by(
     modified_loe_enabled,
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
     make_agreement,
     app_ctx,
 ):
     agreement, bli = make_agreement(test_can)
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli)
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli)
     loaded_db.expire_all()
 
     (edit,) = ContractModificationEditService(loaded_db).get_pending_for_agreement(agreement.id)

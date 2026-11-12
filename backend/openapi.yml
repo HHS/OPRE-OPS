@@ -812,15 +812,17 @@ paths:
       tags:
         - Agreements
       operationId: getAgreementContractModificationEdits
-      summary: Get approved edits on an Awarded agreement that require a contract modification
+      summary: Get edits on an Awarded agreement that require a contract modification
       description: |
         Returns the "Edits That Require a Contract Modification" for the Award &
-        Modifications tab: approved budget-line edits made in OPS after the agreement
-        was awarded that still need a contract modification to update the actual
-        contract. One record per approved change request (one field each), oldest first.
-        Edits included in the contract modification that is in review have `in_review`
-        true; they leave this list once that contract modification is approved
-        (PATCH /contract-modification-requests/{id}/).
+        Modifications tab: budget-line and Services Component edits made in OPS after the
+        agreement was awarded that still need a contract modification to update the actual
+        contract. Most edit types (amount, CAN, Obligate By, Draft -> Planned, delete, Services
+        Component add/delete) apply directly when saved and are recorded immediately, with no
+        Division Director approval; a legacy edit approved before this shipped is still recorded
+        on approval. One record per edit (one field each), oldest first. Edits included in the
+        contract modification that is in review have `in_review` true; they leave this list once
+        that contract modification is approved (PATCH /contract-modification-requests/{id}/).
 
         Only Contract and AA agreements are supported; any other agreement type
         returns 400.
@@ -1032,10 +1034,13 @@ paths:
         section are rejected — they must be sent at the top level of the bundle.
 
         Reviewer notifications for any change requests produced by BLI updates or
-        deletions (PLANNED / IN_EXECUTION lines route to a deletion change request) are
-        sent **after** the bundle commit succeeds. If a notification fails, the change
-        request id is returned in `failed_notification_change_request_ids` so the
-        client can surface a "saved, but the approval request didn't go out" message.
+        deletions (a PLANNED / IN_EXECUTION line on a non-Awarded agreement routes to a deletion
+        change request) are sent **after** the bundle commit succeeds. If a notification fails,
+        the change request id is returned in `failed_notification_change_request_ids` so the
+        client can surface a "saved, but the approval request didn't go out" message. On an
+        Awarded agreement, budget-field edits and deletes, and Services Component add/delete, now
+        apply directly and are recorded as an "Edit That Requires a Contract Modification" (no
+        Division Director approval, no change request).
       parameters:
         - in: path
           name: id
@@ -5088,10 +5093,14 @@ paths:
       operationId: updateBudgetLineItem
       description: >-
         Update a budget line item (full update). PLANNED and IN_EXECUTION budget line items are
-        editable: non-budget changes (e.g. line_description, services_component_id, comments) apply
-        directly and return 200, while budget-field changes (amount, can_id, date_needed) route
-        through an approval change request and return 202. Editing is blocked (400) once the
-        agreement reaches Pre-Award/Award or while the BLI is already in review.
+        editable: non-budget changes (e.g. line_description, services_component_id, comments)
+        always apply directly and return 200. Budget-field changes (amount, can_id, date_needed)
+        apply directly and return 200 on an Awarded agreement (recorded as an "Edit That Requires
+        a Contract Modification", no Division Director approval) or, behind the
+        SKIP_CR_FOR_DRAFT_PLANNED capability, on a non-Awarded one; otherwise they route through
+        an approval change request and return 202. Editing is blocked (400) once the agreement
+        reaches Pre-Award/Award, while the BLI is already in review, or while it's part of a
+        contract modification that is in review.
       requestBody:
         required: true
         content:
@@ -5124,9 +5133,10 @@ paths:
         - Budget Line Items
       operationId: partialUpdateBudgetLineItem
       description: >-
-        Partially update a budget line item. Same routing as PUT: non-budget changes apply directly
-        (200), budget-field changes (amount, can_id, date_needed) route through an approval change
-        request (202).
+        Partially update a budget line item. Same routing as PUT: non-budget changes always apply
+        directly (200); budget-field changes (amount, can_id, date_needed) apply directly (200) on
+        an Awarded agreement or, behind SKIP_CR_FOR_DRAFT_PLANNED, a non-Awarded one, otherwise
+        they route through an approval change request (202).
       requestBody:
         required: true
         content:
@@ -5159,11 +5169,14 @@ paths:
         - Budget Line Items
       operationId: deleteBudgetLineItem
       description: >-
-        Delete a budget line item. A DRAFT budget line item (and any delete by a super user) is
-        hard-deleted immediately and returns 200. A PLANNED or IN_EXECUTION budget line item routes
-        through an approval workflow: a deletion change request is created and 202 is returned; the
-        budget line item is deleted only once that request is approved. Deletion is blocked (400)
-        once the agreement reaches Pre-Award/Award or while the budget line item is already in review.
+        Delete a budget line item. A DRAFT budget line item, any delete by a super user, or a
+        PLANNED/IN_EXECUTION one on an Awarded agreement (recorded as an "Edit That Requires a
+        Contract Modification", no Division Director approval) is hard-deleted immediately and
+        returns 200. Any other PLANNED or IN_EXECUTION budget line item routes through an approval
+        workflow: a deletion change request is created and 202 is returned; the budget line item
+        is deleted only once that request is approved. Deletion is blocked (400) once the
+        agreement reaches Pre-Award/Award, while the budget line item is already in review, or
+        while it's part of a contract modification that is in review.
       responses:
         "200":
           description: OK — budget line item deleted
@@ -7509,10 +7522,11 @@ components:
       type: object
       description: >-
         An edit on an Awarded agreement that requires a contract modification (one card under
-        "Edits That Require a Contract Modification"). MODIFIED_LOE edits were approved and already
-        applied in OPS. ADMIN_CHANGE edits (a COR change) are recorded on save with no approval and
-        are not applied until the contract modification is approved; at most one is pending per
-        agreement.
+        "Edits That Require a Contract Modification"). MODIFIED_LOE edits applied directly in OPS
+        when saved, with no Division Director approval (a legacy edit approved before this shipped
+        is recorded on approval instead). ADMIN_CHANGE edits (a COR change) are recorded on save
+        with no approval and are not applied until the contract modification is approved; at most
+        one is pending per agreement.
       properties:
         id:
           type: integer
@@ -8867,7 +8881,8 @@ components:
           example: false
           description: >-
             True for a services component added on an Awarded agreement whose addition hasn't been
-            approved. Its addition goes to Division Director approval once it has a non-Draft budget line.
+            recorded yet. Recorded as an "Edit That Requires a Contract Modification" (no Division
+            Director approval) once it has a non-Draft budget line.
         in_review:
           type: boolean
           example: false

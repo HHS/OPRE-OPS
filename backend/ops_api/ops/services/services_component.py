@@ -16,6 +16,7 @@ from ops_api.ops.services.ops_service import (
 )
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.budget_line_items_helpers import (
+    agreement_tracks_contract_modifications,
     get_agreement_pre_award_lock_message,
     sc_requires_approval_gate,
 )
@@ -24,7 +25,6 @@ IN_REVIEW_MESSAGE = (
     "This services component is pending approval and will require a contract modification. "
     "It can't be changed until the Division Director reviews it."
 )
-AWARDED_DELETE_BLOCKED_MESSAGE = "Services Components with budget lines cannot be deleted on awarded agreements."
 
 
 class ServicesComponentService:
@@ -171,17 +171,21 @@ class ServicesComponentService:
         """
         Delete a services component.
 
-        On an Awarded agreement, an SC with non-Draft budget lines can only be deleted by a
-        superuser (OPS-6440). The SC's pending "Add SC" edit, if any, is removed with it.
+        On an Awarded, tracked agreement, deleting an SC with non-Draft budget lines is recorded
+        as an "Edit That Requires a Contract Modification" (OPS-3072/OPS-3268) instead of a
+        Division Director approval. An SC with only Draft budget lines was never on the
+        contract, so its delete isn't recorded. The SC's pending "Add SC" edit, if any, is
+        removed with it.
 
         Args:
             obj_id: The ID of the services component to delete
+            commit: When False, the delete flushes instead of committing (edit-bundle flow).
 
         Raises:
             ResourceNotFoundError: If the services component doesn't exist
             Forbidden: If the user is not authorized to delete this services component
-            ValidationError: If the SC is in review, is blocked on an Awarded agreement, or its
-                addition is in a contract modification in review
+            ValidationError: If the SC is in review, or its addition is in a contract
+                modification that is in review
         """
         if not self._sc_associated_with_agreement(obj_id):
             raise AuthorizationError("User not authorized to delete Services Component with this Agreement")
@@ -191,19 +195,21 @@ class ServicesComponentService:
         ChangeRequestService(self.db_session).lock_services_component(obj_id)
         self._check_not_in_review(services_component)
 
-        if self.delete_blocked(services_component):
-            raise ValidationError({"services_component": [AWARDED_DELETE_BLOCKED_MESSAGE]})
-        ContractModificationEditService(self.db_session).discard_pending_services_component_addition(obj_id)
+        if (
+            agreement_tracks_contract_modifications(services_component.agreement)
+            and services_component.has_non_draft_budget_lines
+        ):
+            ContractModificationEditService(self.db_session).record_services_component_delete(
+                services_component, get_current_user().id
+            )
+        else:
+            ContractModificationEditService(self.db_session).discard_pending_services_component_addition(obj_id)
 
         self.db_session.delete(services_component)
         if commit:
             self.db_session.commit()
-
-    @staticmethod
-    def delete_blocked(services_component: ServicesComponent) -> bool:
-        """Whether this SC can't be deleted: it has non-Draft budget lines on an Awarded agreement
-        and the user isn't a superuser."""
-        return sc_requires_approval_gate(services_component.agreement) and services_component.has_non_draft_budget_lines
+        else:
+            self.db_session.flush()
 
     @staticmethod
     def _check_not_in_review(services_component: ServicesComponent) -> None:
