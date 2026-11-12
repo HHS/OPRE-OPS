@@ -100,18 +100,33 @@ class ContractModificationEditService:
         awarded value as From and the latest value as To, and drops the edit when the change nets
         to nothing (so a modification never carries an edit the list doesn't show). ``old_value``
         and ``new_value`` must be in the format change requests snapshot
-        (``PATCHRequestBodySchema(only=[field]).dump``). Does not commit.
+        (``PATCHRequestBodySchema(only=[field]).dump``). Flushes (but does not commit) so a
+        concurrent duplicate save (double-click/retry) fails fast on
+        ``ix_contract_modification_edit_one_pending_bli_field`` instead of silently orphaning a
+        pending row.
         """
         pending = self._pending_for_budget_line(budget_line_item.id, field)
         if pending:
             old_value = pending[0].old_value
             for edit in pending:
                 self.db_session.delete(edit)
+            # Flush the delete(s) first: SQLAlchemy's unit of work otherwise flushes the new
+            # row's INSERT before these DELETEs, tripping the unique index on a merge that is
+            # actually fine (the row below replaces the one just deleted).
+            self.db_session.flush()
         if old_value == new_value:
             return
         self._add_direct_edit(
             budget_line_item.agreement_id, budget_line_item.id, None, field, old_value, new_value, user_id
         )
+        try:
+            self.db_session.flush()
+        except IntegrityError:
+            # ix_contract_modification_edit_one_pending_bli_field: a concurrent save on the same
+            # field won. The caller rolls back the session.
+            raise ValidationError(
+                {field: ["Another change to this field was saved at the same time. Refresh and try again."]}
+            ) from None
 
     def record_direct_delete(self, budget_line_item, old_amount, user_id: int) -> None:
         """Record a budget line deleted directly on an Awarded agreement. Call before the delete.

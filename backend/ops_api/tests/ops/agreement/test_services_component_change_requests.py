@@ -494,6 +494,48 @@ def test_superuser_deleting_sc_with_planned_budget_lines_applies_directly(
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
 
 
+# ---=== Deleting an SC is blocked while its budget line is in an in-review modification ===---
+
+
+def _submit(client, agreement_id, **body):
+    return client.post(url_for("api.agreements-contract-modifications", id=agreement_id), json=body)
+
+
+def test_deleting_sc_whose_budget_line_is_in_an_in_review_modification_is_blocked(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
+):
+    """OPS-3268: the SC->BLI FK is ON DELETE SET NULL with no history trigger, so deleting the SC
+    while its budget line is selected in an in-review Contract Modification Request would
+    silently null the line's services_component_id out from under the Division Director's
+    review -- and once null, the Director's re-validation on approval no longer sees the SC's
+    awaiting-approval gate."""
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2)
+    bli = ContractBudgetLineItem(
+        agreement_id=awarded_agreement.id,
+        line_description="SC change request test BLI",
+        amount=100000.00,
+        can_id=test_can.id,
+        date_needed=datetime.date.today(),
+        status=BudgetLineItemStatus.PLANNED,
+        proc_shop_fee_percentage=0,
+        created_by=SYSTEM_OWNER_USER_ID,
+        services_component_id=sc2.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    sc2_id, bli_id = sc2.id, bli.id
+
+    submit_response = _submit(basic_user_auth_client, awarded_agreement.id, budget_line_item_ids=[bli_id])
+    assert submit_response.status_code == 201, submit_response.json
+
+    response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
+
+    assert response.status_code == 400, response.json
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
+    assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id == sc2_id
+
+
 # ---=== Bundle (atomic multi-entity edit) ===---
 
 

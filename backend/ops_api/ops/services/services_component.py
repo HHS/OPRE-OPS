@@ -5,10 +5,13 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from models import Agreement, ServicesComponent
+from models import Agreement, BudgetLineItem, ServicesComponent
 from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.services.change_requests import ChangeRequestService
-from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
+from ops_api.ops.services.contract_modification_edits import (
+    BLI_IN_REVIEW_MODIFICATION_MESSAGE,
+    ContractModificationEditService,
+)
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     ResourceNotFoundError,
@@ -194,6 +197,7 @@ class ServicesComponentService:
         self._check_pre_award_lock(services_component.agreement)
         ChangeRequestService(self.db_session).lock_services_component(obj_id)
         self._check_not_in_review(services_component)
+        self._check_not_in_review_modification(obj_id)
 
         if (
             agreement_tracks_contract_modifications(services_component.agreement)
@@ -215,6 +219,19 @@ class ServicesComponentService:
     def _check_not_in_review(services_component: ServicesComponent) -> None:
         if services_component.in_review:
             raise ValidationError({"services_component": [IN_REVIEW_MESSAGE]})
+
+    def _check_not_in_review_modification(self, obj_id: int) -> None:
+        """Block deleting an SC whose linked budget lines are in a contract modification that is
+        in review (OPS-3268): deleting the SC would null their ``services_component_id``,
+        silently changing what the Division Director is reviewing or has already approved to
+        execute."""
+        budget_line_item_ids = self.db_session.scalars(
+            select(BudgetLineItem.id).where(BudgetLineItem.services_component_id == obj_id)
+        ).all()
+        if ContractModificationEditService(self.db_session).budget_line_ids_in_review_modification(
+            list(budget_line_item_ids)
+        ):
+            raise ValidationError({"services_component": [BLI_IN_REVIEW_MODIFICATION_MESSAGE]})
 
     @staticmethod
     def _check_pre_award_lock(agreement: Agreement | None) -> None:
