@@ -451,7 +451,7 @@ def test_declined_delete_of_an_sc_whose_addition_is_pending_keeps_the_addition(
     change_request_id = _request_sc_delete(basic_user_auth_client, sc2_id)
 
     response = division_director_auth_client.patch(
-        url_for("api.change-requests-item", id=change_request_id), json={"action": "DECLINE"}
+        url_for("api.change-requests-item", id=change_request_id), json={"action": "REJECT"}
     )
 
     assert response.status_code == 200, response.json

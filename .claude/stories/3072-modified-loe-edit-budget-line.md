@@ -866,11 +866,11 @@ This applies under the same awarded gate as before (`sc_requires_approval_gate`:
 
 - **Modal trigger** (`getServicesComponentAdditionsForApproval`, `CreateBLIsAndSCs.helpers.js` ~:126):
   - Drop the non-Draft BL condition. Every new SC, or saved `awaiting_add_approval` SC that isn't in review and has no CR yet, counts.
-  - Add `getServicesComponentDeletionsForApproval`: saved SCs in the deleted list that aren't `awaiting_add_approval` and have no pending "Add SC" edit. The hook reads pending edits from the existing `useGetAgreementContractModificationEditsByIdQuery` and saved SCs from `useGetServicesComponentsListQuery`, so no new SC schema field is needed.
+  - Add `getServicesComponentDeletionsForApproval`: saved SCs in the deleted list that aren't `awaiting_add_approval`. That includes an SC with a pending "Add SC" edit (revised 2026-11-12). The hook reads saved SCs from `useGetServicesComponentsListQuery`, so no new SC schema field is needed.
   - Fold both into `requiresContractModification` and update the comments at `CreateBLIsAndSCs.hooks.js` ~:987-1003 and the `CreateBLIsAndSCs.jsx:54` JSDoc.
 - **Keep Draft BL links on a gated delete.** The editor still clears the links locally when an SC is deleted, so the list shows them without an SC. Both save paths restore a saved BL's link to an SC whose delete goes to approval (`keepLinkToServicesComponentPendingDelete`), so no unlink is sent and a decline leaves the links intact. The backend unlinks them on approval.
 - **Save paths:**
-  - Per-resource (`persistPartitionedEntities`, `handleDeletions`): read `change_request_id` from SC POST, and handle the SC DELETE 202.
+  - Per-resource (`persistPartitionedEntities`, `handleDeletions`): no change needed. `.unwrap()` accepts the SC DELETE 202, and the save alert comes from the client-side selectors, not from the SC POST's change request.
   - Bundle: no payload change.
   - `buildSaveSuccessAlert` gets "• SC2 Deletion" next to "• SC3 Addition".
   - The delete toast uses the BL-delete "queued… sent to your Division Director for approval when you click Save" wording.

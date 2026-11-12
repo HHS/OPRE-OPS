@@ -200,6 +200,8 @@ class ServicesComponentService:
         self._check_pre_award_lock(services_component.agreement)
         change_request_service = ChangeRequestService(self.db_session)
         change_request_service.lock_services_component(obj_id)
+        # The flag was read before the lock; an add approval that committed while we waited may have cleared it.
+        self.db_session.refresh(services_component, attribute_names=["awaiting_add_approval"])
         self._check_not_in_review(services_component)
 
         if self.delete_blocked(services_component):

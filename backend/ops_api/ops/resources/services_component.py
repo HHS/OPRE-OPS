@@ -97,29 +97,26 @@ class ServicesComponentItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.DELETE, Permission.SERVICES_COMPONENT)
     def delete(self, id: int) -> Response:
         service = ServicesComponentService(current_app.db_session)
-        old_services_component = service.get(id)
+        old_services_component_dict = service.get(id).to_dict()
 
-        # On an Awarded agreement the delete can go to approval (OPS-6440). Only emit the
-        # DELETE_SERVICES_COMPONENT event for an actual delete, so a request doesn't record a
-        # "Services Component Deleted" history line; it records its own change request event.
-        if service.delete_blocked(old_services_component) or not service.delete_requires_approval(
-            old_services_component
-        ):
-            with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
-                old_services_component_dict = old_services_component.to_dict()
-                service.delete(id)
-                meta.metadata.update({"service_component": old_services_component_dict})
-                return make_response_with_headers({"message": "ServicesComponent deleted", "id": id}, 200)
-
+        # On an Awarded agreement the delete can go to approval (OPS-6440). The service decides
+        # under the SC's row lock, so the response and event follow its result. Only an actual
+        # delete emits DELETE_SERVICES_COMPONENT, so a request doesn't record a "Services
+        # Component Deleted" history line; it records its own change request event.
         change_request_id = service.delete(id)
-        return make_response_with_headers(
-            {
-                "message": "ServicesComponent deletion submitted for approval",
-                "id": id,
-                "change_request_id": change_request_id,
-            },
-            202,
-        )
+        if change_request_id is not None:
+            return make_response_with_headers(
+                {
+                    "message": "ServicesComponent deletion submitted for approval",
+                    "id": id,
+                    "change_request_id": change_request_id,
+                },
+                202,
+            )
+
+        with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
+            meta.metadata.update({"service_component": old_services_component_dict})
+        return make_response_with_headers({"message": "ServicesComponent deleted", "id": id}, 200)
 
 
 class ServicesComponentListAPI(BaseListAPI):

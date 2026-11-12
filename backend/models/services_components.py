@@ -73,7 +73,7 @@ class ServicesComponent(BaseModel):
     display_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
 
     # True while an SC added on an Awarded agreement hasn't had its addition approved (OPS-6440).
-    # The add change request is only created once the SC has a non-Draft budget line.
+    # The add change request is created with the SC.
     awaiting_add_approval: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
 
     @property

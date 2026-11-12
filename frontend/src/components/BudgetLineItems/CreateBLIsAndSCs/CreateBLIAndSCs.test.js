@@ -815,7 +815,12 @@ describe("CreateBLIsAndSCs", () => {
         // Render CreateBLIsAndSCs with the hook overridden to supply a specific
         // servicesComponents/tempBudgetLines state, then return the getSlice() output the
         // review-flow edit page reads on Save.
-        const getSliceFor = async ({ servicesComponents, tempBudgetLines, budgetLines }) => {
+        const getSliceFor = async ({
+            servicesComponents,
+            tempBudgetLines,
+            budgetLines,
+            servicesComponentIdsPendingDelete = new Set()
+        }) => {
             const mockStore = createMockStore();
             const useCreateBLIsAndSCs = (await import("./CreateBLIsAndSCs.hooks")).default;
             const origImpl = vi.mocked(useCreateBLIsAndSCs).getMockImplementation();
@@ -823,7 +828,8 @@ describe("CreateBLIsAndSCs", () => {
                 ...origImpl(...args),
                 isEditMode: true,
                 servicesComponents,
-                tempBudgetLines
+                tempBudgetLines,
+                servicesComponentIdsPendingDelete
             }));
 
             const bundleSliceRef = createRef();
@@ -896,6 +902,44 @@ describe("CreateBLIsAndSCs", () => {
             });
 
             expect(slice.budget_line_items.update).toHaveLength(0);
+        });
+
+        // OPS-6440: deleting an SC on an Awarded agreement can go to approval. The editor clears
+        // its budget lines' links locally, but the bundle must not unlink them, or a decline
+        // would leave them without an SC.
+        describe("a saved budget line on an SC whose delete goes to approval", () => {
+            const baseline = { ...agreement.budget_line_items[0], id: 42, status: "DRAFT", services_component_id: 21 };
+            // The editor cleared the link when SC 21 was deleted; SC 21 is gone from the list.
+            const unlinked = {
+                ...baseline,
+                services_component_id: null,
+                services_component_number: 0,
+                serviceComponentGroupingLabel: "0"
+            };
+
+            test("sends no update when nothing else changed", async () => {
+                const slice = await getSliceFor({
+                    servicesComponents: [],
+                    tempBudgetLines: [unlinked],
+                    budgetLines: [baseline],
+                    servicesComponentIdsPendingDelete: new Set([21])
+                });
+
+                expect(slice.budget_line_items.update).toHaveLength(0);
+            });
+
+            test("keeps the link when another field changed", async () => {
+                const slice = await getSliceFor({
+                    servicesComponents: [],
+                    tempBudgetLines: [{ ...unlinked, amount: baseline.amount + 1 }],
+                    budgetLines: [baseline],
+                    servicesComponentIdsPendingDelete: new Set([21])
+                });
+
+                const updated = slice.budget_line_items.update;
+                expect(updated).toHaveLength(1);
+                expect(updated[0]).toMatchObject({ id: 42, services_component_id: 21 });
+            });
         });
     });
 });

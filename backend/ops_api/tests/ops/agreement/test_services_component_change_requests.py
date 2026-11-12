@@ -767,6 +767,38 @@ def test_declined_sc_delete_keeps_sc_and_its_links(
     assert "Services Component Deletion Declined" in _history_titles(loaded_db, awarded_agreement.id)
 
 
+def test_sc_delete_cannot_be_approved_once_a_budget_line_is_no_longer_draft(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    awarded_agreement,
+    app_ctx,
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2)
+    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT)
+    sc2_id, bli_id = sc2.id, bli.id
+    cr_id = _delete_sc(basic_user_auth_client, sc2_id, 202)["change_request_id"]
+    # A Draft -> Planned request on the line was approved while the delete waited.
+    bli.status = BudgetLineItemStatus.PLANNED
+    loaded_db.commit()
+
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=cr_id), json={"action": "APPROVE"}
+    )
+
+    assert response.status_code == 400, response.json
+    assert "aren't in Draft" in response.json["errors"]["change_request"][0]
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponentChangeRequest, cr_id).status == ChangeRequestStatus.IN_REVIEW
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
+    assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id == sc2_id
+    assert _edits(loaded_db, awarded_agreement.id) == []
+    # The director can still decline it.
+    _review(division_director_auth_client, cr_id, action="REJECT")
+
+
 def test_budget_lines_cannot_join_an_sc_whose_delete_is_in_review(
     modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
 ):
@@ -831,6 +863,33 @@ def test_deleting_pending_sc_without_a_request_applies_directly(
     loaded_db.expire_all()
     assert loaded_db.get(ServicesComponent, sc2_id) is None
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+
+
+def test_delete_rereads_flag_after_lock(
+    mocker, modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    """An add approval that commits while the delete waits on the lock still sends the delete to approval."""
+    sc2_id = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True).id
+    lock = ChangeRequestService.lock_services_component
+
+    def approve_then_lock(self, services_component_id):
+        # The approval commits after the delete loaded the SC: the row changes, the loaded SC doesn't.
+        self.db_session.execute(
+            update(ServicesComponent)
+            .where(ServicesComponent.id == services_component_id)
+            .values(awaiting_add_approval=False),
+            execution_options={"synchronize_session": False},
+        )
+        return lock(self, services_component_id)
+
+    mocker.patch.object(ChangeRequestService, "lock_services_component", approve_then_lock)
+
+    data = _delete_sc(basic_user_auth_client, sc2_id, 202)
+
+    (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
+    assert data["change_request_id"] == cr.id
+    assert cr.requested_change_data == {"services_component_delete": True}
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
 
 
 def test_superuser_deleting_sc_with_planned_budget_lines_applies_directly(

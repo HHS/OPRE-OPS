@@ -65,6 +65,11 @@ def _is_draft_to_planned(key: str, budget_line_item: BudgetLineItem, change_data
     )
 
 
+SC_DELETE_NOW_BLOCKED_MESSAGE = (
+    "This Services Component now has budget lines that aren't in Draft, so it can't be deleted on an "
+    "awarded agreement. Decline this request instead."
+)
+
 # Change request types whose reviewers are resolved through the agreement (not a managing division).
 _AGREEMENT_REVIEWED_TYPES = (
     ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
@@ -219,6 +224,29 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         return False
 
+    @staticmethod
+    def _validate_approval(change_request: ChangeRequest) -> None:
+        """Reject approving a request that is no longer valid."""
+        # A Planned->Executing request submitted before the agreement was awarded can't be
+        # approved once it is: executing on an Awarded agreement requires a Contract Modification.
+        if (
+            change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
+            and change_request.has_status_change
+        ):
+            validate_no_execution_status_change_on_awarded(
+                change_request.budget_line_item, change_request.requested_change_data["status"]
+            )
+
+        # An SC with non-Draft budget lines can't be deleted on an Awarded agreement (OPS-6440). Its
+        # lines were all Draft when the delete was requested, but one may have become Planned since.
+        if (
+            change_request.change_request_type == ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST
+            and change_request.is_delete
+            and change_request.services_component is not None
+            and change_request.services_component.has_non_draft_budget_lines
+        ):
+            raise ValidationError({"change_request": [SC_DELETE_NOW_BLOCKED_MESSAGE]})
+
     def _handle_review_action(
         self, change_request: ChangeRequest, action: str, reviewer_notes: str | None
     ) -> dict[str, Any]:
@@ -235,17 +263,9 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         ):
             raise ValidationError({"change_request": "This change request has already been reviewed."})
 
-        # A Planned->Executing request submitted before the agreement was awarded can't be
-        # approved once it is: executing on an Awarded agreement requires a Contract Modification.
         # Checked before the change request is marked reviewed so a rejected approval leaves it pending.
-        if (
-            action == "APPROVE"
-            and change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
-            and change_request.has_status_change
-        ):
-            validate_no_execution_status_change_on_awarded(
-                change_request.budget_line_item, change_request.requested_change_data["status"]
-            )
+        if action == "APPROVE":
+            self._validate_approval(change_request)
 
         if change_request.status == ChangeRequestStatus.REJECTED:
             return {
