@@ -36,7 +36,7 @@ As implemented (deviations from the issue text are called out):
 - `frontend/src/components/UI/Tabs/Tabs.jsx` and `Tabs.test.jsx`
 - `frontend/src/pages/home/HomeLanding.jsx` — `scrollToTopOnChange` dropped
 - `frontend/sass/uswds/styles.scss`, `frontend/src/uswds/css/styles.css` — reduced-motion `scroll-behavior`
-- `preventScrollReset` on query-only navigations: `AgreementsTabs.jsx`, `BLITabs.jsx`, `ProcurementDashboardTabs.jsx`, `PortfolioList.hooks.js`, `useDetailFiscalYear.hooks.js`, `SearchResults.hooks.js`
+- `preventScrollReset` on query-only navigations: `AgreementsTabs.jsx`, `BLITabs.jsx`, `CanTabs.jsx`, `ProcurementDashboardTabs.jsx`, `PortfolioList.hooks.js`, `useDetailFiscalYear.hooks.js`, `SearchResults.hooks.js`
 - Test assertions updated: `CanDetailTabs.test.jsx`, `PortfolioList.hooks.test.js`
 - `frontend/CLAUDE.md` — scrollToTop note points at the new location
 

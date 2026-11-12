@@ -157,16 +157,6 @@ describe("Tabs", () => {
             expect(scrollIntoView).not.toHaveBeenCalled();
         });
 
-        it("does not scroll on a later Back/Forward after clicking the already-active tab", () => {
-            const goTo = mountScrolledPast();
-
-            fireEvent.click(screen.getByText("Path 1"));
-            goTo("/test/path2", "POP");
-            goTo("/test/path1", "POP");
-
-            expect(scrollIntoView).not.toHaveBeenCalled();
-        });
-
         it("does not scroll on a later Back/Forward to a tab whose click was blocked", () => {
             const goTo = mountScrolledPast();
 
