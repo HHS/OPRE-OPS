@@ -28,11 +28,21 @@ git diff "$BASE"..HEAD
 
 # Recent merged PRs for style reference
 gh pr list --state merged --limit 5 --json title,body
+
+# The PR template — the body skeleton
+cat .github/pull_request_template.md
 ```
 
 Read the full diff carefully. You need to understand every change to write an accurate PR description.
 
 ## Filling In the Template
+
+Build the body from the template you just read, not from memory or the example below — the template is the source of truth and changes over time:
+
+- Keep every `##` section, in the template's order. Replace each italic `_placeholder_` with real content.
+- Keep every checkbox line as written, checking (`[x]`) only the ones that apply. Don't delete unchecked options — reviewers read them as "considered, not applicable".
+- Drop the "**Web UI contributors:**" blockquote under "What changed"; it's guidance for people editing on github.com, not PR content.
+- If the template has a section this skill doesn't cover below, fill it from the diff anyway — never drop a section.
 
 ### What changed
 
@@ -57,13 +67,15 @@ This is a public repo: don't name real users, user IDs, or production infrastruc
 
 ### Issue
 
-Extract the ticket number from the branch name (the project convention is `OPS-NNNN/description`). Format it as a link:
+Extract the ticket number from the branch name (the project convention is `OPS-NNNN/description`). Format it as a full link:
 
 ```
-https://github.com/HHS/OPRE-OPS/issues/<number> (or reference the Jira/ticket tracker the team uses)
+[OPS-NNNN](https://github.com/HHS/OPRE-OPS/issues/NNNN)
 ```
 
 If the branch name doesn't contain a ticket number, ask the user.
+
+Never write `Closes`, `Fixes` or `Resolves` before the issue. GitHub would close the issue on merge and skip the team's review and QA steps. Anywhere in the body, don't write a bare `#N` either: GitHub turns it into a link to whatever issue has that number. Use the full link, or write it out in words ("agreement ID 14").
 
 ### How to test
 
@@ -71,11 +83,22 @@ Write concrete, actionable steps a reviewer can follow to verify the change work
 
 ### A11y impact
 
-Check whether the diff touches any frontend files (anything under `frontend/src/`). If it does, leave the checkboxes unchecked for the user to decide. If the PR is backend-only or has no UI changes, check the "No accessibility-impacting changes" box:
+Check whether the diff touches any frontend files (anything under `frontend/src/`). If it does, leave the first two checkboxes unchecked for the user to decide. If the PR is backend-only or has no UI changes, check the "No accessibility-impacting changes" box:
 
 ```
 - [x] No accessibility-impacting changes in this PR
 ```
+
+Check the `A11Y-SUPPRESSION` box only if the diff adds or changes an `A11Y-SUPPRESSION:` comment (`git diff "$BASE"..HEAD | grep A11Y-SUPPRESSION`) and it has the `owner=`, `expires=` and `rationale=` fields that `frontend/scripts/a11y/validate-suppressions.mjs` checks for. If a new suppression is missing any of those fields, tell the user instead of checking the box.
+
+### Storybook
+
+Stories live beside their component as `*.stories.jsx`. Check the diff:
+
+- No component files changed, or the change is page-level or non-visual → check "No UI component changes" or "N/A — change is page-specific or non-visual", whichever is more accurate.
+- A new component under `frontend/src/components/UI/` with a new `.stories.jsx` → check "Story added for new component".
+- A component's props or states changed and its `.stories.jsx` was updated in the diff → check "Story updated to reflect changed props/states".
+- A new `UI/` component with no story, or changed props with a story that wasn't updated → leave the boxes unchecked and point out the gap to the user before creating the PR.
 
 ### Definition of Done Checklist
 
@@ -111,7 +134,7 @@ Before creating the PR:
 
 If there's no user to confirm with (e.g. running as a subagent or headless), don't push or create the PR. Return the title and body for the caller to review instead.
 
-Use a HEREDOC for the body to preserve formatting. If you are including the optional decisions section, add `## Decisions reviewers may ask about` between `What changed` and `Issue`. Add one `--attach` per screenshot (omit them when there are none):
+Use a HEREDOC for the body to preserve formatting. If you are including the optional decisions section, add `## Decisions reviewers may ask about` between `What changed` and `Issue`. Add one `--attach` per screenshot (omit them when there are none). The section list below is only an outline; take the real headings and checkboxes from `.github/pull_request_template.md`:
 
 ```bash
 gh pr create --title "the pr title" \
@@ -127,6 +150,9 @@ gh pr create --title "the pr title" \
 ...
 
 ## A11y impact
+...
+
+## Storybook
 ...
 
 ## Screenshots
