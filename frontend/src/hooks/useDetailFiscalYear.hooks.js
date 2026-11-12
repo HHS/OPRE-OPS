@@ -98,7 +98,7 @@ export const useSyncFiscalYearParam = (shownFiscalYear) => {
                 next.set("fy", String(shown));
                 return next;
             },
-            { replace: true, state }
+            { replace: true, state, preventScrollReset: true }
         );
     }, [shown, inUrl, sharedFiscalYear, setSearchParams, state]);
 };

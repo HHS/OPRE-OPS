@@ -37,14 +37,18 @@ const useSearchResults = () => {
     const { results, count } = normalizeSearchResponse(data);
     const totalPages = Math.ceil(count / ITEMS_PER_PAGE);
 
+    // Results focus their heading when they load (below), so the page doesn't also need to reset to the top.
     const setCurrentPage = (page) => {
-        setSearchParams(createSearchParams({ q, page: String(page) }));
+        setSearchParams(createSearchParams({ q, page: String(page) }), { preventScrollReset: true });
     };
 
     // A page past the end (stale link, shrunken results) would show an empty table: jump to the last page.
     useEffect(() => {
         if (data && count > 0 && currentPage > totalPages) {
-            setSearchParams(createSearchParams({ q, page: String(totalPages) }), { replace: true });
+            setSearchParams(createSearchParams({ q, page: String(totalPages) }), {
+                replace: true,
+                preventScrollReset: true
+            });
         }
     }, [data, count, currentPage, totalPages, q, setSearchParams]);
 
