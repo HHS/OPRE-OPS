@@ -1819,6 +1819,20 @@ class TestGetPageAgreements:
 
         assert "project_officer" not in sa_inspect(result[0]).unloaded
 
+    def test_eager_loads_procurement_trackers_and_steps(self, loaded_db):
+        """The list serializes _meta.isPostPreAwardLocked per row, which reads each agreement's trackers
+        and their steps; without the eager load that's one query per agreement (plus one per tracker)."""
+        from sqlalchemy import inspect as sa_inspect
+
+        from models import ProcurementTracker
+
+        loaded_db.expire_all()  # drop identity-map copies so the result reflects this query's loader options
+        agreement_id = loaded_db.scalar(select(ProcurementTracker.agreement_id).limit(1))
+        result = _get_page_agreements(loaded_db, [agreement_id])
+
+        assert "procurement_trackers" not in sa_inspect(result[0]).unloaded
+        assert "steps" not in sa_inspect(result[0].procurement_trackers[0]).unloaded
+
 
 def _make_mock_bli(status, fiscal_year=2025, amount=None, fees=Decimal("0")):
     """Helper to create a mock BLI for procurement overview/step summary tests."""
