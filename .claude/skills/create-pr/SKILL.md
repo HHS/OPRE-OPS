@@ -2,7 +2,7 @@
 name: create-pr
 description: Create a GitHub pull request with the project's PR template fully populated. Analyzes the branch diff, fills in "What changed", "Issue", "How to test", "A11y impact", "Definition of Done", and other sections. Use this skill whenever the user wants to create a PR, open a pull request, submit their branch for review, or says things like "make a PR", "open a PR", "submit this for review", or "I'm ready to create a pull request" — even if they don't use the exact phrase "pull request".
 argument-hint: "[base-branch]"
-allowed-tools: Read, Grep, Glob, Bash
+allowed-tools: Read, Grep, Glob, Bash(git log:*), Bash(git diff:*), Bash(git status:*), Bash(gh pr list:*), Bash(gh --version), Bash(bun run --cwd frontend a11y:validate-suppressions)
 ---
 
 # Create Pull Request
@@ -11,35 +11,33 @@ Create a GitHub pull request using `gh pr create`, populating every section of t
 
 ## Gathering Context
 
-Before writing the PR body, collect information about what changed on this branch. Run these commands to understand the full scope of the PR — not just the latest commit, but ALL commits since the branch diverged from the base.
+Before writing the PR body, collect information about what changed on this branch — not just the latest commit, but ALL commits since the branch diverged from the base.
+
+The base branch is `$ARGUMENTS` if one was given, otherwise `main`. Write it literally into each command below (shown as `main`); each Bash call is a fresh shell, so a shell variable set in one won't exist in the next.
 
 ```bash
-# Determine base branch (default: main, or use $ARGUMENTS if provided)
-BASE="${ARGUMENTS:-main}"
-
 # All commits on this branch
-git log "$BASE"..HEAD --oneline
+git log main..HEAD --oneline
 
-# Files changed with stats
-git diff "$BASE"..HEAD --stat
+# Files changed with stats (three dots: diff from where the branch forked, like the PR will show)
+git diff main...HEAD --stat
 
 # Full diff for reading the actual changes
-git diff "$BASE"..HEAD
+git diff main...HEAD
 
 # Recent merged PRs for style reference
 gh pr list --state merged --limit 5 --json title,body
-
-# The PR template — the body skeleton
-cat .github/pull_request_template.md
 ```
+
+Then read `.github/pull_request_template.md` with the Read tool — it's the body skeleton.
 
 Read the full diff carefully. You need to understand every change to write an accurate PR description.
 
 ## Filling In the Template
 
-Build the body from the template you just read, not from memory or the example below — the template is the source of truth and changes over time:
+Build the body from the template you just read, not from memory — the template is the source of truth and changes over time:
 
-- Keep every `##` section, in the template's order. Replace each italic `_placeholder_` with real content.
+- Keep every `##` section, in the template's order. Replace each italic `_placeholder_` with real content (the sections below say what to write when there's nothing to add).
 - Keep every checkbox line as written, checking (`[x]`) only the ones that apply. Don't delete unchecked options — reviewers read them as "considered, not applicable".
 - Drop the "**Web UI contributors:**" blockquote under "What changed"; it's guidance for people editing on github.com, not PR content.
 - If the template has a section this skill doesn't cover below, fill it from the diff anyway — never drop a section.
@@ -89,7 +87,19 @@ Check whether the diff touches any frontend files (anything under `frontend/src/
 - [x] No accessibility-impacting changes in this PR
 ```
 
-Check the `A11Y-SUPPRESSION` box only if the diff adds or changes an `A11Y-SUPPRESSION:` comment (`git diff "$BASE"..HEAD | grep A11Y-SUPPRESSION`) and it has the `owner=`, `expires=` and `rationale=` fields that `frontend/scripts/a11y/validate-suppressions.mjs` checks for. If a new suppression is missing any of those fields, tell the user instead of checking the box.
+For the `A11Y-SUPPRESSION` box, check whether the PR adds or changes a suppression comment:
+
+```bash
+git diff main...HEAD -G 'A11Y-SUPPRESSION' --name-only -- frontend/cypress
+```
+
+If that lists no files, leave the box unchecked. If it lists files, run the same validator CI runs, rather than checking the fields by eye:
+
+```bash
+bun run --cwd frontend a11y:validate-suppressions
+```
+
+Check the box only if it passes. If it fails, show the user its output instead of checking the box.
 
 ### Storybook
 
@@ -111,13 +121,14 @@ Analyze the diff to determine which checklist items are relevant:
 
 ### Screenshots
 
-If the PR is backend-only or has no visual changes, write "N/A — backend changes only" or similar.
+If the PR is backend-only or has no visual changes, replace the template's placeholder with "N/A — backend changes only" or similar.
 
-If there are visual changes and screenshots exist (e.g. from `/visual-check`, which saves to `/tmp/playwright-mcp/`), upload them with `gh pr create --attach` (needs gh 2.99.0+; check with `gh --version`):
+If there are visual changes, attach screenshots with `gh pr create --attach` (needs gh 2.99.0+; check with `gh --version`):
 
+- Only attach screenshots taken in this session of this branch's changes, such as the files a `/visual-check` run in this session reported (it saves to a fresh `/tmp/playwright-mcp/visual-check.XXXX/` directory). Never pick files by browsing or globbing `/tmp/playwright-mcp/` — it's shared by every Playwright session and can hold old captures from other environments.
 - Reference each image in the body with its **absolute path**, and pass the exact same path to `--attach`. gh rewrites matching references to the uploaded `github.com/user-attachments` URL; an attached file with no matching reference is appended to the end of the body instead.
 - Keep screenshots outside the repo. **Never commit screenshots** (no `.github/pr-assets/` or similar) — they stay in `main`'s history forever.
-- If there are no screenshots yet, leave a placeholder. The author can add them later with `gh pr edit <number> --attach <file>` (appended to the end of the body) or by dragging them into the PR on github.com.
+- If there are no screenshots from this session, replace the template's placeholder with "Screenshots to follow". The author can add them later with `gh pr edit <number> --attach <file>` (appended to the end of the body) or by dragging them into the PR on github.com.
 - If gh is older than 2.99.0 or the upload fails, stop and tell the user rather than working around it.
 
 ### Links
@@ -129,40 +140,19 @@ Include links to related PRs, documentation, or design docs if they appear in co
 Extract a short, descriptive PR title (under 70 characters) from the changes. Use conventional commit style if it fits naturally (e.g., "feat(procurement): add tracker creation during spreadsheet ingest").
 
 Before creating the PR:
-1. Confirm with the user: show them the title, a summary of what the PR body will contain, and whether the branch still needs pushing. Ask "Ready to create?" and wait for a yes. Nothing leaves the machine before this.
-2. Only after they confirm: if the branch isn't on the remote yet, push it with `git push -u origin HEAD`, then run `gh pr create`.
+1. Confirm with the user: show them the title, a summary of what the PR body will contain, whether the branch still needs pushing, and **the full path of every file you'll `--attach`** (these become publicly visible). Ask "Ready to create?" and wait for a yes. Nothing leaves the machine before this.
+2. Only after they confirm: if the branch isn't on the remote yet, push it with `git push -u origin HEAD`, then run `gh pr create`. These two commands aren't pre-approved for this skill, so Claude Code will also ask for permission before running them.
 
-If there's no user to confirm with (e.g. running as a subagent or headless), don't push or create the PR. Return the title and body for the caller to review instead.
+If there's no user to confirm with (e.g. running as a subagent or headless), don't push or create the PR. Return the title, body and attachment paths for the caller to review instead.
 
-Use a HEREDOC for the body to preserve formatting. If you are including the optional decisions section, add `## Decisions reviewers may ask about` between `What changed` and `Issue`. Add one `--attach` per screenshot (omit them when there are none). The section list below is only an outline; take the real headings and checkboxes from `.github/pull_request_template.md`:
+Use a HEREDOC for the body to preserve formatting, with one `--attach` per screenshot (none when there are no screenshots). The body is the filled-in template from above; if you're including the optional decisions section, it goes between `What changed` and `Issue`:
 
 ```bash
 gh pr create --title "the pr title" \
-  --attach /tmp/playwright-mcp/visual-check.XXXX/home-1440-default.png \
+  --attach /absolute/path/from/this/session/screenshot.png \
   --body "$(cat <<'EOF'
-## What changed
-...
-
-## Issue
-...
-
-## How to test
-...
-
-## A11y impact
-...
-
-## Storybook
-...
-
-## Screenshots
-![Homepage at 1440px](/tmp/playwright-mcp/visual-check.XXXX/home-1440-default.png)
-
-## Definition of Done Checklist
-...
-
-## Links
-...
+<the filled-in .github/pull_request_template.md, with each screenshot referenced as
+![alt text](/absolute/path/from/this/session/screenshot.png) in its Screenshots section>
 EOF
 )"
 ```
