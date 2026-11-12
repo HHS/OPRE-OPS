@@ -3,7 +3,6 @@ name: create-pr
 description: Create a GitHub pull request with the project's PR template fully populated. Analyzes the branch diff, fills in "What changed", "Issue", "How to test", "A11y impact", "Definition of Done", and other sections. Use this skill whenever the user wants to create a PR, open a pull request, submit their branch for review, or says things like "make a PR", "open a PR", "submit this for review", or "I'm ready to create a pull request" — even if they don't use the exact phrase "pull request".
 argument-hint: "[base-branch]"
 allowed-tools: Read, Grep, Glob, Bash
-disable-model-invocation: true
 ---
 
 # Create Pull Request
@@ -89,7 +88,14 @@ Analyze the diff to determine which checklist items are relevant:
 
 ### Screenshots
 
-If the PR is backend-only or has no visual changes, write "N/A — backend changes only" or similar. If there are frontend changes, note that screenshots should be added and leave a placeholder.
+If the PR is backend-only or has no visual changes, write "N/A — backend changes only" or similar.
+
+If there are visual changes and screenshots exist (e.g. from `/visual-check`, which saves to `/tmp/playwright-mcp/`), upload them with `gh pr create --attach` (needs gh 2.99.0+; check with `gh --version`):
+
+- Reference each image in the body with its **absolute path**, and pass the exact same path to `--attach`. gh rewrites matching references to the uploaded `github.com/user-attachments` URL; an attached file with no matching reference is appended to the end of the body instead.
+- Keep screenshots outside the repo. **Never commit screenshots** (no `.github/pr-assets/` or similar) — they stay in `main`'s history forever.
+- If there are no screenshots yet, leave a placeholder. The author can add them later with `gh pr edit <number> --attach <file>` (appended to the end of the body) or by dragging them into the PR on github.com.
+- If gh is older than 2.99.0 or the upload fails, stop and tell the user rather than working around it.
 
 ### Links
 
@@ -100,13 +106,17 @@ Include links to related PRs, documentation, or design docs if they appear in co
 Extract a short, descriptive PR title (under 70 characters) from the changes. Use conventional commit style if it fits naturally (e.g., "feat(procurement): add tracker creation during spreadsheet ingest").
 
 Before creating the PR:
-1. Check if the branch has been pushed to the remote. If not, push it with `git push -u origin HEAD`.
-2. Confirm with the user: show them the title and a summary of what the PR body will contain. Ask "Ready to create?" before running `gh pr create`.
+1. Confirm with the user: show them the title, a summary of what the PR body will contain, and whether the branch still needs pushing. Ask "Ready to create?" and wait for a yes. Nothing leaves the machine before this.
+2. Only after they confirm: if the branch isn't on the remote yet, push it with `git push -u origin HEAD`, then run `gh pr create`.
 
-Use a HEREDOC for the body to preserve formatting. If you are including the optional decisions section, add `## Decisions reviewers may ask about` between `What changed` and `Issue`:
+If there's no user to confirm with (e.g. running as a subagent or headless), don't push or create the PR. Return the title and body for the caller to review instead.
+
+Use a HEREDOC for the body to preserve formatting. If you are including the optional decisions section, add `## Decisions reviewers may ask about` between `What changed` and `Issue`. Add one `--attach` per screenshot (omit them when there are none):
 
 ```bash
-gh pr create --title "the pr title" --body "$(cat <<'EOF'
+gh pr create --title "the pr title" \
+  --attach /tmp/playwright-mcp/visual-check.XXXX/home-1440-default.png \
+  --body "$(cat <<'EOF'
 ## What changed
 ...
 
@@ -120,7 +130,7 @@ gh pr create --title "the pr title" --body "$(cat <<'EOF'
 ...
 
 ## Screenshots
-...
+![Homepage at 1440px](/tmp/playwright-mcp/visual-check.XXXX/home-1440-default.png)
 
 ## Definition of Done Checklist
 ...
