@@ -14,12 +14,17 @@
 }
 
 // A budget line selected to execute (Planned -> Executing) has no Modification Type field. BL ID
-// is a short, fixed-width value (a numeric id), so it's sized to its own content (max-content,
-// not a flexible fr share) so Total starts right after it instead of across a track sized for
-// Modification Type's much longer text; Total then takes the freed-up flexible width.
+// is a short, fixed-width value (a numeric id); giving it a small flexible share on top of its
+// own content's width (instead of either the full old Modification-Type-sized track, or none at
+// all) keeps it close to Total -- matching the design -- without the two touching with no gap.
+// A budget line selected to execute (Planned -> Executing) has no Modification Type field. BL ID
+// and Total render together as one flex group (fixed gap, in the JSX) in that slot instead of as
+// two separate grid tracks -- fr-based tracks size to the whole row's available width, so trying
+// to keep a short BL ID close to Total by tuning its own fr share fights the other tracks instead
+// (shrinking them, or leaving BL ID with no slack at all); a fixed gap sidesteps that entirely.
 .executeCard {
     grid-template-columns:
-        148fr max-content minmax(max-content, 166fr) 115fr minmax(max-content, 134fr) minmax(max-content, 155fr)
+        148fr minmax(max-content, 166fr) 115fr minmax(max-content, 134fr) minmax(max-content, 155fr)
         minmax(4.5rem, auto);
 }
 

@@ -120,16 +120,21 @@ const ContractModificationEditCard = ({ edit }) => {
                 </>
             ) : isExecuteSelection ? (
                 <>
-                    <TermTag
-                        label="BL ID"
-                        value={edit.budget_line_item_id}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="Total"
-                        value={renderField("amount", "amount", edit.amount)}
-                        className="margin-0"
-                    />
+                    <div
+                        className="display-flex"
+                        style={{ gap: "1.5rem" }}
+                    >
+                        <TermTag
+                            label="BL ID"
+                            value={edit.budget_line_item_id}
+                            className="margin-0"
+                        />
+                        <TermTag
+                            label="Total"
+                            value={renderField("amount", "amount", edit.amount)}
+                            className="margin-0"
+                        />
+                    </div>
                     <TermTag
                         label="Change To"
                         value={convertCodeForDisplay("changeToTypes", edit.field)}
