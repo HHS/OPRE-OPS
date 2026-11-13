@@ -13,14 +13,13 @@
     align-items: start;
 }
 
-// A budget line selected to execute (Planned -> Executing) has no Modification Type field, so
-// its six fields sit one slot earlier: BL ID takes Modification Type's old slot. Swap the first
-// two content tracks' widths too (132fr/166fr) so BL ID keeps its own (narrower) width -- close
-// to Requested by, per design -- and Total (a currency value, as long as Modification Type's
-// text was) gets the wider track instead.
+// A budget line selected to execute (Planned -> Executing) has no Modification Type field. BL ID
+// is a short, fixed-width value (a numeric id), so it's sized to its own content (max-content,
+// not a flexible fr share) so Total starts right after it instead of across a track sized for
+// Modification Type's much longer text; Total then takes the freed-up flexible width.
 .executeCard {
     grid-template-columns:
-        148fr 132fr 166fr 115fr minmax(max-content, 134fr) minmax(max-content, 155fr)
+        148fr max-content minmax(max-content, 166fr) 115fr minmax(max-content, 134fr) minmax(max-content, 155fr)
         minmax(4.5rem, auto);
 }
 

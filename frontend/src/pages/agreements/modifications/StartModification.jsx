@@ -20,12 +20,40 @@ import {
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { AgreementType } from "../agreements.constants";
 import { actionOptions, selectedAction } from "../review/ReviewAgreement.constants";
 import useStartModification, { PLANNED_TO_EXECUTING } from "./StartModification.hooks";
 
 const CAN_REVIEW_INSTRUCTIONS =
     "The budget lines you are executing are using funds from the CANs displayed below. If you have not selected any budget lines, there will be no CANs to review.";
+
+/**
+ * One selected-to-execute budget line, rendered as a (display-only) ContractModificationEditCard.
+ * Its own component so the "Requested by" name can be resolved by id with a hook -- the budget
+ * line itself only carries `created_by` (an id), no nested user object.
+ * @component
+ * @param {Object} props
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine} props.budgetLine
+ * @returns {React.ReactElement}
+ */
+const SelectedBudgetLineModCard = ({ budgetLine }) => {
+    const requestedByName = useGetUserFullNameFromId(budgetLine.created_by);
+    return (
+        <ContractModificationEditCard
+            edit={{
+                id: `execute-${budgetLine.id}`,
+                budget_line_item_id: budgetLine.id,
+                amount: budgetLine.amount,
+                field: "status",
+                old_value: PLANNED_TO_EXECUTING.status.old,
+                new_value: PLANNED_TO_EXECUTING.status.new,
+                requested_by: { full_name: requestedByName },
+                requested_on: budgetLine.date_needed
+            }}
+        />
+    );
+};
 
 /**
  * @component - Start a Contract Modification for a Modified LOE (#3268): review the edits that
@@ -117,18 +145,7 @@ export const StartModification = () => {
                     ))}
                     {selectedBudgetLines.map((budgetLine) => (
                         <li key={`execute-${budgetLine.id}`}>
-                            <ContractModificationEditCard
-                                edit={{
-                                    id: `execute-${budgetLine.id}`,
-                                    budget_line_item_id: budgetLine.id,
-                                    amount: budgetLine.amount,
-                                    field: "status",
-                                    old_value: PLANNED_TO_EXECUTING.status.old,
-                                    new_value: PLANNED_TO_EXECUTING.status.new,
-                                    requested_by: budgetLine.created_by_user,
-                                    requested_on: budgetLine.date_needed
-                                }}
-                            />
+                            <SelectedBudgetLineModCard budgetLine={budgetLine} />
                         </li>
                     ))}
                 </ul>
