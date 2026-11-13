@@ -36,6 +36,25 @@ const declineOpenContractModifications = () => {
     });
 };
 
+/**
+ * Approve the contract modification in review as the Division Director, through the API: the review
+ * card is a placeholder and isn't shown on the Award & Modifications tab yet (#3269; review UI is #3331).
+ */
+const approveOpenContractModification = () => {
+    testLogin("division-director");
+    apiRequest({ url: `/agreements/${AGREEMENT_ID}/contract-modifications/` }).then((response) => {
+        const request = response.body.data.find((candidate) => candidate.status === "IN_REVIEW");
+        expect(request, "a contract modification in review").to.exist;
+        apiRequest({
+            method: "PATCH",
+            url: `/contract-modification-requests/${request.id}/`,
+            body: { action: "APPROVE", reviewer_notes: null }
+        })
+            .its("status")
+            .should("eq", 200);
+    });
+};
+
 describe("Start a Contract Modification", () => {
     let budgetLineId;
 
@@ -125,24 +144,19 @@ describe("Start a Contract Modification", () => {
         });
     });
 
-    it("lets the Division Director approve it, and the Budget Lines tab shows Executing without reloading", () => {
+    it("executes the budget line when the Division Director approves it", () => {
         cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
         cy.get('[data-cy="start-modification-btn"]').should("be.enabled").click();
         cy.contains("tr", String(budgetLineId)).find("label").first().click();
         cy.get("textarea[name='submitter-notes']").type("E2E contract modification");
         cy.get('[data-cy="send-to-approval-btn"]').should("be.enabled").click();
+        cy.contains("Contract Modification Sent to Approval").should("be.visible");
 
-        testLogin("division-director");
+        approveOpenContractModification();
+
+        // The Division Director's review card isn't shown on the tab; everyone sees the outcome.
         cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
-        cy.get('[data-cy="approve-contract-modification-btn"]').click();
-        cy.get(".usa-modal__content").contains(/approve this Contract Modification\?/i);
-        cy.get('[data-cy="confirm-action"]').click();
-        cy.contains(/Contract Modification Approved/i).should("be.visible");
-
-        // Same mounted Agreement page, just a client-side tab switch — no reload. Regression test for
-        // OPS-1008's missed "Agreements" cache invalidation (reviewContractModification was only
-        // invalidating ContractModifications/BudgetLineItems/Notifications/AgreementHistory, so the
-        // agreement object the Budget Lines tab reads from stayed stale).
+        cy.contains("Contract Modification Pending Your Review").should("not.exist");
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
         cy.contains("tr", String(budgetLineId)).should("contain", "Executing");
     });
@@ -220,11 +234,12 @@ describe("Start a Contract Modification for a COR change (#3269)", () => {
         cy.get('[data-cy="project-officer-locked-message"]').should("contain", "in review");
         cy.get("#project-officer-combobox-input").should("be.disabled");
 
+        // The Division Director sees the In Review alert, not the placeholder review card.
         testLogin("division-director");
         cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
-        cy.get('[data-cy="approve-contract-modification-btn"]').click();
-        cy.get('[data-cy="confirm-action"]').click();
-        cy.contains("Contract Modification Approved").should("be.visible");
+        cy.contains("h2", "Contract Modification In Review").should("be.visible");
+        cy.contains("Contract Modification Pending Your Review").should("not.exist");
+        approveOpenContractModification();
 
         // Approval doesn't change the COR again.
         cy.get("@newCorId").then((newCorId) => {
