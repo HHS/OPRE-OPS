@@ -1,9 +1,11 @@
 """Service for "Edits That Require a Contract Modification" on the Award & Modifications tab.
 
-Once an Agreement is Awarded, an approved money/time edit made in OPS (a "Modified Level of
-Effort") still has to be carried into the actual contract via a Contract Modification. Each
-such approved edit is recorded as a ``ContractModificationEdit`` and stays pending until the
-user's contract modification request is approved (OPS-3072, AC9; see contract_modification_requests.py, #3268).
+Once an Agreement is Awarded, a money/time edit made in OPS (a "Modified Level of Effort") still
+has to be carried into the actual contract via a Contract Modification. Most edits (budget line
+amount/CAN/Obligate By, Draft -> Planned, delete, Services Component add/delete) apply directly
+when saved and are recorded here with no approver (OPS-3072/OPS-3268: DD approval is needed only
+to execute a Planned budget line, via contract_modification_requests.py). A legacy change request
+approved before that change shipped is still recorded on approval.
 """
 
 from typing import Optional
@@ -17,12 +19,14 @@ from models import (
     PROJECT_OFFICER_EDIT_FIELD,
     Agreement,
     AgreementMod,
+    BudgetLineItem,
     ChangeRequestStatus,
     ChangeRequestType,
     ContractModificationEdit,
     ContractModificationRequest,
     ContractModificationRequestStatus,
     ModificationEditType,
+    ServicesComponent,
     ServicesComponentChangeRequest,
     User,
 )
@@ -32,6 +36,11 @@ from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationEr
 SC_ADDITION_IN_MODIFICATION_MESSAGE = (
     "This Services Component's addition is in a contract modification that is in review, "
     "so it can't be deleted until the modification is approved or declined."
+)
+
+BLI_IN_REVIEW_MODIFICATION_MESSAGE = (
+    "This budget line is in a contract modification that is in review, so it can't be changed "
+    "until the modification is approved or declined."
 )
 
 
@@ -83,6 +92,177 @@ class ContractModificationEditService:
         )
         self.db_session.add(edit)
         return edit
+
+    def record_direct_edit(self, budget_line_item, field: str, old_value, new_value, user_id: int) -> None:
+        """Record an edit applied directly on an Awarded agreement, with no change request.
+
+        Merges with the budget line's pending edits to the same field, so the card shows the
+        awarded value as From and the latest value as To, and drops the edit when the change nets
+        to nothing (so a modification never carries an edit the list doesn't show). ``old_value``
+        and ``new_value`` must be in the format change requests snapshot
+        (``PATCHRequestBodySchema(only=[field]).dump``). Flushes (but does not commit) so a
+        concurrent duplicate save (double-click/retry) fails fast on
+        ``ix_contract_modification_edit_one_pending_bli_field`` instead of silently orphaning a
+        pending row.
+        """
+        pending = self._pending_for_budget_line(budget_line_item.id, field)
+        if pending:
+            old_value = pending[0].old_value
+            for edit in pending:
+                self.db_session.delete(edit)
+            # Flush the delete(s) first: SQLAlchemy's unit of work otherwise flushes the new
+            # row's INSERT before these DELETEs, tripping the unique index on a merge that is
+            # actually fine (the row below replaces the one just deleted).
+            self.db_session.flush()
+        if old_value == new_value:
+            return
+        self._add_direct_edit(
+            budget_line_item.agreement_id, budget_line_item.id, None, field, old_value, new_value, user_id
+        )
+        try:
+            self.db_session.flush()
+        except IntegrityError:
+            # ix_contract_modification_edit_one_pending_bli_field: a concurrent save on the same
+            # field won. The caller rolls back the session.
+            raise ValidationError(
+                {field: ["Another change to this field was saved at the same time. Refresh and try again."]}
+            ) from None
+
+    def record_direct_delete(self, budget_line_item, old_amount, user_id: int) -> None:
+        """Record a budget line deleted directly on an Awarded agreement. Call before the delete.
+
+        A budget line that only went Draft -> Planned after the award was never on the contract, so
+        its pending edits are dropped and no delete is recorded. Otherwise the line's other pending
+        edits are replaced by the delete, whose From is the awarded amount. Flushes (but does not
+        commit) so a concurrent duplicate delete (double-click/retry) fails fast on
+        ``ix_contract_modification_edit_one_pending_bli_field`` instead of surfacing as an
+        unhandled 500, the same as ``record_direct_edit``.
+        """
+        pending = self._pending_for_budget_line(budget_line_item.id)
+        for edit in pending:
+            self.db_session.delete(edit)
+        if any(edit.field == "status" and edit.old_value == "DRAFT" for edit in pending):
+            return
+        if pending:
+            # Flush the deletes first: the unit of work otherwise flushes the new row's INSERT
+            # before these DELETEs, tripping the unique index on a merge that is actually fine.
+            self.db_session.flush()
+        awarded_amount = next((edit.old_value for edit in pending if edit.field == "amount"), old_amount)
+        self._add_direct_edit(
+            budget_line_item.agreement_id, budget_line_item.id, None, "delete", awarded_amount, "Deleted", user_id
+        )
+        try:
+            self.db_session.flush()
+        except IntegrityError:
+            # ix_contract_modification_edit_one_pending_bli_field: a concurrent delete won.
+            # The caller rolls back the session.
+            raise ValidationError(
+                {
+                    "budget_line_item": [
+                        "Another change to this budget line was saved at the same time. Refresh and try again."
+                    ]
+                }
+            ) from None
+
+    def record_services_component_add(self, services_component: ServicesComponent, user_id: int) -> None:
+        """Record a Services Component added directly on an Awarded agreement. Does not commit."""
+        self._add_direct_edit(
+            services_component.agreement_id,
+            None,
+            services_component.id,
+            ServicesComponentChangeRequest.create_field_name,
+            None,
+            services_component.display_name,
+            user_id,
+        )
+
+    def record_services_component_delete(self, services_component: ServicesComponent, user_id: int) -> None:
+        """Record a Services Component deleted directly on an Awarded agreement. Call before the
+        delete. Discards any still-pending "Add SC" edit for it first. Does not commit."""
+        self.discard_pending_services_component_addition(services_component.id)
+        self._add_direct_edit(
+            services_component.agreement_id,
+            None,
+            services_component.id,
+            "delete",
+            services_component.display_name,
+            "Deleted",
+            user_id,
+        )
+
+    def _add_direct_edit(
+        self,
+        agreement_id: int,
+        budget_line_item_id: Optional[int],
+        services_component_id: Optional[int],
+        field: str,
+        old_value,
+        new_value,
+        user_id: int,
+    ) -> None:
+        self.db_session.add(
+            ContractModificationEdit(
+                agreement_id=agreement_id,
+                modification_type=ModificationEditType.MODIFIED_LOE,
+                budget_line_item_id=budget_line_item_id,
+                services_component_id=services_component_id,
+                field=field,
+                old_value=old_value,
+                new_value=new_value,
+                requested_by_id=user_id,
+                requested_on=func.now(),
+                # Set here: rows flushed inside the edit bundle leave session.new before the
+                # created_by hook (handle_create_update_by_attrs) runs at commit.
+                created_by=user_id,
+            )
+        )
+
+    def _pending_for_budget_line(self, budget_line_item_id: int, field: Optional[str] = None):
+        """The budget line's pending edits (optionally to one field), oldest first."""
+        query = select(ContractModificationEdit).where(
+            ContractModificationEdit.budget_line_item_id == budget_line_item_id,
+            ContractModificationEdit.services_component_id.is_(None),
+            ContractModificationEdit.agreement_mod_id.is_(None),
+        )
+        if field is not None:
+            query = query.where(ContractModificationEdit.field == field)
+        return list(
+            self.db_session.scalars(
+                query.order_by(ContractModificationEdit.requested_on, ContractModificationEdit.id)
+            ).all()
+        )
+
+    def budget_line_in_review_modification(self, budget_line_item_id: int) -> bool:
+        """Whether the budget line is selected to execute in, or has edits in, a contract
+        modification request that is in review. Its edits and selection are what the Division
+        Director is reviewing, so it can't be changed until the request is approved or declined."""
+        return budget_line_item_id in self.budget_line_ids_in_review_modification([budget_line_item_id])
+
+    def budget_line_ids_in_review_modification(self, budget_line_item_ids: list[int]) -> set[int]:
+        """The given budget lines that are in a contract modification request in review (see
+        ``budget_line_in_review_modification``), in two queries whatever the number of lines."""
+        if not budget_line_item_ids or not current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False):
+            return set()
+        selected = self.db_session.scalars(
+            select(BudgetLineItem.id)
+            .select_from(ContractModificationRequest)
+            .join(ContractModificationRequest.budget_line_items)
+            .where(
+                BudgetLineItem.id.in_(budget_line_item_ids),
+                ContractModificationRequest.status == ContractModificationRequestStatus.IN_REVIEW,
+            )
+        ).all()
+        with_edits = self.db_session.scalars(
+            select(ContractModificationEdit.budget_line_item_id)
+            .select_from(ContractModificationRequest)
+            .join(ContractModificationRequest.edits)
+            .where(
+                ContractModificationEdit.budget_line_item_id.in_(budget_line_item_ids),
+                ContractModificationEdit.services_component_id.is_(None),
+                ContractModificationRequest.status == ContractModificationRequestStatus.IN_REVIEW,
+            )
+        ).all()
+        return set(selected) | set(with_edits)
 
     def get_pending_for_agreement(self, agreement_id: int) -> list[ContractModificationEdit]:
         """Return the agreement's edits not yet attached to a started modification, oldest first.

@@ -799,7 +799,7 @@ describe("CreateBLIsAndSCs", () => {
             await waitFor(() => expect(setModalProps).toHaveBeenCalled());
             const modalProps = setModalProps.mock.calls.at(-1)[0];
             expect(modalProps.heading).toMatch(/will require a contract modification/);
-            expect(modalProps.actionButtonText).toBe("Send to Approval");
+            expect(modalProps.actionButtonText).toBe("Save changes");
             expect(setShowModal).toHaveBeenCalledWith(true);
 
             modalProps.handleConfirm();

@@ -88,3 +88,14 @@ Index(
         "modification_type = 'ADMIN_CHANGE' AND field = 'project_officer_id' AND agreement_mod_id IS NULL"
     ),
 )
+
+# At most one pending direct edit per (budget line, field): guards a double-click/retry on a
+# direct-apply edit (OPS-3268) from inserting two pending rows for the same field, one of which
+# would otherwise be silently orphaned (see record_direct_edit).
+Index(
+    "ix_contract_modification_edit_one_pending_bli_field",
+    ContractModificationEdit.__table__.c.budget_line_item_id,
+    ContractModificationEdit.__table__.c.field,
+    unique=True,
+    postgresql_where=text("agreement_mod_id IS NULL AND budget_line_item_id IS NOT NULL"),
+)

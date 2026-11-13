@@ -144,20 +144,9 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
                     onDismiss={() => dismissNotification(latestOutcome.id)}
                 />
             )}
-            {inReviewRequest?.can_review ? (
-                <ContractModificationRequestReviewCard request={inReviewRequest} />
-            ) : (
-                isInReview && (
-                    <SimpleAlert
-                        type="warning"
-                        heading="Contract Modification In Review"
-                        message="There is a Contract Modification pending approval from the Division Director."
-                        headingLevel={2}
-                    />
-                )
-            )}
+            {inReviewRequest?.can_review && <ContractModificationRequestReviewCard request={inReviewRequest} />}
             <h2 className="font-sans-lg">Contract Modifications</h2>
-            <p className="font-sans-sm line-height-body-5">
+            <p className="font-sans-sm line-height-body-5 margin-bottom-3">
                 After an agreement has been awarded, it will require a Contract Modification in order to make changes or
                 to execute planned budget lines as-is. If edits have been made in OPS since the agreement was awarded,
                 they will be displayed below as a reference. When you are ready to execute a modification, click Start
@@ -165,7 +154,7 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
             </p>
             {content && (
                 <>
-                    <h3 className="font-sans-3xs text-normal text-base-dark margin-bottom-3">
+                    <h3 className="font-sans-3xs text-normal text-base-dark margin-top-0 margin-bottom-3">
                         Edits That Require a Contract Modification
                     </h3>
                     {content}

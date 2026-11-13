@@ -60,21 +60,8 @@ describe("ServicesComponentListItem", () => {
         expect(screen.queryByText("In Review")).not.toBeInTheDocument();
     });
 
-    it("disables only delete, with the awarded-agreement tooltip, when the SC has budget lines on an awarded agreement", () => {
-        renderItem({ isAwardedDeleteBlocked: true });
-        hoverItem();
-
-        const [editButton, deleteButton] = screen.getAllByRole("button");
-        expect(editButton).toBeEnabled();
-        expect(deleteButton).toBeDisabled();
-        expect(deleteButton).toHaveAttribute(
-            "aria-label",
-            "Services Components with budget lines cannot be deleted on awarded agreements"
-        );
-    });
-
-    it("shows the SC1 tooltip rather than the awarded one for the first services component", () => {
-        renderItem({ number: 1, isAwardedDeleteBlocked: true });
+    it("shows the SC1 tooltip for the first services component's delete", () => {
+        renderItem({ number: 1 });
         hoverItem();
 
         const [, deleteButton] = screen.getAllByRole("button");

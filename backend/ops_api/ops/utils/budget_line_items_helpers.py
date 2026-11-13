@@ -32,9 +32,10 @@ def tracks_contract_modifications(budget_line_item: BudgetLineItem) -> bool:
 
 
 def sc_requires_approval_gate(agreement) -> bool:
-    """Whether Services Component changes on this agreement are gated when the SC has non-Draft
-    budget lines (OPS-6440): an add goes through Division Director approval, and a delete is
-    blocked. Superusers bypass this, matching the other awarded locks."""
+    """Whether a non-superuser's Services Component add/delete on this agreement is tracked as
+    an "Edit That Requires a Contract Modification" (OPS-3268 UX feedback item 5): applies
+    directly, immediately, with no budget lines required and no Division Director approval.
+    Superusers bypass this, matching the other awarded locks."""
     return agreement_tracks_contract_modifications(agreement) and not is_super_user(current_user, current_app)
 
 

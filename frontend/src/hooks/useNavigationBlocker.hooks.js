@@ -1,6 +1,6 @@
 import React from "react";
 import { useBlocker } from "react-router-dom";
-import { COR_CONTRACT_MODIFICATION_HEADING } from "../helpers/agreement.helpers";
+import { CONTRACT_MODIFICATION_NOTICE_HEADING } from "../helpers/agreement.helpers";
 import { proceedIfBlocked } from "./proceedIfBlocked";
 
 /**
@@ -87,7 +87,7 @@ export default function useNavigationBlocker({
                 description =
                     "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost.";
             } else if (requiresCorModification) {
-                description = `You have unsaved changes. ${COR_CONTRACT_MODIFICATION_HEADING} If you leave without saving, these changes will be lost.`;
+                description = `You have unsaved changes. ${CONTRACT_MODIFICATION_NOTICE_HEADING} If you leave without saving, these changes will be lost.`;
             }
             const actionButtonText = approvalVariant ? "Save & send to approval" : "Save";
 

@@ -466,7 +466,7 @@ describe("EditAgreementAndBudgetLines", () => {
 
     describe("contract-modification modal (OPS-3072, Awarded agreements)", () => {
         const awardedContractModCopy =
-            "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?";
+            "This agreement has already been awarded and any changes will require a contract modification. Changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action.";
 
         it("shows the contract-modification copy instead of the DD-approval copy when the agreement is Awarded", async () => {
             mockAgreementResult = { data: { ...mockAgreement, is_awarded: true }, error: null, isLoading: false };
@@ -479,6 +479,7 @@ describe("EditAgreementAndBudgetLines", () => {
                     "Budget changes require approval from your Division Director. Do you want to send it to approval?"
                 )
             ).not.toBeInTheDocument();
+            expect(screen.queryByRole("button", { name: "Send to Approval" })).not.toBeInTheDocument();
             expect(updateBundleMock).not.toHaveBeenCalled();
         });
 
@@ -487,8 +488,8 @@ describe("EditAgreementAndBudgetLines", () => {
             simulateContractModification = true;
             renderPage();
             fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-            const sendBtn = await screen.findByRole("button", { name: "Send to Approval" });
-            fireEvent.click(sendBtn);
+            const saveBtn = await screen.findByRole("button", { name: "Save Changes" });
+            fireEvent.click(saveBtn);
             await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
         });
 

@@ -36,7 +36,7 @@ from models.utils.fiscal_year import get_current_fiscal_year
 from tests.ops.agreement.test_contract_modification_edits import (  # noqa: F401 (fixtures)
     BASIC_USER_ID,
     DIVISION_DIRECTOR_USER_ID,
-    _approved_amount_edit,
+    _direct_amount_edit,
     _edits,
     _get_pending,
     make_agreement,
@@ -80,14 +80,13 @@ def _add_bli(loaded_db, agreement, test_can, *, status=BudgetLineItemStatus.PLAN
 def awarded_with_edit(
     modified_loe_enabled,  # noqa: F811
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
     make_agreement,  # noqa: F811
 ):
-    """An Awarded agreement with one approved amount edit and one executable Planned BLI."""
+    """An Awarded agreement with one direct amount edit and one executable Planned BLI."""
     agreement, bli = make_agreement(test_can)
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 500000.00)
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 500000.00)
     executable = _add_bli(loaded_db, agreement, test_can)
     return agreement, bli, executable
 
@@ -230,19 +229,28 @@ def _executable_bli(loaded_db, agreement, test_can):
     return _add_bli(loaded_db, agreement, test_can, date_needed=datetime.date(get_current_fiscal_year(), 9, 30))
 
 
-def _move_into_pending_sc(client, loaded_db, agreement, bli):
-    """Add SC2 after award (pending) and move ``bli`` into it, which requests SC2's addition."""
+def _add_pending_sc(loaded_db, agreement, bli):
+    """A fresh SC2, still awaiting approval, with ``bli`` linked directly -- bypassing the
+    normal link-time apply so the SC stays pending (exercises the submit-time guard)."""
+    sc2 = ServicesComponent(agreement_id=agreement.id, number=2, optional=False, awaiting_add_approval=True)
+    loaded_db.add(sc2)
+    loaded_db.flush()
+    bli.services_component_id = sc2.id
+    loaded_db.commit()
+    return sc2.id
+
+
+def _add_sc_with_executed_addition(client, loaded_db, agreement, bli):
+    """Add SC2 after award and link ``bli`` to it, which applies its addition directly
+    (OPS-3072/OPS-3268, no Division Director approval). Returns the new SC's id."""
     response = client.post(
         url_for("api.services-component-group"), json={"agreement_id": agreement.id, "number": 2, "optional": False}
     )
     assert response.status_code == 201, response.json
     sc2_id = response.json["id"]
     response = client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": sc2_id})
-    assert response.status_code in (200, 202), response.json
-    change_request = loaded_db.scalars(
-        select(ServicesComponentChangeRequest).where(ServicesComponentChangeRequest.services_component_id == sc2_id)
-    ).one()
-    return sc2_id, change_request.id
+    assert response.status_code == 200, response.json
+    return sc2_id
 
 
 def test_submit_rejects_a_budget_line_in_an_sc_awaiting_approval(
@@ -250,7 +258,7 @@ def test_submit_rejects_a_budget_line_in_an_sc_awaiting_approval(
 ):
     agreement, _, _ = awarded_with_edit
     executable = _executable_bli(loaded_db, agreement, test_can)
-    _move_into_pending_sc(basic_user_auth_client, loaded_db, agreement, executable)
+    _add_pending_sc(loaded_db, agreement, executable)
 
     response = _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id])
 
@@ -265,11 +273,7 @@ def test_sc_addition_edit_is_attached_by_an_approved_modification(
 ):
     agreement, _, _ = awarded_with_edit
     executable = _executable_bli(loaded_db, agreement, test_can)
-    sc2_id, change_request_id = _move_into_pending_sc(basic_user_auth_client, loaded_db, agreement, executable)
-    response = division_director_auth_client.patch(
-        url_for("api.change-requests-item", id=change_request_id), json={"action": "APPROVE"}
-    )
-    assert response.status_code == 200, response.json
+    sc2_id = _add_sc_with_executed_addition(basic_user_auth_client, loaded_db, agreement, executable)
     (sc_edit,) = [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id]
     assert sc_edit.field == "services_component_create"
 
@@ -284,15 +288,10 @@ def test_sc_addition_edit_is_attached_by_an_approved_modification(
     assert loaded_db.get(ServicesComponent, sc2_id).awaiting_add_approval is False
 
 
-def _approved_sc_addition(client, director_client, loaded_db, agreement, bli):
-    """Approve "Add SC2" for ``bli``, leaving its edit pending; returns that edit's id and SC name."""
-    sc2_id, change_request_id = _move_into_pending_sc(client, loaded_db, agreement, bli)
-    response = director_client.patch(
-        url_for("api.change-requests-item", id=change_request_id), json={"action": "APPROVE"}
-    )
-    assert response.status_code == 200, response.json
-    (sc_edit,) = [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id]
-    return sc_edit.id, sc_edit.new_value
+def _sc_addition_edit(loaded_db, agreement, sc2_id):
+    """The already-applied "Add SC2" edit's id and SC display name."""
+    (edit,) = [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id]
+    return edit.id, edit.new_value
 
 
 def _history(loaded_db, agreement_id, history_type):
@@ -304,13 +303,12 @@ def _history(loaded_db, agreement_id, history_type):
 
 
 def test_submitted_sc_addition_edit_shows_in_review_and_is_named_in_history(
-    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+    awarded_with_edit, basic_user_auth_client, loaded_db, test_can, app_ctx
 ):
     agreement, _, _ = awarded_with_edit
     executable = _executable_bli(loaded_db, agreement, test_can)
-    sc_edit_id, sc_name = _approved_sc_addition(
-        basic_user_auth_client, division_director_auth_client, loaded_db, agreement, executable
-    )
+    sc2_id = _add_sc_with_executed_addition(basic_user_auth_client, loaded_db, agreement, executable)
+    sc_edit_id, sc_name = _sc_addition_edit(loaded_db, agreement, sc2_id)
 
     response = _submit(basic_user_auth_client, agreement.id)
 
@@ -330,9 +328,8 @@ def test_declined_modification_leaves_the_sc_addition_edit_pending(
 ):
     agreement, _, _ = awarded_with_edit
     executable = _executable_bli(loaded_db, agreement, test_can)
-    sc_edit_id, sc_name = _approved_sc_addition(
-        basic_user_auth_client, division_director_auth_client, loaded_db, agreement, executable
-    )
+    sc2_id = _add_sc_with_executed_addition(basic_user_auth_client, loaded_db, agreement, executable)
+    sc_edit_id, sc_name = _sc_addition_edit(loaded_db, agreement, sc2_id)
     request_id = _submit(basic_user_auth_client, agreement.id).json["id"]
 
     response = _review_mod(division_director_auth_client, request_id, action="DECLINE")
@@ -365,52 +362,42 @@ def test_services_components_added_phrase(names, expected):
     assert _services_components_added_phrase(event) == expected
 
 
-def _approved_sc_addition_emptied(client, director_client, loaded_db, agreement, bli, sc1_id):
-    """Approve "Add SC2" for ``bli``, then move ``bli`` back to SC1 so SC2 has no budget lines."""
-    sc2_id, change_request_id = _move_into_pending_sc(client, loaded_db, agreement, bli)
-    response = director_client.patch(
-        url_for("api.change-requests-item", id=change_request_id), json={"action": "APPROVE"}
-    )
-    assert response.status_code == 200, response.json
+def _sc_addition_then_emptied(client, loaded_db, agreement, bli, sc1_id):
+    """Apply "Add SC2" via ``bli``, then move ``bli`` back to SC1 so SC2 has no budget lines."""
+    sc2_id = _add_sc_with_executed_addition(client, loaded_db, agreement, bli)
     response = client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": sc1_id})
-    assert response.status_code in (200, 202), response.json
+    assert response.status_code == 200, response.json
     return sc2_id
 
 
-def test_deleting_an_approved_sc_removes_its_pending_addition_edit(
-    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+def test_deleting_an_approved_sc_replaces_its_pending_addition_edit_with_a_delete(
+    awarded_with_edit, basic_user_auth_client, loaded_db, test_can, app_ctx
 ):
+    """OPS-3268 UX feedback item 5: the delete is tracked on its own, even for an SC with no
+    budget lines left -- its earlier pending "add" is replaced, not just dropped."""
     agreement, first, _ = awarded_with_edit
     executable = _executable_bli(loaded_db, agreement, test_can)
-    sc2_id = _approved_sc_addition_emptied(
-        basic_user_auth_client,
-        division_director_auth_client,
-        loaded_db,
-        agreement,
-        executable,
-        first.services_component_id,
+    sc2_id = _sc_addition_then_emptied(
+        basic_user_auth_client, loaded_db, agreement, executable, first.services_component_id
     )
 
     response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
 
     assert response.status_code == 200, response.json
-    assert [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id] == []
+    (edit,) = [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id]
+    assert edit.field == "delete"
     pending = _get_pending(basic_user_auth_client, agreement.id).json["data"]
-    assert [e for e in pending if e["services_component_id"] == sc2_id] == []
+    (pending_edit,) = [e for e in pending if e["services_component_id"] == sc2_id]
+    assert pending_edit["field"] == "delete"
 
 
 def test_deleting_an_sc_whose_addition_is_in_a_modification_in_review_returns_400(
-    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+    awarded_with_edit, basic_user_auth_client, loaded_db, test_can, app_ctx
 ):
     agreement, first, _ = awarded_with_edit
     executable = _executable_bli(loaded_db, agreement, test_can)
-    sc2_id = _approved_sc_addition_emptied(
-        basic_user_auth_client,
-        division_director_auth_client,
-        loaded_db,
-        agreement,
-        executable,
-        first.services_component_id,
+    sc2_id = _sc_addition_then_emptied(
+        basic_user_auth_client, loaded_db, agreement, executable, first.services_component_id
     )
     assert _submit(basic_user_auth_client, agreement.id).status_code == 201
 

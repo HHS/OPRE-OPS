@@ -8,7 +8,7 @@ import {
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { AgreementType } from "../agreements.constants";
-import { CONTRACT_MODIFICATION_APPROVAL_HEADING } from "../../../helpers/agreement.helpers";
+import { CONTRACT_MODIFICATION_NOTICE_HEADING } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS, groupByGrantNumber, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId, { useIsUserSuperUser } from "../../../hooks/user.hooks";
@@ -99,15 +99,18 @@ const useReviewAgreement = (agreementId) => {
         [actionOptions.CHANGE_PLANNED_TO_EXECUTING]: selectedAction.PLANNED_TO_EXECUTING
     };
     let changeRequestAction = actionOptionsToChangeRequests[action];
-    // Draft→Planned applies immediately only when the capability is ON. Planned→Executing
-    // always requires approval, so it is never treated as applied-immediately. On an Awarded
-    // agreement, Draft→Planned requires a contract modification (OPS-3072), so the backend
-    // routes it to approval regardless of the capability.
+    // Draft→Planned applies immediately when either capability is ON: SKIP_CR_FOR_DRAFT_PLANNED
+    // on a non-Awarded agreement, or (OPS-3072/OPS-3268) ENABLE_MODIFIED_LOE_EDITS on an Awarded
+    // one -- there, it's recorded as an "Edit That Requires a Contract Modification", with no
+    // Division Director approval. Planned→Executing always requires approval, so it is never
+    // treated as applied-immediately.
     const isDraftToPlannedAction = action === actionOptions.CHANGE_DRAFT_TO_PLANNED;
     const isAgreementAwarded = Boolean(agreement?.is_awarded);
     // Contract-modification tracking only applies with the ENABLE_MODIFIED_LOE_EDITS capability on.
     const tracksContractModifications = enableModifiedLoeEdits && isAgreementAwarded;
-    const appliesImmediately = skipCrForDraftPlanned && isDraftToPlannedAction && !tracksContractModifications;
+    const appliesImmediately = isDraftToPlannedAction && (tracksContractModifications || skipCrForDraftPlanned);
+    // No Division Director approval is involved for a tracked, direct-apply edit -- this only
+    // decides whether to show the informational confirmation before saving.
     const requiresContractModification = tracksContractModifications && isDraftToPlannedAction;
     // Planned→Executing on an Awarded agreement requires a Contract Modification, so it isn't
     // offered. Superusers bypass this, matching the backend.
@@ -385,9 +388,9 @@ const useReviewAgreement = (agreementId) => {
             return;
         }
         setModalProps({
-            heading: CONTRACT_MODIFICATION_APPROVAL_HEADING,
-            actionButtonText: "Send to Approval",
-            secondaryButtonText: "Continue Editing",
+            heading: CONTRACT_MODIFICATION_NOTICE_HEADING,
+            actionButtonText: "Save changes",
+            secondaryButtonText: "Continue editing",
             handleConfirm: sendStatusChanges
         });
         setShowModal(true);
