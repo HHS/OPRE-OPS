@@ -349,3 +349,8 @@ fieldset[disabled] .usa-label,
     background-color: transparent;
     border-color: var(--feedback-disabled-dark);
 }
+
+// #main-content is a programmatic focus target (skip link, "Return to top"); keep the ring for keyboard focus only
+#main-content:focus:not(:focus-visible) {
+    outline: none;
+}
