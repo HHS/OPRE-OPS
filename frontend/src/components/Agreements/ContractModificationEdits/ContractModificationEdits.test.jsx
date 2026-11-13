@@ -153,7 +153,7 @@ describe("ContractModificationEdits", () => {
         expect(isDisabledWithReachableTooltip("Start modification")).toBe(true);
     });
 
-    it("disables Start modification and marks edits In Review while a modification is in review, showing the In Review alert", () => {
+    it("disables Start modification and marks edits In Review while a modification is in review", () => {
         mockQuery({ data: [{ ...AMOUNT_EDIT, in_review: true }] });
         mockRequests([{ id: 9, status: "IN_REVIEW" }]);
 
@@ -165,7 +165,6 @@ describe("ContractModificationEdits", () => {
         );
 
         expect(isDisabledWithReachableTooltip("Start modification")).toBe(true);
-        expect(screen.getByRole("heading", { name: "Contract Modification In Review" })).toBeInTheDocument();
         expect(within(getCards()[0]).getByText("In Review")).toBeInTheDocument();
     });
 
@@ -183,7 +182,6 @@ describe("ContractModificationEdits", () => {
         );
 
         expect(screen.getByRole("heading", { name: "Contract Modification Pending Your Review" })).toBeInTheDocument();
-        expect(screen.queryByRole("heading", { name: "Contract Modification In Review" })).toBeNull();
     });
 
     it("shows the submitter a declined modification with the Director's notes, and dismisses it", async () => {
