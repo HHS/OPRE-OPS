@@ -350,7 +350,27 @@ const useCreateBLIsAndSCs = (
             const promises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
                 const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
 
-                const unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
+                let unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
+                // Deleting a Services Component clears its link on every budget line locally
+                // (editor reducer's DELETE_SERVICE_COMPONENT), including ones the user never
+                // otherwise touched. That alone isn't a real edit to send: the backend's SC ->
+                // BLI foreign key already nulls the link (ON DELETE SET NULL) as part of the SC
+                // delete itself, which runs after this -- and for a non-superuser on an Obligated
+                // or Executing line, sending it here would be rejected as "not in an editable
+                // state" and block the whole save, including the SC delete that was the actual
+                // intent (OPS-3268). Compare against the same cleared shape so this field alone
+                // doesn't count as a change; a genuine edit elsewhere on the same line still does.
+                if (
+                    unchangedBudgetLineItem?.services_component_id != null &&
+                    deletedServicesComponentsIds.includes(unchangedBudgetLineItem.services_component_id)
+                ) {
+                    unchangedBudgetLineItem = {
+                        ...unchangedBudgetLineItem,
+                        services_component_id: null,
+                        services_component_number: undefined,
+                        serviceComponentGroupingLabel: undefined
+                    };
+                }
                 let budgetLineHasChanged =
                     JSON.stringify(existingBudgetLineItem) !== JSON.stringify(unchangedBudgetLineItem); // We have to check every single property to see if there's ANY change
                 if (budgetLineHasChanged) {
@@ -359,7 +379,7 @@ const useCreateBLIsAndSCs = (
             });
             return promises;
         },
-        [budgetLines, updateBudgetLineItem]
+        [budgetLines, deletedServicesComponentsIds, updateBudgetLineItem]
     );
 
     /**

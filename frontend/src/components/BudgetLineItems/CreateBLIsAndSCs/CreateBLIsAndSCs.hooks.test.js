@@ -745,6 +745,72 @@ describe("useCreateBLIsAndSCs", () => {
                 expect(deleteServicesComponentMock).toHaveBeenCalledWith(21);
             });
 
+            // Regression: deleting an SC with a non-Draft BL (OPS-3268) clears that BL's SC link
+            // locally (editor reducer). That link clearing alone must not be sent as a BLI update:
+            // the backend already nulls it via the FK as part of the SC delete, and for an
+            // Obligated/Executing BL a non-superuser's update would be rejected outright, blocking
+            // the whole save (including the SC delete itself).
+            it("does not update a budget line's services component link when it was only cleared by its SC's deletion", async () => {
+                const original = {
+                    id: 710,
+                    status: "OBLIGATED",
+                    in_review: false,
+                    created_on: "2026-01-01",
+                    services_component_id: 21
+                };
+                const linkCleared = {
+                    ...original,
+                    services_component_id: null
+                };
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [{ id: 11, number: 1 }],
+                    deleted_services_components_ids: [21],
+                    budget_line_items: [linkCleared]
+                });
+                deleteServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+                const { result } = renderAwarded([original]);
+
+                await act(async () => {
+                    await result.current.handleSave(false);
+                });
+
+                expect(updateBudgetLineItemMock).not.toHaveBeenCalled();
+                expect(deleteServicesComponentMock).toHaveBeenCalledWith(21);
+            });
+
+            // A genuine edit on the same line still goes through, alongside the SC delete.
+            it("still updates a budget line for its own change even when its SC is also being deleted", async () => {
+                const original = {
+                    id: 710,
+                    status: "IN_EXECUTION",
+                    amount: 100000,
+                    in_review: false,
+                    created_on: "2026-01-01",
+                    services_component_id: 21
+                };
+                const edited = {
+                    ...original,
+                    amount: 150000,
+                    services_component_id: null
+                };
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [{ id: 11, number: 1 }],
+                    deleted_services_components_ids: [21],
+                    budget_line_items: [edited]
+                });
+                updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+                deleteServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+                const { result } = renderAwarded([original]);
+
+                await act(async () => {
+                    await result.current.handleSave(false);
+                });
+
+                expect(updateBudgetLineItemMock).toHaveBeenCalled();
+            });
+
             it("does not flag SC changes for a superuser", () => {
                 useSelectorMock.mockImplementation((selector) =>
                     selector({ auth: { activeUser: { id: 1, is_superuser: true, roles: [{ name: "SYSTEM_OWNER" }] } } })
