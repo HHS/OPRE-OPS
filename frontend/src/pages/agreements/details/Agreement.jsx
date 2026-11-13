@@ -250,8 +250,14 @@ const Agreement = () => {
     // Use the backend-derived field so this stays correct regardless of tracker status.
     const isAwardInReview = agreement?.is_award_approval_requested === true;
 
-    // Lock BLI editing permanently once pre-award is fully approved (DD + requisition submitted)
+    // Lock BLI editing permanently once pre-award is fully approved (DD + requisition submitted).
+    // Role-blind on purpose: Budget Team's budget-line financial edits still go through change
+    // requests during the lock.
     const isPostPreAwardLocked = agreement?.is_post_pre_award_locked === true;
+
+    // Agreement-level edits (Agreement Details tab) use the role-aware flag, because the backend
+    // exempts Budget Team from the lock for those.
+    const isAgreementPostPreAwardLocked = agreement?._meta?.isPostPreAwardLocked === true;
 
     const isAgreementAwarded = agreement?.is_awarded;
     // Nickname-preferred, matching every other read-only agreement surface (OPS-6144). The
@@ -371,7 +377,7 @@ const Agreement = () => {
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                                 isPreAwardInReview={isPreAwardInReview}
                                 isAwardInReview={isAwardInReview}
-                                isPostPreAwardLocked={isPostPreAwardLocked}
+                                isPostPreAwardLocked={isAgreementPostPreAwardLocked}
                             />
                         }
                     />

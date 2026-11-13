@@ -69,13 +69,16 @@ const AgreementDetails = ({
         !isAwardInReview &&
         !isPostPreAwardLocked &&
         (isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped));
+    // `isEditMode` comes from the `?mode=edit` URL param with no permission check, so every piece of
+    // edit chrome (heading, "Editing..." indicator, form) must follow this, not the raw flag.
+    const showEditMode = isEditMode && isEditable;
 
     return (
         <article>
             <AgreementDetailHeader
-                heading={isEditMode ? "Edit Agreement Details" : "Agreement Details"}
+                heading={showEditMode ? "Edit Agreement Details" : "Agreement Details"}
                 details=""
-                isEditMode={isEditMode}
+                isEditMode={showEditMode}
                 setIsEditMode={setIsEditMode}
                 isEditable={isEditable}
                 canUserEdit={isSuperUser || (agreement?._meta?.isEditable ?? false)}
@@ -87,7 +90,7 @@ const AgreementDetails = ({
                 showEditButton={canEditByRole}
             />
 
-            {isEditMode && isEditable ? (
+            {showEditMode ? (
                 <AgreementDetailsEdit
                     agreement={agreement}
                     setHasAgreementChanged={setHasAgreementChanged}

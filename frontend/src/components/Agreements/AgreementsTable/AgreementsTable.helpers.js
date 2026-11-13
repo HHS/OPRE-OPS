@@ -1,5 +1,5 @@
 import { formatDate } from "../../../helpers/utils";
-import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
+import { getAgreementDisplayName, EDIT_DISABLED_TOOLTIPS } from "../../../helpers/agreement.helpers";
 
 const handleAgreementProp = (agreement) => {
     if (typeof agreement !== "object") {
@@ -51,11 +51,12 @@ export const getProcurementShopDisplay = (agreement) => {
 /**
  * Determine the tooltip message for a locked (non-editable and/or non-deletable) agreement.
  *
- * The frontend-owned edit locks (not a team member, agreement type not developed yet) take
- * precedence over the backend's delete-specific lockedMessage, since the Edit and Delete icons
- * share this single tooltip whenever editing itself is disabled (see ChangeIcons.jsx). Only once
- * those are ruled out do we defer to the backend's message (e.g. a non-draft budget line, an
- * awarded agreement) — mirroring getTooltipLabel's precedence for budget line items.
+ * The edit locks (not a team member, then the post-Pre-Award lock, then agreement type not
+ * developed yet) take precedence over the backend's delete-specific lockedMessage, since the Edit
+ * and Delete icons share this single tooltip whenever editing itself is disabled (see
+ * ChangeIcons.jsx). Only once those are ruled out do we defer to the backend's message (e.g. a
+ * non-draft budget line, an awarded agreement) — mirroring getTooltipLabel's precedence for budget
+ * line items.
  * @param {import("../../../types/AgreementTypes").Agreement} agreement
  * @param {boolean} isSuperUser
  * @returns {string}
@@ -67,6 +68,9 @@ export const getAgreementLockedMessage = (agreement, isSuperUser, isAgreementTyp
 
     if (!canUserEditAgreement) {
         return "Only team members on this agreement can edit or delete";
+    }
+    if (agreement._meta?.isPostPreAwardLocked) {
+        return EDIT_DISABLED_TOOLTIPS.postPreAwardLocked;
     }
     if (isAgreementTypeNotDeveloped && !isSuperUser) {
         return "This agreement cannot be edited because it is not developed yet, \nplease contact the Budget Team.";

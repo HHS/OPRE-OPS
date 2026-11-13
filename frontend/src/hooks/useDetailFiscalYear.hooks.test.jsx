@@ -1,8 +1,18 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { act, fireEvent, render, renderHook, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import {
+    createMemoryRouter,
+    Link,
+    MemoryRouter,
+    Route,
+    RouterProvider,
+    Routes,
+    useLocation,
+    useNavigate
+} from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
+import RootLayout from "../components/Layouts/RootLayout";
 import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../constants";
 import { buildTrailState, LIST_CRUMBS } from "../helpers/breadcrumb.helpers";
 import { getCurrentFiscalYear } from "../helpers/utils";
@@ -169,6 +179,32 @@ describe("useSyncFiscalYearParam", () => {
     it("leaves a page showing its default without a ?fy= alone", () => {
         renderPage("/cans/1", makeStore());
         expect(screen.getByTestId("location")).toHaveTextContent(/^\/cans\/1 null$/);
+    });
+
+    it("doesn't scroll the page to the top when it rewrites ?fy=", async () => {
+        window.scrollTo = vi.fn();
+        sessionStorage.clear();
+        const store = makeStore();
+        store.dispatch(setDetailFiscalYear(2023));
+        const Page = () => {
+            const { fiscalYear } = useDetailFiscalYear(2026);
+            useSyncFiscalYearParam(fiscalYear);
+            return null;
+        };
+        const router = createMemoryRouter(
+            [{ element: <RootLayout />, children: [{ path: "/cans/:id", element: <Page /> }] }],
+            { initialEntries: ["/cans/1"] }
+        );
+
+        render(
+            <Provider store={store}>
+                <RouterProvider router={router} />
+            </Provider>
+        );
+        await vi.waitFor(() => expect(router.state.location.search).toBe("?fy=2023"));
+
+        // Only the page's own load scrolls to the top; the ?fy= rewrite that follows doesn't.
+        expect(window.scrollTo).toHaveBeenCalledOnce();
     });
 });
 

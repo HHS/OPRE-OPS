@@ -19,6 +19,12 @@ const DefaultLayout = ({ children, breadCrumbName, breadCrumbParent }) => {
 
     return (
         <div className="bg-ops-shell">
+            <a
+                className="usa-skipnav"
+                href="#main-content"
+            >
+                Skip to main content
+            </a>
             <div className="usa-overlay"></div>
             {!import.meta.env.PROD && (
                 <SlimAlert
@@ -29,6 +35,7 @@ const DefaultLayout = ({ children, breadCrumbName, breadCrumbParent }) => {
             <Header />
             <main
                 id="main-content"
+                tabIndex={-1}
                 className="grid-container bg-white padding-bottom-6"
             >
                 {breadCrumbName != null ? (

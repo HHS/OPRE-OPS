@@ -154,7 +154,8 @@ def test_submit_puts_edits_in_review_and_notifies_the_director(
     ).one()
     basic_user = loaded_db.get(User, BASIC_USER_ID)
     assert history.history_message == (
-        f"{basic_user.full_name} sent a contract modification to approval including 1 edit "
+        f"{basic_user.full_name} requested to start a contract modification for this agreement "
+        "and it's currently In Review for approval. It includes 1 edit "
         "and 1 budget line to execute."
     )
     assert history.ops_event_id == event.id
@@ -319,7 +320,7 @@ def test_submitted_sc_addition_edit_shows_in_review_and_is_named_in_history(
     event = _latest_event(loaded_db, OpsEventType.START_CONTRACT_MODIFICATION)
     assert event.event_details["services_components_added"] == [sc_name]
     history = _history(loaded_db, agreement.id, AgreementHistoryType.CONTRACT_MODIFICATION_STARTED)
-    assert f"including 2 edits (adding {sc_name}) and 0 budget lines to execute." in history.history_message
+    assert f"includes 2 edits (adding {sc_name}) and 0 budget lines to execute." in history.history_message
 
 
 def test_declined_modification_leaves_the_sc_addition_edit_pending(
@@ -337,7 +338,11 @@ def test_declined_modification_leaves_the_sc_addition_edit_pending(
     pending = {edit["id"]: edit for edit in _get_pending(basic_user_auth_client, agreement.id).json["data"]}
     assert pending[sc_edit_id]["in_review"] is False
     history = _history(loaded_db, agreement.id, AgreementHistoryType.CONTRACT_MODIFICATION_DECLINED)
-    assert history.history_message.endswith(f"declined the contract modification. It included adding {sc_name}.")
+    basic_user = loaded_db.get(User, BASIC_USER_ID)
+    assert history.history_message.endswith(
+        f"declined the contract modification for this agreement as requested by "
+        f"{basic_user.full_name}. It included adding {sc_name}."
+    )
 
 
 @pytest.mark.parametrize(
@@ -478,6 +483,7 @@ def test_approve_creates_the_mod_attaches_edits_and_executes_budget_lines(
     event = _latest_event(loaded_db, OpsEventType.REVIEW_CONTRACT_MODIFICATION)
     assert event.created_by == DIVISION_DIRECTOR_USER_ID
     assert event.event_details["status"] == "APPROVED"
+    assert event.event_details["requested_by_user_id"] == BASIC_USER_ID
     assert "request.remote_addr" in event.event_details
     history = loaded_db.scalars(
         select(AgreementHistory).where(
@@ -486,6 +492,9 @@ def test_approve_creates_the_mod_attaches_edits_and_executes_budget_lines(
         )
     ).one()
     assert history.ops_event_id == event.id
+    basic_user = loaded_db.get(User, BASIC_USER_ID)
+    assert f"as requested by {basic_user.full_name}" in history.history_message
+    assert "The procurement process has started." in history.history_message
     assert f"BL {executable.id} changed from Planned to Executing" in history.history_message
 
     # A new modification can be started for later edits.

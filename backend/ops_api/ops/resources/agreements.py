@@ -48,6 +48,7 @@ from ops_api.ops.services.ops_service import OpsService, ValidationError
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
+from ops_api.ops.utils.users import is_budget_team
 
 
 @dataclass
@@ -499,12 +500,16 @@ def _serialize_agreement_with_meta(
     procurement_shop_locked_message = (
         service._get_procurement_shop_locked_message(agreement, current_user) if include_procurement_shop_lock else None
     )
+    # Post-Pre-Award-approval lock, role-aware: Budget Team is exempt from the write-side lock
+    # (get_agreement_pre_award_lock_message), so they are not reported as locked here either.
+    is_post_pre_award_locked = agreement.is_post_pre_award_locked and not is_budget_team(current_user)
     data_for_meta = {
         "isEditable": is_editable,
         "isDeletable": locked_message is None,
         "lockedMessage": locked_message,
         "immutable_awarded_fields": agreement.immutable_awarded_fields,
         "procurementShopLockedMessage": procurement_shop_locked_message,
+        "isPostPreAwardLocked": is_post_pre_award_locked,
     }
     serialized_agreement["_meta"] = meta_schema.dump(data_for_meta)
 

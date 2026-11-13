@@ -22,7 +22,23 @@ vi.mock("../../../App", () => ({
         </div>
     )
 }));
-vi.mock("./AgreementDetails", () => ({ default: () => <div data-testid="agreement-details-mock" /> }));
+// Prop-echo stubs for the tab children: tests assert on the flag the Agreement page passes them.
+vi.mock("./AgreementDetails", () => ({
+    default: (props) => (
+        <div
+            data-testid="agreement-details-mock"
+            data-post-pre-award-locked={String(props.isPostPreAwardLocked)}
+        />
+    )
+}));
+vi.mock("./AgreementBudgetLines", () => ({
+    default: (props) => (
+        <div
+            data-testid="agreement-budget-lines-mock"
+            data-post-pre-award-locked={String(props.isPostPreAwardLocked)}
+        />
+    )
+}));
 vi.mock("../../../hooks/useChangeRequests.hooks", () => ({ useChangeRequestsForAgreement: () => [] }));
 
 // Simple test component that demonstrates the memoization behavior
@@ -644,5 +660,60 @@ describe("Agreement page — details page nickname display (issue #6144)", () =>
 
         const appMock = await screen.findByTestId("app-mock");
         expect(appMock.dataset.breadcrumb).toBe(noNicknameAgreement.name);
+    });
+});
+
+describe("Agreement page — pre-award lock flag per tab (OPS-6512)", () => {
+    // Budget Team is exempt from the agreement-level lock (role-aware _meta flag is false) but is still
+    // forced through change requests for budget-line edits (role-blind top-level flag stays true).
+    const makeAgreement = ({ roleBlindLocked, roleAwareLocked }) => ({
+        id: 44,
+        agreement_type: "CONTRACT",
+        project: { title: "Some Project" },
+        is_post_pre_award_locked: roleBlindLocked,
+        _meta: { isPostPreAwardLocked: roleAwareLocked }
+    });
+
+    const renderAgreementAt = async (agreement, path = "") => {
+        const opsAPI = await import("../../../api/opsAPI");
+        opsAPI.useGetAgreementByIdQuery.mockReturnValue({
+            data: agreement,
+            error: undefined,
+            isLoading: false,
+            isSuccess: true
+        });
+        opsAPI.useGetNotificationsByUserIdAndAgreementIdQuery.mockReturnValue({ data: [] });
+        opsAPI.useGetProcurementShopByIdQuery.mockReturnValue({ data: undefined });
+        opsAPI.useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({ data: { data: [] } });
+
+        return render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={[`/agreements/${agreement.id}${path}`]}>
+                    <Routes>
+                        <Route
+                            path="/agreements/:id/*"
+                            element={<Agreement />}
+                        />
+                    </Routes>
+                </MemoryRouter>
+            </Provider>
+        );
+    };
+
+    it.each([
+        { case: "Budget Team (exempt)", roleAwareLocked: false },
+        { case: "locked for everyone", roleAwareLocked: true }
+    ])("passes isPostPreAwardLocked=$roleAwareLocked to Agreement Details ($case)", async ({ roleAwareLocked }) => {
+        await renderAgreementAt(makeAgreement({ roleBlindLocked: true, roleAwareLocked }));
+
+        const detailsMock = await screen.findByTestId("agreement-details-mock");
+        expect(detailsMock.dataset.postPreAwardLocked).toBe(String(roleAwareLocked));
+    });
+
+    it("passes isPostPreAwardLocked=true to SCs & Budget Lines for a Budget Team user (role-blind flag)", async () => {
+        await renderAgreementAt(makeAgreement({ roleBlindLocked: true, roleAwareLocked: false }), "/budget-lines");
+
+        const budgetLinesMock = await screen.findByTestId("agreement-budget-lines-mock");
+        expect(budgetLinesMock.dataset.postPreAwardLocked).toBe("true");
     });
 });

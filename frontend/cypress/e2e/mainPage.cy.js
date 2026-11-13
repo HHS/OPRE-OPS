@@ -47,4 +47,47 @@ describe("Home Page", () => {
         cy.location("pathname").should("eq", "/ops-at-a-glance");
         cy.get("h2").contains("OPS at a Glance");
     });
+
+    it("the skip link is the first focusable element, visible on focus, and moves focus to main content", () => {
+        cy.visit("/");
+
+        // Cypress has no real-Tab-key simulation installed in this project, so DOM order
+        // stands in for "first Tab stop" here; the full keyboard Tab/Shift+Tab pass is
+        // verified manually per the story's test method.
+        cy.get(".usa-skipnav")
+            .should("contain.text", "Skip to main content")
+            .then(($skipLink) => {
+                cy.get("a, button, input, [tabindex]")
+                    .first()
+                    .then(($firstFocusable) => {
+                        expect($firstFocusable[0]).to.equal($skipLink[0]);
+                    });
+            });
+
+        cy.get(".usa-skipnav").focus().should("be.visible").click();
+        cy.focused().should("have.id", "main-content");
+    });
+
+    it("Return to top moves focus along with the view, so the next Tab continues from the top of the page", () => {
+        cy.visit("/");
+        cy.get("button").contains("Return to top").scrollIntoView().click();
+        cy.focused().should("have.id", "main-content");
+    });
+
+    it("the What's New tab shows a visible focus ring when reached by keyboard", () => {
+        cy.visit("/");
+        cy.get(`[data-cy="details-tab-What's New"]`).focus();
+        cy.focused().should("have.css", "outline-style", "solid").and("have.css", "outline-width", "4px");
+    });
+
+    it("Esc closes the Create header dropdown and returns focus to its toggle", () => {
+        cy.visit("/");
+        cy.contains("button", "Create").as("createToggle").click();
+        cy.get("@createToggle").should("have.attr", "aria-expanded", "true");
+
+        cy.get("#basic-mega-nav-section-two").contains("a", "Project").focus().type("{esc}");
+
+        cy.get("@createToggle").should("have.attr", "aria-expanded", "false");
+        cy.focused().should("contain.text", "Create");
+    });
 });

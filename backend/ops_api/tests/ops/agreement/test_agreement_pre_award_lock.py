@@ -249,3 +249,40 @@ def test_budget_team_exempt_from_services_component_and_grant_number_locks(
 
     assert sc_response.status_code == 200, sc_response.json
     assert gn_response.status_code == 200, gn_response.json
+
+
+def _list_meta(client, agreement):
+    """`_meta` of `agreement` as returned by GET /agreements/ (filtered by its exact name)."""
+    response = client.get(url_for("api.agreements-group"), query_string={"name": agreement.name})
+    assert response.status_code == 200, response.json
+    rows = [row for row in response.json["data"] if row["id"] == agreement.id]
+    assert len(rows) == 1, "fixture agreement missing from the list response"
+    return rows[0]["_meta"]
+
+
+@pytest.mark.parametrize(
+    "state,expected",
+    [("locked", True), ("in_review", False), ("declined", False), (None, False)],
+    ids=["locked", "in_review", "declined", "no_tracker"],
+)
+def test_agreement_list_meta_is_post_pre_award_locked(
+    state, expected, auth_client, lock_agreement, make_pre_award, app_ctx
+):
+    """Only the post-approval lock sets the flag (not in-review, declined, or no tracker).
+
+    `auth_client` is SYSTEM_OWNER and not Budget Team, so the lock applies. The rule has no superuser
+    branch: superusers are locked like everyone else (the frontend row and helper tests cover that case).
+    """
+    agreement, _ = lock_agreement
+    if state:
+        make_pre_award(agreement.id, state)
+
+    assert _list_meta(auth_client, agreement)["isPostPreAwardLocked"] is expected
+
+
+def test_agreement_list_meta_budget_team_not_locked(budget_team_auth_client, lock_agreement, make_pre_award, app_ctx):
+    """Budget Team is exempt from the write-side lock, so the list must not report it as locked."""
+    agreement, _ = lock_agreement
+    make_pre_award(agreement.id, "locked")
+
+    assert _list_meta(budget_team_auth_client, agreement)["isPostPreAwardLocked"] is False

@@ -10528,7 +10528,8 @@ components:
 
     AgreementMetaSchema:
       description: >-
-        Agreement-specific extension of MetaSchema adding procurementShopLockedMessage.
+        Agreement-specific extension of MetaSchema adding procurementShopLockedMessage and
+        isPostPreAwardLocked.
       allOf:
         - $ref: "#/components/schemas/MetaSchema"
         - type: object
@@ -10544,6 +10545,13 @@ components:
                 changed. Only populated on GET /agreements/{id} — always null in the
                 GET /agreements list response, since computing it there would add a database
                 query per row.
+            isPostPreAwardLocked:
+              type: boolean
+              description: >-
+                True when the agreement has completed Pre-Award Approval and is locked from
+                further agreement-level edits until the Award request is approved. Role-aware:
+                always false for Budget Team users, who are exempt from this lock on the backend.
+                Populated on both GET /agreements/ and GET /agreements/{id}.
 
     AgreementResponse:
       allOf:

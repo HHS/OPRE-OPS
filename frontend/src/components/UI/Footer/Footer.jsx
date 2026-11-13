@@ -6,6 +6,9 @@ const Footer = () => {
             top: 0,
             behavior: "smooth"
         });
+        // preventScroll avoids fighting the smooth scroll above — focus() would
+        // otherwise trigger its own (instant) scroll-into-view.
+        document.getElementById("main-content")?.focus({ preventScroll: true });
     };
     return (
         <footer className="usa-footer">

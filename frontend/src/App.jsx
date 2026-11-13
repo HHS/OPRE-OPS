@@ -1,5 +1,4 @@
 import DefaultLayout from "./components/Layouts/DefaultLayout";
-import { useScrollToTop } from "./hooks/useScrollToTop";
 
 /**
  * DefaultLayout component
@@ -11,8 +10,6 @@ import { useScrollToTop } from "./hooks/useScrollToTop";
  */
 
 function App({ children, breadCrumbName, breadCrumbParent }) {
-    useScrollToTop();
-
     return (
         <DefaultLayout
             breadCrumbName={breadCrumbName}

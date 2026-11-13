@@ -6,6 +6,7 @@ import {
     getAgreementEndDate,
     getProcurementShopDisplay
 } from "./AgreementsTable.helpers";
+import { EDIT_DISABLED_TOOLTIPS } from "../../../helpers/agreement.helpers";
 
 describe("AgreementsTable helpers", () => {
     describe("getAgreementName", () => {
@@ -156,6 +157,30 @@ describe("AgreementsTable helpers", () => {
         it("falls back to an empty string for a super user with no backend message", () => {
             const agreement = { agreement_type: "CONTRACT", _meta: { isEditable: true } };
             expect(getAgreementLockedMessage(agreement, true, false)).toBe("");
+        });
+
+        it("returns the post-Pre-Award lock message for a super user too (superusers are locked)", () => {
+            const agreement = { agreement_type: "CONTRACT", _meta: { isEditable: true, isPostPreAwardLocked: true } };
+            expect(getAgreementLockedMessage(agreement, true, false)).toBe(EDIT_DISABLED_TOOLTIPS.postPreAwardLocked);
+        });
+
+        it("returns the post-Pre-Award lock message for a team member, over a backend lockedMessage", () => {
+            const agreement = {
+                agreement_type: "CONTRACT",
+                _meta: {
+                    isEditable: true,
+                    isPostPreAwardLocked: true,
+                    lockedMessage: "Cannot delete an agreement with budget lines that are not in Draft status"
+                }
+            };
+            expect(getAgreementLockedMessage(agreement, false, false)).toBe(EDIT_DISABLED_TOOLTIPS.postPreAwardLocked);
+        });
+
+        it("still returns the not-team-member message first when the user cannot edit and the agreement is locked", () => {
+            const agreement = { agreement_type: "CONTRACT", _meta: { isEditable: false, isPostPreAwardLocked: true } };
+            expect(getAgreementLockedMessage(agreement, false, false)).toBe(
+                "Only team members on this agreement can edit or delete"
+            );
         });
     });
 });

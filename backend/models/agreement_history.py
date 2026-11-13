@@ -67,6 +67,18 @@ class AgreementHistory(BaseModel):
     history_type: Mapped[AgreementHistoryType] = mapped_column(ENUM(AgreementHistoryType), nullable=True)
 
 
+def _awarded_mod_notice(agreement: Optional[Agreement]) -> str:
+    """Appended to a history message for an edit that applies immediately but still means
+    the agreement will need a paper contract modification, once it's awarded.
+
+    Contract modifications (OPS-3072/3153) only exist for Contract and AA agreements -- a
+    Grant, Direct Obligation, or IAA agreement has no such process, awarded or not.
+    """
+    if agreement and agreement.is_awarded and agreement.agreement_type in (AgreementType.CONTRACT, AgreementType.AA):
+        return " This agreement is awarded and will require a contract modification in order to make changes to the contract."
+    return ""
+
+
 def format_fiscal_year(timestamp) -> int:
     """Convert the timestamp to {Fiscal Year}. The fiscal year is calendar year + 1 if the timestamp is october or later.
     This method can take either an iso format timestamp string or a datetime object"""
@@ -109,6 +121,14 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
     history_events = []
     match event.event_type:
         case OpsEventType.CREATE_BLI:
+            # A new budget line only means a paper mod is needed once it's past Draft (a
+            # brand-new line is always Draft today, but this stays correct if that changes).
+            new_bli_agreement = session.get(Agreement, event.event_details["new_bli"]["agreement_id"])
+            new_bli_notice = (
+                _awarded_mod_notice(new_bli_agreement)
+                if (event.event_details["new_bli"].get("status") or "DRAFT") != "DRAFT"
+                else ""
+            )
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["new_bli"]["agreement_id"],
@@ -121,7 +141,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                         f"Changes made to the OPRE budget spreadsheet added new budget line {event.event_details['new_bli']['id']}."
                         if updated_by_system_user
                         else f"{event_user.full_name} added a new budget line {event.event_details['new_bli']['id']}."
-                    ),
+                    )
+                    + new_bli_notice,
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.BUDGET_LINE_ITEM_CREATED,
                 )
@@ -131,35 +152,33 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 create_bli_update_history_events(event, event_user, updated_by_system_user, session, system_user)
             )
         case OpsEventType.DELETE_BLI:
-            deleted_bli = event.event_details["deleted_bli"]
-            deleted_bli_agreement = session.get(Agreement, deleted_bli["agreement_id"])
-            delete_message = (
-                f"Changes made to the OPRE budget spreadsheet deleted the BL {deleted_bli['id']}."
-                if updated_by_system_user
-                else f"{event_user.full_name} deleted the BL {deleted_bli['id']}."
+            # Only a Planned/Executing delete (always a super-user bypass -- a Draft delete
+            # never needs approval) means a paper mod is still needed on an awarded agreement.
+            deleted_bli_agreement = session.get(Agreement, event.event_details["deleted_bli"]["agreement_id"])
+            deleted_bli_notice = (
+                _awarded_mod_notice(deleted_bli_agreement)
+                if (event.event_details["deleted_bli"].get("status") or "DRAFT") != "DRAFT"
+                else ""
             )
-            if (
-                deleted_bli_agreement
-                and deleted_bli_agreement.is_awarded
-                and deleted_bli.get("status") != BudgetLineItemStatus.DRAFT.value
-            ):
-                delete_message += (
-                    " This agreement is awarded and will require a contract modification in"
-                    " order to make changes to the contract."
-                )
             history_events.append(
                 AgreementHistory(
-                    agreement_id=deleted_bli["agreement_id"],
-                    agreement_id_record=deleted_bli["agreement_id"],
+                    agreement_id=event.event_details["deleted_bli"]["agreement_id"],
+                    agreement_id_record=event.event_details["deleted_bli"]["agreement_id"],
                     budget_line_id=None,
-                    budget_line_id_record=deleted_bli["id"],
+                    budget_line_id_record=event.event_details["deleted_bli"]["id"],
                     ops_event_id=event.id,
                     history_title="Budget Line Deleted",
-                    history_message=delete_message,
+                    history_message=(
+                        f"Changes made to the OPRE budget spreadsheet deleted the BL {event.event_details['deleted_bli']['id']}."
+                        if updated_by_system_user
+                        else f"{event_user.full_name} deleted the BL {event.event_details['deleted_bli']['id']}."
+                    )
+                    + deleted_bli_notice,
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.BUDGET_LINE_ITEM_DELETED,
                 )
             )
+
         case OpsEventType.UPDATE_PROCUREMENT_SHOP:
             history_events.extend(create_proc_shop_fee_history_events(event, session, system_user, event_user))
         case OpsEventType.CREATE_NEW_AGREEMENT:
@@ -358,48 +377,40 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 )
         case OpsEventType.CREATE_SERVICES_COMPONENT:
             new_sc_agreement = session.get(Agreement, event.event_details["new_sc"]["agreement_id"])
-            create_sc_message = (
-                f"Changes made to the OPRE budget spreadsheet added new services component {event.event_details['new_sc']['display_name']}."
-                if updated_by_system_user
-                else f"{event_user.full_name} added a new services component {event.event_details['new_sc']['display_name']}."
-            )
-            if new_sc_agreement and new_sc_agreement.is_awarded:
-                create_sc_message += (
-                    " This agreement is awarded and will require a contract modification in"
-                    " order to make changes to the contract."
-                )
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["new_sc"]["agreement_id"],
                     agreement_id_record=event.event_details["new_sc"]["agreement_id"],
                     ops_event_id=event.id,
                     history_title="New Services Component Added",
-                    history_message=create_sc_message,
+                    history_message=(
+                        f"Changes made to the OPRE budget spreadsheet added new services component {event.event_details['new_sc']['display_name']}."
+                        if updated_by_system_user
+                        else f"{event_user.full_name} added a new services component {event.event_details['new_sc']['display_name']}."
+                    )
+                    + _awarded_mod_notice(new_sc_agreement),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.SERVICE_COMPONENT_CREATED,
                 )
             )
         case OpsEventType.UPDATE_SERVICES_COMPONENT:
-            history_events.extend(create_services_component_history_event(event, event_user, updated_by_system_user))
+            history_events.extend(
+                create_services_component_history_event(event, event_user, updated_by_system_user, session)
+            )
         case OpsEventType.DELETE_SERVICES_COMPONENT:
             deleted_sc_agreement = session.get(Agreement, event.event_details["service_component"]["agreement_id"])
-            delete_sc_message = (
-                f"Changes made to the OPRE budget spreadsheet deleted services component {event.event_details['service_component']['display_name']}."
-                if updated_by_system_user
-                else f"{event_user.full_name} deleted services component {event.event_details['service_component']['display_name']}."
-            )
-            if deleted_sc_agreement and deleted_sc_agreement.is_awarded:
-                delete_sc_message += (
-                    " This agreement is awarded and will require a contract modification in"
-                    " order to make changes to the contract."
-                )
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["service_component"]["agreement_id"],
                     agreement_id_record=event.event_details["service_component"]["agreement_id"],
                     ops_event_id=event.id,
                     history_title="Services Component Deleted",
-                    history_message=delete_sc_message,
+                    history_message=(
+                        f"Changes made to the OPRE budget spreadsheet deleted services component {event.event_details['service_component']['display_name']}."
+                        if updated_by_system_user
+                        else f"{event_user.full_name} deleted services component {event.event_details['service_component']['display_name']}."
+                    )
+                    + _awarded_mod_notice(deleted_sc_agreement),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.SERVICE_COMPONENT_DELETED,
                 )
@@ -453,7 +464,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     ops_event_id=event.id,
                     history_title="Contract Modification Sent to Approval",
                     history_message=(
-                        f"{event_user.full_name} sent a contract modification to approval including "
+                        f"{event_user.full_name} requested to start a contract modification for this agreement "
+                        f"and it's currently In Review for approval. It includes "
                         f"{edit_count} edit{'' if edit_count == 1 else 's'}"
                         f"{f' ({sc_added})' if sc_added else ''} and "
                         f"{bli_count} budget line{'' if bli_count == 1 else 's'} to execute."
@@ -472,6 +484,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 else ""
             )
             sc_added = _services_components_added_phrase(event)
+            requestor_user = session.get(User, event.event_details.get("requested_by_user_id"))
+            requestor_name = requestor_user.full_name if requestor_user else "Unknown User"
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["agreement_id"],
@@ -479,7 +493,9 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     ops_event_id=event.id,
                     history_title=f"Contract Modification {'Approved' if approved else 'Declined'}",
                     history_message=(
-                        f"{event_user.full_name} {'approved' if approved else 'declined'} the contract modification."
+                        f"{event_user.full_name} {'approved' if approved else 'declined'} the contract modification "
+                        f"for this agreement as requested by {requestor_name}."
+                        + (" The procurement process has started." if approved else "")
                         + (f" It included {sc_added}." if sc_added else "")
                         + executed
                         + (f" Notes: {reviewer_notes}" if reviewer_notes else "")
@@ -901,7 +917,8 @@ def create_agreement_update_history_event(
                         f"Changes made to the OPRE budget spreadsheet changed the {po_label} from {old_po_name} to {new_po_name}."
                         if updated_by_system_user
                         else f"{updated_by_user.full_name} changed the {po_label} from {old_po_name} to {new_po_name}."
-                    ),
+                    )
+                    + _awarded_mod_notice(agreement),
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                 )
@@ -924,7 +941,8 @@ def create_agreement_update_history_event(
                         f"Changes made to the OPRE budget spreadsheet changed the {alt_po_label} from {old_po_name} to {new_po_name}."
                         if updated_by_system_user
                         else f"{updated_by_user.full_name} changed the {alt_po_label} from {old_po_name} to {new_po_name}."
-                    ),
+                    )
+                    + _awarded_mod_notice(agreement),
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                 )
@@ -1192,7 +1210,7 @@ def create_bli_update_history_events(
     session: Session,
     system_user: User,
 ):
-    from models import BudgetLineItem
+    from models import BudgetLineItem, BudgetLineItemStatus
 
     bli_change_dict = event.event_details["bli_updates"]["changes"]
     history_events = []
@@ -1200,20 +1218,13 @@ def create_bli_update_history_events(
     agreement_id = event.event_details["bli"]["agreement_id"]
     bli = session.get(BudgetLineItem, bli_id)
     agreement = session.get(Agreement, agreement_id)
-    # The real contract still needs an actual modification to reflect any change once the
-    # agreement is Awarded (OPS-3072/OPS-3268) -- true regardless of who made the edit or
-    # whether OPS happens to track it. A Draft line was never on the awarded contract, so its
-    # edits get no such note (matching the Figma history spec).
-    requires_contract_modification_note = bool(
-        agreement
-        and agreement.is_awarded
-        and bli
-        and bli.status != BudgetLineItemStatus.DRAFT
-    )
-    CONTRACT_MODIFICATION_HISTORY_NOTE = (
-        " This agreement is awarded and will require a contract modification in order to make"
-        " changes to the contract."
-    )
+    # Only a Planned/Executing budget line's direct edit (always a super-user bypass, since
+    # a Draft line's own direct-edit path never needs Division Director approval) means a paper
+    # mod is still needed on an awarded agreement; a Draft line's edit never does. A line's
+    # status can be null if it was created without one (e.g. a POST that omits status), so
+    # null must be treated the same as Draft, not as "past Draft".
+    bli_status = bli.status if bli else None
+    bli_notice = _awarded_mod_notice(agreement) if bli_status not in (None, BudgetLineItemStatus.DRAFT) else ""
     for key in bli_change_dict:
         old_value = bli_change_dict[key]["old_value"]
         new_value = bli_change_dict[key]["new_value"]
@@ -1235,6 +1246,7 @@ def create_bli_update_history_events(
                 history_message = (
                     f"{event_user.full_name} changed the CAN for BL {bli_id} from {old_can_name} to {new_can_name}."
                 )
+            history_message += bli_notice
         elif key == "date_needed":
             history_title = "Change to Obligate By"
             old_date = "None"
@@ -1247,6 +1259,7 @@ def create_bli_update_history_events(
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the Obligate By date for BL {bli_id} from {old_date} to {new_date}."
             else:
                 history_message = f"{event_user.full_name} changed the Obligate By date for BL {bli_id} from {old_date} to {new_date}."
+            history_message += bli_notice
         elif key == "amount":
             old_value_float = float(old_value)
             new_value_float = float(new_value)
@@ -1257,6 +1270,7 @@ def create_bli_update_history_events(
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the amount for BL {bli_id} from ${old_value_str} to ${new_value_str}."
             else:
                 history_message = f"{event_user.full_name} changed the amount for BL {bli_id} from ${old_value_str} to ${new_value_str}."
+            history_message += bli_notice
 
         elif key == "line_description":
             history_title = "Change to Line Description"
@@ -1283,9 +1297,8 @@ def create_bli_update_history_events(
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the status for BL {bli_id} from {old_status} to {new_status}."
             else:
                 history_message = f"{event_user.full_name} changed the budget line status on BL {bli_id} from {old_status} to {new_status}."
+            history_message += bli_notice
         if history_title and history_message:
-            if requires_contract_modification_note and key in ("can_id", "date_needed", "amount", "status"):
-                history_message += CONTRACT_MODIFICATION_HISTORY_NOTE
             history_events.append(
                 AgreementHistory(
                     agreement_id=agreement_id if agreement else None,
@@ -1302,8 +1315,11 @@ def create_bli_update_history_events(
     return history_events
 
 
-def create_services_component_history_event(event: OpsEvent, event_user: User, system_user_created_event: bool):
+def create_services_component_history_event(
+    event: OpsEvent, event_user: User, system_user_created_event: bool, session: Session
+):
     sc_change_dict = event.event_details["services_component_updates"]["changes"]
+    agreement = session.get(Agreement, event.event_details["services_component_updates"]["owner_id"])
     history_events = []
     for key in sc_change_dict:
         old_value = sc_change_dict[key]["old_value"]
@@ -1328,6 +1344,7 @@ def create_services_component_history_event(event: OpsEvent, event_user: User, s
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
             else:
                 history_message = f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
+            history_message += _awarded_mod_notice(agreement)
         elif key == "description":
             if system_user_created_event:
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."

@@ -237,6 +237,34 @@ describe("AgreementDetails", () => {
         email: "chris.fortunato@example.com"
     };
 
+    const renderWithStore = (testStore, agreementOverrides = {}, props = {}) => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+        mockIntersectionObserver();
+
+        return render(
+            <Provider store={testStore}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={{ ...agreement, ...agreementOverrides }}
+                        projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                        {...props}
+                    />
+                </Router>
+            </Provider>
+        );
+    };
+
     test("renders AA type agreement correctly", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
@@ -864,6 +892,21 @@ describe("AgreementDetails", () => {
         });
     });
 
+    describe("post-pre-award lock via ?mode=edit", () => {
+        // isEditMode comes from the ?mode=edit URL param with no permission check (Agreement.jsx); a locked
+        // agreement must render normal view mode with the disabled Edit control, not a half-edit state.
+        test("shows no edit chrome in edit mode when the agreement is post-pre-award locked", () => {
+            renderWithStore(store, { _meta: { isEditable: true } }, { isEditMode: true, isPostPreAwardLocked: true });
+
+            expect(screen.queryByText("Editing...")).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit Agreement Details")).not.toBeInTheDocument();
+            expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+            expect(screen.queryByTestId("agreement-details-edit")).not.toBeInTheDocument();
+            expect(screen.getByText("Test Description")).toBeInTheDocument();
+            expect(screen.getByText(EDIT_DISABLED_TOOLTIPS.postPreAwardLocked)).toBeInTheDocument();
+        });
+    });
+
     describe("Read-Only User Permissions", () => {
         const readOnlyStore = configureStore({
             reducer: {
@@ -896,34 +939,6 @@ describe("AgreementDetails", () => {
                 })
             }
         });
-
-        const renderWithStore = (testStore, agreementOverrides = {}, props = {}) => {
-            TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
-                return agreementHistoryData;
-            });
-            mockIntersectionObserver();
-
-            return render(
-                <Provider store={testStore}>
-                    <Router
-                        location={history.location}
-                        navigator={history}
-                    >
-                        <AgreementDetails
-                            agreement={{ ...agreement, ...agreementOverrides }}
-                            projectOfficer={projectOfficer}
-                            alternateProjectOfficer={projectOfficer}
-                            isEditMode={false}
-                            setIsEditMode={mockFn}
-                            setHasAgreementChanged={mockFn}
-                            isAgreementNotDeveloped={false}
-                            isAgreementAwarded={false}
-                            {...props}
-                        />
-                    </Router>
-                </Provider>
-            );
-        };
 
         const renderReadOnly = (agreementOverrides = {}, props = {}) =>
             renderWithStore(readOnlyStore, agreementOverrides, props);

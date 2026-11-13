@@ -11,7 +11,27 @@ const NavMenu = () => {
     const isReadOnlyUser = activeUser?.roles?.some((role) => role?.name === USER_ROLES.READ_ONLY);
 
     const [isMenuOpen, setIsMenuOpen] = React.useState(null);
+    const reportingButtonRef = React.useRef(null);
+    const createButtonRef = React.useRef(null);
     const location = useLocation();
+
+    /**
+     * Esc closes an open accordion submenu and returns focus to its toggle button,
+     * regardless of whether focus is currently on the toggle itself or on an item
+     * inside the open submenu. USWDS's own JS (which would normally supply this) is
+     * not loaded in this app, so it's implemented here.
+     * @param {"reporting" | "create"} menuName - Which submenu this handler guards.
+     * @param {React.RefObject<HTMLButtonElement>} buttonRef - The submenu's toggle button.
+     * @returns {(event: React.KeyboardEvent) => void}
+     */
+    const closeMenuOnEscape = (menuName, buttonRef) => (event) => {
+        if (event.key !== "Escape" || isMenuOpen !== menuName) {
+            return;
+        }
+        event.stopPropagation();
+        setIsMenuOpen(null);
+        buttonRef.current?.focus();
+    };
     /**
      * Returns the CSS class for a NavLink based on its active state
      * @param {Object} params - The parameters object
@@ -85,11 +105,13 @@ const NavMenu = () => {
                 </li>
                 <li className="usa-nav__primary-item">
                     <button
+                        ref={reportingButtonRef}
                         type="button"
                         className="usa-accordion__button usa-nav__link"
                         aria-expanded={isMenuOpen === "reporting"}
                         aria-controls="reporting-nav-section"
                         onClick={() => setIsMenuOpen(isMenuOpen === "reporting" ? null : "reporting")}
+                        onKeyDown={closeMenuOnEscape("reporting", reportingButtonRef)}
                     >
                         <span>Reporting</span>
                     </button>
@@ -103,6 +125,7 @@ const NavMenu = () => {
                                 to="/reporting"
                                 className={getNavLinkClass}
                                 end
+                                onKeyDown={closeMenuOnEscape("reporting", reportingButtonRef)}
                             >
                                 OPRE Budget Reporting
                             </NavLink>
@@ -113,6 +136,7 @@ const NavMenu = () => {
                                     to="/procurement-dashboard"
                                     className={getNavLinkClass}
                                     end
+                                    onKeyDown={closeMenuOnEscape("reporting", reportingButtonRef)}
                                 >
                                     Procurement Dashboard
                                 </NavLink>
@@ -133,11 +157,13 @@ const NavMenu = () => {
                 {!isReadOnlyUser && (
                     <li className="usa-nav__primary-item">
                         <button
+                            ref={createButtonRef}
                             type="button"
                             className="usa-accordion__button usa-nav__link"
                             aria-expanded={isMenuOpen === "create"}
                             aria-controls="basic-mega-nav-section-two"
                             onClick={() => setIsMenuOpen(isMenuOpen === "create" ? null : "create")}
+                            onKeyDown={closeMenuOnEscape("create", createButtonRef)}
                         >
                             <span>Create</span>
                         </button>
@@ -147,10 +173,20 @@ const NavMenu = () => {
                             style={{ display: isMenuOpen === "create" ? "block" : "none" }}
                         >
                             <li className="usa-nav__submenu-item">
-                                <NavLink to="/projects/create">Project</NavLink>
+                                <NavLink
+                                    to="/projects/create"
+                                    onKeyDown={closeMenuOnEscape("create", createButtonRef)}
+                                >
+                                    Project
+                                </NavLink>
                             </li>
                             <li className="usa-nav__submenu-item">
-                                <NavLink to="/agreements/create">Agreement</NavLink>
+                                <NavLink
+                                    to="/agreements/create"
+                                    onKeyDown={closeMenuOnEscape("create", createButtonRef)}
+                                >
+                                    Agreement
+                                </NavLink>
                             </li>
                         </ul>
                     </li>
