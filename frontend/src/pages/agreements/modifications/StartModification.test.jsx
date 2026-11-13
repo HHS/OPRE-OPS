@@ -102,6 +102,20 @@ describe("StartModification", () => {
         expect(screen.queryByText("BL ID")).not.toBeInTheDocument();
     });
 
+    it("shows the empty-state message, not a table, for a services component with no budget lines", () => {
+        renderPage({
+            servicesComponents: [{ id: 9, number: 3, display_name: "Option Period 3" }],
+            groupedBudgetLinesByServicesComponent: [
+                { servicesComponentNumber: 3, serviceComponentGroupingLabel: "Option Period 3", budgetLines: [] }
+            ]
+        });
+
+        expect(
+            screen.getByText("You have not added any budget lines to this services component yet.")
+        ).toBeInTheDocument();
+        expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    });
+
     it("disables Send to Approval until there is something to modify", () => {
         renderPage();
 
