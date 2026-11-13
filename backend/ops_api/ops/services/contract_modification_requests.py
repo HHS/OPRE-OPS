@@ -284,7 +284,8 @@ class ContractModificationRequestService:
                 "contract_modification_request_id": request.id,
                 "title": f"Contract Modification {'Approved' if approved else 'Declined'}",
                 "message": (
-                    "Your Contract Modification has been successfully approved by your Division Director."
+                    "Your Contract Modification has been successfully approved by your Division Director, "
+                    "and the procurement process has started."
                     if approved
                     else "Your Contract Modification has been declined by your Division Director."
                 ),

@@ -491,6 +491,11 @@ def test_approve_creates_the_mod_attaches_edits_and_executes_budget_lines(
         )
     ).one()
     assert submitter_notification.title == "Contract Modification Approved"
+    # The submitter's success alert on the Award & Modifications tab shows this message (#3269).
+    assert submitter_notification.message == (
+        "Your Contract Modification has been successfully approved by your Division Director, "
+        "and the procurement process has started."
+    )
 
     event = _latest_event(loaded_db, OpsEventType.REVIEW_CONTRACT_MODIFICATION)
     assert event.created_by == DIVISION_DIRECTOR_USER_ID
