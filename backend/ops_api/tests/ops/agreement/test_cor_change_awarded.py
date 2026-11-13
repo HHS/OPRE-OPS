@@ -5,8 +5,8 @@ no approval and applies immediately. It is also tracked as one ADMIN_CHANGE
 ``ContractModificationEdit`` (a card on the Award & Modifications tab), showing the net change from
 the COR on the contract to the current COR: a further change updates it, and changing back removes
 it. Promoting the saved Alternate COR clears the Alternate COR, unless the same save picks a new
-one. While the card is in a contract modification in review, the COR can't change; approving or
-declining the modification doesn't change the COR.
+one; changing back restores it. While the card is in a contract modification in review, the COR
+can't change. Approving the modification doesn't change the COR; declining it undoes the change.
 
 ``basic_user_auth_client`` (user 521) is a team member on the test agreement.
 ``power_user_auth_client`` (user 528) is a superuser and gets no bypass.
@@ -948,6 +948,95 @@ def test_a_further_change_keeps_the_first_cleared_alternate(
     [edit] = _cor_edits(loaded_db, agreement.id)
     assert (edit.old_value, edit.new_value) == (CURRENT_COR_ID, OTHER_COR_ID)
     assert edit.cleared_alternate_project_officer_id == ALTERNATE_COR_ID
+
+
+@pytest.mark.parametrize("via_other_cor", [False, True], ids=["direct", "via_another_cor"])
+def test_changing_back_restores_the_alternate_the_change_cleared(
+    via_other_cor, modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
+):
+    """A→Alternate (clears the Alternate), then back to A: the card goes and the Alternate COR
+    comes back, as declining the change would do."""
+    agreement = make_agreement()
+    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": ALTERNATE_COR_ID})
+    if via_other_cor:
+        _patch(basic_user_auth_client, agreement.id, {"project_officer_id": OTHER_COR_ID})
+
+    response = _patch(basic_user_auth_client, agreement.id, {"project_officer_id": CURRENT_COR_ID})
+
+    assert response.status_code == 200, response.json
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == CURRENT_COR_ID
+    assert agreement.alternate_project_officer_id == ALTERNATE_COR_ID
+    assert _cor_edits(loaded_db, agreement.id) == []
+
+
+def test_changing_back_keeps_an_alternate_picked_in_the_same_save(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
+):
+    agreement = make_agreement()
+    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": ALTERNATE_COR_ID})
+
+    response = _patch(
+        basic_user_auth_client,
+        agreement.id,
+        {"project_officer_id": CURRENT_COR_ID, "alternate_project_officer_id": OTHER_COR_ID},
+    )
+
+    assert response.status_code == 200, response.json
+    assert _reload(loaded_db, agreement.id).alternate_project_officer_id == OTHER_COR_ID
+
+
+def test_declining_a_cor_change_with_a_modified_loe_edit_reverts_only_the_cor(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    make_agreement,
+    test_can,
+    app_ctx,
+):
+    """Both kinds of edit in one declined modification: the COR change is undone and its card
+    removed, while the Modified LOE edit stays pending for the next modification."""
+    agreement = make_agreement()
+    bli = ContractBudgetLineItem(
+        agreement_id=agreement.id,
+        line_description="COR + LOE decline test BLI",
+        amount=100000.00,
+        can_id=test_can.id,
+        date_needed=datetime.date.today(),
+        status=BudgetLineItemStatus.OBLIGATED,
+        proc_shop_fee_percentage=0,
+        created_by=BASIC_USER_ID,
+    )
+    loaded_db.add(bli)
+    loaded_db.flush()
+    loe_edit = ContractModificationEdit(
+        agreement_id=agreement.id,
+        modification_type=ModificationEditType.MODIFIED_LOE,
+        budget_line_item_id=bli.id,
+        field="amount",
+        old_value=100000.0,
+        new_value=120000.0,
+        requested_by_id=BASIC_USER_ID,
+        requested_on=datetime.datetime.now(),
+    )
+    loaded_db.add(loe_edit)
+    loaded_db.commit()
+    loe_edit_id = loe_edit.id
+    assert _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID}).status_code == 200
+    submitted = _submit_mod(basic_user_auth_client, agreement.id)
+    assert submitted.status_code == 201, submitted.json
+    assert len(submitted.json["edits"]) == 2
+
+    response = _review(division_director_auth_client, submitted.json["id"], "DECLINE")
+
+    assert response.status_code == 200, response.json
+    assert _reload(loaded_db, agreement.id).project_officer_id == CURRENT_COR_ID
+    assert _cor_edits(loaded_db, agreement.id) == []
+    loe_edit = loaded_db.get(ContractModificationEdit, loe_edit_id)
+    assert loe_edit is not None
+    assert loe_edit.agreement_mod_id is None
+    assert [edit["id"] for edit in response.json["edits"]] == [loe_edit_id]
 
 
 @pytest.mark.parametrize("new_cor", [OTHER_COR_ID, ALTERNATE_COR_ID], ids=["change", "promote_alternate"])

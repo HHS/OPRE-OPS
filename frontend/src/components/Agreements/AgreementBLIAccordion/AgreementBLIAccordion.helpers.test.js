@@ -29,4 +29,12 @@ describe("getAgreementTotalCardValues", () => {
         expect(fees).toBe(175);
         expect(total).toBe(3675);
     });
+
+    it("has no fees without a procurement shop", () => {
+        const { subtotal, fees, total } = getAgreementTotalCardValues({ ...agreement, procurement_shop: null });
+
+        expect(subtotal).toBe(3000);
+        expect(fees).toBe(0);
+        expect(total).toBe(3000);
+    });
 });

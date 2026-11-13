@@ -240,6 +240,20 @@ class ContractModificationEditService:
                 {"project_officer_id": ["Another COR change was saved at the same time. Refresh and try again."]}
             ) from None
 
+    def alternate_to_restore_on_change_back(
+        self, agreement_id: int, new_project_officer_id: Optional[int]
+    ) -> Optional[int]:
+        """The Alternate COR to put back when a save changes the COR back to the COR on the contract.
+
+        Changing back removes the agreement's pending COR card (``record_project_officer_change``).
+        If the change cleared the Alternate COR by promoting it, it's restored, as a decline does
+        (``revert_project_officer_change``). Returns None when there's nothing to restore.
+        """
+        pending = self._pending_project_officer_edit(agreement_id)
+        if pending is None or pending.old_value != new_project_officer_id:
+            return None
+        return pending.cleared_alternate_project_officer_id
+
     def revert_project_officer_change(self, agreement: Agreement, edit: ContractModificationEdit) -> dict:
         """Undo a COR change whose contract modification was declined (#3269), and remove its card.
 

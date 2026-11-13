@@ -174,10 +174,18 @@ describe("useStartModification", () => {
         expect(result.current.awardTotal).toBe(3150);
     });
 
-    it("has no award record when the award history is empty", () => {
+    it("gives an empty award record when the award history is empty, so the award fields show TBD", () => {
         const { result } = renderHook(() => useStartModification(42));
 
-        expect(result.current.awardRecord).toBeNull();
+        expect(result.current.awardRecord).toEqual({});
+    });
+
+    it("isn't ready until the award history has loaded", () => {
+        queries.awardHistory = { data: undefined, isLoading: true };
+
+        const { result } = renderHook(() => useStartModification(42));
+
+        expect(result.current.isPageReady).toBe(false);
     });
 
     it("can't start while a modification is in review", () => {

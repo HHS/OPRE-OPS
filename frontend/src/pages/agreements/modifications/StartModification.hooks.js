@@ -25,6 +25,8 @@ export const PLANNED_TO_EXECUTING = { status: { old: BLI_STATUS.PLANNED, new: BL
  * Division Director as a Contract Modification.
  * @param {number} agreementId
  */
+const EMPTY_AWARD_RECORD = {};
+
 const useStartModification = (agreementId) => {
     const navigate = useNavigate();
     const { setAlert } = useAlert();
@@ -54,9 +56,13 @@ const useStartModification = (agreementId) => {
         });
     const [submitContractModification, { isLoading: isSubmitting }] = useSubmitContractModificationMutation();
 
-    // The original award (the first record; modifications follow) for the agreement details.
-    const { data: awardHistory = [] } = useGetAgreementAwardHistoryByIdQuery(agreementId, { skip: !agreementId });
-    const awardRecord = awardHistory[0] ?? null;
+    // The original award (the first record; modifications follow) for the agreement details. With
+    // no award record yet the award fields still show, as TBD, so they don't silently go missing.
+    const { data: awardHistory = [], isLoading: isLoadingAwardHistory } = useGetAgreementAwardHistoryByIdQuery(
+        agreementId,
+        { skip: !agreementId }
+    );
+    const awardRecord = awardHistory[0] ?? EMPTY_AWARD_RECORD;
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
@@ -75,7 +81,8 @@ const useStartModification = (agreementId) => {
     // Only an Awarded agreement with the capability on and no modification in review can start one.
     const canStartModification =
         Boolean(agreement?.is_awarded) && Boolean(versionData?.enable_modified_loe_edits) && !isInReview;
-    const isPageReady = !isLoadingAgreement && !isLoadingVersion && !isLoadingRequests;
+    // Wait for the award history too, so the award fields don't shift the details in after it loads.
+    const isPageReady = !isLoadingAgreement && !isLoadingVersion && !isLoadingRequests && !isLoadingAwardHistory;
 
     const selectedBudgetLines = React.useMemo(() => budgetLines.filter((bli) => bli.selected), [budgetLines]);
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines, servicesComponents);

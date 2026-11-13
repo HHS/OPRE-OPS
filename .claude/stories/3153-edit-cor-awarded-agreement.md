@@ -16,7 +16,7 @@ branch: OPS-3153/edit-cor-awarded
 > - **D1:** the COR changes on save, with no approval.
 > - **D2:** promoting the saved Alternate COR now shows the modal and is tracked too. The Alternate COR still clears automatically.
 > - **D6 / D12:** one card per agreement shows the net change, from the COR on the contract to the current COR. A further change updates its To, and changing back to the COR on the contract removes it. The COR is locked while its card is in a contract modification that is in review (#3269).
-> - **D10:** approving or declining the modification doesn't change the COR.
+> - **D10:** approving the modification doesn't change the COR. Declining it undoes the change: the COR goes back to the COR on the contract, a cleared Alternate COR is restored, and the card is removed (#3269).
 > - **D11:** Details always shows the current COR, which is now the new one.
 >
 > Other changes:

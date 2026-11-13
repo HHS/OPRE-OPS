@@ -3,7 +3,8 @@
 The user bundles the agreement's pending "Edits That Require a Contract Modification" with any
 Planned budget lines they want to execute, and sends them to the Division Director. Approval
 creates the ``AgreementMod``, attaches the edits to it and executes the budget lines; a decline
-leaves the edits pending. Only one request per agreement can be in review at a time.
+leaves Modified LOE edits pending, and undoes a COR change and removes its card (#3269). Only one
+request per agreement can be in review at a time.
 """
 
 from datetime import datetime, timezone
@@ -252,9 +253,11 @@ class ContractModificationRequestService:
                 {
                     "contract_modification_request_id": request.id,
                     "title": "Contract Modification Approval Request",
+                    # Not "Please review and approve": the Division Director can't approve or
+                    # decline in OPS until #3331, so the linked tab only shows it as In Review.
                     "message": (
-                        "A Contract Modification has been submitted. "
-                        f"Please review and approve. \n\\\n\\\n[Link]({link})"
+                        "A Contract Modification has been submitted for your review. Reviewing it in "
+                        f"OPS is coming soon. \n\\\n\\\n[Link]({link})"
                     ),
                     "is_read": False,
                     "recipient_id": recipient_id,

@@ -140,6 +140,11 @@ def test_submit_puts_edits_in_review_and_notifies_the_director(
         )
     ).one()
     assert notification.recipient_id == DIVISION_DIRECTOR_USER_ID
+    # Approving or declining in OPS is #3331, so the notification doesn't ask for it yet.
+    assert notification.message.startswith(
+        "A Contract Modification has been submitted for your review. Reviewing it in OPS is coming soon."
+    )
+    assert "approve" not in notification.message.lower()
 
     # AC13: who / when / what / remote IP.
     event = _latest_event(loaded_db, OpsEventType.START_CONTRACT_MODIFICATION)

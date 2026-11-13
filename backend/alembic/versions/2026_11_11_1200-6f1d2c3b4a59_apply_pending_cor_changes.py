@@ -9,7 +9,9 @@ same person (as saving the change would). Data only; no schema change.
 Only environments with ENABLE_MODIFIED_LOE_EDITS on (dev, staging) have such edits. The update
 bypasses the ORM, so it writes no agreement history or version rows, and the old "Change to COR
 Pending Contract Modification" history entries (which say the COR changes once the modification is
-approved) are left as they were. An edit whose target user no longer exists is skipped.
+approved) are left as they were. An edit whose target user no longer exists is skipped. The
+Alternate COR this clears isn't recorded on the edit (``cleared_alternate_project_officer_id``
+comes later, in b6419b17838e), so declining or changing back such a change doesn't restore it.
 
 Revision ID: 6f1d2c3b4a59
 Revises: bacd8725cb2d

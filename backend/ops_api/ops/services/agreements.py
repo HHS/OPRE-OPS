@@ -656,7 +656,8 @@ class AgreementsService(OpsService[Agreement]):
 
         The change applies now. The COR can't change while its tracked change is in a contract
         modification in review. Promoting the saved Alternate COR clears the Alternate COR unless
-        the update sets a new one, so one person isn't both. Returns ``(old COR, new COR, cleared
+        the update sets a new one, so one person isn't both; changing back to the COR on the
+        contract restores it. Returns ``(old COR, new COR, cleared
         Alternate COR or None)`` for a change that must be tracked as a contract modification
         edit, else None.
         """
@@ -683,6 +684,14 @@ class AgreementsService(OpsService[Agreement]):
             if updated_fields.get("alternate_project_officer_id", saved_alternate) == saved_alternate:
                 updated_fields["alternate_project_officer_id"] = None
                 cleared_alternate = saved_alternate
+        elif saved_alternate is None and updated_fields.get("alternate_project_officer_id") is None:
+            # Changing back to the COR on the contract puts back the Alternate COR the change
+            # cleared, unless this save picks one, the same as declining the change does.
+            restored_alternate = ContractModificationEditService(self.db_session).alternate_to_restore_on_change_back(
+                agreement.id, new_project_officer_id
+            )
+            if restored_alternate is not None and restored_alternate != new_project_officer_id:
+                updated_fields["alternate_project_officer_id"] = restored_alternate
         return agreement.project_officer_id, new_project_officer_id, cleared_alternate
 
     def _record_project_officer_change(

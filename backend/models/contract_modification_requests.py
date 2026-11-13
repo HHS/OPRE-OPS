@@ -47,6 +47,7 @@ contract_modification_request_budget_line_items = Table(
     ),
 )
 
+
 class ContractModificationRequest(BaseModel):
     """A Contract Modification sent to the Division Director for approval.
 
@@ -54,7 +55,8 @@ class ContractModificationRequest(BaseModel):
     lines the user chose to execute. While IN_REVIEW the edits stay pending
     (``agreement_mod_id IS NULL``) and show as In Review on the Award & Modifications tab.
     Approval creates the ``AgreementMod``, attaches the edits to it, and moves the selected
-    budget lines to Executing; a decline leaves the edits pending so the user can start again.
+    budget lines to Executing. A decline leaves Modified LOE edits pending so the user can start
+    again, and undoes a COR change and removes its card (#3269).
 
     Kept separate from ``ChangeRequest`` on purpose: an ``AgreementChangeRequest`` subtype would
     lock the whole agreement via ``Agreement.change_requests_in_review``.

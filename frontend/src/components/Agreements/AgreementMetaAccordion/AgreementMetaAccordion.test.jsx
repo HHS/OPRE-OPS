@@ -349,9 +349,10 @@ describe("AgreementMetaAccordion", () => {
             const withoutAward = screen.queryAllByText(NO_DATA).length;
             unmount();
 
-            renderAwarded({ awardRecord: { award_date: null, award_amount: null, vendor_type: null } });
+            renderAwarded({ awardRecord: {}, awardTotal: null });
 
-            // Award Date, Award Total, Vendor ID and Vendor Type; Contract # and Vendor fall back to the agreement.
+            // Award Date, Award Total (no total given), Vendor ID and Vendor Type; Contract # and
+            // Vendor fall back to the agreement.
             expect(screen.queryAllByText(NO_DATA)).toHaveLength(withoutAward + 4);
             expect(screen.getByText("CT-1234567890")).toBeInTheDocument();
             expect(screen.getByText("Flexion Inc.")).toBeInTheDocument();
