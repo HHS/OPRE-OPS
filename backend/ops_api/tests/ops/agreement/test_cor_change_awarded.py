@@ -970,6 +970,24 @@ def test_changing_back_restores_the_alternate_the_change_cleared(
     assert _cor_edits(loaded_db, agreement.id) == []
 
 
+def test_changing_back_keeps_an_alternate_picked_after_the_promotion(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
+):
+    """A→Alternate (clears it), then a separate save picks a new Alternate COR, then back to A:
+    the new Alternate COR stays, as on a decline."""
+    agreement = make_agreement()
+    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": ALTERNATE_COR_ID})
+    _patch(basic_user_auth_client, agreement.id, {"alternate_project_officer_id": OTHER_COR_ID})
+
+    response = _patch(basic_user_auth_client, agreement.id, {"project_officer_id": CURRENT_COR_ID})
+
+    assert response.status_code == 200, response.json
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == CURRENT_COR_ID
+    assert agreement.alternate_project_officer_id == OTHER_COR_ID
+    assert _cor_edits(loaded_db, agreement.id) == []
+
+
 def test_changing_back_keeps_an_alternate_picked_in_the_same_save(
     modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
 ):

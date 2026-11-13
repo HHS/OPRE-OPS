@@ -4,7 +4,8 @@ The user sends the agreement's pending "Edits That Require a Contract Modificati
 Planned current-FY budget lines to execute, to the Division Director
 (POST /agreements/<id>/contract-modifications/). The Director approves or declines it
 (PATCH /contract-modification-requests/<id>/). Approval creates the ``AgreementMod``, attaches
-the edits and executes the budget lines; a decline leaves the edits pending.
+the edits and executes the budget lines; a decline leaves Modified LOE edits pending (a COR
+change is undone instead, #3269; see test_cor_change_awarded.py).
 """
 
 import datetime

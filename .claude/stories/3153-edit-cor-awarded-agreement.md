@@ -114,7 +114,7 @@ Figma: node `15119-133789` ("Edit COR on an Awarded Agreement"). Its approval an
    - In `_latest_per_budget_line_field`, key agreement-level rows as `("agreement", field)`. Without this, COR rows would be keyed `("bli", None)`.
    - In `schemas/contract_modification_edits.py`, add old and new display names for `project_officer_id` rows, resolved from `User`. Update the docstring for `field`.
 
-7. **#3269 boundary (D10).** In `services/contract_modification_requests.py`, filter `submit()` (`:68-123`) to `modification_type == MODIFIED_LOE`, so ADMIN_CHANGE rows stay pending and are never attached. `_approve`'s hardcoded `ModType.MODIFIED_LOE` stays correct.
+7. **#3269 boundary (D10).** *(Superseded by #3269: `submit()` now includes every pending edit, and approval picks the mod type.)* In `services/contract_modification_requests.py`, filter `submit()` (`:68-123`) to `modification_type == MODIFIED_LOE`, so ADMIN_CHANGE rows stay pending and are never attached. `_approve`'s hardcoded `ModType.MODIFIED_LOE` stays correct.
 
 8. **OpenAPI:** use `/sync-openapi` to document the edit-row `modification_type` value and the display-name fields.
 
