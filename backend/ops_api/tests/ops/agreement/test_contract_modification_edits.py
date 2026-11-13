@@ -40,6 +40,7 @@ from models import (
     User,
 )
 from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
+from ops_api.ops.services.ops_service import ValidationError
 
 SYSTEM_OWNER_USER_ID = 503
 BASIC_USER_ID = 521
@@ -392,6 +393,52 @@ def test_delete_supersedes_earlier_edits_on_the_bl(
     assert edit.budget_line_item_id == bli_id
     assert edit.old_value == 600000.0
     assert edit.new_value == "Deleted"
+
+
+def test_losing_a_concurrent_direct_edit_save_raises_a_validation_error(
+    modified_loe_enabled, loaded_db, test_can, make_agreement, app_ctx
+):
+    """Two saves that both see no pending row for the same field: the second hits the new
+    ix_contract_modification_edit_one_pending_bli_field index and gets a ValidationError (a 400
+    at the API), not a raw IntegrityError (a 500)."""
+    agreement, bli = make_agreement(test_can)
+    service = ContractModificationEditService(loaded_db)
+    service.record_direct_edit(bli, "amount", 600000.0, 500000.0, BASIC_USER_ID)
+    loaded_db.commit()
+
+    # The second save read before the first committed, so it doesn't see the pending row.
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(service, "_pending_for_budget_line", lambda *args, **kwargs: [])
+
+        with pytest.raises(ValidationError) as error:
+            service.record_direct_edit(bli, "amount", 600000.0, 100000.0, BASIC_USER_ID)
+
+    assert "amount" in error.value.validation_errors
+    loaded_db.rollback()
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert (edit.old_value, edit.new_value) == (600000.0, 500000.0)
+
+
+def test_losing_a_concurrent_direct_delete_save_raises_a_validation_error(
+    modified_loe_enabled, loaded_db, test_can, make_agreement, app_ctx
+):
+    """The delete path's own concurrency handling, mirroring the edit path's."""
+    agreement, bli = make_agreement(test_can)
+    service = ContractModificationEditService(loaded_db)
+    service.record_direct_delete(bli, 600000.0, BASIC_USER_ID)
+    loaded_db.commit()
+
+    # The second, concurrent delete also read before the first committed.
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(service, "_pending_for_budget_line", lambda *args, **kwargs: [])
+
+        with pytest.raises(ValidationError) as error:
+            service.record_direct_delete(bli, 600000.0, BASIC_USER_ID)
+
+    assert "budget_line_item" in error.value.validation_errors
+    loaded_db.rollback()
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert edit.field == "delete"
 
 
 def test_delete_edit_survives_the_bli_deletion(

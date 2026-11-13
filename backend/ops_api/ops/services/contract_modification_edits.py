@@ -133,17 +133,36 @@ class ContractModificationEditService:
 
         A budget line that only went Draft -> Planned after the award was never on the contract, so
         its pending edits are dropped and no delete is recorded. Otherwise the line's other pending
-        edits are replaced by the delete, whose From is the awarded amount. Does not commit.
+        edits are replaced by the delete, whose From is the awarded amount. Flushes (but does not
+        commit) so a concurrent duplicate delete (double-click/retry) fails fast on
+        ``ix_contract_modification_edit_one_pending_bli_field`` instead of surfacing as an
+        unhandled 500, the same as ``record_direct_edit``.
         """
         pending = self._pending_for_budget_line(budget_line_item.id)
         for edit in pending:
             self.db_session.delete(edit)
         if any(edit.field == "status" and edit.old_value == "DRAFT" for edit in pending):
             return
+        if pending:
+            # Flush the deletes first: the unit of work otherwise flushes the new row's INSERT
+            # before these DELETEs, tripping the unique index on a merge that is actually fine.
+            self.db_session.flush()
         awarded_amount = next((edit.old_value for edit in pending if edit.field == "amount"), old_amount)
         self._add_direct_edit(
             budget_line_item.agreement_id, budget_line_item.id, None, "delete", awarded_amount, "Deleted", user_id
         )
+        try:
+            self.db_session.flush()
+        except IntegrityError:
+            # ix_contract_modification_edit_one_pending_bli_field: a concurrent delete won.
+            # The caller rolls back the session.
+            raise ValidationError(
+                {
+                    "budget_line_item": [
+                        "Another change to this budget line was saved at the same time. Refresh and try again."
+                    ]
+                }
+            ) from None
 
     def record_services_component_add(self, services_component: ServicesComponent, user_id: int) -> None:
         """Record a Services Component added directly on an Awarded agreement. Does not commit."""

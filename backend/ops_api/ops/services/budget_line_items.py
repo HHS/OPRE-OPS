@@ -1011,17 +1011,24 @@ class BudgetLineItemService:
         schema = PATCHRequestBodySchema(only=list(modification_fields)) if modification_fields else None
         old_values = schema.dump({key: getattr(budget_line_item, key) for key in modification_fields}) if schema else {}
 
-        self._apply_direct_edits(budget_line_item, updated_fields, commit=commit, fields_to_apply=fields_to_apply)
+        # Flush only here: the field mutation and its Contract-Modification tracking row must
+        # commit together in one transaction, or a concurrent duplicate save (double-click/retry)
+        # could durably apply the former while the latter's unique-index check fails and is lost.
+        self._apply_direct_edits(budget_line_item, updated_fields, commit=False, fields_to_apply=fields_to_apply)
 
-        if not modification_fields:
-            return
-        new_values = schema.dump({key: getattr(budget_line_item, key) for key in modification_fields})
-        edit_service = ContractModificationEditService(self.db_session)
-        user_id = get_current_user().id
-        for field in modification_fields:
-            edit_service.record_direct_edit(
-                budget_line_item, field, old_values.get(field), new_values.get(field), user_id
-            )
+        if modification_fields:
+            new_values = schema.dump({key: getattr(budget_line_item, key) for key in modification_fields})
+            edit_service = ContractModificationEditService(self.db_session)
+            user_id = get_current_user().id
+            for field in modification_fields:
+                edit_service.record_direct_edit(
+                    budget_line_item, field, old_values.get(field), new_values.get(field), user_id
+                )
+
+        if commit:
+            self.db_session.commit()
+        else:
+            self.db_session.flush()
 
     def _validate_not_in_review_modification(self, budget_line_item: BudgetLineItem) -> None:
         if tracks_contract_modifications(budget_line_item) and ContractModificationEditService(
