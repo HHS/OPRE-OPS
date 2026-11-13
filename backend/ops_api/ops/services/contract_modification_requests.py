@@ -16,6 +16,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from models import (
+    PROJECT_OFFICER_EDIT_FIELD,
     AgreementMod,
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -42,6 +43,10 @@ class ContractModificationRequestService:
         self.db_session = db_session or current_app.db_session
         self._edit_service = ContractModificationEditService(self.db_session)
         self._notification_service = NotificationService(self.db_session)
+        # Set by a decline that reverted a COR change (#3269), for the review event's history:
+        # the declined change ({"old", "new"}) and what the revert did.
+        self.declined_project_officer_change: Optional[dict] = None
+        self.project_officer_revert: Optional[dict] = None
 
     def get_for_agreement(self, agreement_id: int) -> list[ContractModificationRequest]:
         """Return the agreement's contract modification requests, newest first."""
@@ -157,7 +162,7 @@ class ContractModificationRequestService:
             if action == APPROVE:
                 self._approve(request)
             else:
-                request.status = ContractModificationRequestStatus.DECLINED
+                self._decline(request)
 
             request.reviewed_by_id = user.id
             request.reviewed_on = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -169,6 +174,16 @@ class ContractModificationRequestService:
             self.db_session.rollback()
             raise
         return request
+
+    def _decline(self, request: ContractModificationRequest) -> None:
+        """Modified LOE edits go back to pending. A COR change is undone and its card removed
+        (#3269): it applied when it was saved, and the contract isn't being modified for it."""
+        for edit in list(request.edits):
+            if edit.modification_type == ModificationEditType.ADMIN_CHANGE and edit.field == PROJECT_OFFICER_EDIT_FIELD:
+                self.declined_project_officer_change = {"old": edit.old_value, "new": edit.new_value}
+                request.edits.remove(edit)
+                self.project_officer_revert = self._edit_service.revert_project_officer_change(request.agreement, edit)
+        request.status = ContractModificationRequestStatus.DECLINED
 
     def _approve(self, request: ContractModificationRequest) -> None:
         # Re-run the submit-time checks before writing anything: a budget line may have been

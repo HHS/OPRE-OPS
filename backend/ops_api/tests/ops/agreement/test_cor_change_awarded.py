@@ -582,7 +582,7 @@ def test_overlapping_change_records_the_card_from_the_current_cor(
         agreement, {"project_officer_id": OTHER_COR_ID}
     )
 
-    assert tracked == (NEW_COR_ID, OTHER_COR_ID)
+    assert tracked == (NEW_COR_ID, OTHER_COR_ID, None)
     loaded_db.rollback()
 
 
@@ -601,7 +601,7 @@ def test_stale_cor_equal_to_the_incoming_one_is_still_tracked(
         agreement, {"project_officer_id": CURRENT_COR_ID}
     )
 
-    assert tracked == (NEW_COR_ID, CURRENT_COR_ID)
+    assert tracked == (NEW_COR_ID, CURRENT_COR_ID, None)
     loaded_db.rollback()
 
 
@@ -720,7 +720,7 @@ def cor_change_in_review(modified_loe_enabled, basic_user_auth_client, loaded_db
     ``test_can`` reviews it), its COR changed to ``NEW_COR_ID``, and a contract modification with
     only that change sent to approval. Returns ``(agreement, request_id)``."""
 
-    def _make(**agreement_kwargs):
+    def _make(new_cor=NEW_COR_ID, **agreement_kwargs):
         agreement = make_agreement(**agreement_kwargs)
         loaded_db.add(
             ContractBudgetLineItem(
@@ -735,7 +735,7 @@ def cor_change_in_review(modified_loe_enabled, basic_user_auth_client, loaded_db
             )
         )
         loaded_db.commit()
-        assert _patch(basic_user_auth_client, agreement.id, {"project_officer_id": NEW_COR_ID}).status_code == 200
+        assert _patch(basic_user_auth_client, agreement.id, {"project_officer_id": new_cor}).status_code == 200
         response = _submit_mod(basic_user_auth_client, agreement.id)
         assert response.status_code == 201, response.json
         return agreement, response.json["id"]
@@ -836,7 +836,7 @@ def test_approval_does_not_change_the_cor_or_the_alternate(
     assert agreement.alternate_project_officer_id == OTHER_COR_ID
 
 
-def test_declining_a_cor_change_leaves_the_cor_and_returns_the_card_to_pending(
+def test_declining_a_cor_change_reverts_the_cor_and_removes_the_card(
     cor_change_in_review, basic_user_auth_client, division_director_auth_client, loaded_db, app_ctx
 ):
     agreement, request_id = cor_change_in_review()
@@ -844,14 +844,110 @@ def test_declining_a_cor_change_leaves_the_cor_and_returns_the_card_to_pending(
     response = _review(division_director_auth_client, request_id, "DECLINE", reviewer_notes="Not yet")
 
     assert response.status_code == 200, response.json
-    assert _reload(loaded_db, agreement.id).project_officer_id == NEW_COR_ID
-    [edit] = _cor_edits(loaded_db, agreement.id)
-    assert edit.agreement_mod_id is None
-    # The COR can be changed again; the card keeps the COR on the contract as its From.
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == CURRENT_COR_ID  # back to the COR on the contract
+    assert agreement.alternate_project_officer_id == ALTERNATE_COR_ID  # untouched: it wasn't cleared
+    assert _cor_edits(loaded_db, agreement.id) == []
+
+    event = loaded_db.scalars(
+        select(OpsEvent)
+        .where(OpsEvent.event_type == OpsEventType.REVIEW_CONTRACT_MODIFICATION)
+        .order_by(OpsEvent.id.desc())
+        .limit(1)
+    ).one()
+    assert event.event_details["project_officer_revert"] == {
+        "from": NEW_COR_ID,
+        "to": CURRENT_COR_ID,
+        "alternate_from": ALTERNATE_COR_ID,
+        "alternate_to": ALTERNATE_COR_ID,
+    }
+    entries = loaded_db.scalars(
+        select(AgreementHistory)
+        .where(AgreementHistory.agreement_id_record == agreement.id, AgreementHistory.ops_event_id == event.id)
+        .order_by(AgreementHistory.id)
+    ).all()
+    assert [entry.history_type for entry in entries] == [
+        AgreementHistoryType.CONTRACT_MODIFICATION_DECLINED,
+        AgreementHistoryType.AGREEMENT_UPDATED,
+    ]
+    assert "It included changing the COR." in entries[0].history_message
+    old_name = loaded_db.get(User, NEW_COR_ID).full_name
+    new_name = loaded_db.get(User, CURRENT_COR_ID).full_name
+    assert entries[1].history_title == "Change to COR"
+    assert entries[1].history_message.startswith(f"The COR changed back from {old_name} to {new_name} because ")
+
+    # Nothing is locked or pending; the COR can be changed again, starting a new card.
     assert _patch(basic_user_auth_client, agreement.id, {"project_officer_id": OTHER_COR_ID}).status_code == 200
     [edit] = _cor_edits(loaded_db, agreement.id)
-    assert edit.old_value == CURRENT_COR_ID
-    assert edit.new_value == OTHER_COR_ID
+    assert (edit.old_value, edit.new_value) == (CURRENT_COR_ID, OTHER_COR_ID)
+
+
+def test_declining_a_promoted_alternate_restores_the_alternate(
+    cor_change_in_review, division_director_auth_client, loaded_db, app_ctx
+):
+    """Promoting the Alternate COR cleared it; declining puts both back."""
+    agreement, request_id = cor_change_in_review(new_cor=ALTERNATE_COR_ID)
+    assert _reload(loaded_db, agreement.id).alternate_project_officer_id is None
+    [edit] = _cor_edits(loaded_db, agreement.id)
+    assert edit.cleared_alternate_project_officer_id == ALTERNATE_COR_ID
+
+    response = _review(division_director_auth_client, request_id, "DECLINE")
+
+    assert response.status_code == 200, response.json
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == CURRENT_COR_ID
+    assert agreement.alternate_project_officer_id == ALTERNATE_COR_ID
+    assert _cor_edits(loaded_db, agreement.id) == []
+    titles = _history_titles(loaded_db, agreement.id)
+    assert titles[-2:] == ["Change to COR", "Change to Alternate COR"]
+
+
+def test_declining_keeps_an_alternate_picked_after_the_promotion(
+    cor_change_in_review, basic_user_auth_client, division_director_auth_client, loaded_db, app_ctx
+):
+    agreement, request_id = cor_change_in_review(new_cor=ALTERNATE_COR_ID)
+    # Alternate COR edits stay free while the COR change is in review.
+    assert (
+        _patch(basic_user_auth_client, agreement.id, {"alternate_project_officer_id": OTHER_COR_ID}).status_code == 200
+    )
+
+    assert _review(division_director_auth_client, request_id, "DECLINE").status_code == 200
+
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == CURRENT_COR_ID
+    assert agreement.alternate_project_officer_id == OTHER_COR_ID
+
+
+def test_declining_clears_an_alternate_who_is_the_restored_cor(
+    cor_change_in_review, basic_user_auth_client, division_director_auth_client, loaded_db, app_ctx
+):
+    """If the Alternate COR was set to the COR on the contract while in review, restoring that COR
+    clears the Alternate COR, so one person isn't both."""
+    agreement, request_id = cor_change_in_review()
+    assert (
+        _patch(basic_user_auth_client, agreement.id, {"alternate_project_officer_id": CURRENT_COR_ID}).status_code
+        == 200
+    )
+
+    assert _review(division_director_auth_client, request_id, "DECLINE").status_code == 200
+
+    agreement = _reload(loaded_db, agreement.id)
+    assert agreement.project_officer_id == CURRENT_COR_ID
+    assert agreement.alternate_project_officer_id is None
+
+
+def test_a_further_change_keeps_the_first_cleared_alternate(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
+):
+    """A→Alternate (clears the Alternate) then →Other: the card still remembers the Alternate it
+    cleared, so a decline can restore the agreement as it was on the contract."""
+    agreement = make_agreement()
+    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": ALTERNATE_COR_ID})
+    _patch(basic_user_auth_client, agreement.id, {"project_officer_id": OTHER_COR_ID})
+
+    [edit] = _cor_edits(loaded_db, agreement.id)
+    assert (edit.old_value, edit.new_value) == (CURRENT_COR_ID, OTHER_COR_ID)
+    assert edit.cleared_alternate_project_officer_id == ALTERNATE_COR_ID
 
 
 @pytest.mark.parametrize("new_cor", [OTHER_COR_ID, ALTERNATE_COR_ID], ids=["change", "promote_alternate"])

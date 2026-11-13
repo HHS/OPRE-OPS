@@ -454,6 +454,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     ),
                 )
             )
+            history_events.extend(create_cor_revert_history_events(event, event_user, session))
     # Filter out any history_events that have agreement_id as None or agreement_id_record as None
     history_events = [
         event for event in history_events if event.agreement_id is not None and event.agreement_id_record is not None
@@ -638,6 +639,49 @@ def create_change_request_history_event(
             else AgreementHistoryType.CHANGE_REQUEST_UPDATED
         ),
     )
+
+
+def create_cor_revert_history_events(event: OpsEvent, event_user: User, session: Session) -> list[AgreementHistory]:
+    """History for the COR (and Alternate COR) put back when a contract modification with a COR
+    change is declined (#3269). The decline sets the agreement's fields directly, so there is no
+    UPDATE_AGREEMENT field diff to produce these."""
+    from models import Agreement
+
+    revert = event.event_details.get("project_officer_revert")
+    if not revert:
+        return []
+
+    agreement_id = event.event_details["agreement_id"]
+    agreement = session.get(Agreement, agreement_id)
+
+    def name(user_id):
+        user = session.get(User, user_id) if user_id else None
+        return user.full_name if user else "TBD"
+
+    def entry(label, old_id, new_id):
+        return AgreementHistory(
+            agreement_id=agreement_id,
+            agreement_id_record=agreement_id,
+            ops_event_id=event.id,
+            history_title=f"Change to {label}",
+            history_message=(
+                f"The {label} changed back from {name(old_id)} to {name(new_id)} because "
+                f"{event_user.full_name} declined the contract modification."
+            ),
+            timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+        )
+
+    events = [entry(get_project_officer_display_name(agreement), revert.get("from"), revert.get("to"))]
+    if revert.get("alternate_from") != revert.get("alternate_to"):
+        events.append(
+            entry(
+                get_alternate_project_officer_display_name(agreement),
+                revert.get("alternate_from"),
+                revert.get("alternate_to"),
+            )
+        )
+    return events
 
 
 def _services_components_added_phrase(event: OpsEvent) -> str:

@@ -150,7 +150,8 @@ class ContractModificationRequestItemAPI(BaseItemAPI):
         PATCH /contract-modification-requests/<int:id>/
 
         Body: ``{"action": "APPROVE" | "DECLINE", "reviewer_notes": str | null}``. Approval
-        creates the modification, attaches the edits and executes the selected budget lines.
+        creates the modification, attaches the edits and executes the selected budget lines. A
+        decline returns Modified LOE edits to pending, and undoes a COR change (removing its card).
 
         Raises:
             ResourceNotFoundError: The request doesn't exist (404).
@@ -159,9 +160,8 @@ class ContractModificationRequestItemAPI(BaseItemAPI):
         """
         with OpsEventHandler(OpsEventType.REVIEW_CONTRACT_MODIFICATION) as meta:
             payload = ReviewContractModificationRequestSchema().load(request.json or {})
-            mod_request = ContractModificationRequestService(current_app.db_session).review(
-                id, payload["action"], payload["reviewer_notes"]
-            )
+            service = ContractModificationRequestService(current_app.db_session)
+            mod_request = service.review(id, payload["action"], payload["reviewer_notes"])
 
             data = ContractModificationRequestSchema().dump(mod_request)
             meta.metadata.update(
@@ -172,7 +172,10 @@ class ContractModificationRequestItemAPI(BaseItemAPI):
                     "agreement_mod_id": mod_request.agreement_mod_id,
                     "contract_modification_edit_ids": [edit["id"] for edit in data["edits"]],
                     "services_components_added": _services_components_added(data["edits"]),
-                    "project_officer_change": _project_officer_change(data["edits"]),
+                    # A declined COR change is no longer among the edits: the decline removed it.
+                    "project_officer_change": _project_officer_change(data["edits"])
+                    or service.declined_project_officer_change,
+                    "project_officer_revert": service.project_officer_revert,
                     "budget_line_item_ids": data["budget_line_item_ids"],
                     "reviewer_notes": mod_request.reviewer_notes,
                 }

@@ -72,6 +72,12 @@ class ContractModificationEdit(BaseModel):
     approved_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"), nullable=True)
     approved_on: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
+    # COR changes only (#3269): the Alternate COR that saving this change cleared, because the
+    # Alternate COR was promoted to COR. Declining the contract modification puts it back.
+    cleared_alternate_project_officer_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("ops_user.id"), nullable=True
+    )
+
     # NULL = pending (shown on the list); set when the user starts the contract modification.
     agreement_mod_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("agreement_mod.id", ondelete="SET NULL"), index=True, nullable=True

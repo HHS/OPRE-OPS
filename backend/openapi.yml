@@ -960,8 +960,10 @@ paths:
         Division Director review. Approval creates an agreement modification (type
         MODIFIED_LOE when any Modified LOE edit is included, ADMIN when only Admin Changes
         such as a COR change are, AS_IS when there are no edits), attaches the request's
-        edits to it, and changes the selected budget lines to Executing. A decline leaves the
-        edits pending. The submitter is notified either way.
+        edits to it, and changes the selected budget lines to Executing. A decline leaves
+        Modified LOE edits pending and undoes a COR change: the COR goes back to the COR on the
+        contract, a cleared Alternate COR is restored, and the COR card is removed. The submitter
+        is notified either way.
       parameters:
         - in: path
           name: id

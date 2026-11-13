@@ -651,13 +651,14 @@ class AgreementsService(OpsService[Agreement]):
 
     def _prepare_project_officer_change(
         self, agreement: Agreement, updated_fields: dict[str, Any]
-    ) -> Optional[tuple[int, int]]:
+    ) -> Optional[tuple[int, int, Optional[int]]]:
         """Check and adjust a COR change on an Awarded agreement before the merge (OPS-3153, #3269).
 
         The change applies now. The COR can't change while its tracked change is in a contract
         modification in review. Promoting the saved Alternate COR clears the Alternate COR unless
-        the update sets a new one, so one person isn't both. Returns ``(old COR, new COR)`` for a
-        change that must be tracked as a contract modification edit, else None.
+        the update sets a new one, so one person isn't both. Returns ``(old COR, new COR, cleared
+        Alternate COR or None)`` for a change that must be tracked as a contract modification
+        edit, else None.
         """
         if "project_officer_id" not in updated_fields or not tracks_cor_changes(agreement):
             return None
@@ -677,20 +678,27 @@ class AgreementsService(OpsService[Agreement]):
         if self.db_session.get(User, new_project_officer_id) is None:
             raise ValidationError({"project_officer_id": ["The selected COR does not exist."]})
         saved_alternate = agreement.alternate_project_officer_id
+        cleared_alternate = None
         if saved_alternate is not None and new_project_officer_id == saved_alternate:
             if updated_fields.get("alternate_project_officer_id", saved_alternate) == saved_alternate:
                 updated_fields["alternate_project_officer_id"] = None
-        return agreement.project_officer_id, new_project_officer_id
+                cleared_alternate = saved_alternate
+        return agreement.project_officer_id, new_project_officer_id, cleared_alternate
 
     def _record_project_officer_change(
-        self, agreement: Agreement, tracked_cor_change: Optional[tuple[int, int]]
+        self, agreement: Agreement, tracked_cor_change: Optional[tuple[int, int, Optional[int]]]
     ) -> None:
         """Track a COR change returned by ``_prepare_project_officer_change`` on the Award &
         Modifications tab (OPS-3153, #3269). Does nothing when there's no tracked change."""
         if tracked_cor_change is None:
             return
+        old_project_officer_id, new_project_officer_id, cleared_alternate = tracked_cor_change
         ContractModificationEditService(self.db_session).record_project_officer_change(
-            agreement, *tracked_cor_change, get_current_user()
+            agreement,
+            old_project_officer_id,
+            new_project_officer_id,
+            get_current_user(),
+            cleared_alternate_project_officer_id=cleared_alternate,
         )
 
     def _handle_proc_shop_change(self, agreement: Agreement, new_value: int, commit: bool = True) -> int | None:

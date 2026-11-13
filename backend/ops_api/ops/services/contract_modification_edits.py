@@ -187,14 +187,21 @@ class ContractModificationEditService:
             self.db_session.delete(edit)
 
     def record_project_officer_change(
-        self, agreement: Agreement, old_project_officer_id: Optional[int], new_project_officer_id: int, user: User
+        self,
+        agreement: Agreement,
+        old_project_officer_id: Optional[int],
+        new_project_officer_id: int,
+        user: User,
+        cleared_alternate_project_officer_id: Optional[int] = None,
     ) -> None:
         """Track a COR change on an Awarded agreement as an ADMIN_CHANGE edit (OPS-3153, #3269).
 
         The COR change itself is applied by the caller; this records that the contract still
         needs a modification for it. There is one card per agreement showing the net change, from
         the COR on the contract to the current COR: a further change updates its To, and changing
-        back to the COR on the contract removes it. Does not commit.
+        back to the COR on the contract removes it. ``cleared_alternate_project_officer_id`` is the
+        Alternate COR this save cleared by promoting it; the card keeps the first one, so declining
+        the modification can put it back (``revert_project_officer_change``). Does not commit.
 
         A card in a modification that is in review is never changed here: the COR is locked
         until the modification is approved or declined (``check_project_officer_change_not_in_review``).
@@ -208,6 +215,8 @@ class ContractModificationEditService:
             pending.new_value = new_project_officer_id
             pending.requested_by_id = user.id
             pending.requested_on = func.now()
+            if pending.cleared_alternate_project_officer_id is None:
+                pending.cleared_alternate_project_officer_id = cleared_alternate_project_officer_id
             self.db_session.flush()
             return
 
@@ -219,6 +228,7 @@ class ContractModificationEditService:
             new_value=new_project_officer_id,
             requested_by_id=user.id,
             requested_on=func.now(),
+            cleared_alternate_project_officer_id=cleared_alternate_project_officer_id,
         )
         self.db_session.add(edit)
         try:
@@ -229,6 +239,32 @@ class ContractModificationEditService:
             raise ValidationError(
                 {"project_officer_id": ["Another COR change was saved at the same time. Refresh and try again."]}
             ) from None
+
+    def revert_project_officer_change(self, agreement: Agreement, edit: ContractModificationEdit) -> dict:
+        """Undo a COR change whose contract modification was declined (#3269), and remove its card.
+
+        The COR goes back to the card's From, the COR on the contract. If saving the change cleared
+        the Alternate COR (a promotion), it's restored, unless someone has picked a new Alternate
+        COR since. If the restored COR is the current Alternate COR, the Alternate COR is cleared,
+        so one person isn't both. Returns what changed, for the review event's history:
+        ``{"from", "to", "alternate_from", "alternate_to"}``. Does not commit.
+        """
+        # Agreement first, then the card: the same lock order as a COR save.
+        self.db_session.refresh(agreement, with_for_update={"key_share": True})
+        reverted_from = agreement.project_officer_id
+        alternate_from = agreement.alternate_project_officer_id
+        agreement.project_officer_id = edit.old_value
+        if alternate_from is None and edit.cleared_alternate_project_officer_id is not None:
+            agreement.alternate_project_officer_id = edit.cleared_alternate_project_officer_id
+        elif alternate_from is not None and alternate_from == edit.old_value:
+            agreement.alternate_project_officer_id = None
+        self.db_session.delete(edit)
+        return {
+            "from": reverted_from,
+            "to": edit.old_value,
+            "alternate_from": alternate_from,
+            "alternate_to": agreement.alternate_project_officer_id,
+        }
 
     def project_officer_locked_message(self, agreement_id: int) -> Optional[str]:
         """Why the COR can't be changed right now, or None (#3269): the pending COR change is in
