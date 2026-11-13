@@ -24,6 +24,8 @@ import Term from "../../UI/Term";
  * @param {Object|null} [props.awardRecord] - The agreement's original award record from the award history
  * (optional). When given, the award information (Contract #, Award Date, Award Total, Vendor, Vendor ID,
  * Vendor Type) is shown in the left column, as on Start Modification (#3269).
+ * @param {number|null} [props.awardTotal] - The Award Total shown with the award information: the
+ * agreement total from the page's Agreement Total card, not the award record's Award Amount (UX, #3269).
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementMetaAccordion = ({
@@ -37,7 +39,8 @@ const AgreementMetaAccordion = ({
     instructions,
     newAwardingEntity,
     isAgreementAwarded = false,
-    awardRecord = null
+    awardRecord = null,
+    awardTotal = null
 }) => {
     const MORE_THAN_THREE_RESEARCH_METHODS =
         agreement?.research_methodologies && agreement?.research_methodologies.length > 3;
@@ -102,11 +105,7 @@ const AgreementMetaAccordion = ({
                                     )}
                                 </dl>
                                 <dl className="grid-col-4 margin-0">
-                                    {renderTerm(
-                                        "award-total",
-                                        "Award Total",
-                                        displayCurrency(awardRecord.award_amount)
-                                    )}
+                                    {renderTerm("award-total", "Award Total", displayCurrency(awardTotal))}
                                 </dl>
                             </div>
                             <div className="display-flex">

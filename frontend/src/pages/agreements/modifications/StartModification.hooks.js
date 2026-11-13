@@ -9,6 +9,7 @@ import {
     useGetVersionQuery,
     useSubmitContractModificationMutation
 } from "../../../api/opsAPI";
+import { getAgreementTotalCardValues } from "../../../components/Agreements/AgreementBLIAccordion/AgreementBLIAccordion.helpers";
 import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -78,6 +79,11 @@ const useStartModification = (agreementId) => {
 
     const selectedBudgetLines = React.useMemo(() => budgetLines.filter((bli) => bli.selected), [budgetLines]);
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines, servicesComponents);
+    // Award Total in the agreement details is the Agreement Total card's total under Select Budget
+    // Lines (UX, #3269), so it's computed the same way from the same inputs.
+    const awardTotal = agreement
+        ? getAgreementTotalCardValues(agreement, selectedBudgetLines, afterApproval).total
+        : null;
     const isSubmissionReady = (edits.length > 0 || selectedBudgetLines.length > 0) && !isSubmitting;
 
     const handleSelectBLI = (bliId) => {
@@ -145,6 +151,7 @@ const useStartModification = (agreementId) => {
         isSubmissionReady,
         handleSendToApproval,
         awardRecord,
+        awardTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         showModal,

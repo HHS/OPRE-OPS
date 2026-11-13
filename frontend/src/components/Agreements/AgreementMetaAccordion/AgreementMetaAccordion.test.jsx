@@ -325,14 +325,16 @@ describe("AgreementMetaAccordion", () => {
                 />
             );
 
-        it("shows the award date, total and vendor details from the award record", () => {
-            renderAwarded({ awardRecord });
+        it("shows the award date and vendor details from the award record, and the given Award Total", () => {
+            renderAwarded({ awardRecord, awardTotal: 1234567.5 });
 
             for (const label of ["Award Date", "Award Total", "Vendor ID", "Vendor Type"]) {
                 expect(screen.getByText(label)).toBeInTheDocument();
             }
             expect(screen.getByText("6/26/2024")).toBeInTheDocument();
-            expect(screen.getByText("$1,500,000.00")).toBeInTheDocument();
+            // The Award Total is the page's agreement total, not the award record's Award Amount (UX).
+            expect(screen.getByText("$1,234,567.50")).toBeInTheDocument();
+            expect(screen.queryByText("$1,500,000.00")).not.toBeInTheDocument();
             expect(screen.getByText("123456789")).toBeInTheDocument();
             expect(screen.getByText("Small Business")).toBeInTheDocument();
             // Contract # and Vendor move to the left column with the award information, not shown twice.

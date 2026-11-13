@@ -153,6 +153,27 @@ describe("useStartModification", () => {
         expect(result.current.awardRecord).toBe(award);
     });
 
+    it("gives the Award Total the Agreement Total card's total: non-Draft budget lines plus fees (#3269)", () => {
+        setQueries();
+        queries.agreement = {
+            data: {
+                ...AGREEMENT,
+                procurement_shop: { abbr: "GCS", fee_percentage: 5 },
+                budget_line_items: [
+                    { ...EXECUTABLE, amount: 1000 },
+                    { ...DRAFT, amount: 500 },
+                    { ...OTHER_SC, amount: 2000 }
+                ]
+            },
+            isLoading: false
+        };
+
+        const { result } = renderHook(() => useStartModification(42));
+
+        // (1000 + 2000) + 5% fees; the Draft line isn't counted, as on the card
+        expect(result.current.awardTotal).toBe(3150);
+    });
+
     it("has no award record when the award history is empty", () => {
         const { result } = renderHook(() => useStartModification(42));
 
