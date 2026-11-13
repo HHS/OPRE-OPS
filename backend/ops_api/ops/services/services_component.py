@@ -105,12 +105,17 @@ class ServicesComponentService:
         self._check_pre_award_lock(agreement)
 
         new_sc = ServicesComponent(**create_request)
-        # Added after award: the addition needs approval once the SC has a non-Draft budget
-        # line, so the add change request is created when one is linked (OPS-6440).
-        new_sc.awaiting_add_approval = sc_requires_approval_gate(agreement)
 
         try:
             self.db_session.add(new_sc)
+            self.db_session.flush()
+            # Added after award: recorded immediately, with no budget lines required
+            # (OPS-3072/OPS-3268 UX feedback item 5 -- an SC add/delete is tracked on its own,
+            # not only once a non-Draft budget line makes it "real").
+            if sc_requires_approval_gate(agreement):
+                ContractModificationEditService(self.db_session).record_services_component_add(
+                    new_sc, get_current_user().id
+                )
             if commit:
                 self.db_session.commit()
             else:
@@ -174,11 +179,11 @@ class ServicesComponentService:
         """
         Delete a services component.
 
-        On an Awarded, tracked agreement, deleting an SC with non-Draft budget lines is recorded
-        as an "Edit That Requires a Contract Modification" (OPS-3072/OPS-3268) instead of a
-        Division Director approval. An SC with only Draft budget lines was never on the
-        contract, so its delete isn't recorded. The SC's pending "Add SC" edit, if any, is
-        removed with it.
+        On an Awarded, tracked agreement, deleting an SC is always recorded as an "Edit That
+        Requires a Contract Modification" (OPS-3072/OPS-3268 UX feedback item 5), with no
+        Division Director approval and no requirement that it have any non-Draft budget lines.
+        The SC's pending "Add SC" edit, if any, is removed with it (added then deleted before a
+        modification starts nets to nothing).
 
         Args:
             obj_id: The ID of the services component to delete
@@ -199,10 +204,7 @@ class ServicesComponentService:
         self._check_not_in_review(services_component)
         self._check_not_in_review_modification(obj_id)
 
-        if (
-            agreement_tracks_contract_modifications(services_component.agreement)
-            and services_component.has_non_draft_budget_lines
-        ):
+        if agreement_tracks_contract_modifications(services_component.agreement):
             ContractModificationEditService(self.db_session).record_services_component_delete(
                 services_component, get_current_user().id
             )

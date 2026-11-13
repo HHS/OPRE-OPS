@@ -148,21 +148,33 @@ describe("buildSaveSuccessAlert", () => {
     });
 });
 
-describe("services component additions tracked for modification (OPS-6440/OPS-3072)", () => {
+describe("services component additions tracked for modification (OPS-6440/OPS-3072/OPS-3268)", () => {
     const sc2 = { id: 21, number: 2, created_on: "2026-01-01" };
     const sc3 = { number: 3 };
 
-    it("an SC addition is tracked only when a non-Draft line points at it", () => {
+    it("tracks a new SC and a still-pending SC on their own, with no budget lines required", () => {
         const pendingSc2 = { ...sc2, awaiting_add_approval: true };
         const additions = getServicesComponentAdditionsTrackedForModification({
-            servicesComponents: [pendingSc2, sc3],
-            tempBudgetLines: [
-                { id: 1, status: BLI_STATUS.PLANNED, services_component_id: 21 },
-                { id: 2, status: BLI_STATUS.DRAFT, services_component_number: 3 }
-            ]
+            servicesComponents: [pendingSc2, sc3]
         });
 
-        expect(additions).toEqual([pendingSc2]);
+        expect(additions).toEqual([pendingSc2, sc3]);
+    });
+
+    it("does not track an already-added SC that isn't pending", () => {
+        const additions = getServicesComponentAdditionsTrackedForModification({
+            servicesComponents: [sc2]
+        });
+
+        expect(additions).toEqual([]);
+    });
+
+    it("does not track an SC whose addition is in review", () => {
+        const additions = getServicesComponentAdditionsTrackedForModification({
+            servicesComponents: [{ ...sc3, in_review: true }]
+        });
+
+        expect(additions).toEqual([]);
     });
 });
 

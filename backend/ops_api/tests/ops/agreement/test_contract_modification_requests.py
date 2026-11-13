@@ -370,9 +370,11 @@ def _sc_addition_then_emptied(client, loaded_db, agreement, bli, sc1_id):
     return sc2_id
 
 
-def test_deleting_an_approved_sc_removes_its_pending_addition_edit(
+def test_deleting_an_approved_sc_replaces_its_pending_addition_edit_with_a_delete(
     awarded_with_edit, basic_user_auth_client, loaded_db, test_can, app_ctx
 ):
+    """OPS-3268 UX feedback item 5: the delete is tracked on its own, even for an SC with no
+    budget lines left -- its earlier pending "add" is replaced, not just dropped."""
     agreement, first, _ = awarded_with_edit
     executable = _executable_bli(loaded_db, agreement, test_can)
     sc2_id = _sc_addition_then_emptied(
@@ -382,9 +384,11 @@ def test_deleting_an_approved_sc_removes_its_pending_addition_edit(
     response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
 
     assert response.status_code == 200, response.json
-    assert [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id] == []
+    (edit,) = [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id]
+    assert edit.field == "delete"
     pending = _get_pending(basic_user_auth_client, agreement.id).json["data"]
-    assert [e for e in pending if e["services_component_id"] == sc2_id] == []
+    (pending_edit,) = [e for e in pending if e["services_component_id"] == sc2_id]
+    assert pending_edit["field"] == "delete"
 
 
 def test_deleting_an_sc_whose_addition_is_in_a_modification_in_review_returns_400(

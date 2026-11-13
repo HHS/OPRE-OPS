@@ -1,12 +1,12 @@
 """Integration tests for Services Component add/delete on Awarded agreements (OPS-6440, OPS-3072,
 OPS-3268).
 
-On an Awarded, tracked agreement, adding an SC applies directly once it has a non-Draft budget
-line (no Division Director approval), and deleting one is allowed for every user, not just
-superusers. Both are recorded as "Edits That Require a Contract Modification". These tests cover
-applying the add (via linking a budget line, directly or through a Draft->Planned transition),
-the delete, and the SC lock while an edit is attached to a submitted modification that's in
-review.
+On an Awarded, tracked agreement, adding or deleting an SC applies directly and is tracked
+immediately (no budget lines required, no Division Director approval -- OPS-3268 UX feedback
+item 5), and deleting one is allowed for every user, not just superusers. Both are recorded as
+"Edits That Require a Contract Modification". These tests cover the add, the delete, the legacy
+pre-OPS-3268 deferred-add path still reachable for data created before that change, and the SC
+lock while an edit is attached to a submitted modification that's in review.
 
 ``basic_user_auth_client`` (user 521) is a team member on the test agreements.
 """
@@ -177,17 +177,25 @@ def _patch_bli(client, bli_id, body):
     return client.patch(url_for("api.budget-line-items-item", id=bli_id), json=body)
 
 
-# ---=== Creating an SC after award: pending until a non-Draft budget line links to it ===---
+# ---=== Creating an SC after award applies directly, with no budget lines required ===---
 
 
-def test_sc_added_after_award_is_pending_without_a_request(
+def test_sc_added_after_award_applies_directly(
     modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
 ):
+    """OPS-3268 UX feedback item 5: adding an SC is tracked on its own, with no budget lines
+    required and no Division Director approval."""
     data = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)
 
-    assert data["awaiting_add_approval"] is True
+    assert data["awaiting_add_approval"] is False
     assert data["in_review"] is False
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert edit.services_component_id == data["id"]
+    assert edit.budget_line_item_id is None
+    assert edit.field == "services_component_create"
+    assert edit.new_value == "SC2"
+    assert edit.requested_by_id == BASIC_USER_ID
 
 
 def test_sc_added_with_flag_off_is_not_pending(basic_user_auth_client, loaded_db, awarded_agreement, app, app_ctx):
@@ -196,9 +204,10 @@ def test_sc_added_with_flag_off_is_not_pending(basic_user_auth_client, loaded_db
     data = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)
 
     assert data["awaiting_add_approval"] is False
+    assert _edits(loaded_db, awarded_agreement.id) == []
 
 
-def test_draft_budget_line_on_pending_sc_creates_no_request(
+def test_draft_budget_line_on_already_added_sc_creates_no_additional_request(
     modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
 ):
     sc2_id = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)["id"]
@@ -207,7 +216,7 @@ def test_draft_budget_line_on_pending_sc_creates_no_request(
         url_for("api.budget-line-items-group"),
         json={
             "agreement_id": awarded_agreement.id,
-            "line_description": "Draft on pending SC",
+            "line_description": "Draft on already-added SC",
             "amount": 1000.0,
             "can_id": test_can.id,
             "status": "DRAFT",
@@ -217,7 +226,9 @@ def test_draft_budget_line_on_pending_sc_creates_no_request(
     assert response.status_code == 201, response.json
 
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
-    assert loaded_db.get(ServicesComponent, sc2_id).awaiting_add_approval is True
+    assert loaded_db.get(ServicesComponent, sc2_id).awaiting_add_approval is False
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert edit.field == "services_component_create"
 
 
 # ---=== Linking a non-Draft budget line applies the add directly (OPS-3072/OPS-3268) ===---
@@ -463,6 +474,8 @@ def test_deleting_sc_with_planned_budget_lines_applies_directly_when_flag_off(
 def test_deleting_sc_with_only_draft_budget_lines_applies_directly(
     modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
 ):
+    """OPS-3268 UX feedback item 5: deleting an SC is tracked on its own, even one with no
+    non-Draft budget lines."""
     sc2 = _add_sc(loaded_db, awarded_agreement, 2)
     bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT)
     sc2_id, bli_id = sc2.id, bli.id
@@ -474,8 +487,9 @@ def test_deleting_sc_with_only_draft_budget_lines_applies_directly(
     assert loaded_db.get(ServicesComponent, sc2_id) is None
     assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id is None
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
-    # A Draft budget line was never on the awarded contract: nothing to track.
-    assert _edits(loaded_db, awarded_agreement.id) == []
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert edit.field == "delete"
+    assert edit.services_component_id == sc2_id
 
 
 def test_superuser_deleting_sc_with_planned_budget_lines_applies_directly(
@@ -581,6 +595,11 @@ def test_bundle_deleting_draft_budget_lines_then_their_sc_applies_directly(
     loaded_db.expire_all()
     assert loaded_db.get(ServicesComponent, sc2_id) is None
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    # OPS-3268 UX feedback item 5: deleting an SC is tracked on its own, even with no non-Draft
+    # budget lines.
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert edit.field == "delete"
+    assert edit.services_component_id == sc2_id
 
 
 def test_bundle_deleting_an_sc_with_a_planned_budget_line_applies_directly(
@@ -601,6 +620,6 @@ def test_bundle_deleting_an_sc_with_a_planned_budget_line_applies_directly(
     assert loaded_db.get(ServicesComponent, sc2_id) is None
     assert loaded_db.get(ServicesComponent, sc3_id) is None
     assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id is None
-    (edit,) = _edits(loaded_db, awarded_agreement.id)
-    assert edit.services_component_id == sc2_id
-    assert edit.field == "delete"
+    # OPS-3268 UX feedback item 5: sc3 (no budget lines at all) is tracked too, not just sc2.
+    edits = {(e.services_component_id, e.field) for e in _edits(loaded_db, awarded_agreement.id)}
+    assert edits == {(sc2_id, "delete"), (sc3_id, "delete")}

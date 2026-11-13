@@ -72,8 +72,9 @@ class ServicesComponent(BaseModel):
 
     display_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
 
-    # True while an SC added on an Awarded agreement hasn't had its addition approved (OPS-6440).
-    # The add change request is only created once the SC has a non-Draft budget line.
+    # Legacy: true while an SC add created before OPS-3268's direct-apply change was still
+    # awaiting Division Director approval. An SC created after that change is tracked
+    # immediately (ServicesComponentService.create), so this stays false going forward.
     awaiting_add_approval: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
 
     @property
@@ -95,8 +96,9 @@ class ServicesComponent(BaseModel):
 
     @property
     def has_non_draft_budget_lines(self) -> bool:
-        """Only non-Draft budget lines gate an SC on an Awarded agreement: an add needs approval
-        and a delete is blocked. Draft lines come into play when they become Planned (OPS-6440).
+        """Whether this SC has a budget line that isn't Draft. Only used by the legacy,
+        pre-OPS-3268 change-request-approval path for an SC add (``ensure_services_component_add_change_request``);
+        an SC created after that change is tracked immediately regardless of its budget lines.
 
         Queried rather than read from ``budget_line_items`` so links flushed in the current
         transaction (set via ``services_component_id``) are seen."""

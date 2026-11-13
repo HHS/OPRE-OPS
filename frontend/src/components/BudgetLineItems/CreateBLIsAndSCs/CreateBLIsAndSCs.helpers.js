@@ -72,38 +72,17 @@ export const attachScPeriodToBudgetLines = (tempBudgetLines, servicesComponents)
     });
 
 /**
- * Resolve the services component a budget line is grouped under. Prefers services_component_number
- * over services_component_id, the same precedence as attachScPeriodToBudgetLines.
- * @param {import("../../../types/BudgetLineTypes").BudgetLine} bli
- * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} servicesComponents
- * @returns {import("../../../types/ServicesComponents").ServicesComponents | undefined}
- */
-export const findServicesComponentForBudgetLine = (bli, servicesComponents) =>
-    bli.services_component_number != null
-        ? servicesComponents.find((sc) => sc.number === bli.services_component_number)
-        : servicesComponents.find((sc) => sc.id === bli.services_component_id);
-
-const isNonDraftBudgetLine = (bli) => Boolean(bli?.status) && bli.status !== BLI_STATUS.DRAFT;
-
-/**
  * The services component additions in this save that are tracked for the next contract
- * modification (OPS-3072/OPS-3268): on an Awarded agreement, a new SC, or one still pending
- * recording, becomes tracked once a non-Draft line points at it. No Division Director approval
- * is involved -- it applies directly. The caller applies the awarded / non-superuser gate.
+ * modification (OPS-3072/OPS-3268 UX feedback item 5): on an Awarded agreement, a new SC, or one
+ * still pending recording, is tracked on its own -- no budget line is required. No Division
+ * Director approval is involved -- it applies directly. The caller applies the awarded /
+ * non-superuser gate.
  * @param {Object} args
  * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} args.servicesComponents
- * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} args.tempBudgetLines
  * @returns {Array<import("../../../types/ServicesComponents").ServicesComponents>}
  */
-export const getServicesComponentAdditionsTrackedForModification = ({ servicesComponents, tempBudgetLines }) =>
-    servicesComponents.filter(
-        (sc) =>
-            (!("created_on" in sc) || sc.awaiting_add_approval) &&
-            !sc.in_review &&
-            tempBudgetLines.some(
-                (bli) => isNonDraftBudgetLine(bli) && findServicesComponentForBudgetLine(bli, servicesComponents) === sc
-            )
-    );
+export const getServicesComponentAdditionsTrackedForModification = ({ servicesComponents }) =>
+    servicesComponents.filter((sc) => (!("created_on" in sc) || sc.awaiting_add_approval) && !sc.in_review);
 
 /**
  * Derive the effective SC window across all services components (saved and unsaved).

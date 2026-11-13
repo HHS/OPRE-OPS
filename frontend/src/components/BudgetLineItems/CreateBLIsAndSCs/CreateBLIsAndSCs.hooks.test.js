@@ -584,9 +584,9 @@ describe("useCreateBLIsAndSCs", () => {
             expect(result.current.requiresContractModification).toBe(false);
         });
 
-        // SC changes without non-Draft budget lines are saved directly, not through approval, so
-        // they must not trigger the "send it for approval" contract-modification modal (OPS-6440).
-        it("does not flag requiresContractModification for services component changes without budget lines on an Awarded agreement", () => {
+        // OPS-3268 UX feedback item 5: SC add/delete is tracked on its own, with no budget lines
+        // required, and still applies directly (no approval), so the save stays a direct save.
+        it("flags requiresContractModification for services component changes without budget lines on an Awarded agreement", () => {
             useEditAgreementMock.mockReturnValue({
                 ...editAgreementMockData,
                 budget_line_items: [],
@@ -595,7 +595,7 @@ describe("useCreateBLIsAndSCs", () => {
             });
             const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
 
-            expect(result.current.requiresContractModification).toBe(false);
+            expect(result.current.requiresContractModification).toBe(true);
         });
 
         describe("services component additions and blocked deletions (OPS-6440)", () => {
@@ -639,8 +639,18 @@ describe("useCreateBLIsAndSCs", () => {
                 expect(result.current.requiresContractModification).toBe(true);
             });
 
+            it("flags a saved SC still awaiting approval of its addition even with only Draft budget lines (OPS-3268 UX feedback item 5)", () => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [savedSc({ awaiting_add_approval: true })],
+                    budget_line_items: [lineOn(2, "DRAFT")]
+                });
+                const { result } = renderSubject({ selectedAgreement: awardedContract });
+
+                expect(result.current.requiresContractModification).toBe(true);
+            });
+
             it.each([
-                ["only Draft budget lines", { awaiting_add_approval: true }, "DRAFT"],
                 ["an addition already in review", { awaiting_add_approval: true, in_review: true }, "PLANNED"],
                 ["an approved addition", { awaiting_add_approval: false }, "PLANNED"]
             ])("does not flag an SC with %s", (_label, scOverrides, status) => {

@@ -190,16 +190,15 @@ const useCreateBLIsAndSCs = (
     const pendingServicesComponentAdditions = React.useMemo(
         () =>
             awardedEditAppliesDirectly
-                ? getServicesComponentAdditionsTrackedForModification({ servicesComponents, tempBudgetLines })
+                ? getServicesComponentAdditionsTrackedForModification({ servicesComponents })
                 : [],
-        [awardedEditAppliesDirectly, servicesComponents, tempBudgetLines]
+        [awardedEditAppliesDirectly, servicesComponents]
     );
+    // OPS-3268 UX feedback item 5: a Services Component deletion is tracked on its own, with no
+    // budget lines required.
     const hasServicesComponentAdditionsOrDeletions =
         pendingServicesComponentAdditions.length > 0 ||
-        (awardedEditAppliesDirectly &&
-            deletedServicesComponentsIds.some((id) =>
-                budgetLines?.some((bl) => bl.services_component_id === id && bl.status !== BLI_STATUS.DRAFT)
-            ));
+        (awardedEditAppliesDirectly && deletedServicesComponentsIds.length > 0);
 
     // Budget Team members and superusers write financial changes directly (no change-request
     // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.

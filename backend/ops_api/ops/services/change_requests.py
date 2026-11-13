@@ -534,12 +534,16 @@ class ChangeRequestService(OpsService[ChangeRequest]):
     def ensure_services_component_add_change_request(
         self, services_component: ServicesComponent, commit: bool = True, pending_planned: bool = False
     ) -> int | None:
-        """Record a pending SC's addition once it needs to be: no DD approval (OPS-3072/OPS-3268).
+        """Legacy: finish tracking an SC add created before OPS-3268's direct-apply change, once
+        it needs to be.
 
-        A pending SC (``awaiting_add_approval``) is recorded once it has a non-Draft budget line,
-        or when ``pending_planned`` says a Draft->Planned request was just made for one of its
-        budget lines. Idempotent: calling it again on an already-recorded SC is a no-op. A legacy
-        add request already IN_REVIEW (created before this change shipped) keeps its existing
+        An SC created going forward is tracked immediately on ``ServicesComponentService.create``
+        (OPS-3268 UX feedback item 5), so ``awaiting_add_approval`` is always false for it and
+        this is a no-op. It only still does something for an SC created before that change
+        shipped, whose addition is recorded once it has a non-Draft budget line, or when
+        ``pending_planned`` says a Draft->Planned request was just made for one of its budget
+        lines. Idempotent: calling it again on an already-recorded SC is a no-op. A legacy add
+        request already IN_REVIEW (created before this change shipped) keeps its existing
         approve/decline flow; only its linked budget line ids are refreshed here. Always returns
         None now that an add is never routed through a change request.
         """
