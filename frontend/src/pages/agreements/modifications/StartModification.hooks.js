@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import {
+    useGetAgreementAwardHistoryByIdQuery,
     useGetAgreementByIdQuery,
     useGetAgreementContractModificationEditsByIdQuery,
     useGetAgreementContractModificationsByIdQuery,
@@ -51,6 +52,10 @@ const useStartModification = (agreementId) => {
             refetchOnMountOrArgChange: true
         });
     const [submitContractModification, { isLoading: isSubmitting }] = useSubmitContractModificationMutation();
+
+    // The original award (the first record; modifications follow) for the agreement details.
+    const { data: awardHistory = [] } = useGetAgreementAwardHistoryByIdQuery(agreementId, { skip: !agreementId });
+    const awardRecord = awardHistory[0] ?? null;
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
@@ -139,6 +144,7 @@ const useStartModification = (agreementId) => {
         setNotes,
         isSubmissionReady,
         handleSendToApproval,
+        awardRecord,
         projectOfficerName,
         alternateProjectOfficerName,
         showModal,

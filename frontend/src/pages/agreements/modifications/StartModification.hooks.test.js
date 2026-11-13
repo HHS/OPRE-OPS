@@ -12,6 +12,7 @@ vi.mock("react-router-dom", () => ({ useNavigate: () => navigateMock }));
 vi.mock("../../../api/opsAPI", () => ({
     useGetVersionQuery: () => queries.version,
     useGetAgreementByIdQuery: () => queries.agreement,
+    useGetAgreementAwardHistoryByIdQuery: () => queries.awardHistory,
     useGetServicesComponentsListQuery: () => queries.servicesComponents,
     useGetAgreementContractModificationEditsByIdQuery: () => queries.edits,
     useGetAgreementContractModificationsByIdQuery: () => queries.requests,
@@ -37,7 +38,7 @@ const AGREEMENT = {
     budget_line_items: [EXECUTABLE, DRAFT, OTHER_SC]
 };
 
-const setQueries = ({ edits = [], requests = [] } = {}) => {
+const setQueries = ({ edits = [], requests = [], awardHistory = [] } = {}) => {
     queries.version = { data: { enable_modified_loe_edits: true }, isLoading: false };
     queries.agreement = { data: AGREEMENT, isLoading: false };
     queries.servicesComponents = {
@@ -48,6 +49,7 @@ const setQueries = ({ edits = [], requests = [] } = {}) => {
     };
     queries.edits = { data: edits };
     queries.requests = { data: requests, isLoading: false };
+    queries.awardHistory = { data: awardHistory };
 };
 
 describe("useStartModification", () => {
@@ -139,6 +141,22 @@ describe("useStartModification", () => {
 
         expect(submitMock).toHaveBeenCalledWith(expect.objectContaining({ budgetLineItemIds: [] }));
         expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ type: "success" }));
+    });
+
+    it("gives the agreement details the original award, not a later modification (#3269)", () => {
+        const award = { fiscal_year_label: "FY 2044 Award", award_amount: "1500000.00" };
+        const modification = { fiscal_year_label: "FY 2045 Mod 1", award_amount: "250000.00" };
+        setQueries({ awardHistory: [award, modification] });
+
+        const { result } = renderHook(() => useStartModification(42));
+
+        expect(result.current.awardRecord).toBe(award);
+    });
+
+    it("has no award record when the award history is empty", () => {
+        const { result } = renderHook(() => useStartModification(42));
+
+        expect(result.current.awardRecord).toBeNull();
     });
 
     it("can't start while a modification is in review", () => {

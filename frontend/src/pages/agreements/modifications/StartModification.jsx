@@ -56,6 +56,7 @@ export const StartModification = () => {
         setNotes,
         isSubmissionReady,
         handleSendToApproval,
+        awardRecord,
         projectOfficerName,
         alternateProjectOfficerName,
         showModal,
@@ -140,6 +141,7 @@ export const StartModification = () => {
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
                 isAgreementAwarded={true}
+                awardRecord={awardRecord}
             />
             <AgreementBLIAccordion
                 title="Select Budget Lines (if applicable)"

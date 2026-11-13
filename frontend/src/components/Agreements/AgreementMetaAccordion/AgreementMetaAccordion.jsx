@@ -1,5 +1,7 @@
 import { NO_DATA } from "../../../constants";
 import { isFieldVisible } from "../../../helpers/agreement.helpers";
+import { displayCurrency, displayText, displayVendorType } from "../../../helpers/awardModificationHistory.helpers";
+import { formatDateNeeded } from "../../../helpers/utils";
 import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../../../pages/agreements/agreements.constants";
 import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 import Accordion from "../../UI/Accordion";
@@ -19,6 +21,9 @@ import Term from "../../UI/Term";
  * @param {string} props.instructions - The instruction text of the agreement.
  * @param {import("../../../types/AgreementTypes").ProcurementShop|null} [props.newAwardingEntity] - The new awarding entity information.
  * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
+ * @param {Object|null} [props.awardRecord] - The agreement's original award record from the award history
+ * (optional). When given, the award information (Contract #, Award Date, Award Total, Vendor, Vendor ID,
+ * Vendor Type) is shown in the left column, as on Start Modification (#3269).
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementMetaAccordion = ({
@@ -31,7 +36,8 @@ const AgreementMetaAccordion = ({
     convertCodeForDisplay,
     instructions,
     newAwardingEntity,
-    isAgreementAwarded = false
+    isAgreementAwarded = false,
+    awardRecord = null
 }) => {
     const MORE_THAN_THREE_RESEARCH_METHODS =
         agreement?.research_methodologies && agreement?.research_methodologies.length > 3;
@@ -68,15 +74,67 @@ const AgreementMetaAccordion = ({
             <p>{instructions}</p>
             <div className="grid-row grid-gap">
                 {/* NOTE: This is the left column*/}
-                <dl className="margin-0 font-12px grid-col">
-                    {renderTerm("project", "Project", agreement?.project?.title)}
-                    {/* Must stay raw agreement.name / agreement.nick_name (never nickname-preferred) —
-                        this is the labeled Name/Nickname side-by-side pair the issue explicitly
-                        protects. Ref: issue #6144 F7. */}
-                    {renderTerm("name", "Agreement", agreement?.name)}
-                    {renderTerm("nickname", AGREEMENT_NICKNAME_LABEL, agreement?.nick_name ?? NO_DATA)}
-                    {renderTerm("description", "Description", agreement?.description || NO_DATA)}
-                </dl>
+                <div className="margin-0 font-12px grid-col">
+                    <dl className="margin-0">
+                        {renderTerm("project", "Project", agreement?.project?.title)}
+                        {/* Must stay raw agreement.name / agreement.nick_name (never nickname-preferred) —
+                            this is the labeled Name/Nickname side-by-side pair the issue explicitly
+                            protects. Ref: issue #6144 F7. */}
+                        {renderTerm("name", "Agreement", agreement?.name)}
+                        {renderTerm("nickname", AGREEMENT_NICKNAME_LABEL, agreement?.nick_name ?? NO_DATA)}
+                        {renderTerm("description", "Description", agreement?.description || NO_DATA)}
+                    </dl>
+                    {awardRecord && (
+                        <>
+                            <dl className="margin-0">
+                                {renderTerm(
+                                    "contract-number",
+                                    "Contract #",
+                                    displayText(awardRecord.contract_number ?? agreement?.contract_number)
+                                )}
+                            </dl>
+                            <div className="display-flex">
+                                <dl className="grid-col-4 margin-0">
+                                    {renderTerm(
+                                        "award-date",
+                                        "Award Date",
+                                        formatDateNeeded(awardRecord.award_date ?? null)
+                                    )}
+                                </dl>
+                                <dl className="grid-col-4 margin-0">
+                                    {renderTerm(
+                                        "award-total",
+                                        "Award Total",
+                                        displayCurrency(awardRecord.award_amount)
+                                    )}
+                                </dl>
+                            </div>
+                            <div className="display-flex">
+                                <dl className="grid-col-4 margin-0">
+                                    {renderTerm(
+                                        "vendor",
+                                        "Vendor",
+                                        displayText(awardRecord.vendor_name ?? agreement?.vendor)
+                                    )}
+                                </dl>
+                                <dl className="grid-col-4 margin-0">
+                                    {renderTerm(
+                                        "vendor-id",
+                                        "Vendor ID",
+                                        displayText(awardRecord.vendor_unique_entity_id)
+                                    )}
+                                </dl>
+                                <dl className="grid-col-4 margin-0">
+                                    {renderTerm(
+                                        "vendor-type",
+                                        "Vendor Type",
+                                        displayVendorType(awardRecord.vendor_type)
+                                    )}
+                                </dl>
+                            </div>
+                        </>
+                    )}
+                </div>
                 {/* NOTE: This is the right column*/}
                 <div className="margin-0 font-12px grid-col">
                     <dl className="margin-0">
@@ -91,6 +149,7 @@ const AgreementMetaAccordion = ({
                             convertCodeForDisplay("contractType", agreement?.contract_type) ?? NO_DATA
                         )}
                         {isAgreementAwarded &&
+                            !awardRecord &&
                             isFieldVisible(agreement?.agreement_type ?? "", AgreementFields.ContractNumber) &&
                             renderTerm("contract-number", "Contract #", agreement?.contract_number ?? NO_DATA)}
                         {renderTerm(
@@ -135,7 +194,8 @@ const AgreementMetaAccordion = ({
                             "Reason for creating the agreement",
                             convertCodeForDisplay("agreementReason", agreement?.agreement_reason) ?? NO_DATA
                         )}
-                        {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
+                        {/* With award information, the Vendor is shown in the left column instead. */}
+                        {agreement?.vendor && !awardRecord && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>
                     {agreement?.research_methodologies && agreement?.research_methodologies.length > 0 ? (
                         <dl className="margin-top-2">
