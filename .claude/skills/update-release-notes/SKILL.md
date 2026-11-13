@@ -219,7 +219,7 @@ Don't reach for `--no-verify` by default. `roadmapData.json` is plain JSON and g
 - `prettier`/`check json` failing almost always means the JSON needs a formatting fix — run `(cd frontend && bun run format)` **and then `git add` the reformatted files again, from the repo root** before re-committing. Re-running the commit without re-staging will just check the same stale, unformatted snapshot and fail again.
 - Only use `--no-verify` if an unrelated hook (e.g. a flaky secret scanner) is blocking an otherwise-correct commit, and say so when you do.
 
-Once the branch is pushed, **don't call `gh pr create` yourself** with just a title and short body — that skips the repo's PR template. This repo's `create-pr` skill populates the full `.github/pull_request_template.md` (What changed, Issue, How to test, A11y impact, Definition of Done, etc.) for exactly this, but it has `disable-model-invocation: true`, meaning you can't invoke it on your own — only the user can trigger it, by typing `/create-pr`. So instead, tell the user the branch is pushed and ask them to run `/create-pr` themselves to open it with the full template.
+Once the branch is pushed, **don't call `gh pr create` yourself** with just a title and short body — that skips the repo's PR template. Invoke this repo's `create-pr` skill instead: it populates the full `.github/pull_request_template.md` (What changed, Issue, How to test, A11y impact, Definition of Done, etc.) and confirms with the user before creating the PR.
 
 ### 10. Offer to Preview
 
