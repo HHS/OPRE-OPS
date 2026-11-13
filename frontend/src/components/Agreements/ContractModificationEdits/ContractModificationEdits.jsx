@@ -163,13 +163,13 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
             </p>
             {content && (
                 <>
-                    <h3 className="font-sans-3xs text-normal text-base-dark margin-bottom-3">
+                    <h3 className="font-sans-3xs text-normal text-base-dark margin-top-4 margin-bottom-205">
                         Edits That Require a Contract Modification
                     </h3>
                     {content}
                 </>
             )}
-            <div className="display-flex flex-justify-end margin-top-4">
+            <div className="display-flex flex-justify-end margin-top-8">
                 {disabledReason ? (
                     // Focusable wrapper so keyboard users can reach the reason (a disabled button can't take focus).
                     <DisabledButtonWithTooltip
