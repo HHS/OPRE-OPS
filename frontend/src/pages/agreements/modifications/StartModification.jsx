@@ -120,8 +120,8 @@ export const StartModification = () => {
                             <ContractModificationEditCard
                                 edit={{
                                     id: `execute-${budgetLine.id}`,
-                                    modification_type: "MODIFIED_LOE",
                                     budget_line_item_id: budgetLine.id,
+                                    amount: budgetLine.amount,
                                     field: "status",
                                     old_value: PLANNED_TO_EXECUTING.status.old,
                                     new_value: PLANNED_TO_EXECUTING.status.new,

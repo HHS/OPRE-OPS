@@ -13,11 +13,23 @@
     align-items: start;
 }
 
+// A budget line selected to execute (Planned -> Executing) has no Modification Type field, so
+// its six fields sit one slot earlier: BL ID takes Modification Type's old slot. Swap the first
+// two content tracks' widths too (132fr/166fr) so BL ID keeps its own (narrower) width -- close
+// to Requested by, per design -- and Total (a currency value, as long as Modification Type's
+// text was) gets the wider track instead.
+.executeCard {
+    grid-template-columns:
+        148fr 132fr 166fr 115fr minmax(max-content, 134fr) minmax(max-content, 155fr)
+        minmax(4.5rem, auto);
+}
+
 // Below 600px (200% zoom's 640px stays above this), the From/To tracks' max-content minimums push
 // the card past 320 CSS px (WCAG 1.4.10 Reflow). Stack into a single column instead of shrinking
 // tracks below their content.
 @media (max-width: 37.5em) {
-    .card {
+    .card,
+    .executeCard {
         grid-template-columns: 1fr;
         gap: 0.5rem;
     }

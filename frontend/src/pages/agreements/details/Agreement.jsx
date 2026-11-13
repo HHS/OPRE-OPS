@@ -6,7 +6,6 @@ import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
     useGetAgreementByIdQuery,
-    useGetAgreementContractModificationsByIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,
     useGetProcurementShopByIdQuery,
     useGetProcurementTrackersByAgreementIdQuery
@@ -64,7 +63,6 @@ const Agreement = () => {
     const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
     const [isPreAwardInReviewAlertVisible, setIsPreAwardInReviewAlertVisible] = useState(true);
     const [isAwardInReviewAlertVisible, setIsAwardInReviewAlertVisible] = useState(true);
-    const [isContractModInReviewAlertVisible, setIsContractModInReviewAlertVisible] = useState(true);
 
     // Set edit mode based on URL query parameter
     useEffect(() => {
@@ -119,14 +117,6 @@ const Agreement = () => {
         refetchOnMountOrArgChange: true,
         skip: !agreementId
     });
-
-    // Contract Modification "In Review" status, shown agreement-wide (not just on the Award &
-    // Modifications tab) so a submitter/reviewer sees it from any sub-tab (OPS-3268). Only
-    // Contract/AA agreements support contract modifications.
-    const { data: contractModificationRequests = [] } = useGetAgreementContractModificationsByIdQuery(agreementId, {
-        skip: !agreementId || !isContractOrAaAgreement(agreement?.agreement_type)
-    });
-    const isContractModInReview = contractModificationRequests.some((request) => request.status === "IN_REVIEW");
 
     if (isSuccess && agreement) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement.budget_line_items ?? []);
@@ -289,15 +279,6 @@ const Agreement = () => {
                     isClosable={true}
                     message="This agreement is In Review for Award Approval. Edits or changes cannot be made at this time."
                     setIsAlertVisible={setIsAwardInReviewAlertVisible}
-                />
-            )}
-            {isContractModInReview && isContractModInReviewAlertVisible && (
-                <SimpleAlert
-                    type="warning"
-                    heading="Contract Modification In Review"
-                    isClosable={true}
-                    message="There is a Contract Modification pending approval from the Division Director. After it is approved, the procurement process will start and progress can be followed on the Procurement Tracker Tab."
-                    setIsAlertVisible={setIsContractModInReviewAlertVisible}
                 />
             )}
             {showNonContractAlert && (

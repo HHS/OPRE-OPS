@@ -58,6 +58,7 @@ const ReviewOutcomeAlert = ({ notification, onDismiss }) => {
 const ContractModificationEdits = ({ agreementId, isAgreementEditable = false }) => {
     const navigate = useNavigate();
     const activeUser = useSelector((state) => state.auth.activeUser);
+    const [isInReviewAlertVisible, setIsInReviewAlertVisible] = React.useState(true);
     const {
         data: edits,
         isLoading,
@@ -142,6 +143,15 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
                 <ReviewOutcomeAlert
                     notification={latestOutcome}
                     onDismiss={() => dismissNotification(latestOutcome.id)}
+                />
+            )}
+            {isInReview && isInReviewAlertVisible && !inReviewRequest?.can_review && (
+                <SimpleAlert
+                    type="warning"
+                    heading="Contract Modification In Review"
+                    isClosable={true}
+                    message="There is a Contract Modification pending approval from the Division Director. After it is approved, the procurement process will start and progress can be followed on the Procurement Tracker Tab."
+                    setIsAlertVisible={setIsInReviewAlertVisible}
                 />
             )}
             {inReviewRequest?.can_review && <ContractModificationRequestReviewCard request={inReviewRequest} />}

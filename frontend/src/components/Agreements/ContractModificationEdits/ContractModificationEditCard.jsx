@@ -1,7 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { renderChangeValues } from "../../../helpers/changeRequests.helpers";
-import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDateToMonthDayYear, renderField } from "../../../helpers/utils";
 import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import TermTag from "../../ChangeRequests/TermTag";
 import Tag from "../../UI/Tag";
@@ -10,15 +10,18 @@ import styles from "./ContractModificationEditCard.module.scss";
 /**
  * @typedef {Object} ContractModificationEdit
  * @property {number} id
- * @property {string} modification_type - "MODIFIED_LOE" or "ADMIN_CHANGE"
+ * @property {string} [modification_type] - "MODIFIED_LOE" or "ADMIN_CHANGE". Omitted for a budget
+ *   line selected to execute (Planned -> Executing): that's the approval action itself, not a
+ *   tracked edit, so there's no modification type to show.
  * @property {number | null} budget_line_item_id
  * @property {number | null} [services_component_id] - Set for a Services Component addition
+ * @property {number | string | null} [amount] - The budget line's total, shown for an execute card
  * @property {string} field - The edited field ("amount", "can_id", "date_needed", "delete", "services_component_create", or "project_officer_id" for a COR change)
  * @property {*} old_value
  * @property {*} new_value
  * @property {string | null} [old_display_name] - The "From" user's name for a COR change
  * @property {string | null} [new_display_name] - The "To" user's name for a COR change
- * @property {{id: number, full_name: string} | null} requested_by
+ * @property {{id: number, full_name: string, display_name?: string} | null} requested_by
  * @property {string | null} requested_on
  * @property {boolean} [in_review] - Part of the contract modification that is in review
  */
@@ -50,16 +53,23 @@ const ContractModificationEditCard = ({ edit }) => {
     const servicesComponentName = edit.field === "services_component_create" ? edit.new_value : edit.old_value;
     // A COR change (OPS-3153) is agreement-level: no budget line, and From/To are user names.
     const isAgreementLevel = edit.field === "project_officer_id";
+    // A budget line selected to execute (Planned -> Executing, Start Modification) isn't a
+    // tracked edit -- it's the approval action itself -- so it carries no modification_type.
+    const isExecuteSelection = edit.modification_type == null && !isAgreementLevel && !servicesComponentChange;
 
     return (
         <div
-            className={`padding-205 bg-base-lightest border-1px border-base-light radius-md ${styles.card}`}
+            className={`padding-205 bg-base-lightest border-1px border-base-light radius-md ${styles.card} ${
+                isExecuteSelection ? styles.executeCard : ""
+            }`}
             data-cy="contract-modification-edit-card"
         >
             <div className="font-12px">
                 <dl className="margin-0">
                     <dt className="text-base-dark">Requested by</dt>
-                    <dd className="margin-0 text-bold">{edit.requested_by?.full_name}</dd>
+                    <dd className="margin-0 text-bold">
+                        {edit.requested_by?.display_name ?? edit.requested_by?.full_name}
+                    </dd>
                 </dl>
                 <div className="text-base-dark display-flex flex-align-center margin-top-2">
                     <FontAwesomeIcon
@@ -70,11 +80,13 @@ const ContractModificationEditCard = ({ edit }) => {
                     {formatDateToMonthDayYear(edit.requested_on)}
                 </div>
             </div>
-            <TermTag
-                label="Modification Type"
-                value={convertCodeForDisplay("modificationEditType", edit.modification_type)}
-                className="margin-0"
-            />
+            {!isExecuteSelection && (
+                <TermTag
+                    label="Modification Type"
+                    value={convertCodeForDisplay("modificationEditType", edit.modification_type)}
+                    className="margin-0"
+                />
+            )}
             {isAgreementLevel ? (
                 <>
                     <TermTag
@@ -103,6 +115,34 @@ const ContractModificationEditCard = ({ edit }) => {
                     <TermTag
                         label="Change To"
                         value={servicesComponentChange}
+                        className="margin-0"
+                    />
+                </>
+            ) : isExecuteSelection ? (
+                <>
+                    <TermTag
+                        label="BL ID"
+                        value={edit.budget_line_item_id}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Total"
+                        value={renderField("amount", "amount", edit.amount)}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Change To"
+                        value={convertCodeForDisplay("changeToTypes", edit.field)}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="From"
+                        bliStatus={edit.old_value}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="To"
+                        bliStatus={edit.new_value}
                         className="margin-0"
                     />
                 </>
