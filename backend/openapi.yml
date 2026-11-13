@@ -10518,8 +10518,8 @@ components:
 
     AgreementMetaSchema:
       description: >-
-        Agreement-specific extension of MetaSchema adding procurementShopLockedMessage and
-        projectOfficerLockedMessage.
+        Agreement-specific extension of MetaSchema adding procurementShopLockedMessage,
+        projectOfficerLockedMessage, and isPostPreAwardLocked.
       allOf:
         - $ref: "#/components/schemas/MetaSchema"
         - type: object
@@ -10543,6 +10543,13 @@ components:
                 pending COR change is in a contract modification that is in review. Null when
                 the COR can be changed. Like procurementShopLockedMessage, only populated on
                 GET /agreements/{id}.
+            isPostPreAwardLocked:
+              type: boolean
+              description: >-
+                True when the agreement has completed Pre-Award Approval and is locked from
+                further agreement-level edits until the Award request is approved. Role-aware:
+                always false for Budget Team users, who are exempt from this lock on the backend.
+                Populated on both GET /agreements/ and GET /agreements/{id}.
 
     AgreementResponse:
       allOf:

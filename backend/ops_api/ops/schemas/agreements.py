@@ -45,14 +45,15 @@ class AgreementMetaSchema(MetaSchema):
     """
     Agreement-specific extension of MetaSchema. Kept separate from the base ``MetaSchema`` —
     which is also dumped for budget line items (``ops_api.ops.services.budget_line_items.
-    get_is_editable_meta_data``) — so ``procurementShopLockedMessage`` only ever appears on
-    agreement responses, not leaked onto every budget line item's ``_meta`` as an unconditional
-    ``null`` (OPS-6312).
+    get_is_editable_meta_data``) — so ``procurementShopLockedMessage`` and ``isPostPreAwardLocked``
+    only ever appear on agreement responses, not leaked onto every budget line item's ``_meta`` as
+    an unconditional ``null``/``false`` (OPS-6312).
     """
 
     procurementShopLockedMessage = fields.Str(allow_none=True, load_default=None, dump_default=None)
     # Why the COR can't be changed: its pending change is in a contract modification in review (#3269).
     projectOfficerLockedMessage = fields.Str(allow_none=True, load_default=None, dump_default=None)
+    isPostPreAwardLocked = fields.Bool(load_default=False, dump_default=False)
 
 
 class AgreementData(Schema):

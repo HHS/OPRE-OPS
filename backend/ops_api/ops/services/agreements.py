@@ -556,7 +556,7 @@ class AgreementsService(OpsService[Agreement]):
         Args:
             agreement_classes: List of Agreement subclasses to query (e.g., ContractAgreement, GrantAgreement)
             data: Dictionary containing filter parameters including limit and offset
-            include_procurement: When True, eager-load BLIs/trackers and compute procurement metrics
+            include_procurement: When True, compute procurement metrics over all filtered agreements
 
         Returns:
             Tuple of (paginated agreements list, metadata dict with count/limit/offset)
@@ -601,7 +601,7 @@ class AgreementsService(OpsService[Agreement]):
             offset_value = 0
 
         page_ids = all_ids[offset_value : offset_value + limit_value]
-        paginated_results = _get_page_agreements(self.db_session, page_ids, include_procurement)
+        paginated_results = _get_page_agreements(self.db_session, page_ids)
 
         # Step 6: Procurement aggregates must cover ALL filtered agreements, not just the page.
         # useGetAllAgreements keeps only page-0 metadata, so if we scoped these to paginated_results
@@ -612,7 +612,7 @@ class AgreementsService(OpsService[Agreement]):
         procurement_step_summary = None
         procurement_days_in_step = None
         if include_procurement:
-            all_procurement_agreements = _get_page_agreements(self.db_session, all_ids, include_procurement=True)
+            all_procurement_agreements = _get_page_agreements(self.db_session, all_ids)
             overview_fiscal_year = (
                 filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
             )
@@ -1494,13 +1494,14 @@ def _get_all_matching_ids(
 def _get_page_agreements(
     session: Session,
     page_ids: list[int],
-    include_procurement: bool = False,
 ) -> list[Agreement]:
     """Fetch full Agreement objects for a page of IDs with eager loads for serialization."""
     if not page_ids:
         return []
 
     from sqlalchemy.orm import joinedload
+
+    from models.procurement_tracker import ProcurementTracker
 
     options = [
         selectinload(Agreement.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
@@ -1518,11 +1519,10 @@ def _get_page_agreements(
         joinedload(Agreement.project_officer),
         selectinload(Agreement.team_members),
         selectinload(Agreement.services_components),
+        # Trackers + steps are read for every row (`_meta.isPostPreAwardLocked`), so they must be
+        # eager-loaded for the page: a fixed number of extra queries per page, not one per row.
+        selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps),
     ]
-    if include_procurement:
-        from models.procurement_tracker import ProcurementTracker
-
-        options.append(selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps))
 
     agreements = session.scalars(select(Agreement).where(Agreement.id.in_(page_ids)).options(*options)).all()
 

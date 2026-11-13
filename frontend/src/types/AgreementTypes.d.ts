@@ -15,6 +15,7 @@ export type Agreement = {
         immutable_awarded_fields?: string[];
         procurementShopLockedMessage?: string | null;
         projectOfficerLockedMessage?: string | null;
+        isPostPreAwardLocked?: boolean;
     };
     agreement_reason?: string;
     agreement_type: AgreementType;

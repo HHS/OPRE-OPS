@@ -7,7 +7,8 @@ import CanDetailTabs from "./CanDetailTabs";
 vi.mock("react-router-dom", () => ({
     BrowserRouter: ({ children }) => <div>{children}</div>,
     useLocation: () => mockLocation,
-    useNavigate: () => mockNavigate
+    useNavigate: () => mockNavigate,
+    useNavigationType: () => "PUSH"
 }));
 
 // Create a mock navigate function outside
@@ -64,7 +65,7 @@ describe("CanDetailTabs", () => {
         const spendingTab = screen.getByText("CAN Spending");
         fireEvent.click(spendingTab);
 
-        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`);
+        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`, { preventScrollReset: true });
     });
 
     it("keeps the breadcrumb trail when switching tabs", () => {
@@ -74,6 +75,9 @@ describe("CanDetailTabs", () => {
 
         fireEvent.click(screen.getByText("CAN Spending"));
 
-        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`, { state: trailState });
+        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`, {
+            preventScrollReset: true,
+            state: trailState
+        });
     });
 });

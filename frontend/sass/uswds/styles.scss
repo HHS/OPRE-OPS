@@ -7,6 +7,12 @@ html {
     scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
 // COLORS
 :root {
     --base-light-variant: #f5f5f5;

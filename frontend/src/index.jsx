@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, createRoutesFromElements, Link, Navigate, Route, RouterProvider } from "react-router-dom";
 import store from "./store";
+import RootLayout from "./components/Layouts/RootLayout";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import ApproveAgreement from "./pages/agreements/approve";
 import Agreement from "./pages/agreements/details/Agreement";
@@ -82,7 +83,10 @@ const listCrumb = (listKey) => (
 
 const router = createBrowserRouter(
     createRoutesFromElements(
-        <Route errorElement={<ErrorPage />}>
+        <Route
+            element={<RootLayout />}
+            errorElement={<ErrorPage />}
+        >
             <Route
                 path="/login"
                 element={<Login />}
