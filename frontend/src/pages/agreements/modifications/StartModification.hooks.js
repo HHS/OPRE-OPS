@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import {
+    useGetAgreementAwardHistoryByIdQuery,
     useGetAgreementByIdQuery,
     useGetAgreementContractModificationEditsByIdQuery,
     useGetAgreementContractModificationsByIdQuery,
@@ -8,6 +9,7 @@ import {
     useGetVersionQuery,
     useSubmitContractModificationMutation
 } from "../../../api/opsAPI";
+import { getAgreementTotalCardValues } from "../../../components/Agreements/AgreementBLIAccordion/AgreementBLIAccordion.helpers";
 import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -17,9 +19,12 @@ import { getModBudgetLineDisabledReason } from "./StartModification.helpers";
 
 export const PLANNED_TO_EXECUTING = { status: { old: BLI_STATUS.PLANNED, new: BLI_STATUS.EXECUTING } };
 
+const EMPTY_AWARD_RECORD = {};
+
 /**
- * Start Modification page (#3268): select Planned budget lines to execute and send the
- * agreement's pending modified-LOE edits to the Division Director as a Contract Modification.
+ * Start Modification page (#3268, #3269): select Planned budget lines to execute and send the
+ * agreement's pending edits (Modified LOE edits and Admin Changes such as a COR change) to the
+ * Division Director as a Contract Modification.
  * @param {number} agreementId
  */
 const useStartModification = (agreementId) => {
@@ -38,19 +43,26 @@ const useStartModification = (agreementId) => {
         isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, { refetchOnMountOrArgChange: true, skip: !agreementId });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
-    const { data: allEdits = [] } = useGetAgreementContractModificationEditsByIdQuery(agreementId, {
+    // Every pending edit goes into the modification: Modified LOE edits and Admin Changes such as
+    // a COR change (#3269).
+    const { data: edits = [] } = useGetAgreementContractModificationEditsByIdQuery(agreementId, {
         skip: !agreementId,
         refetchOnMountOrArgChange: true
     });
-    // Only Modified LOE edits go into the modification for now; Admin Changes such as a COR
-    // change (OPS-3153) join the modification flow in #3269. The backend skips them on submit too.
-    const edits = React.useMemo(() => allEdits.filter((edit) => edit.modification_type === "MODIFIED_LOE"), [allEdits]);
     const { data: modificationRequests = [], isLoading: isLoadingRequests } =
         useGetAgreementContractModificationsByIdQuery(agreementId, {
             skip: !agreementId,
             refetchOnMountOrArgChange: true
         });
     const [submitContractModification, { isLoading: isSubmitting }] = useSubmitContractModificationMutation();
+
+    // The original award (the first record; modifications follow) for the agreement details. With
+    // no award record yet the award fields still show, as TBD, so they don't silently go missing.
+    const { data: awardHistory = [], isLoading: isLoadingAwardHistory } = useGetAgreementAwardHistoryByIdQuery(
+        agreementId,
+        { skip: !agreementId }
+    );
+    const awardRecord = awardHistory[0] ?? EMPTY_AWARD_RECORD;
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
@@ -69,10 +81,16 @@ const useStartModification = (agreementId) => {
     // Only an Awarded agreement with the capability on and no modification in review can start one.
     const canStartModification =
         Boolean(agreement?.is_awarded) && Boolean(versionData?.enable_modified_loe_edits) && !isInReview;
-    const isPageReady = !isLoadingAgreement && !isLoadingVersion && !isLoadingRequests;
+    // Wait for the award history too, so the award fields don't shift the details in after it loads.
+    const isPageReady = !isLoadingAgreement && !isLoadingVersion && !isLoadingRequests && !isLoadingAwardHistory;
 
     const selectedBudgetLines = React.useMemo(() => budgetLines.filter((bli) => bli.selected), [budgetLines]);
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines, servicesComponents);
+    // Award Total in the agreement details is the Agreement Total card's total under Select Budget
+    // Lines (UX, #3269), so it's computed the same way from the same inputs.
+    const awardTotal = agreement
+        ? getAgreementTotalCardValues(agreement, selectedBudgetLines, afterApproval).total
+        : null;
     const isSubmissionReady = (edits.length > 0 || selectedBudgetLines.length > 0) && !isSubmitting;
 
     const handleSelectBLI = (bliId) => {
@@ -139,6 +157,8 @@ const useStartModification = (agreementId) => {
         setNotes,
         isSubmissionReady,
         handleSendToApproval,
+        awardRecord,
+        awardTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         showModal,

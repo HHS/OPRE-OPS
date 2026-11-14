@@ -29,8 +29,9 @@ const CAN_REVIEW_INSTRUCTIONS =
     "The budget lines you are executing are using funds from the CANs displayed below. If you have not selected any budget lines, there will be no CANs to review.";
 
 /**
- * @component - Start a Contract Modification for a Modified LOE (#3268): review the edits that
- * require a modification, pick Planned budget lines to execute, and send it to approval.
+ * @component - Start a Contract Modification (#3268, #3269): review the edits that require a
+ * modification (Modified LOE edits and Admin Changes such as a COR change), pick Planned budget
+ * lines to execute, and send it to approval.
  * @returns {React.ReactElement}
  */
 export const StartModification = () => {
@@ -55,6 +56,8 @@ export const StartModification = () => {
         setNotes,
         isSubmissionReady,
         handleSendToApproval,
+        awardRecord,
+        awardTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         showModal,
@@ -139,6 +142,8 @@ export const StartModification = () => {
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
                 isAgreementAwarded={true}
+                awardRecord={awardRecord}
+                awardTotal={awardTotal}
             />
             <AgreementBLIAccordion
                 title="Select Budget Lines (if applicable)"
@@ -163,22 +168,31 @@ export const StartModification = () => {
                             optional={findIfOptional(servicesComponents, scLabel)}
                             serviceRequirementType={agreement?.service_requirement_type}
                         >
-                            <AgreementBLIReviewTable
-                                readOnly={false}
-                                budgetLines={group.budgetLines}
-                                isReviewMode={true}
-                                setSelectedBLIs={handleSelectBLI}
-                                toggleSelectActionableBLIs={() =>
-                                    toggleSelectActionableBLIs(group.servicesComponentNumber)
-                                }
-                                mainToggleSelected={toggleStates[group.servicesComponentNumber] || false}
-                                setMainToggleSelected={(newState) =>
-                                    setToggleStates((prev) => ({ ...prev, [group.servicesComponentNumber]: newState }))
-                                }
-                                servicesComponentNumber={group.servicesComponentNumber}
-                                action={actionOptions.CHANGE_PLANNED_TO_EXECUTING}
-                                clin={{ showColumn: showCLINColumn, readOnly: true }}
-                            />
+                            {group.budgetLines.length > 0 ? (
+                                <AgreementBLIReviewTable
+                                    readOnly={false}
+                                    budgetLines={group.budgetLines}
+                                    isReviewMode={true}
+                                    setSelectedBLIs={handleSelectBLI}
+                                    toggleSelectActionableBLIs={() =>
+                                        toggleSelectActionableBLIs(group.servicesComponentNumber)
+                                    }
+                                    mainToggleSelected={toggleStates[group.servicesComponentNumber] || false}
+                                    setMainToggleSelected={(newState) =>
+                                        setToggleStates((prev) => ({
+                                            ...prev,
+                                            [group.servicesComponentNumber]: newState
+                                        }))
+                                    }
+                                    servicesComponentNumber={group.servicesComponentNumber}
+                                    action={actionOptions.CHANGE_PLANNED_TO_EXECUTING}
+                                    clin={{ showColumn: showCLINColumn, readOnly: true }}
+                                />
+                            ) : (
+                                <p className="text-center margin-y-7">
+                                    You have not added any budget lines to this services component yet.
+                                </p>
+                            )}
                         </ServicesComponentAccordion>
                     );
                 })}

@@ -83,7 +83,7 @@ export const TeamMemberComboBox = ({
             {messages?.length > 0 && (
                 <span
                     className="usa-error-message"
-                    id="project-officer-combobox-input-error-message"
+                    id="team-member-combobox-input-error-message"
                     role="alert"
                 >
                     {messages[0]}

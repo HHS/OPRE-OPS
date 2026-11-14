@@ -228,21 +228,18 @@ class AgreementEditBundleService:
             agreement.id,
             current_user.id if current_user else None,
         )
-        # Also surface COR / Alternate COR changes, and a COR change recorded as pending on an
-        # Awarded agreement (OPS-3153), so both bundle and PATCH saves record them in history.
+        # Also surface COR / Alternate COR changes (OPS-3153), so both bundle and PATCH saves
+        # record them in history.
         history_fields = ("awarding_entity_id", "project_officer_id", "alternate_project_officer_id")
         changes = {
             field: change for field, change in full_updates.get("changes", {}).items() if field in history_fields
         }
-        pending_cor = self._agreements.pending_project_officer_change
-        if changes or pending_cor is not None:
+        if changes:
             self.agreement_updates = {
                 "owner_id": full_updates["owner_id"],
                 "updated_by": full_updates["updated_by"],
                 "changes": changes,
             }
-            if pending_cor is not None:
-                self.agreement_updates["pending_project_officer_change"] = pending_cor
 
     # ------------------------------------------------------------------
     # Services Components

@@ -17,7 +17,7 @@ import {
     cleanAgreementForApi,
     COR_CONTRACT_MODIFICATION_HEADING,
     formatTeamMember,
-    isCorChangePendingContractModification
+    isCorChangeTrackedAsContractModification
 } from "../../../helpers/agreement.helpers.js";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
@@ -170,7 +170,11 @@ const useAgreementEditForm = (
         nofo_number: nofoNumber,
         aln_numbers: alnNumbers,
         funding_period_months: fundingPeriodMonths,
-        _meta: { immutable_awarded_fields: immutableFields = [], procurementShopLockedMessage = null } = {}
+        _meta: {
+            immutable_awarded_fields: immutableFields = [],
+            procurementShopLockedMessage = null,
+            projectOfficerLockedMessage = null
+        } = {}
     } = agreement;
 
     const {
@@ -237,9 +241,9 @@ const useAgreementEditForm = (
         // it would lead to can never succeed anyway (OPS-6312).
         !procurementShopLockedMessage;
 
-    // OPS-3153: on an Awarded Contract/AA agreement, a COR change to anyone other than the saved
-    // Alternate COR is not applied on save. It is tracked as a pending contract modification edit
-    // on the Award & Modifications Tab, so the save is confirmed first. No approval, no bypass.
+    // OPS-3153, #3269: on an Awarded Contract/AA agreement, any COR change (including promoting the
+    // Alternate COR) applies on save and is tracked on the Award & Modifications Tab as an edit that
+    // requires a contract modification, so the save is confirmed first. No approval, no bypass.
     const tracksContractModifications = Boolean(
         versionData?.enable_modified_loe_edits &&
         isAgreementAwarded &&
@@ -247,10 +251,9 @@ const useAgreementEditForm = (
     );
     const savedProjectOfficerId = originalAgreementRef.current?.project_officer_id ?? null;
     const savedAlternateProjectOfficerId = originalAgreementRef.current?.alternate_project_officer_id ?? null;
-    const requiresCorModification = isCorChangePendingContractModification({
+    const requiresCorModification = isCorChangeTrackedAsContractModification({
         tracksContractModifications,
         savedProjectOfficerId,
-        savedAlternateProjectOfficerId,
         projectOfficerId: agreement?.project_officer_id
     });
 
@@ -536,7 +539,13 @@ const useAgreementEditForm = (
                     }
                     return true;
                 } catch (rejected) {
-                    if (!suppressErrorAlert) {
+                    // A COR change can be refused because its tracked change went into a contract
+                    // modification in review after this form was opened (#3269). Say why, and stay
+                    // on the form so the other edits aren't lost.
+                    const corLockedReason = rejected?.data?.errors?.project_officer_id?.[0];
+                    if (!suppressErrorAlert && corLockedReason) {
+                        setAlert({ type: "error", heading: "Error", message: corLockedReason });
+                    } else if (!suppressErrorAlert) {
                         setAlert({
                             type: "error",
                             heading: "Error",
@@ -544,7 +553,8 @@ const useAgreementEditForm = (
                             redirectUrl: "/error"
                         });
                     }
-                    // Don't call scrollToTop on error - let the redirect happen
+                    // Don't call scrollToTop on error: the generic error redirects to /error, and a
+                    // refused COR change leaves the user on the form with its alert
                     throw rejected; // Re-throw to prevent further execution
                 }
             }
@@ -619,7 +629,8 @@ const useAgreementEditForm = (
                 await goToNext({ agreement });
                 // eslint-disable-next-line no-unused-vars
             } catch (error) {
-                // Error already handled in saveAgreement with alert and redirect
+                // saveAgreement already showed the alert (and redirected to /error unless it was a
+                // refused COR change); stay put instead of leaving edit mode or moving on
                 return;
             }
         };
@@ -764,6 +775,9 @@ const useAgreementEditForm = (
     // Re-deriving it here is what caused #6312 — do not add local conditions.
     const isProcurementShopDisabled = Boolean(procurementShopLockedMessage);
     const disabledMessage = () => procurementShopLockedMessage ?? "Disabled";
+    // Also backend-owned: the COR is locked while its pending change is in a contract
+    // modification in review (#3269, ContractModificationEditService.project_officer_locked_message).
+    const isProjectOfficerDisabled = Boolean(projectOfficerLockedMessage);
 
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
@@ -893,6 +907,8 @@ const useAgreementEditForm = (
         uniquenessErrors,
         isProcurementShopDisabled,
         disabledMessage,
+        isProjectOfficerDisabled,
+        projectOfficerLockedMessage,
         fundingMethod: FUNDING_METHOD,
         agreementFilterOptions: AGREEMENT_FILTER_OPTIONS,
         handleAgreementFilterChange,

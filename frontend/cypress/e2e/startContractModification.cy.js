@@ -36,6 +36,25 @@ const declineOpenContractModifications = () => {
     });
 };
 
+/**
+ * Approve the contract modification in review as the Division Director, through the API: the review
+ * card is a placeholder and isn't shown on the Award & Modifications tab yet (#3269; review UI is #3331).
+ */
+const approveOpenContractModification = () => {
+    testLogin("division-director");
+    apiRequest({ url: `/agreements/${AGREEMENT_ID}/contract-modifications/` }).then((response) => {
+        const request = response.body.data.find((candidate) => candidate.status === "IN_REVIEW");
+        expect(request, "a contract modification in review").to.exist;
+        apiRequest({
+            method: "PATCH",
+            url: `/contract-modification-requests/${request.id}/`,
+            body: { action: "APPROVE", reviewer_notes: null }
+        })
+            .its("status")
+            .should("eq", 200);
+    });
+};
+
 describe("Start a Contract Modification", () => {
     let budgetLineId;
 
@@ -116,31 +135,117 @@ describe("Start a Contract Modification", () => {
                 // The value tag is inline-block, so a wrapped value shows up as a taller box (one line
                 // is 20px, two are 34px).
                 term.querySelectorAll("dd > span").forEach((value) => {
-                    expect(value.getBoundingClientRect().height, `${label} "${value.textContent}" doesn't wrap`).to.be.below(28);
+                    expect(
+                        value.getBoundingClientRect().height,
+                        `${label} "${value.textContent}" doesn't wrap`
+                    ).to.be.below(28);
                 });
             });
         });
     });
 
-    it("lets the Division Director approve it, and the Budget Lines tab shows Executing without reloading", () => {
+    it("executes the budget line when the Division Director approves it", () => {
         cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
         cy.get('[data-cy="start-modification-btn"]').should("be.enabled").click();
         cy.contains("tr", String(budgetLineId)).find("label").first().click();
         cy.get("textarea[name='submitter-notes']").type("E2E contract modification");
         cy.get('[data-cy="send-to-approval-btn"]').should("be.enabled").click();
+        cy.contains("Contract Modification Sent to Approval").should("be.visible");
 
-        testLogin("division-director");
+        approveOpenContractModification();
+
+        // The Division Director's review card isn't shown on the tab; everyone sees the outcome.
         cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
-        cy.get('[data-cy="approve-contract-modification-btn"]').click();
-        cy.get(".usa-modal__content").contains(/approve this Contract Modification\?/i);
-        cy.get('[data-cy="confirm-action"]').click();
-        cy.contains(/Contract Modification Approved/i).should("be.visible");
-
-        // Same mounted Agreement page, just a client-side tab switch — no reload. Regression test for
-        // OPS-1008's missed "Agreements" cache invalidation (reviewContractModification was only
-        // invalidating ContractModifications/BudgetLineItems/Notifications/AgreementHistory, so the
-        // agreement object the Budget Lines tab reads from stayed stale).
+        cy.contains("Contract Modification Pending Your Review").should("not.exist");
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
         cy.contains("tr", String(budgetLineId)).should("contain", "Executing");
+    });
+});
+
+describe("Start a Contract Modification for a COR change (#3269)", () => {
+    // Seeded users to change 523's COR to; the test uses one that isn't its COR or Alternate COR.
+    const CANDIDATE_COR_IDS = [512, 513, 514];
+
+    const patchAgreement = (body) =>
+        apiRequest({ method: "PATCH", url: `/agreements/${AGREEMENT_ID}`, body })
+            .its("status")
+            .should("eq", 200);
+
+    /**
+     * Leave 523 with no COR change waiting for a contract modification. A COR change applies on
+     * save and is tracked as one card; changing back to the card's From (the COR on the contract)
+     * removes it (OPS-3153, #3269). An approved change can't be undone this way (the new COR is
+     * then on the contract), so the COR may differ between runs.
+     */
+    const clearPendingCorChange = () => {
+        declineOpenContractModifications();
+        testLogin("system-owner");
+        apiRequest({ url: `/agreements/${AGREEMENT_ID}/contract-modification-edits/` }).then((response) => {
+            const pending = response.body.data.find((edit) => edit.field === "project_officer_id");
+            if (pending) {
+                patchAgreement({ project_officer_id: pending.old_value });
+            }
+        });
+    };
+
+    before(function () {
+        testLogin("system-owner");
+        apiRequest({ url: "/version/" }).then((response) => {
+            if (!response.body.enable_modified_loe_edits) {
+                this.skip();
+            }
+        });
+    });
+
+    beforeEach(() => {
+        clearPendingCorChange();
+    });
+
+    afterEach(() => {
+        clearPendingCorChange();
+    });
+
+    it("sends only a COR change to approval and locks the COR while it's in review", () => {
+        testLogin("system-owner");
+        apiRequest({ url: `/agreements/${AGREEMENT_ID}` }).then((response) => {
+            const { project_officer_id: cor, alternate_project_officer_id: alternate } = response.body;
+            cy.wrap(CANDIDATE_COR_IDS.find((id) => id !== cor && id !== alternate)).as("newCorId");
+        });
+        cy.get("@newCorId").then((newCorId) => {
+            patchAgreement({ project_officer_id: newCorId });
+            // The change applies on save; the card only tracks that the contract needs a modification.
+            apiRequest({ url: `/agreements/${AGREEMENT_ID}` })
+                .its("body.project_officer_id")
+                .should("eq", newCorId);
+        });
+
+        cy.visit(`/agreements/${AGREEMENT_ID}/start-modification`);
+        cy.get('[data-cy="mod-review-changes"]').should("contain", "Admin Change").and("contain", "COR");
+        // No budget lines selected: the COR change alone is enough to send.
+        cy.get('[data-cy="send-to-approval-btn"]').should("be.enabled").click();
+        cy.contains("Contract Modification Sent to Approval").should("be.visible");
+        cy.contains('[data-cy="contract-modification-edit-card"]', "Admin Change")
+            .find('[data-cy="contract-modification-edit-in-review"]')
+            .should("be.visible");
+
+        // While it's in review the COR can't be changed; the Alternate COR still can.
+        cy.visit(`/agreements/${AGREEMENT_ID}`);
+        cy.get("#edit").click();
+        cy.get('[data-cy="project-officer-locked-message"]').should("contain", "in review");
+        cy.get("#project-officer-combobox-input").should("be.disabled");
+
+        // The Division Director sees the In Review alert, not the placeholder review card.
+        testLogin("division-director");
+        cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
+        cy.contains("h2", "Contract Modification In Review").should("be.visible");
+        cy.contains("Contract Modification Pending Your Review").should("not.exist");
+        approveOpenContractModification();
+
+        // Approval doesn't change the COR again.
+        cy.get("@newCorId").then((newCorId) => {
+            apiRequest({ url: `/agreements/${AGREEMENT_ID}` })
+                .its("body.project_officer_id")
+                .should("eq", newCorId);
+        });
     });
 });

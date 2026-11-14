@@ -102,6 +102,33 @@ describe("StartModification", () => {
         expect(screen.queryByText("BL ID")).not.toBeInTheDocument();
     });
 
+    it("shows the award information, with the agreement total as the Award Total (#3269)", () => {
+        renderPage({
+            awardRecord: { award_date: "2024-06-26", award_amount: "1500000.00", vendor_unique_entity_id: "123456789" },
+            awardTotal: 3150
+        });
+
+        expect(screen.getByText("Award Date")).toBeInTheDocument();
+        expect(screen.getByText("6/26/2024")).toBeInTheDocument();
+        expect(screen.getByText("Award Total")).toBeInTheDocument();
+        expect(screen.getByText("$3,150.00")).toBeInTheDocument();
+        expect(screen.getByText("123456789")).toBeInTheDocument();
+    });
+
+    it("shows the empty-state message, not a table, for a services component with no budget lines", () => {
+        renderPage({
+            servicesComponents: [{ id: 9, number: 3, display_name: "Option Period 3" }],
+            groupedBudgetLinesByServicesComponent: [
+                { servicesComponentNumber: 3, serviceComponentGroupingLabel: "Option Period 3", budgetLines: [] }
+            ]
+        });
+
+        expect(
+            screen.getByText("You have not added any budget lines to this services component yet.")
+        ).toBeInTheDocument();
+        expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    });
+
     it("disables Send to Approval until there is something to modify", () => {
         renderPage();
 

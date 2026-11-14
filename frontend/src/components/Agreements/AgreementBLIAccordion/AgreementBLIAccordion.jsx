@@ -1,18 +1,13 @@
 import { NO_DATA } from "../../../constants";
 import { getProcurementShopFees } from "../../../helpers/agreement.helpers";
-import {
-    BLI_STATUS,
-    budgetLinesTotal,
-    getBudgetByStatus,
-    getNonDRAFTBudgetLines
-} from "../../../helpers/budgetLines.helpers";
-import { draftBudgetLineStatuses } from "../../../helpers/utils";
+import { BLI_STATUS, budgetLinesTotal, getNonDRAFTBudgetLines } from "../../../helpers/budgetLines.helpers";
 import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
 import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 import Accordion from "../../UI/Accordion";
 import ToggleButton from "../../UI/ToggleButton";
 import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../AgreementDetailsCards/BLIsByFYSummaryCard";
+import { getAgreementTotalCardValues } from "./AgreementBLIAccordion.helpers";
 
 /**
     @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
@@ -61,7 +56,6 @@ function AgreementBLIAccordion({
 
     // Use the same logic for both !isApprovePage and isDraftToPlanned scenarios
     const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items || []);
-    const selectedDRAFTBudgetLines = getBudgetByStatus(selectedBudgetLineItems, draftBudgetLineStatuses);
     const updatedBudgetLinesWithoutDrafts = !isDraftToPlanned
         ? updatedBudgetLines.filter((bli) => bli.status !== BLI_STATUS.DRAFT)
         : updatedBudgetLines;
@@ -71,10 +65,12 @@ function AgreementBLIAccordion({
 
     if (!isApprovePage || isDraftToPlanned) {
         // handle not approval page or BLI status changes from draft to planned scenarios
-        budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
-        feesForCards = getProcurementShopFees(agreement, budgetLinesForCards, afterApproval);
-        subTotalForCards = budgetLinesTotal(budgetLinesForCards);
-        totalsForCards = subTotalForCards + feesForCards;
+        ({
+            budgetLines: budgetLinesForCards,
+            subtotal: subTotalForCards,
+            fees: feesForCards,
+            total: totalsForCards
+        } = getAgreementTotalCardValues(agreement, selectedBudgetLineItems, afterApproval));
     } else if (changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
         // handle BLI changes with status planned or higher
         budgetLinesForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;

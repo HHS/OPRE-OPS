@@ -4,7 +4,8 @@ The user sends the agreement's pending "Edits That Require a Contract Modificati
 Planned current-FY budget lines to execute, to the Division Director
 (POST /agreements/<id>/contract-modifications/). The Director approves or declines it
 (PATCH /contract-modification-requests/<id>/). Approval creates the ``AgreementMod``, attaches
-the edits and executes the budget lines; a decline leaves the edits pending.
+the edits and executes the budget lines; a decline leaves Modified LOE edits pending (a COR
+change is undone instead, #3269; see test_cor_change_awarded.py).
 """
 
 import datetime
@@ -140,6 +141,11 @@ def test_submit_puts_edits_in_review_and_notifies_the_director(
         )
     ).one()
     assert notification.recipient_id == DIVISION_DIRECTOR_USER_ID
+    # Approving or declining in OPS is #3331, so the notification doesn't ask for it yet.
+    assert notification.message.startswith(
+        "A Contract Modification has been submitted for your review. Reviewing it in OPS is coming soon."
+    )
+    assert "approve" not in notification.message.lower()
 
     # AC13: who / when / what / remote IP.
     event = _latest_event(loaded_db, OpsEventType.START_CONTRACT_MODIFICATION)
@@ -496,6 +502,11 @@ def test_approve_creates_the_mod_attaches_edits_and_executes_budget_lines(
         )
     ).one()
     assert submitter_notification.title == "Contract Modification Approved"
+    # The submitter's success alert on the Award & Modifications tab shows this message (#3269).
+    assert submitter_notification.message == (
+        "Your Contract Modification has been successfully approved by your Division Director, "
+        "and the procurement process has started."
+    )
 
     event = _latest_event(loaded_db, OpsEventType.REVIEW_CONTRACT_MODIFICATION)
     assert event.created_by == DIVISION_DIRECTOR_USER_ID

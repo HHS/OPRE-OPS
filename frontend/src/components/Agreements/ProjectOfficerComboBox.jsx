@@ -15,6 +15,10 @@ import { useNavigate } from "react-router-dom";
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
+ * @param {boolean} [props.isDisabled] - Whether the selection is locked (optional).
+ * @param {string} [props.disabledMessage] - Why it's locked, shown as a hint and tooltip (optional).
+ * @param {string} [props.idPrefix] - Prefix for the element ids, unique per instance on a page, so each
+ * box's label names its own input (optional, defaults to "project-officer").
  * @returns {React.ReactElement} - The rendered component.
  */
 export const ProjectOfficerComboBox = ({
@@ -27,7 +31,10 @@ export const ProjectOfficerComboBox = ({
     overrideStyles = {},
     pending = false,
     className,
-    label
+    label,
+    isDisabled = false,
+    disabledMessage = "",
+    idPrefix = "project-officer"
 }) => {
     const navigate = useNavigate();
     const {
@@ -44,6 +51,12 @@ export const ProjectOfficerComboBox = ({
         return;
     }
 
+    const showLockedMessage = Boolean(isDisabled && disabledMessage);
+    const namespace = `${idPrefix}-combobox`;
+    const inputId = `${namespace}-input`;
+    const labelId = `${idPrefix}-label`;
+    const lockedMessageId = `${inputId}-locked-message`;
+
     const handleChange = (user) => {
         setSelectedProjectOfficer(user);
         onChange("project_officer", user?.id ?? null);
@@ -57,18 +70,26 @@ export const ProjectOfficerComboBox = ({
                 pending && "pending",
                 className
             )}
+            // react-select hides a disabled input from assistive tech (visibility: hidden), so
+            // aria on the input is never read. When locked, name the field's group and describe
+            // it with the reason instead; the reason also follows the value in reading order.
+            {...(showLockedMessage && {
+                role: "group",
+                "aria-labelledby": labelId,
+                "aria-describedby": lockedMessageId
+            })}
         >
             <label
                 className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
-                htmlFor="project-officer-combobox-input"
-                id="project-officer-label"
+                htmlFor={inputId}
+                id={labelId}
             >
                 {label}
             </label>
             {messages?.length > 0 && (
                 <span
                     className="usa-error-message"
-                    id="project-officer-combobox-input-error-message"
+                    id={`${inputId}-error-message`}
                     role="alert"
                 >
                     {messages[0]}
@@ -76,7 +97,7 @@ export const ProjectOfficerComboBox = ({
             )}
             <div>
                 <ComboBox
-                    namespace="project-officer-combobox"
+                    namespace={namespace}
                     data={users}
                     selectedData={selectedProjectOfficer}
                     setSelectedData={handleChange}
@@ -84,8 +105,21 @@ export const ProjectOfficerComboBox = ({
                     optionText={(user) => user.display_name || user.full_name || user.email}
                     overrideStyles={overrideStyles}
                     messages={messages}
+                    isDisabled={isDisabled}
+                    tooltipMsg={disabledMessage}
                 />
             </div>
+            {/* Below the field, so the COR and Alternate COR boxes stay level side by side. */}
+            {showLockedMessage && (
+                <span
+                    className="usa-hint display-block margin-top-1"
+                    id={lockedMessageId}
+                    data-cy="project-officer-locked-message"
+                    style={{ maxWidth: overrideStyles.width }}
+                >
+                    {disabledMessage}
+                </span>
+            )}
         </div>
     );
 };

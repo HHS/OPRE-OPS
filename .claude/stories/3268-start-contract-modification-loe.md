@@ -60,7 +60,7 @@ Designs: Figma section "Edit SCs & BLs on an Awarded Agreement" (node 15119:1336
 - **Service methods**:
   - `submit_modification` validates the one-open-mod rule and BL eligibility, then creates the request. The edits stay unattached (`agreement_mod_id` NULL); the resource layer marks them `in_review`.
   - `approve` reuses the existing `start_modification` attach logic. It creates an `AgreementMod` with `mod_type` Modified LOE (number and date null), sets the selected BLs to IN_EXECUTION directly (this deliberately bypasses `validate_no_execution_status_change_on_awarded`), and notifies the submitter.
-  - `decline` stores the reviewer notes and leaves the edits pending.
+  - `decline` stores the reviewer notes and leaves the edits pending. (Later, #3269: a COR change is undone and its card removed instead.)
 - **Documents**: the five upload slots (Mod Memo, Revised IGCE, Certificate of Funding, Revised SOW/PWS, Additional) are shown **disabled** with the app's "Documents tab is coming soon" tooltip, matching pre-award approval. Upload isn't live anywhere in OPS yet. The three new `DocumentType`s and the enum-derived type mapping are in place for when it ships.
 - **Award & Mods section** is now shown on every Awarded agreement (flag on), even with no edits, so the user can start an "as-is" modification that only executes Planned budget lines. Before, #3072 hid it when there were no edits.
 - **Supported cards**: only the edit types #3072 already records (Amount, CAN, Obligate By, Delete BL, Draft→Planned status).

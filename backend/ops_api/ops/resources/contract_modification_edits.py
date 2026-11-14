@@ -6,6 +6,7 @@ from flask import Response, current_app, request
 from flask_jwt_extended import get_current_user
 
 from models import (
+    PROJECT_OFFICER_EDIT_FIELD,
     Agreement,
     ContractModificationRequest,
     ContractModificationRequestStatus,
@@ -32,6 +33,14 @@ from ops_api.ops.utils.response import make_response_with_headers
 def _services_components_added(edits: list[dict]) -> list[str]:
     """Names of the Services Components added by the given serialized edits, for history (OPS-6440)."""
     return [edit["new_value"] for edit in edits if edit["field"] == ServicesComponentChangeRequest.create_field_name]
+
+
+def _project_officer_change(edits: list[dict]) -> dict | None:
+    """The COR change among the given serialized edits, for history (#3269)."""
+    for edit in edits:
+        if edit["field"] == PROJECT_OFFICER_EDIT_FIELD:
+            return {"old": edit["old_value"], "new": edit["new_value"]}
+    return None
 
 
 class AgreementContractModificationEditsAPI(BaseItemAPI):
@@ -118,6 +127,7 @@ class AgreementContractModificationsAPI(BaseItemAPI):
                     "contract_modification_request_id": mod_request.id,
                     "contract_modification_edit_ids": [edit["id"] for edit in data["edits"]],
                     "services_components_added": _services_components_added(data["edits"]),
+                    "project_officer_change": _project_officer_change(data["edits"]),
                     "budget_line_item_ids": data["budget_line_item_ids"],
                 }
             )
@@ -140,7 +150,8 @@ class ContractModificationRequestItemAPI(BaseItemAPI):
         PATCH /contract-modification-requests/<int:id>/
 
         Body: ``{"action": "APPROVE" | "DECLINE", "reviewer_notes": str | null}``. Approval
-        creates the modification, attaches the edits and executes the selected budget lines.
+        creates the modification, attaches the edits and executes the selected budget lines. A
+        decline returns Modified LOE edits to pending, and undoes a COR change (removing its card).
 
         Raises:
             ResourceNotFoundError: The request doesn't exist (404).
@@ -149,9 +160,8 @@ class ContractModificationRequestItemAPI(BaseItemAPI):
         """
         with OpsEventHandler(OpsEventType.REVIEW_CONTRACT_MODIFICATION) as meta:
             payload = ReviewContractModificationRequestSchema().load(request.json or {})
-            mod_request = ContractModificationRequestService(current_app.db_session).review(
-                id, payload["action"], payload["reviewer_notes"]
-            )
+            service = ContractModificationRequestService(current_app.db_session)
+            mod_request = service.review(id, payload["action"], payload["reviewer_notes"])
 
             data = ContractModificationRequestSchema().dump(mod_request)
             meta.metadata.update(
@@ -163,6 +173,10 @@ class ContractModificationRequestItemAPI(BaseItemAPI):
                     "requested_by_user_id": mod_request.created_by,
                     "contract_modification_edit_ids": [edit["id"] for edit in data["edits"]],
                     "services_components_added": _services_components_added(data["edits"]),
+                    # A declined COR change is no longer among the edits: the decline removed it.
+                    "project_officer_change": _project_officer_change(data["edits"])
+                    or service.declined_project_officer_change,
+                    "project_officer_revert": service.project_officer_revert,
                     "budget_line_item_ids": data["budget_line_item_ids"],
                     "reviewer_notes": mod_request.reviewer_notes,
                 }

@@ -303,4 +303,68 @@ describe("AgreementMetaAccordion", () => {
             expect(screen.getByText("IS_AWARDED_PROP_TEST")).toBeInTheDocument();
         });
     });
+
+    describe("award information (#3269)", () => {
+        const awardRecord = {
+            award_date: "2024-06-26",
+            award_amount: "1500000.00",
+            contract_number: "CT-1234567890",
+            vendor_name: "Flexion Inc.",
+            vendor_unique_entity_id: "123456789",
+            vendor_type: "SMALL_BUSINESS"
+        };
+        const renderAwarded = (props = {}) =>
+            render(
+                <AgreementMetaAccordion
+                    agreement={{ ...agreement, contract_number: "CT-1234567890", vendor: "Flexion Inc." }}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                    isAgreementAwarded={true}
+                    {...props}
+                />
+            );
+
+        it("shows the award date and vendor details from the award record, and the given Award Total", () => {
+            renderAwarded({ awardRecord, awardTotal: 1234567.5 });
+
+            for (const label of ["Award Date", "Award Total", "Vendor ID", "Vendor Type"]) {
+                expect(screen.getByText(label)).toBeInTheDocument();
+            }
+            expect(screen.getByText("6/26/2024")).toBeInTheDocument();
+            // The Award Total is the page's agreement total, not the award record's Award Amount (UX).
+            expect(screen.getByText("$1,234,567.50")).toBeInTheDocument();
+            expect(screen.queryByText("$1,500,000.00")).not.toBeInTheDocument();
+            expect(screen.getByText("123456789")).toBeInTheDocument();
+            expect(screen.getByText("Small Business")).toBeInTheDocument();
+            // Contract # and Vendor move to the left column with the award information, not shown twice.
+            expect(screen.getAllByText("Contract #")).toHaveLength(1);
+            expect(screen.getAllByText("CT-1234567890")).toHaveLength(1);
+            expect(screen.getAllByText("Vendor")).toHaveLength(1);
+            expect(screen.getAllByText("Flexion Inc.")).toHaveLength(1);
+        });
+
+        it("shows TBD for award fields the record doesn't have", () => {
+            const { unmount } = renderAwarded();
+            const withoutAward = screen.queryAllByText(NO_DATA).length;
+            unmount();
+
+            renderAwarded({ awardRecord: {}, awardTotal: null });
+
+            // Award Date, Award Total (no total given), Vendor ID and Vendor Type; Contract # and
+            // Vendor fall back to the agreement.
+            expect(screen.queryAllByText(NO_DATA)).toHaveLength(withoutAward + 4);
+            expect(screen.getByText("CT-1234567890")).toBeInTheDocument();
+            expect(screen.getByText("Flexion Inc.")).toBeInTheDocument();
+        });
+
+        it("leaves the details as they were without an award record", () => {
+            renderAwarded();
+
+            expect(screen.queryByText("Award Date")).not.toBeInTheDocument();
+            expect(screen.queryByText("Award Total")).not.toBeInTheDocument();
+            expect(screen.getByText("CT-1234567890")).toBeInTheDocument();
+            expect(screen.getByText("Flexion Inc.")).toBeInTheDocument();
+        });
+    });
 });
