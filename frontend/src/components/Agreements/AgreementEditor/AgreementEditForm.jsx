@@ -52,7 +52,7 @@ import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
  * @param {function} [props.onSaved] - Called with `{ ok, conflictField?, error? }` after a `saveTrigger`-driven save attempt completes. - optional
  * @param {function} [props.onValidityChange] - Called with `true` when the form is valid (no required-field, vest, or uniqueness errors), `false` otherwise. - optional
  * @param {function} [props.onProcurementShopChangeStateChange] - Called when the "needs Division Director approval" state changes, with `{ shouldRequestChange, oldProcurementShop, newProcurementShop }`. Lets a parent host its own confirmation modal. - optional
- * @param {function} [props.onCorChangeStateChange] - Called with `true` when saving would record a COR change as a pending contract modification edit on an Awarded agreement (OPS-3153), `false` otherwise. Lets a parent host its own confirmation modal. - optional
+ * @param {function} [props.onCorChangeStateChange] - Called with `true` when saving a COR change on an Awarded agreement will be tracked as an edit that requires a contract modification (OPS-3153), `false` otherwise. Lets a parent host its own confirmation modal. - optional
  * @param {React.MutableRefObject<{getSlice: () => object|null}|null>} [props.bundleSliceRef] - When provided, the component populates `ref.current = { getSlice }`. `getSlice()` returns either `null` (no agreement-level changes) or the cleaned agreement payload, suitable for the agreement edit-bundle endpoint. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
@@ -134,6 +134,8 @@ const AgreementEditForm = ({
         uniquenessErrors,
         isProcurementShopDisabled,
         disabledMessage,
+        isProjectOfficerDisabled,
+        projectOfficerLockedMessage,
         fundingMethod,
         agreementFilterOptions,
         handleAgreementFilterChange,
@@ -505,6 +507,7 @@ const AgreementEditForm = ({
                         <ProjectOfficerComboBox
                             selectedProjectOfficer={selectedAlternateProjectOfficer}
                             setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
+                            idPrefix="alternate-project-officer"
                             className="margin-left-4"
                             legendClassname="usa-label margin-top-0 margin-bottom-1"
                             overrideStyles={{ width: "15em" }}
@@ -703,10 +706,13 @@ const AgreementEditForm = ({
                             }}
                             overrideStyles={{ width: "15em" }}
                             label={convertCodeForDisplay("projectOfficer", agreementType)}
+                            isDisabled={isProjectOfficerDisabled}
+                            disabledMessage={projectOfficerLockedMessage}
                         />
                         <ProjectOfficerComboBox
                             selectedProjectOfficer={selectedAlternateProjectOfficer}
                             setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
+                            idPrefix="alternate-project-officer"
                             className="margin-left-4"
                             legendClassname="usa-label margin-top-0 margin-bottom-1"
                             overrideStyles={{ width: "15em" }}

@@ -560,6 +560,31 @@ describe("useAgreementEditForm - handleDraft creates new agreements", () => {
         );
         expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
     });
+
+    it("says why a COR change was refused and stays on the form (#3269)", async () => {
+        const reason =
+            "The COR change is in a contract modification that is in review, so the COR can't be changed until the modification is approved or declined.";
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Existing Agreement",
+                agreement_type: "CONTRACT",
+                team_members: [{ id: 1, full_name: "Test User" }]
+            })
+        );
+        updateAgreementMock.mockReturnValue({
+            unwrap: () => Promise.reject({ status: 400, data: { errors: { project_officer_id: [reason] } } })
+        });
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.handleDraft();
+        });
+
+        expect(setAlertMock).toHaveBeenCalledTimes(1);
+        expect(setAlertMock).toHaveBeenCalledWith({ type: "error", heading: "Error", message: reason });
+    });
 });
 
 describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () => {
@@ -988,6 +1013,29 @@ describe("useAgreementEditForm - procurement shop lock from backend _meta (OPS-6
         expect(result.current.isProcurementShopDisabled).toBe(false);
     });
 
+    it("locks the COR with the backend's message while its change is in a contract modification in review (#3269)", () => {
+        const message =
+            "The COR change is in a contract modification that is in review, so the COR can't be changed until the modification is approved or declined.";
+        useSelectorMock.mockReturnValue(true); // superuser: no exemption
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ id: 523, _meta: { projectOfficerLockedMessage: message } })
+        );
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: true });
+
+        expect(result.current.isProjectOfficerDisabled).toBe(true);
+        expect(result.current.projectOfficerLockedMessage).toBe(message);
+    });
+
+    it("leaves the COR editable when projectOfficerLockedMessage is absent", () => {
+        useSelectorMock.mockReturnValue(false);
+        useEditAgreementMock.mockReturnValue(makeEditState({ id: 523, _meta: {} }));
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: true });
+
+        expect(result.current.isProjectOfficerDisabled).toBe(false);
+    });
+
     it("no longer depends on agreement.in_review — an unrelated BLI change request in review does not disable the field or show the proc-shop tooltip", () => {
         // Before #6312, disabledMessage() branched on agreement.in_review (true for ANY in-review
         // change request, including BLI-only ones), independent of isProcurementShopDisabled's
@@ -1240,6 +1288,33 @@ describe("useAgreementEditForm - COR change on an Awarded agreement (OPS-3153)",
         expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ heading: "Agreement Updated" }));
     });
 
+    it("keeps the user on the form with the reason when Save Changes is refused because the COR locked (#3269)", async () => {
+        const reason =
+            "The COR change is in a contract modification that is in review, so the COR can't be changed until the modification is approved or declined.";
+        updateAgreementMock.mockReturnValue({
+            unwrap: vi.fn().mockRejectedValue({ status: 400, data: { errors: { project_officer_id: [reason] } } })
+        });
+        const goToNext = vi.fn();
+        const setIsEditMode = vi.fn();
+        const { result } = renderWithCor(
+            { project_officer_id: NEW_COR },
+            { isAgreementAwarded: true, isEditMode: true, setIsEditMode, goToNext }
+        );
+
+        await act(async () => {
+            await result.current.handleContinue();
+        });
+        await act(async () => {
+            await result.current.modalProps.handleConfirm();
+        });
+
+        expect(updateAgreementMock).toHaveBeenCalled();
+        expect(setAlertMock).toHaveBeenCalledTimes(1);
+        expect(setAlertMock).toHaveBeenCalledWith({ type: "error", heading: "Error", message: reason });
+        expect(setIsEditMode).not.toHaveBeenCalled();
+        expect(goToNext).not.toHaveBeenCalled();
+    });
+
     it("tells the unsaved-changes dialog that a COR change is pending", () => {
         renderWithCor({ project_officer_id: NEW_COR });
 
@@ -1256,17 +1331,17 @@ describe("useAgreementEditForm - COR change on an Awarded agreement (OPS-3153)",
         expect(result.current.requiresCorModification).toBe(true);
     });
 
-    it("saves without a modal when the COR is changed to the saved Alternate COR", async () => {
+    it("confirms first when the COR is changed to the saved Alternate COR too (#3269)", async () => {
         const { result } = renderWithCor({ project_officer_id: SAVED_ALTERNATE });
 
-        expect(result.current.requiresCorModification).toBe(false);
+        expect(result.current.requiresCorModification).toBe(true);
 
         await act(async () => {
             await result.current.handleContinue();
         });
 
-        expect(result.current.showModal).toBe(false);
-        expect(updateAgreementMock).toHaveBeenCalled();
+        expect(result.current.showModal).toBe(true);
+        expect(updateAgreementMock).not.toHaveBeenCalled();
     });
 
     it("still confirms when the new COR is an Alternate COR picked in the same edit", () => {

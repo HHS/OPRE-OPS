@@ -11,12 +11,21 @@ describe("getModBudgetLineDisabledReason", () => {
 
     it.each([
         ["Draft", { status: "DRAFT" }, MOD_BLI_DISABLED_REASONS.NOT_PLANNED],
-        ["Executing", { status: "IN_EXECUTION" }, MOD_BLI_DISABLED_REASONS.CANNOT_CHANGE],
-        ["Obligated", { status: "OBLIGATED" }, MOD_BLI_DISABLED_REASONS.CANNOT_CHANGE],
+        ["Executing", { status: "IN_EXECUTION" }, MOD_BLI_DISABLED_REASONS.EXECUTING],
+        ["Obligated", { status: "OBLIGATED" }, MOD_BLI_DISABLED_REASONS.OBLIGATED],
         ["In Review", { in_review: true }, MOD_BLI_DISABLED_REASONS.IN_REVIEW],
         ["future FY", { date_needed: "2044-07-01" }, MOD_BLI_DISABLED_REASONS.NOT_CURRENT_FY]
     ])("disables a %s budget line", (_label, overrides, reason) => {
         expect(getModBudgetLineDisabledReason({ ...plannedThisFY, ...overrides })).toBe(reason);
+    });
+
+    it("tells Executing and Obligated budget lines apart in the tooltip", () => {
+        expect(getModBudgetLineDisabledReason({ ...plannedThisFY, status: "IN_EXECUTION" })).toBe(
+            "Budget lines in Executing Status cannot be changed"
+        );
+        expect(getModBudgetLineDisabledReason({ ...plannedThisFY, status: "OBLIGATED" })).toBe(
+            "Budget lines in Obligated Status cannot be changed"
+        );
     });
 
     it("disables a budget line in a services component awaiting approval of its addition", () => {

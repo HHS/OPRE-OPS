@@ -7,6 +7,23 @@ branch: OPS-3153/edit-cor-awarded
 
 # Plan: #3153 — Edit the COR on an Awarded Agreement (admin contract mod)
 
+> **UX change (2026-11-11), implemented in PR #6527 (#3269):** UX revised the rule after #6497 merged.
+> - **Every COR change shows the modal**, including promoting the saved Alternate COR. This replaces the AC "User can change the COR to the Alternate COR without any approvals or modals".
+> - **The change applies on save.** It no longer waits for the contract modification to be approved.
+> - **The COR card stays on the Award & Modifications tab**, like a Modified LOE edit. It tracks that the contract still needs a modification.
+>
+> Revised decisions:
+> - **D1:** the COR changes on save, with no approval.
+> - **D2:** promoting the saved Alternate COR now shows the modal and is tracked too. The Alternate COR still clears automatically.
+> - **D6 / D12:** one card per agreement shows the net change, from the COR on the contract to the current COR. A further change updates its To, and changing back to the COR on the contract removes it. The COR is locked while its card is in a contract modification that is in review (#3269).
+> - **D10:** approving the modification doesn't change the COR. Declining it undoes the change: the COR goes back to the COR on the contract, a cleared Alternate COR is restored, and the card is removed (#3269).
+> - **D11:** Details always shows the current COR, which is now the new one.
+>
+> Other changes:
+> - **History:** a COR change records the normal "Change to COR" entry. The "Change to COR Pending Contract Modification" entry is gone.
+> - **Old data:** migration `6f1d2c3b4a59` applies cards recorded under the old rule, in dev and staging.
+> - **Issue ACs:** the PO still needs to reword #3153's ACs to match.
+
 ## Context
 
 Today `project_officer_id` (COR) can be changed freely on an awarded agreement, and nothing records that the signed contract no longer matches. Under #3153:
@@ -97,7 +114,7 @@ Figma: node `15119-133789` ("Edit COR on an Awarded Agreement"). Its approval an
    - In `_latest_per_budget_line_field`, key agreement-level rows as `("agreement", field)`. Without this, COR rows would be keyed `("bli", None)`.
    - In `schemas/contract_modification_edits.py`, add old and new display names for `project_officer_id` rows, resolved from `User`. Update the docstring for `field`.
 
-7. **#3269 boundary (D10).** In `services/contract_modification_requests.py`, filter `submit()` (`:68-123`) to `modification_type == MODIFIED_LOE`, so ADMIN_CHANGE rows stay pending and are never attached. `_approve`'s hardcoded `ModType.MODIFIED_LOE` stays correct.
+7. **#3269 boundary (D10).** *(Superseded by #3269: `submit()` now includes every pending edit, and approval picks the mod type.)* In `services/contract_modification_requests.py`, filter `submit()` (`:68-123`) to `modification_type == MODIFIED_LOE`, so ADMIN_CHANGE rows stay pending and are never attached. `_approve`'s hardcoded `ModType.MODIFIED_LOE` stays correct.
 
 8. **OpenAPI:** use `/sync-openapi` to document the edit-row `modification_type` value and the display-name fields.
 

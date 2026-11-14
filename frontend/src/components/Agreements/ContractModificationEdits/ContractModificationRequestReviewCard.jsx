@@ -29,9 +29,21 @@ import ContractModificationEditCard from "./ContractModificationEditCard";
  */
 
 /**
+ * The approval alert says what the approval changed. Only executing budget lines changes
+ * anything in OPS; the bundled edits, a COR change included (#3269), were applied when saved.
+ * @param {Object} request - The contract modification request being approved.
+ * @returns {string}
+ */
+const approvedMessage = (request) =>
+    request.budget_line_items?.length
+        ? "The selected budget lines have been moved to Executing."
+        : "The Contract Modification has been approved.";
+
+/**
  * The Division Director's Approve/Decline card for the agreement's in-review contract
- * modification (#1008). Shown instead of the read-only "In Review" alert when the viewer is
- * authorized to review it (`request.can_review`).
+ * modification (#1008), for viewers authorized to review it (`request.can_review`). Not rendered
+ * for now: the Award & Modifications tab shows everyone the read-only "In Review" alert until the
+ * review UI ships (#3331).
  *
  * @component
  * @param {Object} props
@@ -74,7 +86,7 @@ const ContractModificationRequestReviewCard = ({ request }) => {
                             type: isApprove ? "success" : "error",
                             heading: isApprove ? "Contract Modification Approved" : "Contract Modification Declined",
                             message: isApprove
-                                ? "The selected budget lines have been moved to Executing."
+                                ? approvedMessage(request)
                                 : "This Contract Modification has been declined and returned to the submitter."
                         });
                         scrollToTop();

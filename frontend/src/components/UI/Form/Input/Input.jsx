@@ -70,7 +70,7 @@ const Input = ({
                     <input
                         id={name}
                         name={name}
-                        className="usa-input"
+                        className="usa-input width-mobile-lg"
                         autoComplete="off"
                         autoCorrect="off"
                         value={value}

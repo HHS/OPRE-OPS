@@ -3,7 +3,8 @@
 The user bundles the agreement's pending "Edits That Require a Contract Modification" with any
 Planned budget lines they want to execute, and sends them to the Division Director. Approval
 creates the ``AgreementMod``, attaches the edits to it and executes the budget lines; a decline
-leaves the edits pending. Only one request per agreement can be in review at a time.
+leaves Modified LOE edits pending, and undoes a COR change and removes its card (#3269). Only one
+request per agreement can be in review at a time.
 """
 
 from datetime import datetime, timezone
@@ -16,10 +17,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from models import (
+    PROJECT_OFFICER_EDIT_FIELD,
     AgreementMod,
     BudgetLineItem,
     BudgetLineItemStatus,
-    ContractModificationEdit,
     ContractModificationRequest,
     ContractModificationRequestNotification,
     ContractModificationRequestStatus,
@@ -43,6 +44,10 @@ class ContractModificationRequestService:
         self.db_session = db_session or current_app.db_session
         self._edit_service = ContractModificationEditService(self.db_session)
         self._notification_service = NotificationService(self.db_session)
+        # Set by a decline that reverted a COR change (#3269), for the review event's history:
+        # the declined change ({"old", "new"}) and what the revert did.
+        self.declined_project_officer_change: Optional[dict] = None
+        self.project_officer_revert: Optional[dict] = None
 
     def get_for_agreement(self, agreement_id: int) -> list[ContractModificationRequest]:
         """Return the agreement's contract modification requests, newest first."""
@@ -88,15 +93,10 @@ class ContractModificationRequestService:
         if not agreement.is_awarded:
             raise ValidationError({"agreement_id": "Only an Awarded agreement can start a contract modification."})
 
-        # Lock the pending rows so two concurrent submissions can't both include them.
-        # Only Modified LOE edits go into the modification for now. Admin Changes (a COR change,
-        # OPS-3153) stay pending on the list until #3269 adds them to the modification flow.
+        # Lock the pending rows so two concurrent submissions can't both include them. Every
+        # pending edit goes in: Modified LOE edits and Admin Changes such as a COR change (#3269).
         pending_edits = list(
-            self.db_session.scalars(
-                self._edit_service._pending_query(agreement_id)
-                .where(ContractModificationEdit.modification_type == ModificationEditType.MODIFIED_LOE)
-                .with_for_update()
-            ).all()
+            self.db_session.scalars(self._edit_service._pending_query(agreement_id).with_for_update()).all()
         )
         if self.get_in_review(agreement_id) is not None:
             raise ValidationError({"agreement_id": _ALREADY_IN_REVIEW})
@@ -163,7 +163,7 @@ class ContractModificationRequestService:
             if action == APPROVE:
                 self._approve(request)
             else:
-                request.status = ContractModificationRequestStatus.DECLINED
+                self._decline(request)
 
             request.reviewed_by_id = user.id
             request.reviewed_on = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -175,6 +175,16 @@ class ContractModificationRequestService:
             self.db_session.rollback()
             raise
         return request
+
+    def _decline(self, request: ContractModificationRequest) -> None:
+        """Modified LOE edits go back to pending. A COR change is undone and its card removed
+        (#3269): it applied when it was saved, and the contract isn't being modified for it."""
+        for edit in list(request.edits):
+            if edit.modification_type == ModificationEditType.ADMIN_CHANGE and edit.field == PROJECT_OFFICER_EDIT_FIELD:
+                self.declined_project_officer_change = {"old": edit.old_value, "new": edit.new_value}
+                request.edits.remove(edit)
+                self.project_officer_revert = self._edit_service.revert_project_officer_change(request.agreement, edit)
+        request.status = ContractModificationRequestStatus.DECLINED
 
     def _approve(self, request: ContractModificationRequest) -> None:
         # Re-run the submit-time checks before writing anything: a budget line may have been
@@ -192,10 +202,7 @@ class ContractModificationRequestService:
         if changed:
             raise ValidationError({"budget_line_item_ids": changed})
 
-        # As-is when the request is pure budget-line execution with no bundled edits (#1008);
-        # Modified LOE when edits ride along (#3072's existing semantics).
-        mod_type = ModType.MODIFIED_LOE if request.edits else ModType.AS_IS
-        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=mod_type)
+        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=_mod_type(request))
         self.db_session.add(agreement_mod)
         self.db_session.flush()
 
@@ -246,9 +253,11 @@ class ContractModificationRequestService:
                 {
                     "contract_modification_request_id": request.id,
                     "title": "Contract Modification Approval Request",
+                    # Not "Please review and approve": the Division Director can't approve or
+                    # decline in OPS until #3331, so the linked tab only shows it as In Review.
                     "message": (
-                        "A Contract Modification has been submitted. "
-                        f"Please review and approve. \n\\\n\\\n[Link]({link})"
+                        "A Contract Modification has been submitted for your review. Reviewing it in "
+                        f"OPS is coming soon. \n\\\n\\\n[Link]({link})"
                     ),
                     "is_read": False,
                     "recipient_id": recipient_id,
@@ -278,7 +287,8 @@ class ContractModificationRequestService:
                 "contract_modification_request_id": request.id,
                 "title": f"Contract Modification {'Approved' if approved else 'Declined'}",
                 "message": (
-                    "Your Contract Modification has been successfully approved by your Division Director."
+                    "Your Contract Modification has been successfully approved by your Division Director, "
+                    "and the procurement process has started."
                     if approved
                     else "Your Contract Modification has been declined by your Division Director."
                 ),
@@ -313,3 +323,13 @@ class ContractModificationRequestService:
                 ContractModificationRequest.status == ContractModificationRequestStatus.IN_REVIEW,
             )
         )
+
+
+def _mod_type(request: ContractModificationRequest) -> ModType:
+    """As-is for pure budget-line execution (#1008), Admin when only Admin Changes such as a COR
+    change ride along (#3269), and Modified LOE when any Modified LOE edit does (#3072)."""
+    if not request.edits:
+        return ModType.AS_IS
+    if all(edit.modification_type == ModificationEditType.ADMIN_CHANGE for edit in request.edits):
+        return ModType.ADMIN
+    return ModType.MODIFIED_LOE

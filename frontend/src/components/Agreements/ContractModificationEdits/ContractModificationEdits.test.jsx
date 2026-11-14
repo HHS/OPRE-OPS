@@ -168,7 +168,7 @@ describe("ContractModificationEdits", () => {
         expect(within(getCards()[0]).getByText("In Review")).toBeInTheDocument();
     });
 
-    it("shows the Division Director's review card instead of the plain alert when they can review it", () => {
+    it("shows the Division Director the In Review alert, not the placeholder review card (#3269)", () => {
         mockQuery({ data: [{ ...AMOUNT_EDIT, in_review: true }] });
         mockRequests([
             { id: 9, status: "IN_REVIEW", can_review: true, requestor_notes: null, edits: [], budget_line_item_ids: [] }

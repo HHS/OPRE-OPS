@@ -160,7 +160,7 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
                     {content}
                 </>
             )}
-            <div className="display-flex flex-justify-end margin-top-4">
+            <div className="display-flex flex-justify-end margin-top-8">
                 {disabledReason ? (
                     // Focusable wrapper so keyboard users can reach the reason (a disabled button can't take focus).
                     <DisabledButtonWithTooltip

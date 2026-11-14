@@ -446,7 +446,7 @@ def test_get_agreement_item_includes_procurement_shop_locked_message_but_list_do
     """GET /agreements/{id} exposes _meta.procurementShopLockedMessage (#6312); GET /agreements
     (the list endpoint, which shares the same serializer) always returns it as null rather than
     computing it, since the computation needs a query per row — see
-    _serialize_agreement_with_meta's include_procurement_shop_lock parameter."""
+    _serialize_agreement_with_meta's include_edit_locks parameter."""
     draft_agreement = ContractAgreement(
         name="Meta Procurement Shop Unlocked Test",
         contract_number="CT-META-PROC-1",

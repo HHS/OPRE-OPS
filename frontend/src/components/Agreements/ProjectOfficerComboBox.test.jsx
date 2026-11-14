@@ -12,8 +12,14 @@ vi.mock("../../api/opsAPI", () => ({
 }));
 
 vi.mock("../UI/Form/ComboBox", () => ({
-    default: ({ selectedData, setSelectedData }) => (
-        <div data-testid="combobox">
+    default: ({ namespace, selectedData, setSelectedData, isDisabled, tooltipMsg }) => (
+        <div
+            data-testid="combobox"
+            data-disabled={String(Boolean(isDisabled))}
+            title={tooltipMsg}
+        >
+            {/* The real ComboBox gives react-select inputId `${namespace}-input`. */}
+            <input id={`${namespace}-input`} />
             <button
                 data-testid="select-user"
                 onClick={() => setSelectedData({ id: 5, display_name: "Jane Doe" })}
@@ -107,5 +113,67 @@ describe("ProjectOfficerComboBox", () => {
 
         expect(screen.getByText("This is required information")).toBeInTheDocument();
         expect(screen.getByRole("alert")).toBeInTheDocument();
+    });
+
+    it("shows why the COR is locked and disables the selection (#3269)", () => {
+        const message = "The COR change is in a contract modification that is in review.";
+        render(
+            <ProjectOfficerComboBox
+                selectedProjectOfficer={mockUsers[0]}
+                setSelectedProjectOfficer={mockSetSelectedProjectOfficer}
+                label="COR"
+                isDisabled
+                disabledMessage={message}
+            />
+        );
+
+        const hint = screen.getByText(message);
+        const combobox = screen.getByTestId("combobox");
+        expect(hint).toBeVisible();
+        expect(combobox).toHaveAttribute("data-disabled", "true");
+        expect(combobox).toHaveAttribute("title", message);
+        // Screen readers announce the reason with the field's group, since react-select hides a
+        // disabled input from them.
+        expect(screen.getByRole("group", { name: "COR" })).toHaveAccessibleDescription(message);
+        // Below the field, so it doesn't push the COR box out of line with the Alternate COR box.
+        expect(combobox.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it("shows no locked message when enabled", () => {
+        render(
+            <ProjectOfficerComboBox
+                selectedProjectOfficer={null}
+                setSelectedProjectOfficer={mockSetSelectedProjectOfficer}
+                label="COR"
+            />
+        );
+
+        expect(screen.queryByTestId("combobox")).toHaveAttribute("data-disabled", "false");
+        expect(screen.queryByRole("group")).not.toBeInTheDocument();
+        expect(screen.queryByText(/contract modification/i)).not.toBeInTheDocument();
+    });
+
+    it("gives each box its own ids, so each label names its own input", () => {
+        render(
+            <>
+                <ProjectOfficerComboBox
+                    selectedProjectOfficer={null}
+                    setSelectedProjectOfficer={mockSetSelectedProjectOfficer}
+                    label="COR"
+                />
+                <ProjectOfficerComboBox
+                    selectedProjectOfficer={null}
+                    setSelectedProjectOfficer={mockSetSelectedProjectOfficer}
+                    label="Alternate COR"
+                    idPrefix="alternate-project-officer"
+                />
+            </>
+        );
+
+        const cor = screen.getByLabelText("COR");
+        const alternate = screen.getByLabelText("Alternate COR");
+        expect(cor).toHaveAttribute("id", "project-officer-combobox-input");
+        expect(alternate).toHaveAttribute("id", "alternate-project-officer-combobox-input");
+        expect(cor).not.toBe(alternate);
     });
 });

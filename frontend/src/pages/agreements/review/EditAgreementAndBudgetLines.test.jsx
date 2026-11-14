@@ -341,6 +341,21 @@ describe("EditAgreementAndBudgetLines", () => {
         });
     });
 
+    it("shows the backend's validation reason when the save is refused (#3269)", async () => {
+        const reason =
+            "The COR change is in a contract modification that is in review, so the COR can't be changed until the modification is approved or declined.";
+        nextBundleResult = {
+            rejectWith: {
+                status: 400,
+                data: { message: "Validation failed", errors: { project_officer_id: [reason] } }
+            }
+        };
+        const { store } = renderPage();
+        fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+        await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+        await waitFor(() => expect(store.getState().alert.message).toBe(`An error occurred while saving. ${reason}`));
+    });
+
     it("renders an access denied screen when the agreement is not editable", () => {
         mockAgreementResult = {
             data: { ...mockAgreement, _meta: { isEditable: false } },
