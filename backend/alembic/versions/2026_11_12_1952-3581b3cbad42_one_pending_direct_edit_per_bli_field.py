@@ -6,7 +6,7 @@ with no ``agreement_mod_id`` and letting it later resurface with a stale ``old_v
 partial unique index so the second concurrent insert fails fast instead.
 
 Revision ID: 3581b3cbad42
-Revises: bacd8725cb2d
+Revises: b6419b17838e
 Create Date: 2026-11-12 19:52:00.000000+00:00
 
 """
@@ -18,7 +18,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "3581b3cbad42"
-down_revision: Union[str, None] = "bacd8725cb2d"
+down_revision: Union[str, None] = "b6419b17838e"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
