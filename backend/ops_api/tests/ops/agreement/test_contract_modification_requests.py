@@ -868,10 +868,10 @@ def test_review_marks_the_directors_request_notification_read(
 
 # ---=== A budget line in an in-review modification is locked everywhere (OPS-3268) ===---
 #
-# ``_validate_not_in_review_modification`` and the ``_meta`` lock it shares with
-# ``budget_line_ids_in_review_modification`` have no dedicated test: a regression here would
-# leave both the backend and Cypress suites green while letting a Division Director review a
-# budget line whose values have since changed underneath them.
+# Covers ``_validate_not_in_review_modification`` and the two separate ``_meta`` lock
+# implementations it shares with ``budget_line_ids_in_review_modification``: the single-BLI path
+# (``get_is_editable_meta_data``, used by ``GET /budget-line-items/:id``) and the agreement-level
+# batch path (``get_bli_is_editable_meta_data_for_agreements``, used by ``GET /agreements/:id``).
 
 
 def test_patch_on_a_line_in_an_in_review_modification_is_blocked(awarded_with_edit, basic_user_auth_client, app_ctx):
@@ -932,6 +932,26 @@ def test_meta_locks_a_line_in_an_in_review_modification_with_a_message(
 
     assert response.status_code == 200
     meta = response.json["_meta"]
+    assert meta["isEditable"] is False
+    assert meta["isDeletable"] is False
+    assert meta["lockedMessage"] == BLI_IN_REVIEW_MODIFICATION_MESSAGE
+
+
+def test_agreement_batch_meta_also_locks_a_line_in_an_in_review_modification(
+    awarded_with_edit, basic_user_auth_client, app_ctx
+):
+    """The agreement-level batch ``_meta`` computation (GET /agreements/:id) implements this lock
+    independently of the single-BLI path above -- it has its own call into
+    ``budget_line_ids_in_review_modification`` rather than delegating to the single-BLI function,
+    so a regression there wouldn't be caught by the test above."""
+    agreement, _, executable = awarded_with_edit
+    assert _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).status_code == 201
+
+    response = basic_user_auth_client.get(url_for("api.agreements-item", id=agreement.id))
+
+    assert response.status_code == 200
+    (bli,) = [bli for bli in response.json["budget_line_items"] if bli["id"] == executable.id]
+    meta = bli["_meta"]
     assert meta["isEditable"] is False
     assert meta["isDeletable"] is False
     assert meta["lockedMessage"] == BLI_IN_REVIEW_MODIFICATION_MESSAGE
