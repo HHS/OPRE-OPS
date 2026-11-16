@@ -180,7 +180,7 @@ export const BudgetLinesForm = ({
                 <div className="grid-row grid-gap flex-align-end">
                     <div className="grid-col-6">
                         <div
-                            className={`usa-form-group ${scCn || ""}`}
+                            className={scCn || ""}
                             data-testid="services-component-form-group"
                         >
                             {isGrant ? (
