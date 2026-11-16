@@ -144,13 +144,16 @@ describe("agreement change accordion", () => {
         // Wait for action change to take effect
         // Wait for checkboxes to appear
         cy.get('[data-cy="check-all"]', { timeout: 10000 }).should("be.visible");
-        // Planned BLI becomes selectable once the action is applied
-        cy.get('input[id="16099"]').should("not.be.disabled");
+        // Planned BLI becomes selectable once the action is applied. 16103, not the seed
+        // fixture's nominal 16099: OPS-3268's new agreement-523 budget lines are CONTRACT-type,
+        // seeded before this AA fixture in the shared budget_line_item sequence, so they shift
+        // every id after them by the same amount.
+        cy.get('input[id="16103"]').should("not.be.disabled");
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
         });
         cy.get('[type="checkbox"]').should("have.length", 6);
-        cy.get('input[id="16099"]').should("be.checked");
+        cy.get('input[id="16103"]').should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').should("exist");
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
             cy.contains("G994426-5Y");
@@ -168,7 +171,7 @@ describe("agreement change accordion", () => {
         // get content in review-card to see if it exists and contains planned, status and amount
         cy.get("[data-cy='review-card']").each(($card) => {
             cy.wrap($card).within(() => {
-                cy.contains(/16099/);
+                cy.contains(/16103/);
                 cy.contains(/planned/i);
                 cy.contains(/executing/i);
                 cy.contains(/status/i);
@@ -352,13 +355,16 @@ describe("agreement review CANS accordion", () => {
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
         // Wait for checkboxes to appear
         cy.get('[data-cy="check-all"]', { timeout: 10000 }).should("be.visible");
-        // Planned BLI becomes selectable once the action is applied
-        cy.get('input[id="16099"]').should("not.be.disabled");
+        // Planned BLI becomes selectable once the action is applied. 16103, not the seed
+        // fixture's nominal 16099: OPS-3268's new agreement-523 budget lines are CONTRACT-type,
+        // seeded before this AA fixture in the shared budget_line_item sequence, so they shift
+        // every id after them by the same amount.
+        cy.get('input[id="16103"]').should("not.be.disabled");
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
         });
         cy.get('[type="checkbox"]').should("have.length", 6);
-        cy.get('input[id="16099"]').should("be.checked");
+        cy.get('input[id="16103"]').should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]', { timeout: 10000 }).should("exist").contains("Over Budget");
     });
 });
