@@ -131,7 +131,7 @@ describe("PreAwardApprovalAlert", () => {
             </Provider>
         );
 
-        const closeButton = screen.getByRole("img", { name: "close" });
+        const closeButton = screen.getByRole("button", { name: "close" });
         fireEvent.click(closeButton);
 
         expect(mockDismissNotification).toHaveBeenCalledWith(1);

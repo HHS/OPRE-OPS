@@ -40,7 +40,7 @@ describe("AgreementChangesAlert", () => {
                 changeRequests={changeRequests}
             />
         );
-        const close = screen.getByRole("img", { name: "close" });
+        const close = screen.getByRole("button", { name: "close" });
         expect(close).toBeInTheDocument();
         fireEvent.click(close);
         expect(setIsAlertVisible).toHaveBeenCalledWith(false);
