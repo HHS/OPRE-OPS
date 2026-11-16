@@ -115,6 +115,15 @@ describe("StartModification", () => {
         expect(screen.getByText("123456789")).toBeInTheDocument();
     });
 
+    it("shows a selected budget line's fee-inclusive total, not its pre-fee amount", () => {
+        renderPage({
+            selectedBudgetLines: [{ id: 15003, amount: 1000000.0, total: 1048000.0, date_needed: "2026-10-01" }]
+        });
+
+        expect(screen.getByText("$1,048,000.00")).toBeInTheDocument();
+        expect(screen.queryByText("$1,000,000.00")).not.toBeInTheDocument();
+    });
+
     it("shows the empty-state message, not a table, for a services component with no budget lines", () => {
         renderPage({
             servicesComponents: [{ id: 9, number: 3, display_name: "Option Period 3" }],

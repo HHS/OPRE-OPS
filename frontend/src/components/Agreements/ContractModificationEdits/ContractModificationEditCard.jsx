@@ -163,16 +163,33 @@ const ContractModificationEditCard = ({ edit }) => {
                         value={convertCodeForDisplay("changeToTypes", edit.field)}
                         className="margin-0"
                     />
-                    <TermTag
-                        label="From"
-                        value={oldValue}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="To"
-                        value={newValue}
-                        className="margin-0"
-                    />
+                    {edit.field === "status" ? (
+                        <>
+                            <TermTag
+                                label="From"
+                                bliStatus={edit.old_value}
+                                className="margin-0"
+                            />
+                            <TermTag
+                                label="To"
+                                bliStatus={edit.new_value}
+                                className="margin-0"
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <TermTag
+                                label="From"
+                                value={oldValue}
+                                className="margin-0"
+                            />
+                            <TermTag
+                                label="To"
+                                value={newValue}
+                                className="margin-0"
+                            />
+                        </>
+                    )}
                 </>
             )}
             {edit.in_review && (

@@ -14,6 +14,8 @@ import MarkdownLink from "../Markdown/MarkdownLink";
     @property {boolean} [isAlertVisible] - Whether the alert is visible.
     @property {Function} [setIsAlertVisible] - The function to set the alert visibility.
     @property {number} [headingLevel=4] - Heading level (1-6), defaults to 4
+    @property {boolean} [isOverlay] - When true, the alert floats on top of the page (position-fixed,
+      like the global flash Alert) instead of taking up space in the normal content flow. - optional
 */
 
 /**
@@ -29,14 +31,21 @@ const SimpleAlert = ({
     isClosable = false,
     isAlertVisible = true,
     setIsAlertVisible = () => {},
-    headingLevel = 4
+    headingLevel = 4,
+    isOverlay = false
 }) => {
     // Validate heading level (1-6)
     const parsedLevel = typeof headingLevel === "number" ? headingLevel : parseInt(headingLevel);
     const level = isNaN(parsedLevel) ? 4 : Math.max(1, Math.min(6, parsedLevel));
     const headingTag = `h${level}`;
 
-    let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-2 margin-bottom-2";
+    // Overlay mode floats the alert over the page at the position it would have occupied in
+    // normal flow (position-fixed with no top/bottom set uses that "static position" by spec),
+    // so content below it isn't pushed down -- the same trick the global flash Alert uses.
+    // grid-container replaces the negative-margin bleed trick, which only works in normal flow.
+    let classNames = isOverlay
+        ? "grid-container usa-alert margin-top-0 position-fixed pin-x z-top"
+        : "usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-2 margin-bottom-2";
 
     switch (type) {
         case "info":
@@ -95,16 +104,21 @@ const SimpleAlert = ({
                     {children}
                 </div>
                 {isClosable && (
-                    <FontAwesomeIcon
-                        icon={faClose}
-                        className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                    <button
+                        type="button"
+                        className="usa-button usa-button--unstyled height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                         aria-label="close"
                         data-position="top"
                         data-cy="close-alert"
                         onClick={() => {
                             setIsAlertVisible(false);
                         }}
-                    />
+                    >
+                        <FontAwesomeIcon
+                            icon={faClose}
+                            aria-hidden={true}
+                        />
+                    </button>
                 )}
             </div>
         </div>

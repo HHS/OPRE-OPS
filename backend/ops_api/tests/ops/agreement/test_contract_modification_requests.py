@@ -34,6 +34,7 @@ from models import (
 )
 from models.agreement_history import _services_components_added_phrase
 from models.utils.fiscal_year import get_current_fiscal_year
+from ops_api.ops.services.contract_modification_edits import BLI_IN_REVIEW_MODIFICATION_MESSAGE
 from tests.ops.agreement.test_contract_modification_edits import (  # noqa: F401 (fixtures)
     BASIC_USER_ID,
     DIVISION_DIRECTOR_USER_ID,
@@ -60,7 +61,9 @@ def _review_mod(client, request_id, action="APPROVE", **body):
     )
 
 
-def _add_bli(loaded_db, agreement, test_can, *, status=BudgetLineItemStatus.PLANNED, date_needed=None):
+def _add_bli(
+    loaded_db, agreement, test_can, *, status=BudgetLineItemStatus.PLANNED, date_needed=None, services_component_id=None
+):
     """A BLI in the current fiscal year unless ``date_needed`` says otherwise."""
     bli = ContractBudgetLineItem(
         agreement_id=agreement.id,
@@ -71,6 +74,7 @@ def _add_bli(loaded_db, agreement, test_can, *, status=BudgetLineItemStatus.PLAN
         status=status,
         proc_shop_fee_percentage=0,
         created_by=BASIC_USER_ID,
+        services_component_id=services_component_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -860,3 +864,102 @@ def test_review_marks_the_directors_request_notification_read(
     ).all()
     by_recipient = {n.recipient_id: n.is_read for n in notifications}
     assert by_recipient == {DIVISION_DIRECTOR_USER_ID: True, BASIC_USER_ID: False}
+
+
+# ---=== A budget line in an in-review modification is locked everywhere (OPS-3268) ===---
+#
+# ``_validate_not_in_review_modification`` and the ``_meta`` lock it shares with
+# ``budget_line_ids_in_review_modification`` have no dedicated test: a regression here would
+# leave both the backend and Cypress suites green while letting a Division Director review a
+# budget line whose values have since changed underneath them.
+
+
+def test_patch_on_a_line_in_an_in_review_modification_is_blocked(awarded_with_edit, basic_user_auth_client, app_ctx):
+    """The line with the pending direct edit is locked too: every pending edit attaches to the
+    submitted modification, not just the lines explicitly selected to execute. (Not ``executable``
+    -- it has no services_component_id, so a PATCH on it fails the unrelated required-fields check
+    for a non-Draft status before ever reaching this validator.)"""
+    agreement, bli, executable = awarded_with_edit
+    assert _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).status_code == 201
+
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"amount": 999999.00},
+    )
+
+    assert response.status_code == 400, response.json
+    assert response.json["errors"]["status"] == [BLI_IN_REVIEW_MODIFICATION_MESSAGE]
+
+
+def test_delete_on_a_line_in_an_in_review_modification_is_blocked(
+    awarded_with_edit, basic_user_auth_client, loaded_db, app_ctx
+):
+    agreement, _, executable = awarded_with_edit
+    assert _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).status_code == 201
+
+    response = basic_user_auth_client.delete(url_for("api.budget-line-items-item", id=executable.id))
+
+    assert response.status_code == 400, response.json
+    assert response.json["errors"]["status"] == [BLI_IN_REVIEW_MODIFICATION_MESSAGE]
+    loaded_db.expire_all()
+    assert loaded_db.get(ContractBudgetLineItem, executable.id) is not None
+
+
+def test_edit_bundle_on_a_line_in_an_in_review_modification_is_blocked(
+    awarded_with_edit, basic_user_auth_client, app_ctx
+):
+    """The line with the pending direct edit is locked too: every pending edit attaches to the
+    submitted modification, not just the lines explicitly selected to execute."""
+    agreement, bli, executable = awarded_with_edit
+    assert _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).status_code == 201
+
+    response = basic_user_auth_client.patch(
+        url_for("api.agreements-edit-bundle", id=agreement.id),
+        json={"budget_line_items": {"update": [{"id": bli.id, "line_description": "Should not apply"}]}},
+    )
+
+    assert response.status_code == 400, response.json
+    assert response.json["errors"]["status"] == [BLI_IN_REVIEW_MODIFICATION_MESSAGE]
+
+
+def test_meta_locks_a_line_in_an_in_review_modification_with_a_message(
+    awarded_with_edit, basic_user_auth_client, app_ctx
+):
+    agreement, _, executable = awarded_with_edit
+    assert _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).status_code == 201
+
+    response = basic_user_auth_client.get(url_for("api.budget-line-items-item", id=executable.id))
+
+    assert response.status_code == 200
+    meta = response.json["_meta"]
+    assert meta["isEditable"] is False
+    assert meta["isDeletable"] is False
+    assert meta["lockedMessage"] == BLI_IN_REVIEW_MODIFICATION_MESSAGE
+
+
+def test_an_unselected_line_with_no_pending_edit_stays_editable(
+    awarded_with_edit, basic_user_auth_client, loaded_db, test_can, app_ctx
+):
+    """A third Planned line that is neither selected to execute nor has a pending edit isn't
+    swept up by the lock -- only lines actually in review are affected."""
+    agreement, bli, executable = awarded_with_edit
+    unselected = _add_bli(
+        loaded_db,
+        agreement,
+        test_can,
+        services_component_id=bli.services_component_id,
+        date_needed=datetime.date(2043, 1, 1),
+    )
+    assert _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).status_code == 201
+
+    patch_response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=unselected.id),
+        json={"amount": 123456.00},
+    )
+    assert patch_response.status_code == 200, patch_response.json
+
+    meta_response = basic_user_auth_client.get(url_for("api.budget-line-items-item", id=unselected.id))
+    meta = meta_response.json["_meta"]
+    assert meta["isEditable"] is True
+    assert meta["isDeletable"] is True
+    assert meta["lockedMessage"] is None

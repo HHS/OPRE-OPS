@@ -45,7 +45,7 @@ const SelectedBudgetLineModCard = ({ budgetLine, requestedByName }) => (
         edit={{
             id: `execute-${budgetLine.id}`,
             budget_line_item_id: budgetLine.id,
-            amount: budgetLine.amount,
+            amount: budgetLine.total,
             field: "status",
             old_value: PLANNED_TO_EXECUTING.status.old,
             new_value: PLANNED_TO_EXECUTING.status.new,

@@ -368,6 +368,19 @@ describe("ContractModificationEdits", () => {
         expect(within(corCard).getByText("Change To")).toBeInTheDocument();
     });
 
+    it("renders a direct-apply status edit with the colored BLI status tag, not plain text", () => {
+        mockQuery({
+            data: [{ ...AMOUNT_EDIT, id: 7, field: "status", old_value: "DRAFT", new_value: "PLANNED" }]
+        });
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        const [card] = getCards();
+        const [fromTag, toTag] = within(card).getAllByText(/^(Draft|Planned)$/);
+        expect(fromTag).toHaveClass("bg-brand-data-viz-bl-by-status-1");
+        expect(toTag).toHaveClass("bg-brand-data-viz-bl-by-status-2");
+    });
+
     it("marks a Services Component addition In Review while its modification is in review", () => {
         const scEdit = { ...AMOUNT_EDIT, budget_line_item_id: null, services_component_id: 31 };
         mockQuery({

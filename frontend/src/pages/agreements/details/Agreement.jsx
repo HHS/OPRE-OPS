@@ -282,6 +282,7 @@ const Agreement = () => {
                     isClosable={true}
                     message="This agreement is In Review for Pre-Award Approval. This includes an approval from the Division Director, as well as a requisition from the Budget Team. Edits or changes cannot be made at this time."
                     setIsAlertVisible={setIsPreAwardInReviewAlertVisible}
+                    isOverlay={true}
                 />
             )}
             {isAwardInReview && isAwardInReviewAlertVisible && (
@@ -291,6 +292,7 @@ const Agreement = () => {
                     isClosable={true}
                     message="This agreement is In Review for Award Approval. Edits or changes cannot be made at this time."
                     setIsAlertVisible={setIsAwardInReviewAlertVisible}
+                    isOverlay={true}
                 />
             )}
             {isContractModInReview && isContractModInReviewAlertVisible && (
@@ -300,6 +302,7 @@ const Agreement = () => {
                     isClosable={true}
                     message="There is a Contract Modification pending approval from the Division Director. After it is approved, the procurement process will start and progress can be followed on the Procurement Tracker Tab."
                     setIsAlertVisible={setIsContractModInReviewAlertVisible}
+                    isOverlay={true}
                 />
             )}
             {showNonContractAlert && (
