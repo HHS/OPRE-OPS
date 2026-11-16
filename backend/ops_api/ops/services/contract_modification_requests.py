@@ -80,7 +80,6 @@ class ContractModificationRequestService:
     ) -> ContractModificationRequest:
         """Send the agreement's pending edits, plus the selected Planned budget lines to execute,
         to the Division Director for approval."""
-        self._check_enabled()
         agreement = self._edit_service._get_supported_agreement(agreement_id)
 
         user = get_current_user()
@@ -106,6 +105,10 @@ class ContractModificationRequestService:
             raise ValidationError(
                 {"agreement_id": "Select a budget line to execute, or make an edit that requires a modification."}
             )
+
+        # Checked last: the flag only gates starting a new workflow, never resolving one already
+        # in flight, so it must not take precedence over the state/authorization checks above.
+        self._check_enabled()
 
         request = ContractModificationRequest(
             agreement_id=agreement_id,
@@ -134,9 +137,10 @@ class ContractModificationRequestService:
         """Approve or decline a contract modification request that is in review.
 
         All-or-nothing: on any error the session is rolled back, so a failed approval leaves no
-        modification, no attached edits and no executed budget lines behind.
+        modification, no attached edits and no executed budget lines behind. Not gated by
+        ENABLE_MODIFIED_LOE_EDITS: that flag only prevents starting a new request (see submit()),
+        never resolving one already in flight (#6525).
         """
-        self._check_enabled()
         if action not in (APPROVE, DECLINE):
             raise ValidationError({"action": "Must be APPROVE or DECLINE."})
         try:
