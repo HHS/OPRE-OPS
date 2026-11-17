@@ -14,8 +14,6 @@ import MarkdownLink from "../Markdown/MarkdownLink";
     @property {boolean} [isAlertVisible] - Whether the alert is visible.
     @property {Function} [setIsAlertVisible] - The function to set the alert visibility.
     @property {number} [headingLevel=4] - Heading level (1-6), defaults to 4
-    @property {boolean} [isOverlay] - When true, the alert floats on top of the page (position-fixed,
-      like the global flash Alert) instead of taking up space in the normal content flow. - optional
 */
 
 /**
@@ -31,26 +29,14 @@ const SimpleAlert = ({
     isClosable = false,
     isAlertVisible = true,
     setIsAlertVisible = () => {},
-    headingLevel = 4,
-    isOverlay = false
+    headingLevel = 4
 }) => {
     // Validate heading level (1-6)
     const parsedLevel = typeof headingLevel === "number" ? headingLevel : parseInt(headingLevel);
     const level = isNaN(parsedLevel) ? 4 : Math.max(1, Math.min(6, parsedLevel));
     const headingTag = `h${level}`;
 
-    // Overlay mode floats the alert over the page instead of taking up space in the normal
-    // content flow -- the same position-fixed/pin-x trick the global flash Alert uses, but with
-    // an explicit top/z-index (not left to each one's CSS "static position" fallback): two
-    // position-fixed elements with no top set can otherwise resolve to the same on-screen spot,
-    // and whichever paints last visually wins, silently burying the other (OPS-3268 review).
-    // Pinning this one to the very top of the viewport, one z-index tier below the global flash
-    // Alert's z-top (99999), means the flash Alert -- which needs the user's attention right
-    // now -- always renders on top if the two ever coexist, instead of the outcome being
-    // incidental to render order.
-    let classNames = isOverlay
-        ? "grid-container usa-alert margin-top-0 position-fixed pin-x"
-        : "usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-2 margin-bottom-2";
+    let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-2 margin-bottom-2";
 
     switch (type) {
         case "info":
@@ -87,7 +73,6 @@ const SimpleAlert = ({
             role={handleRole()}
             data-cy="alert"
             data-testid="alert"
-            style={isOverlay ? { top: 0, zIndex: 99998 } : undefined}
         >
             <div
                 className="usa-alert__body"

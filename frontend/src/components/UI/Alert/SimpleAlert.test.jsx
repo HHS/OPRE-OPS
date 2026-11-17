@@ -107,34 +107,6 @@ describe("SimpleAlert", () => {
         const heading = screen.getByRole("heading", { name: "Test Heading", level: 2 });
         expect(heading).toBeInTheDocument();
     });
-    it("should float over the page without the negative-margin bleed classes when isOverlay is set", () => {
-        render(
-            <SimpleAlert
-                heading="Test Heading"
-                message="Test Message"
-                type="warning"
-                isOverlay={true}
-            />
-        );
-        const alert = screen.getByTestId("alert");
-        expect(alert).toHaveClass("grid-container", "position-fixed", "pin-x");
-        expect(alert).not.toHaveClass("margin-left-neg-4", "margin-right-neg-4");
-        // Explicit top/z-index, not CSS's ambiguous "static position" fallback (OPS-3268 review) --
-        // and one tier below the global flash Alert's z-top (99999) so that always wins if both show.
-        expect(alert).toHaveStyle({ top: "0px", zIndex: 99998 });
-    });
-    it("should use the in-flow bleed classes by default", () => {
-        render(
-            <SimpleAlert
-                heading="Test Heading"
-                message="Test Message"
-                type="warning"
-            />
-        );
-        const alert = screen.getByTestId("alert");
-        expect(alert).toHaveClass("margin-left-neg-4", "margin-right-neg-4");
-        expect(alert).not.toHaveClass("position-fixed");
-    });
     it("should validate heading level within range 1-6", () => {
         const { rerender } = render(
             <SimpleAlert
