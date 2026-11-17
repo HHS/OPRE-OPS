@@ -191,10 +191,11 @@ class ContractModificationEditService:
 
     def record_services_component_delete(self, services_component: ServicesComponent, user_id: int) -> None:
         """Record a Services Component deleted directly on an Awarded agreement. Call before the
-        delete. Discards any still-pending "Add SC" edit for it first -- the delete edit recorded
-        below replaces it, so an SC added then deleted before any modification starts still shows
-        up as a tracked "delete" edit rather than silently vanishing. Does not commit."""
-        self.discard_pending_services_component_addition(services_component.id)
+        delete. If the SC still has a pending "Add SC" edit, it was added after the award and never
+        made it onto the contract, so the add is discarded and nothing is recorded (net zero, like
+        a budget line made Planned only after the award). Does not commit."""
+        if self.discard_pending_services_component_addition(services_component.id):
+            return
         self._add_direct_edit(
             services_component.agreement_id,
             None,
