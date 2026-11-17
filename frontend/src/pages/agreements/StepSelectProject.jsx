@@ -47,7 +47,6 @@ export const StepSelectProject = ({
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [isCancelling, setIsCancelling] = React.useState(false);
     const { setAlert } = useAlert();
     /** @type {{data?: import("../../types/ProjectTypes").Project[] | undefined, error?: Object, isLoading: boolean}} */
     const {
@@ -64,8 +63,11 @@ export const StepSelectProject = ({
     // Wrapped in an object because useHasStateChanged spreads its argument into a plain
     // object snapshot — a bare null/undefined would spread to {} and immediately mismatch.
     const hasProjectChanged = useHasStateChanged({ id: selectedResearchProject?.id ?? null });
-    const { showBlockerModal, blockerModalProps } = useUnsavedChangesBlocker({
-        hasChanged: hasProjectChanged && !isCancelling,
+    const { showBlockerModal, blockerModalProps, isBypassingRef } = useUnsavedChangesBlocker({
+        // Suppress while the in-wizard Cancel dialog is already open (showModal), so browser
+        // Back can't pop this blocker's modal on top of that one — they share hardcoded DOM
+        // ids and each registers its own keydown trap, so both mounted at once is an a11y bug.
+        hasChanged: hasProjectChanged && !showModal,
         heading: "Leave without finishing?",
         description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
         actionButtonText: "Go back",
@@ -94,7 +96,11 @@ export const StepSelectProject = ({
             handleConfirm: () => {
                 setModalProps({});
                 // Bypass the unsaved-changes blocker: this is an intentional, confirmed exit.
-                setIsCancelling(true);
+                // A ref (not state) because the exit below can navigate synchronously via
+                // Alert's redirectUrl effect, which can fire before a state update would have
+                // propagated to the blocker's registered predicate (react-router only updates
+                // it inside an effect) — see useUnsavedChangesBlocker's isBypassingRef.
+                isBypassingRef.current = true;
                 if (selectedAgreementId && !isEditMode && !isReviewMode) {
                     deleteAgreement(selectedAgreementId)
                         .unwrap()

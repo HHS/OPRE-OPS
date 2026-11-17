@@ -77,7 +77,8 @@ const mockUseUnsavedChangesBlocker = vi.hoisted(() => vi.fn());
 const mockBlockerReturn = {
     showBlockerModal: false,
     setShowBlockerModal: vi.fn(),
-    blockerModalProps: {}
+    blockerModalProps: {},
+    isBypassingRef: { current: false }
 };
 
 vi.mock("../../hooks/useUnsavedChangesBlocker.hooks", () => ({
@@ -130,6 +131,7 @@ describe("StepSelectProject", () => {
         vi.clearAllMocks();
         useDeleteAgreementMutation.mockReturnValue([vi.fn()]);
         mockSelectedProject = null;
+        mockBlockerReturn.isBypassingRef.current = false;
         mockUseUnsavedChangesBlocker.mockReturnValue(mockBlockerReturn);
     });
 
@@ -308,16 +310,44 @@ describe("StepSelectProject", () => {
             expect(screen.getByTestId("save-changes-modal")).toHaveTextContent("Leave without finishing?");
         });
 
-        it("bypasses the blocker (hasChanged: false) once Cancel is confirmed", async () => {
+        it("suppresses hasChanged while the Cancel confirmation dialog is open", async () => {
+            const user = userEvent.setup();
+            mockSelectedProject = null;
+            const { rerender } = renderComponent();
+
+            // Select a project after mount, so hasProjectChanged is genuinely true.
+            mockSelectedProject = { id: 1, title: "Child Care Research" };
+            rerender(
+                <Provider store={store}>
+                    <MemoryRouter>
+                        <StepSelectProject {...defaultProps} />
+                    </MemoryRouter>
+                </Provider>
+            );
+
+            // Sanity: the blocker would be live before Cancel is clicked.
+            expect(mockUseUnsavedChangesBlocker.mock.calls.at(-1)[0].hasChanged).toBe(true);
+
+            await user.click(screen.getByRole("button", { name: /cancel/i }));
+
+            // With the Cancel dialog now open, browser Back must not stack a second modal
+            // on top of it — ConfirmationModal and SaveChangesAndExitModal share hardcoded
+            // DOM ids and each registers its own keydown trap.
+            const lastCall = mockUseUnsavedChangesBlocker.mock.calls.at(-1)[0];
+            expect(lastCall.hasChanged).toBe(false);
+        });
+
+        it("sets isBypassingRef once Cancel is confirmed, so a same-tick navigate isn't blocked", async () => {
             const user = userEvent.setup();
             mockSelectedProject = { id: 1, title: "Child Care Research" };
             renderComponent();
 
+            expect(mockBlockerReturn.isBypassingRef.current).toBe(false);
+
             await user.click(screen.getByRole("button", { name: /cancel/i }));
             await user.click(screen.getByRole("button", { name: "Cancel Agreement" }));
 
-            const lastCall = mockUseUnsavedChangesBlocker.mock.calls.at(-1)[0];
-            expect(lastCall.hasChanged).toBe(false);
+            expect(mockBlockerReturn.isBypassingRef.current).toBe(true);
         });
     });
 });
