@@ -63,6 +63,18 @@ describe("useUnsavedChangesBlocker", () => {
         expect(shouldBlock).toBe(false);
     });
 
+    it("does not block navigation when isBypassingRef.current is true, even if hasChanged is true", () => {
+        const { result } = renderHook(() => useUnsavedChangesBlocker(defaultProps));
+        result.current.isBypassingRef.current = true;
+
+        const shouldBlock = blockerCallback({
+            currentLocation: { pathname: "/agreements/1/procurement-tracker" },
+            nextLocation: { pathname: "/agreements/1/budget-lines" }
+        });
+
+        expect(shouldBlock).toBe(false);
+    });
+
     it("does not block same-path navigation", () => {
         renderHook(() => useUnsavedChangesBlocker(defaultProps));
 
