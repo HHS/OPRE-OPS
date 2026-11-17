@@ -953,4 +953,38 @@ describe("handleExport", () => {
         const row = args.rowMapper(makeBli({ clin: null }));
         expect(row[6]).toBe("TBD");
     });
+
+    /** Run handleExport with an observable budget-line trigger; return the trigger mock. */
+    const runExportCapturingFetch = async (enableObe) => {
+        const bli = makeBli();
+        const budgetLineTrigger = vi.fn(() => Promise.resolve({ data: [bli] }));
+        const unwrapTrigger = vi.fn((id) => ({ unwrap: () => Promise.resolve({ id }) }));
+
+        await handleExport(
+            vi.fn().mockResolvedValue(undefined),
+            vi.fn(),
+            { agreementIds: [1] },
+            [bli],
+            budgetLineTrigger,
+            unwrapTrigger,
+            unwrapTrigger,
+            1,
+            false, // includeClin
+            enableObe
+        );
+
+        return budgetLineTrigger;
+    };
+
+    it("requests OBE budget lines when enableObe is true", async () => {
+        const budgetLineTrigger = await runExportCapturingFetch(true);
+
+        expect(budgetLineTrigger).toHaveBeenCalledWith(expect.objectContaining({ enableObe: true }));
+    });
+
+    it("does not request OBE budget lines by default", async () => {
+        const budgetLineTrigger = await runExportCapturingFetch();
+
+        expect(budgetLineTrigger).toHaveBeenCalledWith(expect.objectContaining({ enableObe: false }));
+    });
 });

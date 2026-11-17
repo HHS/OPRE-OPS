@@ -461,6 +461,7 @@ export const getProcurementShopLabel = (budgetLine) => {
  * @param {function} portfolioTrigger - Function to fetch portfolio details by ID.
  * @param {number} [bliCount] - Total budget line count (fallback when _meta is absent).
  * @param {boolean} [includeClin] - Whether to include a CLIN column (awarded contract agreements only).
+ * @param {boolean} [enableObe] - Whether to include OBE budget lines in the export.
  */
 export const handleExport = async (
     exportTableToXlsx,
@@ -471,7 +472,8 @@ export const handleExport = async (
     serviceComponentTrigger,
     portfolioTrigger,
     bliCount = 0,
-    includeClin = false
+    includeClin = false,
+    enableObe = false
 ) => {
     try {
         if (!budgetLineItems || budgetLineItems.length === 0) {
@@ -487,7 +489,8 @@ export const handleExport = async (
             budgetLineTrigger({
                 filters,
                 limit: fetchLimit,
-                page
+                page,
+                enableObe
             })
         );
         const budgetLineResponses = await Promise.all(budgetLinePromises);

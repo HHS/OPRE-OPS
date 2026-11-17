@@ -9,6 +9,7 @@ import { vi } from "vitest";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import userEvent from "@testing-library/user-event";
 import { buildTrailState, getTrailFromState } from "../../../helpers/breadcrumb.helpers";
+import { handleExport } from "../../../helpers/budgetLines.helpers";
 
 const history = createMemoryHistory();
 const mockFn = TestApplicationContext.helpers().mockFn;
@@ -34,6 +35,11 @@ vi.mock("../../../api/opsAPI", () => ({
 // passes, without pulling in the real table's hook chain (useGetAllCans, procurement shops, users).
 vi.mock("../../../components/BudgetLineItems/BudgetLinesTable", () => ({
     default: (props) => <div data-testid="budget-lines-table">show-clin:{String(!!props.showClinColumn)}</div>
+}));
+
+vi.mock("../../../helpers/budgetLines.helpers", async (importOriginal) => ({
+    ...(await importOriginal()),
+    handleExport: vi.fn()
 }));
 
 vi.mock("react-router-dom", async () => {
@@ -1026,6 +1032,70 @@ describe("AgreementBudgetLines", () => {
             renderContract({ agreementType: "GRANT", isAgreementAwarded: true });
 
             expect(screen.getByText("show-clin:false")).toBeInTheDocument();
+        });
+    });
+
+    describe("Export", () => {
+        const editorStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Regular User",
+                        email: "user@example.com",
+                        roles: [{ name: USER_ROLES.VIEWER_EDITOR }]
+                    }
+                })
+            }
+        });
+
+        const obeBudgetLine = {
+            id: 6,
+            amount: 1000,
+            fees: 0,
+            date_needed: "2044-02-01",
+            status: "PLANNED",
+            services_component_id: 101,
+            line_description: "OBE budget line",
+            can: { number: "CAN-001" },
+            is_obe: true,
+            _meta: { isEditable: true }
+        };
+
+        test("asks handleExport to include OBE budget lines", async () => {
+            const user = userEvent.setup();
+            useGetServicesComponentsListQueryMock.mockReturnValue({
+                data: [{ id: 101, number: 1, sub_component: null }],
+                isLoading: false
+            });
+
+            render(
+                <Provider store={editorStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={{
+                                ...mockAgreement,
+                                agreement_type: "CONTRACT",
+                                budget_line_items: [obeBudgetLine]
+                            }}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            await user.click(screen.getByRole("button", { name: "Export" }));
+
+            expect(handleExport).toHaveBeenCalledTimes(1);
+            // enableObe (issue #6542) is handleExport's 10th argument.
+            expect(handleExport.mock.calls[0][9]).toBe(true);
         });
     });
 });

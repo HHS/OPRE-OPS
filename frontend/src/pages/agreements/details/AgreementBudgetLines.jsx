@@ -299,7 +299,9 @@ const AgreementBudgetLines = ({
                                                 serviceComponentTrigger,
                                                 portfolioTrigger,
                                                 blis.length,
-                                                showClinColumn
+                                                showClinColumn,
+                                                // Match the table, which shows OBE budget lines.
+                                                true
                                             )
                                         }
                                     >
