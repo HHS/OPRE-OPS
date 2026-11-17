@@ -576,14 +576,14 @@ export const handleExport = async (
                         ...(includeClin ? [getClinDisplayValue(budgetLine)] : []),
                         budgetLine.agreement?.agreement_type ?? NO_DATA,
                         budgetLine.line_description,
-                        formatDateNeeded(budgetLine?.date_needed ?? ""),
-                        budgetLine.fiscal_year,
-                        budgetLine.can?.display_name ?? NO_DATA,
+                        formatDateNeeded(budgetLine?.date_needed ?? "", budgetLine.is_obe),
+                        budgetLine.fiscal_year ?? NO_DATA,
+                        budgetLine.is_obe ? "None" : (budgetLine.can?.display_name ?? NO_DATA),
                         budgetLine.amount ?? 0,
                         procShopAbbr,
                         budgetLine.fees ?? 0,
                         feeRate,
-                        budgetLine.in_review ? "In Review" : budgetLine?.status,
+                        budgetLine.in_review ? "In Review" : budgetLine.is_obe ? "OBE" : budgetLine?.status,
                         budgetLine.comments
                     ];
                 },

@@ -26,6 +26,7 @@ import {
     handleExport
 } from "./budgetLines.helpers";
 import { budgetLine, agreement } from "../tests/data";
+import { formatDateNeeded } from "./utils";
 
 describe("getBudgetLineCreatedDate", () => {
     it("should return a human readable date", () => {
@@ -952,6 +953,45 @@ describe("handleExport", () => {
         const args = await runExport([makeBli()], true);
         const row = args.rowMapper(makeBli({ clin: null }));
         expect(row[6]).toBe("TBD");
+    });
+
+    const cell = (args, row, header) => row[args.headers.indexOf(header)];
+
+    it("exports 'None', 'None' and 'OBE' for Obligate By, CAN and Status on an OBE budget line", async () => {
+        const obe = {
+            is_obe: true,
+            date_needed: null,
+            fiscal_year: null,
+            can: { display_name: "CAN-1" },
+            status: "DRAFT"
+        };
+        const args = await runExport([makeBli(obe)], false);
+        const row = args.rowMapper(makeBli(obe));
+        expect(cell(args, row, "Obligate By")).toBe("None");
+        expect(cell(args, row, "CAN")).toBe("None");
+        expect(cell(args, row, "Status")).toBe("OBE");
+    });
+
+    it("exports 'In Review' rather than 'OBE' for an OBE budget line that is in review", async () => {
+        const obe = { is_obe: true, in_review: true, date_needed: null, fiscal_year: null };
+        const args = await runExport([makeBli(obe)], false);
+        const row = args.rowMapper(makeBli(obe));
+        expect(cell(args, row, "Status")).toBe("In Review");
+    });
+
+    it("keeps the real Obligate By, FY, CAN and Status on a non-OBE budget line", async () => {
+        const args = await runExport([makeBli()], false);
+        const row = args.rowMapper(makeBli());
+        expect(cell(args, row, "Obligate By")).toBe(formatDateNeeded("2044-06-01"));
+        expect(cell(args, row, "FY")).toBe(2044);
+        expect(cell(args, row, "CAN")).toBe("CAN-1");
+        expect(cell(args, row, "Status")).toBe("PLANNED");
+    });
+
+    it("exports 'TBD' in the FY column when the budget line has no fiscal year", async () => {
+        const args = await runExport([makeBli()], false);
+        const row = args.rowMapper(makeBli({ fiscal_year: null }));
+        expect(cell(args, row, "FY")).toBe("TBD");
     });
 
     /** Run handleExport with an observable budget-line trigger; return the trigger mock. */
