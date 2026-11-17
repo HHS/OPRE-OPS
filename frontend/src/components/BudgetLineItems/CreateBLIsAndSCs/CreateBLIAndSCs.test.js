@@ -15,6 +15,7 @@ import { agreement } from "../../../tests/data";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import { USER_ROLES } from "../../Users/User.constants";
 import { AgreementType } from "../../../pages/agreements/agreements.constants";
+import { AgreementEditorContext } from "../../Agreements/AgreementEditor/contexts";
 
 vi.mock("../../ServicesComponents", () => ({
     __esModule: true,
@@ -815,7 +816,12 @@ describe("CreateBLIsAndSCs", () => {
         // Render CreateBLIsAndSCs with the hook overridden to supply a specific
         // servicesComponents/tempBudgetLines state, then return the getSlice() output the
         // review-flow edit page reads on Save.
-        const getSliceFor = async ({ servicesComponents, tempBudgetLines, budgetLines }) => {
+        const getSliceFor = async ({
+            servicesComponents,
+            tempBudgetLines,
+            budgetLines,
+            deletedServicesComponentsIds = []
+        }) => {
             const mockStore = createMockStore();
             const useCreateBLIsAndSCs = (await import("./CreateBLIsAndSCs.hooks")).default;
             const origImpl = vi.mocked(useCreateBLIsAndSCs).getMockImplementation();
@@ -830,24 +836,32 @@ describe("CreateBLIsAndSCs", () => {
             render(
                 <Provider store={mockStore}>
                     <BrowserRouter>
-                        <CreateBLIsAndSCs
-                            budgetLines={budgetLines}
-                            selectedResearchProject={contractAgreement}
-                            selectedAgreement={contractAgreement}
-                            selectedProcurementShop={contractAgreement.procurement_shop}
-                            isEditMode={true}
-                            continueBtnText="Save Changes"
-                            wizardSteps={wizardSteps}
-                            workflow="agreement"
-                            currentStep={1}
-                            isReviewMode={true}
-                            canUserEditBudgetLines={true}
-                            setIsEditMode={setIsEditMode}
-                            includeDrafts={true}
-                            setIncludeDrafts={setIncludeDrafts}
-                            bundleSliceRef={bundleSliceRef}
-                            hideFooterButtons={true}
-                        />
+                        <AgreementEditorContext.Provider
+                            value={{
+                                deleted_services_components_ids: deletedServicesComponentsIds,
+                                grant_numbers: [],
+                                deleted_grant_numbers_ids: []
+                            }}
+                        >
+                            <CreateBLIsAndSCs
+                                budgetLines={budgetLines}
+                                selectedResearchProject={contractAgreement}
+                                selectedAgreement={contractAgreement}
+                                selectedProcurementShop={contractAgreement.procurement_shop}
+                                isEditMode={true}
+                                continueBtnText="Save Changes"
+                                wizardSteps={wizardSteps}
+                                workflow="agreement"
+                                currentStep={1}
+                                isReviewMode={true}
+                                canUserEditBudgetLines={true}
+                                setIsEditMode={setIsEditMode}
+                                includeDrafts={true}
+                                setIncludeDrafts={setIncludeDrafts}
+                                bundleSliceRef={bundleSliceRef}
+                                hideFooterButtons={true}
+                            />
+                        </AgreementEditorContext.Provider>
                     </BrowserRouter>
                 </Provider>
             );
@@ -893,6 +907,34 @@ describe("CreateBLIsAndSCs", () => {
                 servicesComponents,
                 tempBudgetLines: [edited],
                 budgetLines: [baseline]
+            });
+
+            expect(slice.budget_line_items.update).toHaveLength(0);
+        });
+
+        // Regression: deleting a Services Component clears its link on every budget line
+        // locally (editor reducer's DELETE_SERVICE_COMPONENT), including ones the user never
+        // otherwise touched. That alone must NOT count as a real edit here, mirroring
+        // handleUpdateBLIsToAPI in CreateBLIsAndSCs.hooks.js -- otherwise an Obligated/Executing
+        // line under the deleted SC is sent to budget_line_items.update, the backend rejects it
+        // as "not in an editable state", and the whole bundle (including the SC delete) rolls
+        // back (OPS-3268).
+        test("drops a BLI whose only change is its deleted services component's cleared link", async () => {
+            const baseline = { ...agreement.budget_line_items[0], id: 42, services_component_id: 7 };
+            // The editor reducer already nulled the link locally when the SC was deleted.
+            const edited = {
+                ...baseline,
+                services_component_id: null,
+                services_component_number: undefined,
+                serviceComponentGroupingLabel: undefined
+            };
+            const servicesComponents = [];
+
+            const slice = await getSliceFor({
+                servicesComponents,
+                tempBudgetLines: [edited],
+                budgetLines: [baseline],
+                deletedServicesComponentsIds: [7]
             });
 
             expect(slice.budget_line_items.update).toHaveLength(0);

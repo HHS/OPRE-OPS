@@ -492,6 +492,25 @@ def test_deleting_sc_with_only_draft_budget_lines_applies_directly(
     assert edit.services_component_id == sc2_id
 
 
+def test_adding_then_deleting_an_sc_before_a_modification_starts_nets_to_nothing(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    """An SC added, then deleted, before its "Add SC" edit is ever attached to a modification
+    was never really on the contract -- it should net to nothing, same as the budget-line
+    equivalent, not leave a "Delete SC" edit for an SC the Division Director never saw added."""
+    sc_data = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)
+    sc_id = sc_data["id"]
+    (add_edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert add_edit.field == "services_component_create"
+
+    response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc_id))
+
+    assert response.status_code == 200, response.json
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc_id) is None
+    assert _edits(loaded_db, awarded_agreement.id) == []
+
+
 def test_superuser_deleting_sc_with_planned_budget_lines_applies_directly(
     modified_loe_enabled, power_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
 ):

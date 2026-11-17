@@ -350,7 +350,29 @@ export const CreateBLIsAndSCs = ({
                         // newly-assigned SC as "unchanged" and silently drop it from the update.
                         const linked = applyBliLink(cleaned, bli);
                         if (baseline) {
-                            const { data: cleanedBaseline } = cleanBudgetLineItemForApi(baseline);
+                            // Deleting a Services Component clears its link on every budget line
+                            // locally (editor reducer's DELETE_SERVICE_COMPONENT), including ones
+                            // the user never otherwise touched. That alone isn't a real edit to
+                            // send: the backend's SC -> BLI foreign key already nulls the link
+                            // (ON DELETE SET NULL) as part of the SC delete itself -- and for a
+                            // non-superuser on an Obligated or Executing line, sending it here
+                            // would be rejected as "not in an editable state" and roll back the
+                            // whole bundle, including the SC delete that was the actual intent
+                            // (OPS-3268). Compare against the same cleared shape, mirroring
+                            // handleUpdateBLIsToAPI in CreateBLIsAndSCs.hooks.js.
+                            let comparisonBaseline = baseline;
+                            if (
+                                comparisonBaseline.services_component_id != null &&
+                                deletedServicesComponentsIds.includes(comparisonBaseline.services_component_id)
+                            ) {
+                                comparisonBaseline = {
+                                    ...comparisonBaseline,
+                                    services_component_id: null,
+                                    services_component_number: undefined,
+                                    serviceComponentGroupingLabel: undefined
+                                };
+                            }
+                            const { data: cleanedBaseline } = cleanBudgetLineItemForApi(comparisonBaseline);
                             if (JSON.stringify(linked) === JSON.stringify(cleanedBaseline)) {
                                 return null;
                             }

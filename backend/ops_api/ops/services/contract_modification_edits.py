@@ -191,8 +191,13 @@ class ContractModificationEditService:
 
     def record_services_component_delete(self, services_component: ServicesComponent, user_id: int) -> None:
         """Record a Services Component deleted directly on an Awarded agreement. Call before the
-        delete. Discards any still-pending "Add SC" edit for it first. Does not commit."""
-        self.discard_pending_services_component_addition(services_component.id)
+        delete. Discards any still-pending "Add SC" edit for it first; if the SC's only pending
+        edit was its own still-pending "Add SC" (it was added, then deleted, before any
+        modification started), it was never really on the contract, so nothing is recorded --
+        matching the budget-line delete's net-zero rule. Does not commit."""
+        had_pending_addition = self.discard_pending_services_component_addition(services_component.id)
+        if had_pending_addition:
+            return
         self._add_direct_edit(
             services_component.agreement_id,
             None,
@@ -336,13 +341,13 @@ class ContractModificationEditService:
         )
         return result.rowcount
 
-    def discard_pending_services_component_addition(self, services_component_id: int) -> None:
+    def discard_pending_services_component_addition(self, services_component_id: int) -> bool:
         """Remove the pending "Add SC" edit of a Services Component being deleted (OPS-6440).
 
         Otherwise the edit stays pending and goes into the next modification for an SC that no
         longer exists. If the edit is in a contract modification in review, removing it would
         change what the Division Director is reviewing, so the delete is rejected instead.
-        Does not commit.
+        Does not commit. Returns whether a pending "Add SC" edit was found and discarded.
         """
         edits = self.db_session.scalars(
             select(ContractModificationEdit).where(
@@ -352,7 +357,7 @@ class ContractModificationEditService:
             )
         ).all()
         if not edits:
-            return
+            return False
         in_review_request_id = self.db_session.scalar(
             select(ContractModificationRequest.id)
             .join(ContractModificationRequest.edits)
@@ -366,6 +371,7 @@ class ContractModificationEditService:
             raise ValidationError({"services_component": [SC_ADDITION_IN_MODIFICATION_MESSAGE]})
         for edit in edits:
             self.db_session.delete(edit)
+        return True
 
     def record_project_officer_change(
         self,
