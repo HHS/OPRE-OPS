@@ -462,6 +462,18 @@ def test_submit_flag_off_returns_400(
     assert _submit(basic_user_auth_client, agreement.id).status_code == 400
 
 
+def test_submit_still_blocked_by_flag_when_status_checks_pass(awarded_with_edit, basic_user_auth_client, app, app_ctx):
+    """The flag reorder in submit() (#6525) must not stop it gating new requests -- confirm it
+    still blocks a submission that would otherwise succeed once every other check passes."""
+    agreement, _, executable = awarded_with_edit
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = False
+
+    response = _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id])
+
+    assert response.status_code == 400
+    assert "not enabled" in response.json["errors"]["agreement_id"]
+
+
 def test_submit_unknown_agreement_returns_404(modified_loe_enabled, basic_user_auth_client, app_ctx):  # noqa: F811
     assert _submit(basic_user_auth_client, 9999999).status_code == 404
 
@@ -472,6 +484,22 @@ def test_submit_unassociated_user_returns_403(awarded_with_edit, division_6_dire
 
 
 # ---=== Review ===---
+
+
+@pytest.mark.parametrize("action,expected_status", [("APPROVE", "APPROVED"), ("DECLINE", "DECLINED")])
+def test_review_succeeds_when_flag_is_off_for_an_in_review_request(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, app, action, expected_status, app_ctx
+):
+    """ENABLE_MODIFIED_LOE_EDITS only gates starting a new request (see submit()); it must never
+    block resolving one already IN_REVIEW (#6525)."""
+    agreement, _, executable = awarded_with_edit
+    request_id = _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).json["id"]
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = False
+
+    response = _review_mod(division_director_auth_client, request_id, action)
+
+    assert response.status_code == 200, response.json
+    assert response.json["status"] == expected_status
 
 
 def test_approve_creates_the_mod_attaches_edits_and_executes_budget_lines(
