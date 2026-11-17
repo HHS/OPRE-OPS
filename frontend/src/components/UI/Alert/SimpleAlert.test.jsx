@@ -117,8 +117,11 @@ describe("SimpleAlert", () => {
             />
         );
         const alert = screen.getByTestId("alert");
-        expect(alert).toHaveClass("grid-container", "position-fixed", "pin-x", "z-top");
+        expect(alert).toHaveClass("grid-container", "position-fixed", "pin-x");
         expect(alert).not.toHaveClass("margin-left-neg-4", "margin-right-neg-4");
+        // Explicit top/z-index, not CSS's ambiguous "static position" fallback (OPS-3268 review) --
+        // and one tier below the global flash Alert's z-top (99999) so that always wins if both show.
+        expect(alert).toHaveStyle({ top: "0px", zIndex: 99998 });
     });
     it("should use the in-flow bleed classes by default", () => {
         render(
