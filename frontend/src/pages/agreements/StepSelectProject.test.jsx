@@ -42,14 +42,25 @@ vi.mock("../../components/UI/StepIndicator/StepIndicator", () => ({
 }));
 
 vi.mock("../../components/UI/Modals/ConfirmationModal", () => ({
-    default: ({ heading }) => <div data-testid="confirmation-modal">{heading}</div>
+    default: ({ heading, actionButtonText, handleConfirm }) => (
+        <div data-testid="confirmation-modal">
+            {heading}
+            <button
+                type="button"
+                onClick={handleConfirm}
+            >
+                {actionButtonText}
+            </button>
+        </div>
+    )
 }));
 
 vi.mock("./EditModeTitle", () => ({ default: () => null }));
 
 // Stub the AgreementEditorContext hooks — provide minimal state
+let mockSelectedProject = null;
 vi.mock("../../components/Agreements/AgreementEditor/AgreementEditorContext.hooks", () => ({
-    useEditAgreement: () => ({ selected_project: null }),
+    useEditAgreement: () => ({ selected_project: mockSelectedProject }),
     useSetState: () => vi.fn(),
     useUpdateAgreement: () => vi.fn()
 }));
@@ -57,6 +68,27 @@ vi.mock("../../components/Agreements/AgreementEditor/AgreementEditorContext.hook
 vi.mock("../../hooks/use-alert.hooks", () => ({
     default: () => ({ setAlert: vi.fn() })
 }));
+
+// Declare the blocker spy with vi.hoisted() so it is available inside the vi.mock() factory,
+// which is hoisted to the top of the file above all const declarations.
+const mockUseUnsavedChangesBlocker = vi.hoisted(() => vi.fn());
+
+// Mock the navigation blocker hook so tests don't need a data router
+const mockBlockerReturn = {
+    showBlockerModal: false,
+    setShowBlockerModal: vi.fn(),
+    blockerModalProps: {}
+};
+
+vi.mock("../../hooks/useUnsavedChangesBlocker.hooks", () => ({
+    default: (...args) => mockUseUnsavedChangesBlocker(...args)
+}));
+
+// Mock SaveChangesAndExitModal so blocker modal tests work without USWDS modal plumbing.
+vi.mock("../../components/UI/Modals/SaveChangesAndExitModal", () => {
+    const Mock = ({ heading }) => <div data-testid="save-changes-modal">{heading}</div>;
+    return { default: Mock, SaveChangesAndExitModal: Mock };
+});
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
 
@@ -97,6 +129,8 @@ describe("StepSelectProject", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         useDeleteAgreementMutation.mockReturnValue([vi.fn()]);
+        mockSelectedProject = null;
+        mockUseUnsavedChangesBlocker.mockReturnValue(mockBlockerReturn);
     });
 
     describe("RTK Query – cache-bust option", () => {
@@ -211,6 +245,79 @@ describe("StepSelectProject", () => {
             await user.click(screen.getByRole("button", { name: /cancel/i }));
 
             expect(screen.getByTestId("confirmation-modal")).toBeInTheDocument();
+        });
+    });
+
+    // Browser-Back guard (OPS-1081): selecting a project here is local context state with
+    // nothing else protecting it against browser back — unlike steps 2/3 of the wizard,
+    // which already have their own navigation blockers.
+    describe("Browser-Back guard", () => {
+        beforeEach(() => {
+            useGetAllProjectsQuery.mockReturnValue({
+                data: MOCK_PROJECTS,
+                error: undefined,
+                isLoading: false
+            });
+        });
+
+        it("passes hasChanged: false to useUnsavedChangesBlocker when no project is selected", () => {
+            mockSelectedProject = null;
+            renderComponent();
+
+            const lastCall = mockUseUnsavedChangesBlocker.mock.calls.at(-1)[0];
+            expect(lastCall.hasChanged).toBe(false);
+        });
+
+        it("passes hasChanged: true to useUnsavedChangesBlocker once a project is selected", () => {
+            mockSelectedProject = null;
+            const { rerender } = renderComponent();
+
+            // Simulate the user picking a project after mount — the hook's "initial" snapshot
+            // was already captured as unselected, so this now reads as a real change.
+            mockSelectedProject = { id: 1, title: "Child Care Research" };
+            rerender(
+                <Provider store={store}>
+                    <MemoryRouter>
+                        <StepSelectProject {...defaultProps} />
+                    </MemoryRouter>
+                </Provider>
+            );
+
+            const lastCall = mockUseUnsavedChangesBlocker.mock.calls.at(-1)[0];
+            expect(lastCall.hasChanged).toBe(true);
+        });
+
+        it("does not flag edit mode's pre-populated project selection as changed on mount", () => {
+            mockSelectedProject = { id: 1, title: "Child Care Research" };
+            renderComponent({ isEditMode: true });
+
+            const lastCall = mockUseUnsavedChangesBlocker.mock.calls.at(-1)[0];
+            expect(lastCall.hasChanged).toBe(false);
+        });
+
+        it("renders the unsaved-changes modal when the blocker reports showBlockerModal: true", () => {
+            mockUseUnsavedChangesBlocker.mockReturnValue({
+                ...mockBlockerReturn,
+                showBlockerModal: true,
+                blockerModalProps: { heading: "Leave without finishing?" }
+            });
+            mockSelectedProject = { id: 1, title: "Child Care Research" };
+
+            renderComponent();
+
+            expect(screen.getByTestId("save-changes-modal")).toHaveTextContent("Leave without finishing?");
+        });
+
+        it("bypasses the blocker (hasChanged: false) once Cancel is confirmed", async () => {
+            const user = userEvent.setup();
+            mockSelectedProject = { id: 1, title: "Child Care Research" };
+            renderComponent();
+
+            await user.click(screen.getByRole("button", { name: /cancel/i }));
+            await user.click(screen.getByRole("button", { name: "Cancel Agreement" }));
+
+            const lastCall = mockUseUnsavedChangesBlocker.mock.calls.at(-1)[0];
+            expect(lastCall.hasChanged).toBe(false);
         });
     });
 });
