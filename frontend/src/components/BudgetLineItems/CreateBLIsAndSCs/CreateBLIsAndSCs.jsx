@@ -134,6 +134,7 @@ export const CreateBLIsAndSCs = ({
         effectiveScEndDate,
         requiresFinancialApproval,
         requiresContractModification,
+        tracksContractModifications,
         grantNumberNumber,
         setGrantNumberNumber,
         allowPastObligateByDates
@@ -690,6 +691,7 @@ export const CreateBLIsAndSCs = ({
                                     isEditable={isAgreementWorkflowOrCanEditBudgetLines}
                                     isReviewMode={isReviewMode}
                                     showClinColumn={showClinColumn}
+                                    tracksContractModifications={tracksContractModifications}
                                 />
                             </ServicesComponentAccordion>
                         </div>

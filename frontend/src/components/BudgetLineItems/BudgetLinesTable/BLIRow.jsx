@@ -1,5 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
+import { faCircleInfo, faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
     BLILabel,
@@ -22,6 +24,7 @@ import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hook
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
+import DeObligationModal from "../DeObligationModal";
 import { addErrorClassIfNotFound, futureDateErrorClass, isDateOutsidePopRange } from "./BLIRow.helpers";
 
 /**
@@ -35,6 +38,9 @@ import { addErrorClassIfNotFound, futureDateErrorClass, isDateOutsidePopRange } 
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @property {boolean} [isGrant] - Whether this is a grant budget line (omits Fee/Total cells).
  * @property {boolean} [showClinColumn] - Whether to show the CLIN cell (awarded contract agreements only).
+ * @property {boolean} [tracksContractModifications] - Whether edits on this agreement require a
+ *   contract modification (OPS-3072): awarded, with the capability on. An Obligated line can only
+ *   be edited to de-obligate funds, and only when this is true (OPS-6488).
  */
 
 /**
@@ -51,7 +57,8 @@ const BLIRow = ({
     readOnly = false,
     isBLIInCurrentWorkflow = false,
     isGrant = false,
-    showClinColumn = false
+    showClinColumn = false,
+    tracksContractModifications = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -68,6 +75,13 @@ const BLIRow = ({
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { data: versionData } = useGetVersionQuery();
     const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
+    const [isDeObligationModalOpen, setIsDeObligationModalOpen] = useState(false);
+    // OPS-6488: the only edit an Obligated line on a tracked, awarded agreement can have is a
+    // de-obligation request. Independent of isBudgetLineEditable, which stays false for
+    // OBLIGATED (EDITABLE_STATUSES excludes it) -- this is a narrower, separate affordance.
+    const canDeObligate = !readOnly && tracksContractModifications && budgetLine?.status === "OBLIGATED";
+    const pendingDeObligationAmount = budgetLine?.requested_de_obligation_amount;
+    const hasPendingDeObligation = pendingDeObligationAmount != null;
 
     const changeIcons = (
         <ChangeIcons
@@ -83,6 +97,32 @@ const BLIRow = ({
             duplicateIcon={true}
             lockedMessage={lockedMessage}
         />
+    );
+
+    const netAmount = budgetLine?.net_amount ?? budgetLine?.amount;
+
+    const deObligateButton = (
+        <Tooltip
+            position="top"
+            label="De-obligate funding"
+        >
+            <button
+                type="button"
+                id={`de-obligate-${budgetLine?.id}`}
+                title="De-obligate funding"
+                aria-label="De-obligate funding"
+                data-cy="de-obligate-row"
+                data-testid="de-obligate-row"
+                onClick={() => setIsDeObligationModalOpen(true)}
+            >
+                <FontAwesomeIcon
+                    title="De-obligate funding"
+                    icon={faPen}
+                    className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                    aria-hidden="true"
+                />
+            </button>
+        </Tooltip>
     );
 
     const TableRowData = (
@@ -125,7 +165,23 @@ const BLIRow = ({
                 {isBudgetLineObe ? "None" : canLabel(budgetLine)}
             </td>
             <td className={isReviewMode && budgetLine?.amount == null ? "table-item-error" : ""}>
-                {budgetLine?.amount != null ? formatCurrency(budgetLine.amount) : NO_DATA}
+                {budgetLine?.amount != null ? formatCurrency(netAmount) : NO_DATA}
+                {hasPendingDeObligation && (
+                    <Tooltip
+                        position="right"
+                        label={`Original obligated amount was ${formatCurrency(
+                            budgetLine.amount
+                        )} with ${formatCurrency(pendingDeObligationAmount)} de-obligated in a modification`}
+                    >
+                        <FontAwesomeIcon
+                            icon={faCircleInfo}
+                            className="text-base-dark height-2 width-2 margin-left-1"
+                            aria-hidden="true"
+                            title="Pending de-obligation"
+                            data-testid="pending-de-obligation-icon"
+                        />
+                    </Tooltip>
+                )}
             </td>
             {/* Grants have no procurement shop, so no Fee or Total columns. */}
             {!isGrant && (
@@ -143,7 +199,7 @@ const BLIRow = ({
             )}
             <td>
                 {isRowActive && !isExpanded && !readOnly ? (
-                    <div>{changeIcons}</div>
+                    <div>{canDeObligate ? deObligateButton : changeIcons}</div>
                 ) : (
                     <TableTag
                         inReview={isBLIInReview}
@@ -191,22 +247,43 @@ const BLIRow = ({
                         <dd className="margin-0">{getProcurementShopLabel(budgetLine)}</dd>
                     </dl>
                 )}
+                {hasPendingDeObligation && (
+                    <>
+                        <dl className="grid-col-auto margin-top-0 font-12px">
+                            <dt className="margin-0 text-base-dark">Original Obligated Amount</dt>
+                            <dd className="margin-0">{formatCurrency(budgetLine.amount)}</dd>
+                        </dl>
+                        <dl className="grid-col-auto margin-top-0 font-12px">
+                            <dt className="margin-0 text-base-dark">De-obligated Amount</dt>
+                            <dd className="margin-0">{`-${formatCurrency(pendingDeObligationAmount)}`}</dd>
+                        </dl>
+                    </>
+                )}
                 <div className="grid-col display-flex flex-justify-end flex-align-end margin-bottom-1">
-                    {!readOnly && changeIcons}
+                    {!readOnly && (canDeObligate ? deObligateButton : changeIcons)}
                 </div>
             </div>
         </td>
     );
     return (
-        <TableRowExpandable
-            tableRowData={TableRowData}
-            expandedData={ExpandedData}
-            isExpanded={isExpanded}
-            setIsExpanded={setIsExpanded}
-            setIsRowActive={setIsRowActive}
-            className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
-            data-testid={`budget-line-row-${budgetLine?.id}`}
-        />
+        <>
+            <TableRowExpandable
+                tableRowData={TableRowData}
+                expandedData={ExpandedData}
+                isExpanded={isExpanded}
+                setIsExpanded={setIsExpanded}
+                setIsRowActive={setIsRowActive}
+                className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
+                data-testid={`budget-line-row-${budgetLine?.id}`}
+            />
+            {canDeObligate && (
+                <DeObligationModal
+                    budgetLine={budgetLine}
+                    isOpen={isDeObligationModalOpen}
+                    onClose={() => setIsDeObligationModalOpen(false)}
+                />
+            )}
+        </>
     );
 };
 

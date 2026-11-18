@@ -16,6 +16,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from models import (
+    DE_OBLIGATION_AMOUNT_FIELD,
     PROJECT_OFFICER_EDIT_FIELD,
     Agreement,
     AgreementMod,
@@ -141,6 +142,59 @@ class ContractModificationEditService:
                 {field: ["Another change to this field was saved at the same time. Refresh and try again."]}
             ) from None
 
+    def record_de_obligation_request(self, budget_line_item: BudgetLineItem, requested_amount, user_id: int) -> None:
+        """Record a pending de-obligation request on an Obligated budget line (OPS-6488).
+
+        ``requested_amount`` is the amount to de-obligate (the delta), not the resulting net
+        amount. Replaces any existing pending de-obligation for this line (last edit wins, same
+        as ``record_direct_edit``) rather than stacking requests, so ``old_value`` always carries
+        forward the line's true original obligated amount across repeat edits. Setting
+        ``requested_amount`` to 0 (or None) removes the pending edit and its mailbox card
+        entirely -- per the UX team's "Human-centered Context" doc, "if the amount is edited
+        back to the original, the card is removed" -- rather than leaving a zero-value edit.
+        Also keeps ``budget_line_item.requested_de_obligation_amount`` (which the Agreement's
+        totals net against) in lockstep with the pending edit. Never touches
+        ``budget_line_item.amount``: the real obligated amount isn't touched until OPS-6489
+        applies an approved de-obligation. Does not commit.
+        """
+        pending = self._pending_for_budget_line(budget_line_item.id, DE_OBLIGATION_AMOUNT_FIELD)
+        # old_value/new_value are JSONB: floats, never Decimal, same as record_direct_edit's
+        # (schema-dumped) values.
+        original_amount = pending[0].old_value if pending else float(budget_line_item.amount or 0)
+        for edit in pending:
+            self.db_session.delete(edit)
+        if pending:
+            # Flush the delete(s) first: SQLAlchemy's unit of work otherwise flushes the new
+            # row's INSERT before these DELETEs, tripping the unique index on a merge that is
+            # actually fine (the row below replaces the one just deleted).
+            self.db_session.flush()
+        if not requested_amount:
+            budget_line_item.requested_de_obligation_amount = None
+            return
+        self._add_direct_edit(
+            budget_line_item.agreement_id,
+            budget_line_item.id,
+            None,
+            DE_OBLIGATION_AMOUNT_FIELD,
+            original_amount,
+            float(requested_amount),
+            user_id,
+            modification_type=ModificationEditType.DE_OBLIGATION,
+        )
+        budget_line_item.requested_de_obligation_amount = requested_amount
+        try:
+            self.db_session.flush()
+        except IntegrityError:
+            # ix_contract_modification_edit_one_pending_bli_field: a concurrent save on the same
+            # field won. The caller rolls back the session.
+            raise ValidationError(
+                {
+                    DE_OBLIGATION_AMOUNT_FIELD: [
+                        "Another de-obligation on this budget line was saved at the same time. Refresh and try again."
+                    ]
+                }
+            ) from None
+
     def record_direct_delete(self, budget_line_item, old_amount, user_id: int) -> None:
         """Record a budget line deleted directly on an Awarded agreement. Call before the delete.
 
@@ -215,11 +269,12 @@ class ContractModificationEditService:
         old_value,
         new_value,
         user_id: int,
+        modification_type: ModificationEditType = ModificationEditType.MODIFIED_LOE,
     ) -> None:
         self.db_session.add(
             ContractModificationEdit(
                 agreement_id=agreement_id,
-                modification_type=ModificationEditType.MODIFIED_LOE,
+                modification_type=modification_type,
                 budget_line_item_id=budget_line_item_id,
                 services_component_id=services_component_id,
                 field=field,

@@ -5213,6 +5213,66 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
+  /budget-line-items/{id}/de-obligation/:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          format: int32
+        description: The ID of the budget line item
+    post:
+      tags:
+        - Budget Line Items
+      operationId: submitDeObligation
+      description: >-
+        Submit (or clear) a de-obligation request on an Obligated budget line (OPS-6488). A
+        `requested_amount` of 0 or omitted clears a pending de-obligation instead of submitting
+        one. Never touches `amount` -- only the pending `requested_de_obligation_amount` the
+        Agreement's totals net against. Approving the resulting modification isn't supported yet
+        (OPS-6489).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requested_amount:
+                  type: number
+                  format: float
+                  nullable: true
+                  description: >-
+                    The amount to de-obligate (the delta), not the resulting net amount. Must be
+                    greater than $0 and no more than the line's obligated amount, or 0/omitted to
+                    clear a pending request.
+                  example: 100000.00
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BudgetLineItem"
+                  - type: object
+                    properties:
+                      _meta:
+                        $ref: "#/components/schemas/BudgetLineItemMeta"
+        "400":
+          description: >-
+            Bad Request -- the agreement isn't Awarded, the line isn't Obligated, the line is
+            already in a modification that's in review, the amount is out of range, or contract
+            modifications are disabled
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden -- the user is not associated with the agreement
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
   /notifications/:
     get:
       tags:
@@ -8290,6 +8350,20 @@ components:
           type: number
           format: float
           description: Total BLI amount including fees (amount + fees)
+        requested_de_obligation_amount:
+          type: number
+          format: float
+          nullable: true
+          description: >-
+            Amount of a pending, unapproved de-obligation request on this line (OPS-6488). Null
+            when there is no pending request. `amount` stays the real/original obligated amount;
+            this is the delta being requested, not the resulting net amount.
+        net_amount:
+          type: number
+          format: float
+          description: >-
+            `amount` minus `requested_de_obligation_amount`; equals `amount` when there is no
+            pending de-obligation request.
         comments:
           type: string
         date_needed:
@@ -8382,6 +8456,20 @@ components:
           type: number
           format: float
           description: Total BLI amount including fees (amount + fees)
+        requested_de_obligation_amount:
+          type: number
+          format: float
+          nullable: true
+          description: >-
+            Amount of a pending, unapproved de-obligation request on this line (OPS-6488). Null
+            when there is no pending request. `amount` stays the real/original obligated amount;
+            this is the delta being requested, not the resulting net amount.
+        net_amount:
+          type: number
+          format: float
+          description: >-
+            `amount` minus `requested_de_obligation_amount`; equals `amount` when there is no
+            pending de-obligation request.
         comments:
           type: string
         date_needed:

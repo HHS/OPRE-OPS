@@ -14,6 +14,7 @@ from ops_api.ops.views import (
     AGREEMENT_SEARCH_API_VIEW_FUNC,
     AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC,
     AZURE_SAS_TOKEN_VIEW_FUNC,
+    BUDGET_LINE_ITEM_DE_OBLIGATION_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_BATCH_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
@@ -177,6 +178,11 @@ def register_api(api_bp: Blueprint) -> None:
         # BudgetLineItemsBatchAPI only overrides post(); without this, Flask also registers
         # the inherited BaseListAPI.get(), which has no @is_authorized check and would return
         # every BudgetLineItem row unpaginated.
+        methods=["POST"],
+    )
+    api_bp.add_url_rule(
+        "/budget-line-items/<int:id>/de-obligation/",
+        view_func=BUDGET_LINE_ITEM_DE_OBLIGATION_API_VIEW_FUNC,
         methods=["POST"],
     )
 

@@ -7,6 +7,10 @@ export type BudgetLine = {
     agreement_id: number;
     agreement?: SimpleAgreement; // TODO: remove once data is normalized
     amount?: number;
+    // OPS-6488: the amount of a pending, unapproved de-obligation request on this line, if any.
+    requested_de_obligation_amount?: number | null;
+    // amount net of requested_de_obligation_amount; equals amount when there's no pending request.
+    net_amount?: number;
     can?: CAN;
     can_id?: number;
     change_requests_in_review?: ChangeRequest[];

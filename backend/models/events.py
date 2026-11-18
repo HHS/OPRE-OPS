@@ -121,6 +121,7 @@ class OpsEventType(Enum):
     # Contract Modification Related Events
     START_CONTRACT_MODIFICATION = auto()
     REVIEW_CONTRACT_MODIFICATION = auto()
+    SUBMIT_DE_OBLIGATION = auto()
 
 
 class OpsEventStatus(Enum):

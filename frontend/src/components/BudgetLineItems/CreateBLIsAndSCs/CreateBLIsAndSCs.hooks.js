@@ -1080,6 +1080,7 @@ const useCreateBLIsAndSCs = (
         isAgreementNotYetDeveloped,
         requiresFinancialApproval,
         requiresContractModification,
+        tracksContractModifications,
         effectiveScStartDate,
         effectiveScEndDate
     };

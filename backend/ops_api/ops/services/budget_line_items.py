@@ -1030,6 +1030,62 @@ class BudgetLineItemService:
         else:
             self.db_session.flush()
 
+    def submit_de_obligation(self, id: int, requested_amount: Optional[float], commit: bool = True) -> BudgetLineItem:
+        """Submit (or clear) a de-obligation request on an Obligated budget line (OPS-6488).
+
+        Separate from the generic ``update``/direct-edit path on purpose: Obligated isn't in
+        ``EDITABLE_STATUSES``, and this never writes ``amount`` -- only the pending
+        ``requested_de_obligation_amount`` and its tracking ``ContractModificationEdit`` row (see
+        ``ContractModificationEditService.record_de_obligation_request``). ``requested_amount``
+        of 0 or None clears a pending de-obligation instead of submitting one.
+
+        Raises:
+            ResourceNotFoundError: The budget line doesn't exist (404).
+            AuthorizationError: The user is not associated with the agreement (403).
+            ValidationError: The agreement isn't Awarded, the line isn't Obligated, the line is
+                already in a modification that's in review, or the amount is out of range (400).
+        """
+        budget_line_item = self._get_budget_line_item(id)
+        agreement = budget_line_item.agreement
+        user = get_current_user()
+        # Decimal, not float, from here on: this is money, and it's compared against and stored
+        # alongside budget_line_item.amount (Numeric).
+        requested_amount = None if not requested_amount else Decimal(str(requested_amount))
+
+        if not (is_super_user(current_user, current_app) or check_user_association(agreement, user)):
+            raise AuthorizationError(
+                f"User is not associated with the agreement {agreement.id if agreement else None}",
+                "BudgetLineItem",
+            )
+        if not agreement or not agreement.is_awarded:
+            raise ValidationError({"agreement_id": "Only an Awarded agreement can submit a de-obligation."})
+        if budget_line_item.status != BudgetLineItemStatus.OBLIGATED:
+            raise ValidationError({"status": "Only an Obligated budget line can be de-obligated."})
+        self._validate_not_in_review_modification(budget_line_item)
+        if requested_amount and not (0 < requested_amount <= (budget_line_item.amount or Decimal("0"))):
+            raise ValidationError(
+                {
+                    "requested_de_obligation_amount": (
+                        "The de-obligated amount must be greater than $0 and no more than the "
+                        "budget line's obligated amount."
+                    )
+                }
+            )
+
+        edit_service = ContractModificationEditService(self.db_session)
+        # Checked last among validations, like ContractModificationRequestService.submit(): the
+        # flag only gates starting a new de-obligation, never clearing one already pending (a
+        # `requested_amount` of 0/None), and must run before any mutation below.
+        if requested_amount and not tracks_contract_modifications(budget_line_item):
+            raise ValidationError({"agreement_id": "Contract modifications are not enabled."})
+        edit_service.record_de_obligation_request(budget_line_item, requested_amount, user.id)
+
+        if commit:
+            self.db_session.commit()
+        else:
+            self.db_session.flush()
+        return budget_line_item
+
     def _validate_not_in_review_modification(self, budget_line_item: BudgetLineItem) -> None:
         if tracks_contract_modifications(budget_line_item) and ContractModificationEditService(
             self.db_session

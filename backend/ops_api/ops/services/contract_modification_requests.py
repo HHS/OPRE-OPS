@@ -191,6 +191,17 @@ class ContractModificationRequestService:
         request.status = ContractModificationRequestStatus.DECLINED
 
     def _approve(self, request: ContractModificationRequest) -> None:
+        # Submitting a de-obligation on an Obligated budget line never applies amount/CAN
+        # changes (OPS-6488); approving one into a real modification is OPS-6489's job, not yet
+        # implemented. Block it here rather than silently completing: mod_type() below has no
+        # DE_OBLIGATION branch, and nothing after this point touches
+        # requested_de_obligation_amount, so an unguarded approval would mislabel the resulting
+        # AgreementMod and leave the pending amount permanently stranded on the budget line.
+        if any(edit.modification_type == ModificationEditType.DE_OBLIGATION for edit in request.edits):
+            raise ValidationError(
+                {"action": "De-obligation requests can't be approved yet; that's tracked separately (OPS-6489)."}
+            )
+
         # Re-run the submit-time checks before writing anything: a budget line may have been
         # executed, edited into review, or moved out of the current FY since the request was sent.
         self._get_executable_budget_lines(
@@ -331,7 +342,11 @@ class ContractModificationRequestService:
 
 def _mod_type(request: ContractModificationRequest) -> ModType:
     """As-is for pure budget-line execution (#1008), Admin when only Admin Changes such as a COR
-    change ride along (#3269), and Modified LOE when any Modified LOE edit does (#3072)."""
+    change ride along (#3269), and Modified LOE when any Modified LOE edit does (#3072).
+
+    No DE_OBLIGATION branch is needed (OPS-6488): _approve() rejects a request containing a
+    DE_OBLIGATION edit before this is ever called for one.
+    """
     if not request.edits:
         return ModType.AS_IS
     if all(edit.modification_type == ModificationEditType.ADMIN_CHANGE for edit in request.edits):

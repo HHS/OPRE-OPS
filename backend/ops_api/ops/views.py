@@ -50,6 +50,7 @@ from ops_api.ops.resources.agreements import (
 )
 from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import (
+    BudgetLineItemDeObligationAPI,
     BudgetLineItemsBatchAPI,
     BudgetLineItemsItemAPI,
     BudgetLineItemsListAPI,
@@ -203,6 +204,9 @@ BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-li
 BUDGET_LINE_ITEMS_BATCH_API_VIEW_FUNC = BudgetLineItemsBatchAPI.as_view("budget-line-items-batch", BudgetLineItem)
 BUDGET_LINE_ITEMS_LIST_FILTER_OPTION_API_VIEW_FUNC = BudgetLineItemsListFilterOptionAPI.as_view(
     "budget-line-items-filters", BudgetLineItem
+)
+BUDGET_LINE_ITEM_DE_OBLIGATION_API_VIEW_FUNC = BudgetLineItemDeObligationAPI.as_view(
+    "budget-line-item-de-obligation", BudgetLineItem
 )
 
 
