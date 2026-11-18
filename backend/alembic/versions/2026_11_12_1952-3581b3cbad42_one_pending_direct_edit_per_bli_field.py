@@ -49,41 +49,31 @@ _MERGE_DUPLICATE_GROUPS_SQL = """
 
 def upgrade() -> None:
     op.execute(sa.text(_MERGE_DUPLICATE_GROUPS_SQL))
-    # Drop every row in a duplicate group except the one being kept.
-    op.execute(
-        sa.text(
-            """
+    # Drop every pending row in a duplicate group except the one being kept. Rows already attached
+    # to a modification (agreement_mod_id set) are history, not duplicates, and must survive.
+    op.execute(sa.text("""
             DELETE FROM contract_modification_edit cme
             USING pending_bli_field_merge m
             WHERE cme.budget_line_item_id = m.budget_line_item_id
               AND cme.field = m.field
+              AND cme.agreement_mod_id IS NULL
               AND cme.id != m.keep_id
-            """
-        )
-    )
+            """))
     # Merge the kept row: oldest old_value, newest new_value (already its own, since keep_id is
     # the newest row -- only old_value needs overwriting).
-    op.execute(
-        sa.text(
-            """
+    op.execute(sa.text("""
             UPDATE contract_modification_edit cme
             SET old_value = m.oldest_old_value
             FROM pending_bli_field_merge m
             WHERE cme.id = m.keep_id
-            """
-        )
-    )
+            """))
     # A merge that nets to no change isn't recorded (matches record_direct_edit's net-zero rule).
-    op.execute(
-        sa.text(
-            """
+    op.execute(sa.text("""
             DELETE FROM contract_modification_edit cme
             USING pending_bli_field_merge m
             WHERE cme.id = m.keep_id
               AND cme.old_value = cme.new_value
-            """
-        )
-    )
+            """))
     op.execute(sa.text("DROP TABLE pending_bli_field_merge"))
 
     op.create_index(

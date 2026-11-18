@@ -524,6 +524,20 @@ def test_superuser_deleting_sc_with_planned_budget_lines_applies_directly(
     assert loaded_db.get(ServicesComponent, sc2_id) is None
     assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id is None
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    # Superusers bypass tracking on delete, the same as on create.
+    assert _edits(loaded_db, awarded_agreement.id) == []
+
+
+def test_superuser_add_then_delete_of_an_sc_leaves_no_edit(
+    modified_loe_enabled, power_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc_id = _post_sc(power_user_auth_client, awarded_agreement.id, 2)["id"]
+    assert _edits(loaded_db, awarded_agreement.id) == []
+
+    response = power_user_auth_client.delete(url_for("api.services-component-item", id=sc_id))
+
+    assert response.status_code == 200, response.json
+    assert _edits(loaded_db, awarded_agreement.id) == []
 
 
 # ---=== Deleting an SC is blocked while its budget line is in an in-review modification ===---

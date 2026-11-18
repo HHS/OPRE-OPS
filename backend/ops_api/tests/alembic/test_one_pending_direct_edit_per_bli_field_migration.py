@@ -17,7 +17,7 @@ from alembic.operations import Operations
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
-from models import ContractModificationEdit, ModificationEditType
+from models import AgreementMod, ContractModificationEdit, ModificationEditType
 
 MIGRATION_PATH = (
     Path(__file__).resolve().parents[3]
@@ -131,3 +131,34 @@ def test_recreated_index_rejects_a_future_duplicate_insert(loaded_db, migration,
     loaded_db.add(_make_edit(test_bli.agreement_id, test_bli.id, "amount", 500000.0, 450000.0, now))
     with pytest.raises(IntegrityError):
         loaded_db.flush()
+
+
+def test_keeps_an_edit_already_attached_to_a_modification(loaded_db, migration, test_bli):
+    """Only pending rows are duplicates: an edit already attached to a modification is history
+    and must survive the cleanup, even when the same (budget line, field) has pending duplicates."""
+    now = datetime.datetime.now(datetime.timezone.utc)
+    agreement_mod = AgreementMod(agreement_id=test_bli.agreement_id)
+    loaded_db.add(agreement_mod)
+    loaded_db.flush()
+    attached = _make_edit(
+        test_bli.agreement_id, test_bli.id, "amount", 700000.0, 600000.0, now - datetime.timedelta(days=3)
+    )
+    attached.agreement_mod_id = agreement_mod.id
+    older = _make_edit(
+        test_bli.agreement_id, test_bli.id, "amount", 600000.0, 550000.0, now - datetime.timedelta(days=2)
+    )
+    newer = _make_edit(
+        test_bli.agreement_id, test_bli.id, "amount", 550000.0, 500000.0, now - datetime.timedelta(days=1)
+    )
+    loaded_db.add_all([attached, older, newer])
+    loaded_db.flush()
+    attached_id = attached.id
+
+    _run_upgrade(loaded_db, migration)
+
+    remaining = _pending_edits(loaded_db, test_bli.id, "amount")
+    assert {e.id for e in remaining if e.agreement_mod_id is not None} == {attached_id}
+    pending = [e for e in remaining if e.agreement_mod_id is None]
+    assert len(pending) == 1
+    assert pending[0].old_value == 600000.0
+    assert pending[0].new_value == 500000.0

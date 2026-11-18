@@ -19,7 +19,6 @@ from ops_api.ops.services.ops_service import (
 )
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.budget_line_items_helpers import (
-    agreement_tracks_contract_modifications,
     get_agreement_pre_award_lock_message,
     sc_requires_approval_gate,
 )
@@ -179,11 +178,12 @@ class ServicesComponentService:
         """
         Delete a services component.
 
-        On an Awarded, tracked agreement, deleting an SC is always recorded as an "Edit That
+        On an Awarded, tracked agreement, a non-superuser's delete is recorded as an "Edit That
         Requires a Contract Modification" (OPS-3072/OPS-3268 UX feedback item 5), with no
         Division Director approval and no requirement that it have any non-Draft budget lines.
-        The SC's pending "Add SC" edit, if any, is removed with it (added then deleted before a
-        modification starts nets to nothing).
+        The exception: an SC still carrying its pending "Add SC" edit was never on the contract,
+        so the add is discarded and no delete is recorded (net zero). Superusers bypass tracking,
+        the same as on create.
 
         Args:
             obj_id: The ID of the services component to delete
@@ -204,7 +204,7 @@ class ServicesComponentService:
         self._check_not_in_review(services_component)
         self._check_not_in_review_modification(obj_id)
 
-        if agreement_tracks_contract_modifications(services_component.agreement):
+        if sc_requires_approval_gate(services_component.agreement):
             ContractModificationEditService(self.db_session).record_services_component_delete(
                 services_component, get_current_user().id
             )
