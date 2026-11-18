@@ -786,3 +786,91 @@ def test_approved_change_request_merges_with_a_pending_direct_edit(
 
     edits = [(e.field, e.old_value, e.new_value) for e in _edits(loaded_db, agreement.id)]
     assert edits == ([expected] if expected else [])
+
+
+def _legacy_amount_change_request_after_award(basic_client, loaded_db, agreement, bli):
+    """A change request opened before the award but flagged as requiring a contract modification,
+    the way an in-flight request from before PR 6536 looks, plus a pending direct edit to the
+    same field (inserted as legacy data: a direct edit can't be made while a request is open)."""
+    response = basic_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 700000.00})
+    assert response.status_code == 202, response.json
+    (cr,) = _change_requests(loaded_db, bli.id)
+    cr.requested_change_info = {**(cr.requested_change_info or {}), "requires_contract_modification": True}
+    loaded_db.commit()
+    _award(loaded_db, agreement)
+    loaded_db.add(
+        ContractModificationEdit(
+            agreement_id=agreement.id,
+            modification_type=ModificationEditType.MODIFIED_LOE,
+            budget_line_item_id=bli.id,
+            field="amount",
+            old_value=600000.0,
+            new_value=500000.0,
+            requested_by_id=BASIC_USER_ID,
+            created_by=BASIC_USER_ID,
+        )
+    )
+    loaded_db.commit()
+    return cr.id
+
+
+def test_approving_a_change_request_merges_with_a_pending_edit_and_keeps_audit_fields(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """The approval and the merged edit are written at commit, so the before_commit hooks stamp
+    updated_by and record history: an early flush would write them before the hooks see them."""
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    agreement, bli = make_agreement(test_can, awarded=False)
+    cr_id = _legacy_amount_change_request_after_award(basic_user_auth_client, loaded_db, agreement, bli)
+    director = loaded_db.scalars(select(User).where(User.email == "dave.director@email.com")).one()
+
+    _review(division_director_auth_client, cr_id)
+
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert (edit.field, edit.old_value, edit.new_value) == ("amount", 600000.0, 700000.0)
+    assert edit.change_request_id == cr_id
+    assert edit.updated_by == director.id
+    cr = loaded_db.get(BudgetLineItemChangeRequest, cr_id)
+    assert cr.status == ChangeRequestStatus.APPROVED
+    assert cr.updated_by == director.id
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "BudgetLineItemChangeRequest",
+            OpsDBHistory.row_key == str(cr_id),
+            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+        )
+    ).all()
+    assert history
+
+
+def test_approving_a_change_request_on_a_line_in_an_in_review_modification_is_rejected(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """Merging would change the pending edit the Division Director is reviewing in the
+    modification."""
+    agreement, bli = make_agreement(test_can, awarded=False)
+    cr_id = _legacy_amount_change_request_after_award(basic_user_auth_client, loaded_db, agreement, bli)
+    submit = basic_user_auth_client.post(url_for("api.agreements-contract-modifications", id=agreement.id), json={})
+    assert submit.status_code == 201, submit.json
+
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=cr_id), json={"action": "APPROVE"}
+    )
+
+    assert response.status_code == 400, response.json
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert edit.new_value == 500000.0
+    assert loaded_db.get(BudgetLineItemChangeRequest, cr_id).status == ChangeRequestStatus.IN_REVIEW

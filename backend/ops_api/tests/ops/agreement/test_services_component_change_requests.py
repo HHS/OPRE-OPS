@@ -691,12 +691,20 @@ def test_period_edit_on_awarded_agreement_applies_and_is_tracked_per_field(
     assert (sc2.period_start, sc2.period_end) == (datetime.date(2043, 2, 1), datetime.date(2044, 1, 31))
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
     edits = {
-        e.field: (e.old_value, e.new_value, e.modification_type.name, e.budget_line_item_id, e.requested_by_id)
+        e.field: (
+            e.old_value,
+            e.new_value,
+            e.modification_type.name,
+            e.budget_line_item_id,
+            e.requested_by_id,
+            # Snapshotted: the card outlives the SC.
+            e.services_component_display_name,
+        )
         for e in _edits(loaded_db, awarded_agreement.id)
     }
     assert edits == {
-        "period_start": ("2043-01-01", "2043-02-01", "MODIFIED_LOE", None, BASIC_USER_ID),
-        "period_end": ("2043-12-31", "2044-01-31", "MODIFIED_LOE", None, BASIC_USER_ID),
+        "period_start": ("2043-01-01", "2043-02-01", "MODIFIED_LOE", None, BASIC_USER_ID, "SC2"),
+        "period_end": ("2043-12-31", "2044-01-31", "MODIFIED_LOE", None, BASIC_USER_ID, "SC2"),
     }
 
     listed = basic_user_auth_client.get(url_for("api.agreements-contract-modification-edits", id=awarded_agreement.id))
@@ -817,12 +825,21 @@ def test_period_edit_and_delete_blocked_while_its_edit_is_in_review(
 ):
     sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
     assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-01-31"}).status_code == 200
+    item_url = url_for("api.services-component-item", id=sc2_id)
+    assert basic_user_auth_client.get(item_url).json["in_review_modification"] is False
     submit_response = _submit(basic_user_auth_client, awarded_agreement.id)
     assert submit_response.status_code == 201, submit_response.json
 
-    response = _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-06-30"})
-    assert response.status_code == 400, response.json
-    assert "services_component" in response.json["errors"]
+    # The SC response says so, for the UI to lock its Edit/Delete.
+    listed = basic_user_auth_client.get(
+        url_for("api.services-component-group"), query_string={"agreement_id": awarded_agreement.id}
+    )
+    assert {sc["id"]: sc["in_review_modification"] for sc in listed.json}[sc2_id] is True
+
+    for client in (basic_user_auth_client, power_user_auth_client):
+        response = _patch_sc(client, sc2_id, {"period_end": "2044-06-30"})
+        assert response.status_code == 400, response.json
+        assert "services_component" in response.json["errors"]
 
     for client in (basic_user_auth_client, power_user_auth_client):
         response = client.delete(url_for("api.services-component-item", id=sc2_id))
