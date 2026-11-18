@@ -100,15 +100,16 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
 
         cy.get("@modCard").find('[data-cy="approve-contract-modification-icon-btn"]').click();
         cy.get(".usa-modal__content").should("exist");
-        cy.get(".usa-modal__content").contains("Are you sure you want to approve this Contract Modification?");
+        cy.get(".usa-modal__content").contains("This will start the procurement process for budget lines selected to change status from Planned to Executing.");
         cy.get("[data-cy='confirm-action']").click();
 
         cy.get(".usa-alert__body").contains(/contract modification approved/i);
         cy.get('[data-cy="contract-modification-review-card"]').should("not.exist");
 
-        // The requester sees the existing outcome alert on the agreement (no-regression check).
+        // The requester sees the existing outcome alert on the agreement, on the main tab --
+        // not only on Award & Modifications (#6546 follow-up: the alert used to be tab-specific).
         testLogin("system-owner");
-        cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
+        cy.visit(`/agreements/${AGREEMENT_ID}`);
         cy.contains("Contract Modification Approved").should("be.visible");
     });
 
@@ -133,7 +134,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         cy.get('[data-cy="contract-modification-review-card"]').should("not.exist");
 
         testLogin("system-owner");
-        cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
+        cy.visit(`/agreements/${AGREEMENT_ID}`);
         cy.contains("Contract Modification Declined").should("be.visible");
     });
 });

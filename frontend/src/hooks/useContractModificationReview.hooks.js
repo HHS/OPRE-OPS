@@ -16,6 +16,18 @@ const approvedMessage = (request) =>
         : "The Contract Modification has been approved.";
 
 /**
+ * The approval confirmation heading says what approving will actually do: start the
+ * procurement process for the selected budget lines when there are any to execute, or just a
+ * generic confirmation when the request only bundles edits (Admin Change/COR, no BLIs).
+ * @param {Object} request - The contract modification request being approved.
+ * @returns {string}
+ */
+const approveConfirmationHeading = (request) =>
+    request.budget_line_items?.length
+        ? "Are you sure you want to approve this contract modification? This will start the procurement process for budget lines selected to change status from Planned to Executing."
+        : "Are you sure you want to approve this Contract Modification?";
+
+/**
  * Shared Approve/Decline confirmation flow for a Contract Modification request (#6546): the
  * confirmation-modal props, the `useReviewContractModificationMutation` call, the success/error
  * alert, and submit-disabling-after-success. Extracted out of `ContractModificationRequestReviewCard`
@@ -51,7 +63,7 @@ const useContractModificationReview = (request) => {
         setSubmitError("");
         setModalProps({
             heading: isApprove
-                ? "Are you sure you want to approve this Contract Modification?"
+                ? approveConfirmationHeading(request)
                 : "Are you sure you want to decline this Contract Modification?",
             actionButtonText: isApprove ? "Approve" : "Decline",
             handleConfirm: () => {

@@ -39,6 +39,20 @@ describe("useContractModificationReview", () => {
         expect(mockReview).not.toHaveBeenCalled();
     });
 
+    it("uses the budget-line-specific approve heading when the request has budget lines to execute", () => {
+        useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
+        const request = { id: 9, budget_line_items: [{ id: 1 }] };
+        const { result } = renderHook(() => useContractModificationReview(request));
+
+        act(() => {
+            result.current.handleReview("APPROVE");
+        });
+
+        expect(result.current.modalProps.heading).toBe(
+            "Are you sure you want to approve this contract modification? This will start the procurement process for budget lines selected to change status from Planned to Executing."
+        );
+    });
+
     it("confirming APPROVE calls the mutation and alerts the approval copy for an execute-only request", async () => {
         const unwrap = vi.fn().mockResolvedValue({});
         mockReview.mockReturnValue({ unwrap });
