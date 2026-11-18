@@ -98,7 +98,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         // No "Review agreement" link or detail view -- the icons are the only interaction (#6546).
         cy.get("@modCard").contains(/review agreement/i).should("not.exist");
 
-        cy.get("@modCard").find("#approve").click();
+        cy.get("@modCard").find('[data-cy="approve-contract-modification-icon-btn"]').click();
         cy.get(".usa-modal__content").should("exist");
         cy.get(".usa-modal__content").contains("Are you sure you want to approve this Contract Modification?");
         cy.get("[data-cy='confirm-action']").click();
@@ -124,7 +124,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         cy.visit("/agreements?filter=change-requests").wait(1000);
 
         cy.get('[data-cy="contract-modification-review-card"]').should("exist").as("modCard");
-        cy.get("@modCard").find("#decline").click();
+        cy.get("@modCard").find('[data-cy="decline-contract-modification-icon-btn"]').click();
         cy.get(".usa-modal__content").should("exist");
         cy.get(".usa-modal__content").contains("Are you sure you want to decline this Contract Modification?");
         cy.get("[data-cy='confirm-action']").click();

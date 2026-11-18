@@ -77,7 +77,7 @@ function ContractModificationReviewCard({ request }) {
                 >
                     <button
                         type="button"
-                        id="approve"
+                        id={`approve-${request.id}`}
                         aria-label="Approve"
                         disabled={isSubmitDisabled}
                         onClick={() => handleReview("APPROVE")}
@@ -96,7 +96,7 @@ function ContractModificationReviewCard({ request }) {
                 >
                     <button
                         type="button"
-                        id="decline"
+                        id={`decline-${request.id}`}
                         aria-label="Decline"
                         disabled={isSubmitDisabled}
                         onClick={() => handleReview("DECLINE")}

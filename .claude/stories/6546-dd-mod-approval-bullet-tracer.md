@@ -89,7 +89,7 @@ the full page in the #3331 mockup.
   agreements."** Only per-agreement (`GET /agreements/<id>/contract-modifications/`) and
   per-request (`PATCH /contract-modification-requests/<id>/`) endpoints exist today. A
   division-scoped "reviewable agreements" subquery already exists for this exact purpose on the
-  `ChangeRequest` side — `_get_reviewable_agreement_ids_subquery(user_id)` /
+  `ChangeRequest` side — `get_reviewable_agreement_ids_subquery(user_id)` /
   `get_division_ids_user_can_review_for(user_id)` in
   [`change_requests_helpers.py`](../../backend/ops_api/ops/utils/change_requests_helpers.py) — and
   should be reused, not re-derived.
@@ -156,7 +156,7 @@ stalled with no way for me to act, while the real review-page design is still be
    `ChangeRequest` review-eligibility already is: superuser sees all `IN_REVIEW` requests;
    everyone else sees requests whose agreement is in
    `get_division_ids_user_can_review_for(user_id)`'s agreements (reuse
-   `_get_reviewable_agreement_ids_subquery`, don't duplicate the BLI→CAN→Portfolio→Division join).
+   `get_reviewable_agreement_ids_subquery`, don't duplicate the BLI→CAN→Portfolio→Division join).
    Register a new list route (currently only an item route exists).
 2. **Frontend: new card + wiring into the existing list.**
    - New card component for the For Review list — summary fields only, no link, no detail view.
@@ -177,7 +177,7 @@ stalled with no way for me to act, while the real review-page design is still be
 - `backend/ops_api/ops/services/contract_modification_requests.py` — `can_review()` (~L306),
   `review()` (~L133); add a "pending for user" query alongside `get_for_agreement()`
 - `backend/ops_api/ops/utils/change_requests_helpers.py` — `get_division_ids_user_can_review_for()`
-  (~L72), `_get_reviewable_agreement_ids_subquery()` (~L83) — reuse, don't duplicate
+  (~L72), `get_reviewable_agreement_ids_subquery()` (~L83) — reuse, don't duplicate
 - `backend/ops_api/ops/views.py` (~L162) — route registration
 - `frontend/src/api/opsAPI.js` — add the new query hook; `useReviewContractModificationMutation`
   already exists
