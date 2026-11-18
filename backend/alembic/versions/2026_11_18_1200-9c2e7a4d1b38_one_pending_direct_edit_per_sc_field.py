@@ -29,12 +29,15 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 PENDING_SC_FIELD_INDEX = "ix_contract_modification_edit_one_pending_sc_field"
-PENDING_SC_ROW = "agreement_mod_id IS NULL AND services_component_id IS NOT NULL AND budget_line_item_id IS NULL"
+# Literal SQL throughout (no interpolation into sa.text), like the BLI migration.
+PENDING_SC_ROW = sa.text(
+    "agreement_mod_id IS NULL AND services_component_id IS NOT NULL AND budget_line_item_id IS NULL"
+)
 
 
 def upgrade() -> None:
     # Rows already attached to a modification (agreement_mod_id set) are history and must survive.
-    op.execute(sa.text(f"""
+    op.execute(sa.text("""
             DELETE FROM contract_modification_edit cme
             USING (
                 SELECT id, ROW_NUMBER() OVER (
@@ -42,7 +45,9 @@ def upgrade() -> None:
                     ORDER BY requested_on DESC NULLS LAST, id DESC
                 ) AS rn
                 FROM contract_modification_edit
-                WHERE {PENDING_SC_ROW}
+                WHERE agreement_mod_id IS NULL
+                  AND services_component_id IS NOT NULL
+                  AND budget_line_item_id IS NULL
             ) ranked
             WHERE cme.id = ranked.id AND ranked.rn > 1
             """))
@@ -52,7 +57,7 @@ def upgrade() -> None:
         "contract_modification_edit",
         ["services_component_id", "field"],
         unique=True,
-        postgresql_where=sa.text(PENDING_SC_ROW),
+        postgresql_where=PENDING_SC_ROW,
     )
 
 
