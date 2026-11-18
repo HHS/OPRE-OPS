@@ -66,8 +66,12 @@ describe("ServicesComponentListItem", () => {
         const [editButton, deleteButton] = screen.getAllByRole("button");
         expect(editButton).toHaveAttribute("aria-disabled", "true");
         expect(deleteButton).toHaveAttribute("aria-disabled", "true");
-        expect(editButton).toHaveAttribute("aria-label", lockedMessage);
-        expect(deleteButton).toHaveAttribute("aria-label", lockedMessage);
+        expect(editButton).toHaveAccessibleName("Edit Services Component 2");
+        expect(deleteButton).toHaveAccessibleName("Delete Services Component 2");
+        // Accessible descriptions collapse whitespace.
+        const description = lockedMessage.replace(/\s+/g, " ");
+        expect(editButton).toHaveAccessibleDescription(description);
+        expect(deleteButton).toHaveAccessibleDescription(description);
         expect(screen.queryByText("In Review")).not.toBeInTheDocument();
     });
 
@@ -77,7 +81,8 @@ describe("ServicesComponentListItem", () => {
 
         const [, deleteButton] = screen.getAllByRole("button");
         expect(deleteButton).toHaveAttribute("aria-disabled", "true");
-        expect(deleteButton).toHaveAttribute("aria-label", "All agreements must start with an SC1 or Base Period");
+        expect(deleteButton).toHaveAccessibleName("Delete Services Component 2");
+        expect(deleteButton).toHaveAccessibleDescription("All agreements must start with an SC1 or Base Period");
     });
 
     it("keeps edit and delete enabled when nothing is in review", () => {
@@ -96,7 +101,7 @@ describe("ServicesComponentListItem", () => {
         renderItem({ lockedMessage: "Locked for review", setFormDataById, handleDelete });
 
         await user.tab();
-        expect(screen.getAllByRole("button", { name: "Locked for review" })[0]).toHaveFocus();
+        expect(screen.getByRole("button", { name: "Edit Services Component 2" })).toHaveFocus();
         await user.keyboard("{Enter}");
         await user.tab();
         await user.keyboard("{Enter}");

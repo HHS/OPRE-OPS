@@ -87,7 +87,9 @@ function ServicesComponentListItem({
                     >
                         <button
                             type="button"
-                            aria-label={isEditDisabled ? disabledEditMsg : `Edit ${title}`}
+                            // Always the action and SC; a lock's reason is the tooltip's description (USWDS sets
+                            // aria-describedby), so it isn't read twice or in place of the name.
+                            aria-label={`Edit ${title}`}
                             data-cy="services-component-item-edit-button"
                             onClick={() => {
                                 if (isEditDisabled) return;
@@ -114,7 +116,7 @@ function ServicesComponentListItem({
                     >
                         <button
                             type="button"
-                            aria-label={isDeleteDisabled ? disabledDeleteMsg : `Delete ${title}`}
+                            aria-label={`Delete ${title}`}
                             data-cy="services-component-item-delete-button"
                             onClick={() => {
                                 if (isDeleteDisabled) return;

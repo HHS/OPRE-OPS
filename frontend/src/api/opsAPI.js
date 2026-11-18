@@ -707,7 +707,8 @@ export const opsApi = createApi({
                 headers: { "Content-Type": "application/json" },
                 body: { budget_line_item_ids: budgetLineItemIds, requestor_notes: requestorNotes || null }
             }),
-            invalidatesTags: ["ContractModifications", "BudgetLineItems", "Notifications"]
+            // The submitted edits lock their Services Components (in_review_modification, OPS-3268).
+            invalidatesTags: ["ContractModifications", "BudgetLineItems", "ServicesComponents", "Notifications"]
         }),
         reviewContractModification: builder.mutation({
             query: ({ requestId, action, reviewerNotes }) => ({

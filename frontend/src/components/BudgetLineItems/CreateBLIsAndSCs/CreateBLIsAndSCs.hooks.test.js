@@ -729,6 +729,37 @@ describe("useCreateBLIsAndSCs", () => {
                 expect(setAlertMock).toHaveBeenCalledWith({ type: "error", heading: "Error", message: reason });
             });
 
+            it.each([
+                [
+                    "shows the backend's reason, with no error-page redirect, when an SC update is rejected",
+                    { status: 400, data: { errors: { services_component: ["Locked: in a modification in review."] } } },
+                    { type: "error", heading: "Error", message: "Locked: in a modification in review." }
+                ],
+                [
+                    "still sends an unexplained failure to the error page",
+                    { status: 500, data: {} },
+                    {
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred while saving. Please try again.",
+                        redirectUrl: "/error"
+                    }
+                ]
+            ])("%s (OPS-3268)", async (_label, rejection, expectedAlert) => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [{ id: 11, number: 1, created_on: "2026-01-01", has_changed: true }]
+                });
+                updateServicesComponentMock.mockReturnValue({ unwrap: () => Promise.reject(Object.freeze(rejection)) });
+                const { result } = renderAwarded();
+
+                await act(async () => {
+                    await result.current.handleSave(false);
+                });
+
+                expect(setAlertMock).toHaveBeenLastCalledWith(expectedAlert);
+            });
+
             it("deletes services components only after the budget line deletes finish", async () => {
                 useEditAgreementMock.mockReturnValue({
                     ...editAgreementMockData,

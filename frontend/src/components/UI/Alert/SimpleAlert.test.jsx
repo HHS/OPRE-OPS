@@ -178,4 +178,33 @@ describe("SimpleAlert", () => {
 
         expect(screen.getByRole("main")).toHaveFocus();
     });
+
+    it("skips a following element that can't take focus", () => {
+        render(
+            <main
+                id="main-content"
+                tabIndex={-1}
+            >
+                <SimpleAlert
+                    message="Closable"
+                    type="warning"
+                    isClosable={true}
+                />
+                <button
+                    type="button"
+                    // Matches the focusable selector but won't take focus (e.g. hidden or inert).
+                    ref={(element) => {
+                        if (element) element.focus = () => {};
+                    }}
+                >
+                    Unfocusable
+                </button>
+                <button type="button">Next</button>
+            </main>
+        );
+
+        fireEvent.click(screen.getByLabelText("close"));
+
+        expect(screen.getByRole("button", { name: "Next" })).toHaveFocus();
+    });
 });
