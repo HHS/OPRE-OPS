@@ -93,7 +93,9 @@ const AgreementBudgetLines = ({
     const { data: servicesComponents, isLoading: isServicesComponentsLoading } = useGetServicesComponentsListQuery(
         agreement?.id
     );
-    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement?.id });
+    const { data: grantNumbers, isLoading: isGrantNumbersLoading } = useGetGrantNumbersListQuery(agreement?.id, {
+        skip: !agreement?.id
+    });
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const isContract = agreement?.agreement_type === AgreementType.CONTRACT;
@@ -122,6 +124,10 @@ const AgreementBudgetLines = ({
     const canRequestStatusChange = isAgreementEditable && (!blocksPlannedToExecuting || hasDraftBLI);
     // Guards against reaching the edit wizard via URL param (?mode=edit) when the agreement isn't editable.
     const showEditWizard = isEditMode && isAgreementEditable;
+    // EditAgreementProvider seeds its state from these lists only on mount, so mounting it while
+    // either query is in flight freezes an empty list: existing SCs vanish from the editor and
+    // the next SC the user adds replaces them. Wait for both, like the other editor pages do.
+    const isEditorDataLoading = isServicesComponentsLoading || isGrantNumbersLoading;
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -323,7 +329,9 @@ const AgreementBudgetLines = ({
                 </>
             )}
 
-            {showEditWizard && (
+            {showEditWizard && isEditorDataLoading && <BudgetLinesTableLoading />}
+
+            {showEditWizard && !isEditorDataLoading && (
                 <EditAgreementProvider
                     agreement={agreement}
                     projectOfficer={""}
