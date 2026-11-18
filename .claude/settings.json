@@ -25,5 +25,29 @@
       "mcp__plugin_figma_figma__upload_assets",
       "mcp__plugin_figma_figma__use_figma"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/assign-dev-ports.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/assign-dev-ports.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }
