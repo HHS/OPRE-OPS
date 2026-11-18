@@ -178,7 +178,9 @@ class ServicesComponentService:
                 edit_service.record_services_component_edit(
                     services_component, field, old_value, new_value, get_current_user().id
                 )
-            self.db_session.merge(updated_service_component)
+            # Return the merged (persistent) instance: the transient one has only the fields in the
+            # request, and no session for the response's computed fields.
+            updated_service_component = self.db_session.merge(updated_service_component)
             if commit:
                 self.db_session.commit()
             else:
