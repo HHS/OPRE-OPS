@@ -315,14 +315,19 @@ def test_consecutive_edits_on_the_same_field_merge_into_one_row(
     """Repeated edits to the same field merge into one row: the From stays the awarded value,
     so a modification never carries more than the net change."""
     agreement, bli = make_agreement(test_can)
+    first_id = None
     for amount in (500000.00, 100000.00):
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id), json={"amount": amount}
         )
         assert response.status_code == 200, response.json
+        first_id = first_id or _edits(loaded_db, agreement.id)[0].id
 
     (edit,) = _edits(loaded_db, agreement.id)
     assert (edit.old_value, edit.new_value) == (600000.0, 100000.0)
+    # Updated in place, so the audit hooks see it (no delete + re-insert).
+    assert edit.id == first_id
+    assert edit.updated_by == BASIC_USER_ID
 
     response = _get_pending(basic_user_auth_client, agreement.id)
     assert response.status_code == 200, response.json
@@ -884,3 +889,48 @@ def test_approving_a_change_request_on_a_line_in_an_in_review_modification_is_re
     (edit,) = _edits(loaded_db, agreement.id)
     assert edit.new_value == 500000.0
     assert loaded_db.get(BudgetLineItemChangeRequest, cr_id).status == ChangeRequestStatus.IN_REVIEW
+
+
+def test_a_concurrent_duplicate_edit_on_approval_returns_a_friendly_400(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+    monkeypatch,
+):
+    """A save that races the approval onto the same field trips the unique index at commit; that
+    is a 400 saying so, not a 500."""
+    from sqlalchemy.exc import IntegrityError
+
+    from ops_api.ops.services.change_requests import ChangeRequestService
+
+    agreement, bli = make_agreement(test_can, awarded=False)
+    cr_id = _legacy_amount_change_request_after_award(basic_user_auth_client, loaded_db, agreement, bli)
+
+    # Fail only the review's own commit: other commits in the request (auth, events) run as usual.
+    real_commit, real_review = loaded_db.commit, ChangeRequestService._handle_review_action
+    reviewed = {"done": False}
+
+    def _review_then_mark(self, *args, **kwargs):
+        result = real_review(self, *args, **kwargs)
+        reviewed["done"] = True
+        return result
+
+    def _commit(*args, **kwargs):
+        if reviewed["done"]:
+            reviewed["done"] = False
+            raise IntegrityError("INSERT", {}, Exception("ix_contract_modification_edit_one_pending_bli_field"))
+        return real_commit(*args, **kwargs)
+
+    monkeypatch.setattr(ChangeRequestService, "_handle_review_action", _review_then_mark)
+    monkeypatch.setattr(loaded_db, "commit", _commit)
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=cr_id), json={"action": "APPROVE"}
+    )
+    monkeypatch.undo()
+
+    assert response.status_code == 400, response.json
+    assert "saved at the same time" in response.json["errors"]["change_request"][0]
