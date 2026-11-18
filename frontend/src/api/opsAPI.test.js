@@ -1664,3 +1664,34 @@ describe("opsAPI - submitting a contract modification refreshes the Services Com
         subscription.unsubscribe();
     });
 });
+
+describe("opsAPI - reviewing a contract modification refreshes the Services Components (OPS-3268)", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("refetches the SC list, so the lock clears", async () => {
+        let inReviewModification = true;
+        let listRequests = 0;
+        server.use(
+            http.get("*/api/v1/services-components/", () => {
+                listRequests += 1;
+                return HttpResponse.json([{ id: 1, number: 1, in_review_modification: inReviewModification }]);
+            }),
+            http.patch("*/api/v1/contract-modification-requests/3/", () => {
+                inReviewModification = false;
+                return HttpResponse.json({ id: 3 });
+            })
+        );
+        const { store } = setupApiStore(opsApi);
+        const subscription = store.dispatch(opsApi.endpoints.getServicesComponentsList.initiate(7));
+        await subscription;
+
+        await store.dispatch(
+            opsApi.endpoints.reviewContractModification.initiate({ requestId: 3, action: "APPROVE", reviewerNotes: "" })
+        );
+        await vi.waitFor(() => expect(listRequests).toBe(2));
+
+        const refreshed = opsApi.endpoints.getServicesComponentsList.select(7)(store.getState());
+        expect(refreshed.data[0].in_review_modification).toBe(false);
+        subscription.unsubscribe();
+    });
+});
