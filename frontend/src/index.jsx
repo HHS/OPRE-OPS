@@ -171,50 +171,14 @@ const router = createBrowserRouter(
                 <Route
                     path="/users/:id/*"
                     element={<UserDetail />}
-                    handle={{
-                        crumb: () => (
-                            <div>
-                                <Link
-                                    to="/"
-                                    className="text-primary"
-                                >
-                                    Users
-                                </Link>
-                            </div>
-                        )
-                    }}
                 />
                 <Route
                     path="/users/edit/:id"
                     element={<EditUser />}
-                    handle={{
-                        crumb: () => (
-                            <div>
-                                <Link
-                                    to="/"
-                                    className="text-primary"
-                                >
-                                    Edit User
-                                </Link>
-                            </div>
-                        )
-                    }}
                 />
                 <Route
                     path="/users/edit"
                     element={<EditUser />}
-                    handle={{
-                        crumb: () => (
-                            <div>
-                                <Link
-                                    to="/"
-                                    className="text-primary"
-                                >
-                                    Edit User
-                                </Link>
-                            </div>
-                        )
-                    }}
                 />
                 <Route
                     path="/agreements/:id/*"
