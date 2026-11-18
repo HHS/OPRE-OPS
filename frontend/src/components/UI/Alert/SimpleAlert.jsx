@@ -8,22 +8,33 @@ const FOCUSABLE_SELECTOR =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
- * The element keyboard focus should move to when the alert closes: its close button unmounts, so
- * focus would otherwise drop to <body> (WCAG 2.4.3). The next focusable element after the alert,
- * else the page's main content.
+ * Where keyboard focus can go when the alert closes: its close button unmounts, so focus would
+ * otherwise drop to <body> (WCAG 2.4.3). The focusable elements after the alert, in order, then
+ * the page's main content.
  * @param {HTMLElement | null} alertElement
- * @returns {HTMLElement | null}
+ * @returns {HTMLElement[]}
  */
-const getFocusTargetAfterClose = (alertElement) => {
-    if (alertElement) {
-        const next = Array.from(document.querySelectorAll(FOCUSABLE_SELECTOR)).find(
-            (element) =>
-                !alertElement.contains(element) &&
-                Boolean(alertElement.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING)
-        );
-        if (next instanceof HTMLElement) return next;
+const getFocusCandidatesAfterClose = (alertElement) => {
+    const following = alertElement
+        ? Array.from(document.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
+              (element) =>
+                  !alertElement.contains(element) &&
+                  Boolean(alertElement.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING)
+          )
+        : [];
+    return [...following, document.getElementById("main-content")].filter((element) => element instanceof HTMLElement);
+};
+
+/**
+ * Move focus to the first candidate that actually takes it (a hidden or inert element matches the
+ * selector but can't).
+ * @param {HTMLElement[]} candidates
+ */
+const focusFirstFocusable = (candidates) => {
+    for (const candidate of candidates) {
+        candidate.focus();
+        if (document.activeElement === candidate) return;
     }
-    return document.getElementById("main-content");
 };
 
 /**
@@ -126,9 +137,9 @@ const SimpleAlert = ({
                         data-position="top"
                         data-cy="close-alert"
                         onClick={() => {
-                            const focusTarget = getFocusTargetAfterClose(alertRef.current);
+                            const focusCandidates = getFocusCandidatesAfterClose(alertRef.current);
                             setIsAlertVisible(false);
-                            focusTarget?.focus();
+                            focusFirstFocusable(focusCandidates);
                         }}
                     >
                         <FontAwesomeIcon

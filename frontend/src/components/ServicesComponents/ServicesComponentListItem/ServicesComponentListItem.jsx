@@ -42,8 +42,8 @@ function ServicesComponentListItem({
 
     const isFirstServiceComponent = number === 1;
     const isLocked = Boolean(lockedMessage);
-    const isEditDisabled = isLocked || isSubComponent;
-    const isDeleteDisabled = isLocked || isSubComponent || isFirstServiceComponent;
+    const isEditDisabled = Boolean(isLocked || isSubComponent);
+    const isDeleteDisabled = Boolean(isLocked || isSubComponent || isFirstServiceComponent);
 
     const SUB_COMPONENT_DISABLED_MSG = "Sub-Services Components are from legacy contracts and cannot be edited";
     const FIRST_SERVICE_COMPONENT_DISABLED_MSG = "All agreements must start with an SC1 or Base Period";
@@ -87,13 +87,16 @@ function ServicesComponentListItem({
                     >
                         <button
                             type="button"
-                            aria-label={isEditDisabled ? disabledEditMsg : "Edit"}
+                            aria-label={isEditDisabled ? disabledEditMsg : `Edit ${title}`}
                             data-cy="services-component-item-edit-button"
                             onClick={() => {
+                                if (isEditDisabled) return;
                                 setFormDataById(id);
                                 scrollToCenter("services-component-form");
                             }}
-                            disabled={isEditDisabled}
+                            // aria-disabled, not disabled: a disabled button can't take focus, so
+                            // keyboard users couldn't reach the tooltip saying why.
+                            aria-disabled={isEditDisabled}
                         >
                             <FontAwesomeIcon
                                 icon={faPen}
@@ -111,12 +114,13 @@ function ServicesComponentListItem({
                     >
                         <button
                             type="button"
-                            aria-label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
+                            aria-label={isDeleteDisabled ? disabledDeleteMsg : `Delete ${title}`}
                             data-cy="services-component-item-delete-button"
                             onClick={() => {
+                                if (isDeleteDisabled) return;
                                 handleDelete(id);
                             }}
-                            disabled={isDeleteDisabled}
+                            aria-disabled={isDeleteDisabled}
                         >
                             <FontAwesomeIcon
                                 icon={faTrash}

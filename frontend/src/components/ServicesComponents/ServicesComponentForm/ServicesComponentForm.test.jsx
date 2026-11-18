@@ -98,8 +98,9 @@ describe("ServicesComponentForm", () => {
             expect(screen.getByRole("checkbox", { name: "Optional Services Component" })).toBeDisabled();
             // Shown as the field's hint (and its tooltip).
             expect(
-                screen.getAllByText("The Services Component number can't be changed after the agreement is awarded.")
-                    .length
+                screen.getAllByText(
+                    "The Services Component number and Optional setting can't be changed after the agreement is awarded."
+                ).length
             ).toBeGreaterThan(0);
         });
 

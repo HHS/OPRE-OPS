@@ -287,6 +287,20 @@ describe("useServicesComponents", () => {
             );
         });
 
+        it("goes by a line's current SC number, not its saved services_component_id (moved line)", () => {
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [
+                { id: 900, status: "OBLIGATED", services_component_id: 2, services_component_number: 1 }
+            ]);
+
+            act(() => {
+                result.current.handleDelete(2);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(setAlertMock).not.toHaveBeenCalled();
+        });
+
         it("still allows the delete when its only non-Draft lines are Planned", () => {
             useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
             const { result } = renderUseServicesComponents(vi.fn(), undefined, [

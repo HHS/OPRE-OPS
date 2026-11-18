@@ -839,6 +839,8 @@ describe("useCreateBLIsAndSCs", () => {
 
             describe("period-of-performance edits (OPS-3268)", () => {
                 const saved = savedSc({ period_start: "2043-01-01", period_end: "2043-12-31" });
+                // An id, so the saved-SCs query isn't skipped.
+                const awardedWithId = { ...awardedContract, id: 42 };
 
                 beforeEach(() => {
                     useGetServicesComponentsListQueryMock.mockReturnValue({ data: [saved] });
@@ -850,10 +852,11 @@ describe("useCreateBLIsAndSCs", () => {
                         services_components: [{ ...saved, period_end: "2044-01-31", has_changed: true }],
                         budget_line_items: []
                     });
-                    const { result } = renderSubject({ selectedAgreement: awardedContract });
+                    const { result } = renderSubject({ selectedAgreement: awardedWithId });
 
                     expect(result.current.requiresContractModification).toBe(true);
                     expect(result.current.locksServicesComponentNumbers).toBe(true);
+                    expect(useGetServicesComponentsListQueryMock).toHaveBeenCalledWith(42, { skip: false });
                 });
 
                 it("does not flag a period changed and put back, or a description-only edit", () => {
@@ -862,7 +865,7 @@ describe("useCreateBLIsAndSCs", () => {
                         services_components: [{ ...saved, description: "new", has_changed: true }],
                         budget_line_items: []
                     });
-                    const { result } = renderSubject({ selectedAgreement: awardedContract });
+                    const { result } = renderSubject({ selectedAgreement: awardedWithId });
 
                     expect(result.current.requiresContractModification).toBe(false);
                 });
@@ -878,7 +881,7 @@ describe("useCreateBLIsAndSCs", () => {
                         services_components: [{ ...saved, period_end: "2044-01-31", has_changed: true }],
                         budget_line_items: []
                     });
-                    const { result } = renderSubject({ selectedAgreement: awardedContract });
+                    const { result } = renderSubject({ selectedAgreement: awardedWithId });
 
                     expect(result.current.requiresContractModification).toBe(false);
                     expect(result.current.locksServicesComponentNumbers).toBe(false);

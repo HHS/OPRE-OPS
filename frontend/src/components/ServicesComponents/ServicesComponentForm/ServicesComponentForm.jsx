@@ -8,7 +8,8 @@ import TextArea from "../../UI/Form/TextArea";
 import { NON_SEVERABLE_OPTIONS, SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "../ServicesComponents.constants";
 import ServicesComponentSelect from "../ServicesComponentSelect";
 
-const NUMBER_LOCKED_HINT = "The Services Component number can't be changed after the agreement is awarded.";
+const NUMBER_LOCKED_HINT =
+    "The Services Component number and Optional setting can't be changed after the agreement is awarded.";
 
 /**
  * @typedef {Object} Formdata

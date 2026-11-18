@@ -195,11 +195,17 @@ const useServicesComponents = (
     const handleDelete = (number) => {
         const index = servicesComponents.findIndex((component) => component.number === number);
         const selectedServicesComponent = servicesComponents[index];
+        // Match a line by its SC number when it has one: moving a line to another SC updates the
+        // number and leaves services_component_id stale until save.
+        const isOnSelectedSc = (budgetLine) =>
+            budgetLine.services_component_number != null
+                ? budgetLine.services_component_number === selectedServicesComponent.number
+                : budgetLine.services_component_id === selectedServicesComponent.id;
         const hasExecutingBudgetLines =
             selectedServicesComponent?.id != null &&
             nonDraftBudgetLines.some(
                 (budgetLine) =>
-                    budgetLine.services_component_id === selectedServicesComponent.id &&
+                    isOnSelectedSc(budgetLine) &&
                     [BLI_STATUS.EXECUTING, BLI_STATUS.OBLIGATED].includes(budgetLine.status)
             );
         if (hasExecutingBudgetLines) {

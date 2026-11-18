@@ -960,12 +960,19 @@ const useCreateBLIsAndSCs = (
                 if (error?.alertShown) {
                     return;
                 }
-                setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred while saving. Please try again.",
-                    redirectUrl: "/error"
-                });
+                // A rejected save (e.g. a Services Component locked by a contract modification in
+                // review, OPS-3268) says why; show that here rather than the generic error page.
+                const backendMessage = extractBackendErrorMessage(error);
+                setAlert(
+                    backendMessage
+                        ? { type: "error", heading: "Error", message: backendMessage }
+                        : {
+                              type: "error",
+                              heading: "Error",
+                              message: "An error occurred while saving. Please try again.",
+                              redirectUrl: "/error"
+                          }
+                );
             } finally {
                 setIsEditMode(false);
                 setHasUnsavedChanges(false);
