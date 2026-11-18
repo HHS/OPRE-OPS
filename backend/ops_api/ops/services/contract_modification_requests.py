@@ -76,7 +76,10 @@ class ContractModificationRequestService:
         re-deriving the BLI→CAN→Portfolio→Division join)."""
         stmt = (
             select(ContractModificationRequest)
-            .options(selectinload(ContractModificationRequest.edits))
+            .options(
+                selectinload(ContractModificationRequest.edits),
+                selectinload(ContractModificationRequest.budget_line_items),
+            )
             .where(ContractModificationRequest.status == ContractModificationRequestStatus.IN_REVIEW)
         )
         if not user.is_superuser:
