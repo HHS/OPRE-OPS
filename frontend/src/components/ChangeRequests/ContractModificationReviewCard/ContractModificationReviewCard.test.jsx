@@ -84,7 +84,7 @@ describe("ContractModificationReviewCard", () => {
         expect(mockReview).toHaveBeenCalledWith({ requestId: 9, action: "APPROVE", reviewerNotes: null });
         await vi.waitFor(() =>
             expect(mockSetAlert).toHaveBeenCalledWith(
-                expect.objectContaining({ type: "success", heading: "Contract Modification Approved" })
+                expect.objectContaining({ type: "success", heading: "Agreement Approved for Contract Modification" })
             )
         );
     });

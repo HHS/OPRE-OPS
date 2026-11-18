@@ -2,18 +2,8 @@ import * as React from "react";
 import { useReviewContractModificationMutation } from "../api/opsAPI";
 import { scrollToTop } from "../helpers/scrollToTop.helper";
 import { extractBackendErrorMessage } from "../helpers/utils";
+import { useGetAgreementName } from "./lookup.hooks";
 import useAlert from "./use-alert.hooks";
-
-/**
- * The approval alert says what the approval changed. Only executing budget lines changes
- * anything in OPS; the bundled edits, a COR change included (#3269), were applied when saved.
- * @param {Object} request - The contract modification request being approved.
- * @returns {string}
- */
-const approvedMessage = (request) =>
-    request.budget_line_items?.length
-        ? "The selected budget lines have been moved to Executing."
-        : "The Contract Modification has been approved.";
 
 /**
  * The approval confirmation heading says what approving will actually do: start the
@@ -34,8 +24,8 @@ const approveConfirmationHeading = (request) =>
  * so the For Review list's quick-icon card (`ContractModificationReviewCard`) reuses the exact
  * same approve/decline behavior and alert copy instead of duplicating it.
  *
- * @param {Object} request - The contract modification request (needs at least `id` and
- *   `budget_line_items` for the approval message).
+ * @param {Object} request - The contract modification request (needs at least `id`,
+ *   `agreement_id`, and `budget_line_items` for the confirmation heading and success message).
  * @returns {{
  *   showModal: boolean,
  *   setShowModal: Function,
@@ -48,6 +38,7 @@ const approveConfirmationHeading = (request) =>
 const useContractModificationReview = (request) => {
     const [reviewContractModification, { isLoading }] = useReviewContractModificationMutation();
     const { setAlert } = useAlert();
+    const agreementName = useGetAgreementName(request.agreement_id);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState(null);
     const [submitError, setSubmitError] = React.useState("");
@@ -64,7 +55,7 @@ const useContractModificationReview = (request) => {
         setModalProps({
             heading: isApprove
                 ? approveConfirmationHeading(request)
-                : "Are you sure you want to decline this Contract Modification?",
+                : "Are you sure you want to decline this contract modification? The agreement will remain as it was before the change was requested.",
             actionButtonText: isApprove ? "Approve" : "Decline",
             handleConfirm: () => {
                 reviewContractModification({ requestId: request.id, action, reviewerNotes: reviewerNotes || null })
@@ -79,9 +70,11 @@ const useContractModificationReview = (request) => {
                             // role="alert" live region — "warning" gets no role and is never
                             // announced. Matches ApprovePreAwardApproval.hooks.js's precedent.
                             type: isApprove ? "success" : "error",
-                            heading: isApprove ? "Contract Modification Approved" : "Contract Modification Declined",
+                            heading: isApprove
+                                ? "Agreement Approved for Contract Modification"
+                                : "Contract Modification Declined",
                             message: isApprove
-                                ? approvedMessage(request)
+                                ? `Agreement "${agreementName}" has been successfully approved for Contract Modification.`
                                 : "This Contract Modification has been declined and returned to the submitter."
                         });
                         scrollToTop();

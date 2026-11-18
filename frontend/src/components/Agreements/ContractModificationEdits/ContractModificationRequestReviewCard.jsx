@@ -19,6 +19,7 @@ import ContractModificationEditCard from "./ContractModificationEditCard";
 /**
  * @typedef {Object} ContractModificationRequest
  * @property {number} id
+ * @property {number} agreement_id
  * @property {string} requestor_notes
  * @property {import("./ContractModificationEditCard").ContractModificationEdit[]} edits
  * @property {number[]} budget_line_item_ids

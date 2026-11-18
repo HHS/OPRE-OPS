@@ -15,11 +15,15 @@ vi.mock("./use-alert.hooks", () => ({
     default: () => ({ setAlert: mockSetAlert })
 }));
 
+vi.mock("./lookup.hooks", () => ({
+    useGetAgreementName: () => "Agreement Name B"
+}));
+
 vi.mock("../helpers/scrollToTop.helper", () => ({
     scrollToTop: vi.fn()
 }));
 
-const baseRequest = { id: 9, budget_line_items: [] };
+const baseRequest = { id: 9, agreement_id: 42, budget_line_items: [] };
 
 describe("useContractModificationReview", () => {
     afterEach(() => {
@@ -41,7 +45,7 @@ describe("useContractModificationReview", () => {
 
     it("uses the budget-line-specific approve heading when the request has budget lines to execute", () => {
         useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
-        const request = { id: 9, budget_line_items: [{ id: 1 }] };
+        const request = { id: 9, agreement_id: 42, budget_line_items: [{ id: 1 }] };
         const { result } = renderHook(() => useContractModificationReview(request));
 
         act(() => {
@@ -53,11 +57,11 @@ describe("useContractModificationReview", () => {
         );
     });
 
-    it("confirming APPROVE calls the mutation and alerts the approval copy for an execute-only request", async () => {
+    it("confirming APPROVE calls the mutation and alerts the approval with the agreement name", async () => {
         const unwrap = vi.fn().mockResolvedValue({});
         mockReview.mockReturnValue({ unwrap });
         useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
-        const request = { id: 9, budget_line_items: [{ id: 1 }] };
+        const request = { id: 9, agreement_id: 42, budget_line_items: [{ id: 1 }] };
         const { result } = renderHook(() => useContractModificationReview(request));
 
         act(() => {
@@ -71,8 +75,8 @@ describe("useContractModificationReview", () => {
         await waitFor(() =>
             expect(mockSetAlert).toHaveBeenCalledWith({
                 type: "success",
-                heading: "Contract Modification Approved",
-                message: "The selected budget lines have been moved to Executing."
+                heading: "Agreement Approved for Contract Modification",
+                message: 'Agreement "Agreement Name B" has been successfully approved for Contract Modification.'
             })
         );
     });
@@ -86,6 +90,11 @@ describe("useContractModificationReview", () => {
         act(() => {
             result.current.handleReview("DECLINE");
         });
+
+        expect(result.current.modalProps.heading).toBe(
+            "Are you sure you want to decline this contract modification? The agreement will remain as it was before the change was requested."
+        );
+
         act(() => {
             result.current.modalProps.handleConfirm();
         });
