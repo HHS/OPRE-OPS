@@ -11,12 +11,16 @@ from flask import url_for
 from sqlalchemy import func, select
 
 from models import (
+    AgreementHistory,
     AgreementReason,
     AgreementType,
+    AwardType,
     BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
     ContractType,
+    ProcurementAction,
+    ProcurementActionStatus,
     ServiceRequirementType,
     ServicesComponent,
 )
@@ -58,6 +62,50 @@ def bundle_contract(loaded_db, test_admin_user, test_project, app_ctx):
         amount=100000.00,
         can_id=500,
         status=BudgetLineItemStatus.DRAFT,
+        created_by=test_admin_user.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield contract
+
+
+@pytest.fixture()
+def modified_loe_enabled(app):
+    original = app.config.get("ENABLE_MODIFIED_LOE_EDITS", False)
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = True
+    yield
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = original
+
+
+@pytest.fixture()
+def awarded_bundle_contract(loaded_db, test_admin_user, test_project, app_ctx):
+    """An Awarded contract agreement plus one Planned BLI, for the bundle's direct-apply /
+    history-publishing path on a tracked agreement (OPS-3072/OPS-3268)."""
+    contract = ContractAgreement(
+        name="Bundle-Test-Awarded-Contract",
+        agreement_type=AgreementType.CONTRACT,
+        agreement_reason=AgreementReason.NEW_REQ,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
+        project_id=test_project.id,
+        project_officer_id=test_admin_user.id,
+        created_by=test_admin_user.id,
+    )
+    loaded_db.add(contract)
+    loaded_db.flush()
+    loaded_db.add(
+        ProcurementAction(
+            agreement_id=contract.id, status=ProcurementActionStatus.AWARDED, award_type=AwardType.NEW_AWARD
+        )
+    )
+
+    bli = ContractBudgetLineItem(
+        agreement_id=contract.id,
+        line_description="Awarded Planned BLI",
+        amount=100000.00,
+        can_id=500,
+        status=BudgetLineItemStatus.PLANNED,
         created_by=test_admin_user.id,
     )
     loaded_db.add(bli)
@@ -173,6 +221,51 @@ def test_bundle_deletes_bli_then_sc(auth_client, bundle_contract, loaded_db):
 
     assert loaded_db.get(BudgetLineItem, bli.id) is None
     assert loaded_db.get(ServicesComponent, sc.id) is None
+
+
+# ---------------------------------------------------------------------------
+# Awarded-agreement history publishing (OPS-3072/OPS-3268): the bundle doesn't wrap its
+# per-entity writes in an OpsEventHandler the way the single-resource PATCH/DELETE endpoints
+# do, so without AgreementEditBundleService.budget_line_history and the resource's post-commit
+# publishing loop, a direct-apply edit made through this endpoint would leave no history.
+# ---------------------------------------------------------------------------
+
+
+def _history_titles(loaded_db, agreement_id):
+    loaded_db.expire_all()
+    return [
+        row.history_title
+        for row in loaded_db.scalars(
+            select(AgreementHistory).where(AgreementHistory.agreement_id_record == agreement_id)
+        ).all()
+    ]
+
+
+def test_bundle_sc_create_on_awarded_agreement_records_history(
+    modified_loe_enabled, auth_client, awarded_bundle_contract, loaded_db
+):
+    response = auth_client.patch(
+        _bundle_url(awarded_bundle_contract.id),
+        json={"services_components": {"create": [{"ref": "opt1", "number": 2, "optional": True}]}},
+    )
+    assert response.status_code == 200, response.json
+
+    assert "New Services Component Added" in _history_titles(loaded_db, awarded_bundle_contract.id)
+
+
+def test_bundle_deletes_planned_bli_on_awarded_agreement_records_history(
+    modified_loe_enabled, auth_client, awarded_bundle_contract, loaded_db
+):
+    bli = awarded_bundle_contract.budget_line_items[0]
+
+    response = auth_client.patch(
+        _bundle_url(awarded_bundle_contract.id),
+        json={"budget_line_items": {"delete": [bli.id]}},
+    )
+    assert response.status_code == 200, response.json
+    assert loaded_db.get(BudgetLineItem, bli.id) is None
+
+    assert "Budget Line Deleted" in _history_titles(loaded_db, awarded_bundle_contract.id)
 
 
 def test_bundle_deletes_planned_bli_routes_to_change_request(budget_team_auth_client, bundle_contract, loaded_db):

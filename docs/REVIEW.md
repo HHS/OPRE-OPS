@@ -177,6 +177,7 @@ These rules already live elsewhere. Reviewers check against them; this document 
 | Static data import only writes tables in the `ALLOWED_TABLES` allowlist | [backend/data_tools/CLAUDE.md](../backend/data_tools/CLAUDE.md) | S0 |
 | `backend/openapi.yml` stays in sync after endpoint changes | [backend/ops_api/CLAUDE.md](../backend/ops_api/CLAUDE.md#api-documentation-openapi), `/sync-openapi` skill | S2 |
 | Currency shows exactly two-digit cents; percentages follow the `<1%` and 99-cap rules | [frontend/CLAUDE.md](../frontend/CLAUDE.md#numeric-display-conventions) | S1 when users see a wrong value, otherwise S2 |
+| Exports, reports and emails show special-cased record states (OBE, in review, missing dates or CAN) the way the on-screen table does | [`BLIRow.jsx`](../frontend/src/components/BudgetLineItems/BudgetLinesTable/BLIRow.jsx), [`TableTag.jsx`](../frontend/src/components/UI/TableTag/TableTag.jsx) | S1 when users see a wrong value, otherwise S2 |
 | Vest v6 validation patterns, including no `only(data)` | [frontend/CLAUDE.md](../frontend/CLAUDE.md#vest-v6-form-validation-patterns), `vest-error-key-lifecycle` skill | S1 or S2 |
 | Unsaved-changes guards with `useBlocker` | `useblocker-bypass-regression-test` skill | S1 |
 | 90%+ code coverage. This is a documented convention; CI doesn't enforce a threshold. | [pull request template](../.github/pull_request_template.md), [frontend/CLAUDE.md](../frontend/CLAUDE.md#running-tests) | S2 |

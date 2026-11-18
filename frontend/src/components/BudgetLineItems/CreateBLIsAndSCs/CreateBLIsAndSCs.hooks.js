@@ -25,7 +25,6 @@ import {
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
-import { formatServiceComponent } from "../../ServicesComponents/ServicesComponents.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { extractBackendErrorMessage, formatDateForScreen } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -46,8 +45,7 @@ import {
     buildNewAgreementBudgetPayload,
     buildNewBudgetLineItem,
     buildSaveSuccessAlert,
-    getServicesComponentAdditionsForApproval,
-    isServicesComponentDeleteBlocked,
+    getServicesComponentAdditionsTrackedForModification,
     computeBudgetLinePageErrors,
     feesForCards,
     getBudgetLinesUrl,
@@ -181,44 +179,26 @@ const useCreateBLIsAndSCs = (
     const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
     const enableModifiedLoeEdits = versionData?.enable_modified_loe_edits ?? false;
     const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
-    // Contract-modification tracking (OPS-3072) only applies on an Awarded agreement with the
-    // backend's ENABLE_MODIFIED_LOE_EDITS capability on.
+    // Contract-modification tracking (OPS-3072/OPS-3268) only applies on an Awarded agreement with
+    // the backend's ENABLE_MODIFIED_LOE_EDITS capability on.
     const tracksContractModifications = enableModifiedLoeEdits && Boolean(selectedAgreement?.is_awarded);
-    // On an Awarded agreement, services components with non-Draft budget lines are gated (OPS-6440):
-    // an addition goes to Division Director approval, and a deletion is blocked. Only superusers
-    // bypass this, matching the backend.
-    const scChangesRequireApproval = tracksContractModifications && !isSuperUser;
+    // On an Awarded agreement, a non-superuser's edit — including Services Component add/delete —
+    // applies directly and is recorded as an "Edit That Requires a Contract Modification" (no
+    // Division Director approval). Superusers bypass the whole tracking concept, matching the
+    // backend.
+    const awardedEditAppliesDirectly = tracksContractModifications && !isSuperUser;
     const pendingServicesComponentAdditions = React.useMemo(
         () =>
-            scChangesRequireApproval
-                ? getServicesComponentAdditionsForApproval({ servicesComponents, tempBudgetLines })
+            awardedEditAppliesDirectly
+                ? getServicesComponentAdditionsTrackedForModification({ servicesComponents })
                 : [],
-        [scChangesRequireApproval, servicesComponents, tempBudgetLines]
+        [awardedEditAppliesDirectly, servicesComponents]
     );
-    const hasServicesComponentChangesForApproval = pendingServicesComponentAdditions.length > 0;
-    const servicesComponentChangeMessages = React.useMemo(
-        () =>
-            pendingServicesComponentAdditions.map(
-                (sc) =>
-                    `• ${sc.display_name ?? formatServiceComponent(sc.number, sc.optional, agreement?.service_requirement_type, true)} Addition`
-            ),
-        [pendingServicesComponentAdditions, agreement?.service_requirement_type]
-    );
-    /**
-     * Whether this saved services component can't be deleted: on an Awarded agreement it still has
-     * non-Draft budget lines and the user isn't a superuser (OPS-6440). Its delete button is disabled.
-     * @param {number | undefined} servicesComponentId
-     * @returns {boolean}
-     */
-    const isServicesComponentDeleteDisabled = (servicesComponentId) =>
-        scChangesRequireApproval &&
-        isServicesComponentDeleteBlocked({
-            servicesComponentId,
-            servicesComponents,
-            tempBudgetLines,
-            budgetLines,
-            deletedBudgetLines
-        });
+    // OPS-3268 UX feedback item 5: a Services Component deletion is tracked on its own, with no
+    // budget lines required.
+    const hasServicesComponentAdditionsOrDeletions =
+        pendingServicesComponentAdditions.length > 0 ||
+        (awardedEditAppliesDirectly && deletedServicesComponentsIds.length > 0);
 
     // Budget Team members and superusers write financial changes directly (no change-request
     // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.
@@ -228,13 +208,15 @@ const useCreateBLIsAndSCs = (
     // or IN_EXECUTION (the flag's scope). Pre-award locks are enforced by the backend and the
     // BLI _meta, so locked lines never reach this point as editable.
     const changedFinancialBLIs = tempBudgetLines.filter((bli) => !bli.in_review && bli.financialSnapshotChanged);
-    // On an Awarded agreement these edits require a contract modification (OPS-3072), so the
-    // backend routes them to approval regardless of the capability.
     const flagAllowsDirectApply =
         skipCrForDraftPlanned &&
         !tracksContractModifications &&
         changedFinancialBLIs.length > 0 &&
         changedFinancialBLIs.every((bli) => DIRECT_APPLY_STATUSES.includes(bli.status));
+    // An Awarded agreement's financial edits also apply directly (OPS-3072/OPS-3268), but this
+    // deliberately stays out of canEditDirectly (see requiresFinancialApproval /
+    // requiresContractModification below) so the two paths — "no approval of any kind" versus
+    // "no approval, but still tracked and informational" — don't collapse together.
     const canEditDirectly = bypassEditDirectly || flagAllowsDirectApply;
 
     // Snapshot the page-suite result in state. The suites are module-level singletons
@@ -367,7 +349,27 @@ const useCreateBLIsAndSCs = (
             const promises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
                 const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
 
-                const unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
+                let unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
+                // Deleting a Services Component clears its link on every budget line locally
+                // (editor reducer's DELETE_SERVICE_COMPONENT), including ones the user never
+                // otherwise touched. That alone isn't a real edit to send: the backend's SC ->
+                // BLI foreign key already nulls the link (ON DELETE SET NULL) as part of the SC
+                // delete itself, which runs after this -- and for a non-superuser on an Obligated
+                // or Executing line, sending it here would be rejected as "not in an editable
+                // state" and block the whole save, including the SC delete that was the actual
+                // intent (OPS-3268). Compare against the same cleared shape so this field alone
+                // doesn't count as a change; a genuine edit elsewhere on the same line still does.
+                if (
+                    unchangedBudgetLineItem?.services_component_id != null &&
+                    deletedServicesComponentsIds.includes(unchangedBudgetLineItem.services_component_id)
+                ) {
+                    unchangedBudgetLineItem = {
+                        ...unchangedBudgetLineItem,
+                        services_component_id: null,
+                        services_component_number: undefined,
+                        serviceComponentGroupingLabel: undefined
+                    };
+                }
                 let budgetLineHasChanged =
                     JSON.stringify(existingBudgetLineItem) !== JSON.stringify(unchangedBudgetLineItem); // We have to check every single property to see if there's ANY change
                 if (budgetLineHasChanged) {
@@ -376,7 +378,7 @@ const useCreateBLIsAndSCs = (
             });
             return promises;
         },
-        [budgetLines, updateBudgetLineItem]
+        [budgetLines, deletedServicesComponentsIds, updateBudgetLineItem]
     );
 
     /**
@@ -578,22 +580,22 @@ const useCreateBLIsAndSCs = (
                     budgetLines,
                     canEditDirectly,
                     isSuperUser,
+                    tracksContractModifications,
                     cans,
                     selectedAgreement,
                     savedViaModal,
                     blockerLocationPathname: blocker.location?.pathname,
-                    isThereAnyBLIsFinancialSnapshotChanged,
-                    servicesComponentChangeMessages
+                    isThereAnyBLIsFinancialSnapshotChanged
                 })
             );
         },
         [
-            servicesComponentChangeMessages,
             tempBudgetLines,
             deletedBudgetLines,
             budgetLines,
             canEditDirectly,
             isSuperUser,
+            tracksContractModifications,
             cans,
             selectedAgreement,
             continueOverRide,
@@ -694,8 +696,9 @@ const useCreateBLIsAndSCs = (
                 dispatch({ type: "DELETE_BUDGET_LINE_ITEM", payload: budgetLine });
                 setHasUnsavedChanges(true);
                 // A PLANNED/IN_EXECUTION delete routes to an approval change request on save rather
-                // than being deleted outright, so don't claim it was deleted.
-                const message = isDeletionRoutedToApproval(budgetLine, isSuperUser)
+                // than being deleted outright (unless the agreement is Awarded and tracked, where it
+                // applies directly instead), so don't claim it was deleted.
+                const message = isDeletionRoutedToApproval(budgetLine, isSuperUser, tracksContractModifications)
                     ? `The deletion of budget line ${BLILabel(budgetLine)} has been queued and will be sent to your Division Director for approval when you save.`
                     : `The budget line ${BLILabel(budgetLine)} has been successfully deleted.`;
                 setAlert({
@@ -886,14 +889,19 @@ const useCreateBLIsAndSCs = (
                 (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
             );
 
-            if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && savedViaModal) {
+            // An Awarded agreement's financial edits apply directly regardless of the modal/
+            // blocker/approval flags below — there's no approval of any kind, only recording
+            // (handled by the backend), so this always falls through to handleRegularUpdates.
+            const needsGenericFinancialApproval =
+                isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && !awardedEditAppliesDirectly;
+            if (needsGenericFinancialApproval && savedViaModal) {
                 await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsWithIds);
-            } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && approvalConfirmed) {
+            } else if (needsGenericFinancialApproval && approvalConfirmed) {
                 await sendExistingBLIsToApproval(
                     existingBudgetLineItemsWithIds,
                     getBudgetLinesUrl(selectedAgreement?.id)
                 );
-            } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) {
+            } else if (needsGenericFinancialApproval) {
                 await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
             } else {
                 await handleRegularUpdates(existingBudgetLineItemsWithIds);
@@ -913,6 +921,7 @@ const useCreateBLIsAndSCs = (
             isGrant,
             addBudgetLineItem,
             canEditDirectly,
+            awardedEditAppliesDirectly,
             handleFinancialSnapshotChanges,
             handleFinancialSnapshotChangesViaBlocker,
             sendExistingBLIsToApproval,
@@ -982,25 +991,26 @@ const useCreateBLIsAndSCs = (
     const hasFinancialSnapshotChanges = tempBudgetLines
         .filter((b) => !b.in_review)
         .some((b) => b.financialSnapshotChanged);
-    const requiresFinancialApproval = !canEditDirectly && hasFinancialSnapshotChanges;
+    // An Awarded agreement's financial edits are tracked for the next contract modification
+    // (requiresContractModification below), never routed to the generic Division-Director
+    // financial-approval flow.
+    const requiresFinancialApproval = !canEditDirectly && !awardedEditAppliesDirectly && hasFinancialSnapshotChanges;
 
-    // OPS-3072 (Modified LOE): on an Awarded agreement, saving a delete of a non-Draft BL or an
-    // amount/CAN/date edit on a non-Draft BL requires a contract modification -- surfaced as a
-    // distinct confirmation before the same underlying Division-Director-approval save that
-    // `requiresFinancialApproval` already gates (Decision 10: not a second, stacked approval).
-    // Draft BLs are added, edited, and deleted freely; they only require a contract modification
-    // once changed to Planned (on the Change BL Status page). New BLs are always created as Draft,
-    // so adding one isn't counted here. Adding a services component counts when it has non-Draft
-    // budget lines (OPS-6440); deleting one isn't, since that's blocked for everyone but superusers.
-    // Only superusers bypass the addition, so it isn't gated on canEditDirectly.
+    // OPS-3072/OPS-3268 (Modified LOE): on an Awarded agreement, saving a delete of a non-Draft BL,
+    // an amount/CAN/date edit on a non-Draft BL, or a Services Component add/delete applies
+    // directly and is recorded as an "Edit That Requires a Contract Modification" -- surfaced as
+    // an informational confirmation, not an approval request (no Division Director approval of
+    // any kind). Draft BLs are added, edited, and deleted freely; they only require a contract
+    // modification once changed to Planned (on the Change BL Status page). New BLs are always
+    // created as Draft, so adding one isn't counted here.
     // Only persisted BLs count: deleting a never-saved BL leaves its temp id in the deleted list.
     const hasDeletedNonDraftBLIs = deletedBudgetLines.some((id) => {
         const bli = budgetLines?.find((b) => b.id === id);
         return bli && bli.status !== BLI_STATUS.DRAFT;
     });
     const requiresContractModification =
-        (tracksContractModifications && !canEditDirectly && (hasFinancialSnapshotChanges || hasDeletedNonDraftBLIs)) ||
-        hasServicesComponentChangesForApproval;
+        awardedEditAppliesDirectly &&
+        (hasFinancialSnapshotChanges || hasDeletedNonDraftBLIs || hasServicesComponentAdditionsOrDeletions);
 
     useCreateBLIsAndSCsSaveBlocker({
         blocker,
@@ -1025,7 +1035,6 @@ const useCreateBLIsAndSCs = (
         datePickerSuite,
         scFormSuite,
         nonDraftBudgetLines,
-        isServicesComponentDeleteDisabled,
         deletedBudgetLines,
         enteredAmount,
         enteredDescription,

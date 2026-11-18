@@ -209,6 +209,12 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("#pop-start-date").type("01/01/2043");
             cy.get("#pop-end-date").type("01/01/2044");
             cy.get("[data-cy='add-services-component-btn']").click();
+            // Wait on the real precondition for the select below: #allServicesComponentSelect's
+            // own options list refreshing to include the just-added SC. The sibling empty-state
+            // message is a different query/DOM subtree and can resolve first while this select's
+            // options are still stale -- that's the actual race, not something cy.select()'s own
+            // retry-ability covers (it fails fast on "no matching option" rather than retrying).
+            cy.get("#allServicesComponentSelect option[value='1']").should("exist");
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
             // Wait for CAN combobox to finish loading CANs
@@ -297,6 +303,12 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("#pop-start-date").type("01/01/2043");
             cy.get("#pop-end-date").type("01/01/2044");
             cy.get("[data-cy='add-services-component-btn']").click();
+            // Wait on the real precondition for the select below: #allServicesComponentSelect's
+            // own options list refreshing to include the just-added SC. The sibling empty-state
+            // message is a different query/DOM subtree and can resolve first while this select's
+            // options are still stale -- that's the actual race, not something cy.select()'s own
+            // retry-ability covers (it fails fast on "no matching option" rather than retrying).
+            cy.get("#allServicesComponentSelect option[value='1']").should("exist");
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
             // Wait for CAN combobox to finish loading CANs

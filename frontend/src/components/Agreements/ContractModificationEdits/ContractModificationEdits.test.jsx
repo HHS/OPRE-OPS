@@ -142,11 +142,10 @@ describe("ContractModificationEdits", () => {
         );
 
         expect(isDisabledWithReachableTooltip("Start modification")).toBe(true);
-        expect(screen.getByRole("heading", { name: "Contract Modification In Review" })).toBeInTheDocument();
         expect(within(getCards()[0]).getByText("In Review")).toBeInTheDocument();
     });
 
-    it("shows the Division Director the In Review alert, not the placeholder review card (#3269)", () => {
+    it("shows neither the In Review warning nor the review card here -- both live at the agreement level now (#6546)", () => {
         mockQuery({ data: [{ ...AMOUNT_EDIT, in_review: true }] });
         mockRequests([
             { id: 9, status: "IN_REVIEW", can_review: true, requestor_notes: null, edits: [], budget_line_item_ids: [] }
@@ -161,7 +160,7 @@ describe("ContractModificationEdits", () => {
 
         expect(screen.queryByRole("heading", { name: "Contract Modification Pending Your Review" })).toBeNull();
         expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
-        expect(screen.getByRole("heading", { name: "Contract Modification In Review" })).toBeInTheDocument();
+        expect(screen.queryByRole("heading", { name: "Contract Modification In Review" })).toBeNull();
     });
 
     it("renders a card for an amount edit", () => {
@@ -254,6 +253,19 @@ describe("ContractModificationEdits", () => {
         ]);
         expect(within(corCard).queryByText("BL ID")).not.toBeInTheDocument();
         expect(within(corCard).getByText("Change To")).toBeInTheDocument();
+    });
+
+    it("renders a direct-apply status edit with the colored BLI status tag, not plain text", () => {
+        mockQuery({
+            data: [{ ...AMOUNT_EDIT, id: 7, field: "status", old_value: "DRAFT", new_value: "PLANNED" }]
+        });
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        const [card] = getCards();
+        const [fromTag, toTag] = within(card).getAllByText(/^(Draft|Planned)$/);
+        expect(fromTag).toHaveClass("bg-brand-data-viz-bl-by-status-1");
+        expect(toTag).toHaveClass("bg-brand-data-viz-bl-by-status-2");
     });
 
     it("marks a Services Component addition In Review while its modification is in review", () => {

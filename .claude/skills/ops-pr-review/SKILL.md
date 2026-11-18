@@ -14,7 +14,7 @@ Don't restate REVIEW.md from memory: read it at the start of every run, because 
 ## 1. Set up
 
 1. **Read `docs/REVIEW.md` in full.** Every reviewer and skeptic gets the whole file by path, not a summary or a hand-picked list of sections, so this skill keeps working when REVIEW.md changes.
-2. **Find the PR.** Use `$ARGUMENTS` if given; otherwise `gh pr view --json number`. With no PR, review `git diff origin/main...HEAD` and skip the steps that need one (Turn 0, posting).
+2. **Find the PR.** PR number argument (blank if none was given): $ARGUMENTS. Use it if given; otherwise `gh pr view --json number`. With no PR, review `git diff origin/main...HEAD` and skip the steps that need one (Turn 0, posting).
 3. **Gather context:**
    ```bash
    gh pr view <n> --json number,title,body,author,isDraft,headRefOid,baseRefName,files,labels
@@ -31,7 +31,7 @@ Don't restate REVIEW.md from memory: read it at the start of every run, because 
 Decide both from REVIEW.md before launching any reviewer, and state them at the top of the report:
 
 - **Scope** (REVIEW.md → Scope): feature/fix/refactor, bot, docs-only, tooling or hotfix. This sets what can block. For a bot PR only S0 blocks, so a skim of the dependency's breaking changes plus green CI is enough; run the orchestrator only if the bump touches auth, data writes or the build.
-- **Risk tier** (REVIEW.md → Risk Tiers): the highest tier of any change, judged by **the changed lines**, not just the path list.
+- **Risk tier** (REVIEW.md → Risk Tiers): the highest tier of any change, judged by **the changed lines**, not just the path list. The tier sets how much human review the PR gets. It doesn't limit what reviewers trace, so don't use a tier rationale such as "only adds a read-only parameter" to narrow step 4's brief.
 
 **Ask before launching reviewers when something is missing that the review needs.** Put all questions in one short message, and only these:
 
@@ -102,7 +102,7 @@ Base copies come from the **merge-base**, the commit the PR branched from, not t
 
 When the review is done, clean up with `git worktree remove --force /tmp/ops-pr-review-<n>/head && rm -rf /tmp/ops-pr-review-<n>`. If a run was interrupted and the directory is already gone, `git worktree prune` clears the stale entry.
 
-Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode above and follow it, with these additions to every reviewer agent's launch brief and every skeptic's brief:
+Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode above and follow it, with these additions to every reviewer agent's launch brief and every skeptic's brief. Each applies within the review's scope from step 3 (the whole PR in a full review, the delta in a Delta Re-Review):
 
 1. **Include the path to `docs/REVIEW.md`** with an instruction to read all of it, plus the PR's scope and tier, and the acceptance criteria (or "not available").
 2. **Label every finding S0–S3 by REVIEW.md's definitions,** alongside the orchestrator's Likelihood × Impact score. The S label decides blocking; the Critical/High/Medium/Low label doesn't.
@@ -112,6 +112,7 @@ Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode ab
 6. **Check every rule in REVIEW.md → Project Rules to Check**, and REVIEW.md's rule on tests required for money math, authorization, migrations, workflow state and data writes.
 7. **Skeptics re-derive the S label independently**, citing code. If a skeptic's S label differs from Turn 1's, the skeptic's label wins, the same as the orchestrator's rule for scores.
 8. **A resolved or outdated thread doesn't close an S0/S1.** This overrides the orchestrator's Turn 0 suppression rule for blockers: suppress an S0/S1 on a resolved thread only if the code at that location changed to fix it, or a PR comment records a second developer agreeing to won't-fix (REVIEW.md → Disputes and Won't-Fix). Otherwise report it as `REOPENED` and cite the unchanged code. Suppression still applies to S2/S3.
+9. **Trace what the change newly exposes.** When the PR changes which records or values reach a downstream consumer (a new query flag, a loosened filter, a wider fetch, a new caller), list every consumer on that path (renderers, exports, totals, tooltips, emails). For each field of the newly reachable records, compare its output with what the user sees in the reference renderer (the on-screen table or card). Check special-cased states: OBE, in review, null or `--` dates, missing CAN. Matching the same set of rows is not enough. A mismatch is a "makes reachable" defect (REVIEW.md → What Can Block) and is S1 when users see a wrong value.
 
 If the PR has open CodeQL, Semgrep or Snyk alerts on lines it changed, map them with REVIEW.md's scanner rules and include them as findings.
 

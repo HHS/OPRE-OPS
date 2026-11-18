@@ -461,6 +461,7 @@ export const getProcurementShopLabel = (budgetLine) => {
  * @param {function} portfolioTrigger - Function to fetch portfolio details by ID.
  * @param {number} [bliCount] - Total budget line count (fallback when _meta is absent).
  * @param {boolean} [includeClin] - Whether to include a CLIN column (awarded contract agreements only).
+ * @param {boolean} [enableObe] - Whether to include OBE budget lines in the export.
  */
 export const handleExport = async (
     exportTableToXlsx,
@@ -471,7 +472,8 @@ export const handleExport = async (
     serviceComponentTrigger,
     portfolioTrigger,
     bliCount = 0,
-    includeClin = false
+    includeClin = false,
+    enableObe = false
 ) => {
     try {
         if (!budgetLineItems || budgetLineItems.length === 0) {
@@ -487,7 +489,8 @@ export const handleExport = async (
             budgetLineTrigger({
                 filters,
                 limit: fetchLimit,
-                page
+                page,
+                enableObe
             })
         );
         const budgetLineResponses = await Promise.all(budgetLinePromises);
@@ -573,14 +576,14 @@ export const handleExport = async (
                         ...(includeClin ? [getClinDisplayValue(budgetLine)] : []),
                         budgetLine.agreement?.agreement_type ?? NO_DATA,
                         budgetLine.line_description,
-                        formatDateNeeded(budgetLine?.date_needed ?? ""),
-                        budgetLine.fiscal_year,
-                        budgetLine.can?.display_name ?? NO_DATA,
+                        formatDateNeeded(budgetLine?.date_needed ?? "", budgetLine.is_obe),
+                        budgetLine.fiscal_year ?? NO_DATA,
+                        budgetLine.is_obe ? "None" : (budgetLine.can?.display_name ?? NO_DATA),
                         budgetLine.amount ?? 0,
                         procShopAbbr,
                         budgetLine.fees ?? 0,
                         feeRate,
-                        budgetLine.in_review ? "In Review" : budgetLine?.status,
+                        budgetLine.in_review ? "In Review" : budgetLine.is_obe ? "OBE" : budgetLine?.status,
                         budgetLine.comments
                     ];
                 },

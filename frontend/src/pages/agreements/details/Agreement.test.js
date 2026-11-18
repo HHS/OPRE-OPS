@@ -616,6 +616,7 @@ describe("Agreement page — details page nickname display (issue #6144)", () =>
         opsAPI.useGetNotificationsByUserIdAndAgreementIdQuery.mockReturnValue({ data: [] });
         opsAPI.useGetProcurementShopByIdQuery.mockReturnValue({ data: undefined });
         opsAPI.useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({ data: { data: [] } });
+        opsAPI.useGetAgreementContractModificationsByIdQuery.mockReturnValue({ data: [] });
     };
 
     const renderAgreementPage = (id) =>
@@ -684,6 +685,7 @@ describe("Agreement page — pre-award lock flag per tab (OPS-6512)", () => {
         opsAPI.useGetNotificationsByUserIdAndAgreementIdQuery.mockReturnValue({ data: [] });
         opsAPI.useGetProcurementShopByIdQuery.mockReturnValue({ data: undefined });
         opsAPI.useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({ data: { data: [] } });
+        opsAPI.useGetAgreementContractModificationsByIdQuery.mockReturnValue({ data: [] });
 
         return render(
             <Provider store={store}>
