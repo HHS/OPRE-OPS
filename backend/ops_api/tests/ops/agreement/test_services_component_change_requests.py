@@ -27,6 +27,7 @@ from models import (
     ContractBudgetLineItem,
     ContractModificationEdit,
     ContractType,
+    ModificationEditType,
     ProcurementAction,
     ProcurementActionStatus,
     ServicesComponent,
@@ -655,3 +656,281 @@ def test_bundle_deleting_an_sc_with_a_planned_budget_line_applies_directly(
     # OPS-3268 UX feedback item 5: sc3 (no budget lines at all) is tracked too, not just sc2.
     edits = {(e.services_component_id, e.field) for e in _edits(loaded_db, awarded_agreement.id)}
     assert edits == {(sc2_id, "delete"), (sc3_id, "delete")}
+
+
+# ---=== Period-of-performance edits on an Awarded agreement are tracked (OPS-3268) ===---
+
+
+def _patch_sc(client, sc_id, body):
+    return client.patch(url_for("api.services-component-item", id=sc_id), json=body)
+
+
+def _sc_with_period(loaded_db, agreement, number):
+    sc = ServicesComponent(
+        agreement_id=agreement.id,
+        number=number,
+        optional=False,
+        period_start=datetime.date(2043, 1, 1),
+        period_end=datetime.date(2043, 12, 31),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+    return sc
+
+
+def test_period_edit_on_awarded_agreement_applies_and_is_tracked_per_field(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+
+    response = _patch_sc(basic_user_auth_client, sc2_id, {"period_start": "2043-02-01", "period_end": "2044-01-31"})
+
+    assert response.status_code == 200, response.json
+    loaded_db.expire_all()
+    sc2 = loaded_db.get(ServicesComponent, sc2_id)
+    assert (sc2.period_start, sc2.period_end) == (datetime.date(2043, 2, 1), datetime.date(2044, 1, 31))
+    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    edits = {
+        e.field: (e.old_value, e.new_value, e.modification_type.name, e.budget_line_item_id, e.requested_by_id)
+        for e in _edits(loaded_db, awarded_agreement.id)
+    }
+    assert edits == {
+        "period_start": ("2043-01-01", "2043-02-01", "MODIFIED_LOE", None, BASIC_USER_ID),
+        "period_end": ("2043-12-31", "2044-01-31", "MODIFIED_LOE", None, BASIC_USER_ID),
+    }
+
+    listed = basic_user_auth_client.get(url_for("api.agreements-contract-modification-edits", id=awarded_agreement.id))
+    assert listed.status_code == 200, listed.json
+    cards = {edit["field"]: edit for edit in listed.json["data"]}
+    assert cards.keys() == {"period_start", "period_end"}
+    assert cards["period_start"]["services_component_display_name"] == "SC2"
+
+
+def test_period_edits_merge_and_net_to_nothing(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-01-31"}).status_code == 200
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-06-30"}).status_code == 200
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert (edit.old_value, edit.new_value) == ("2043-12-31", "2044-06-30")
+
+    # Back to the awarded value: the edit is dropped.
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2043-12-31"}).status_code == 200
+    assert _edits(loaded_db, awarded_agreement.id) == []
+
+
+def test_unchanged_period_in_a_full_form_save_records_nothing(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+
+    response = _patch_sc(
+        basic_user_auth_client,
+        sc2_id,
+        {
+            "number": 2,
+            "optional": False,
+            "period_start": "2043-01-01",
+            "period_end": "2043-12-31",
+            "description": "new description",
+        },
+    )
+
+    assert response.status_code == 200, response.json
+    assert _edits(loaded_db, awarded_agreement.id) == []
+
+
+def test_period_edit_on_sc_added_after_award_records_nothing(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    """An SC still carrying its pending "Add SC" edit was never on the contract."""
+    sc_id = _post_sc(basic_user_auth_client, awarded_agreement.id, 2)["id"]
+
+    assert _patch_sc(basic_user_auth_client, sc_id, {"period_start": "2044-01-01"}).status_code == 200
+
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert edit.field == "services_component_create"
+
+
+def test_period_edit_not_tracked_with_flag_off_or_for_superuser(
+    app, basic_user_auth_client, power_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = False
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_start": "2043-02-01"}).status_code == 200
+
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = True
+    try:
+        assert _patch_sc(power_user_auth_client, sc2_id, {"period_start": "2043-03-01"}).status_code == 200
+    finally:
+        app.config["ENABLE_MODIFIED_LOE_EDITS"] = False
+
+    assert _edits(loaded_db, awarded_agreement.id) == []
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id).period_start == datetime.date(2043, 3, 1)
+
+
+def test_period_edit_on_non_awarded_agreement_is_not_tracked(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    loaded_db.execute(text("DELETE FROM procurement_action WHERE agreement_id = :id"), {"id": awarded_agreement.id})
+    loaded_db.commit()
+
+    response = _patch_sc(basic_user_auth_client, sc2_id, {"period_start": "2043-02-01", "number": 4})
+
+    assert response.status_code == 200, response.json
+    assert _edits(loaded_db, awarded_agreement.id) == []
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id).number == 4
+
+
+def test_deleting_an_sc_replaces_its_period_edits_with_the_delete(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-01-31"}).status_code == 200
+
+    response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
+
+    assert response.status_code == 200, response.json
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert (edit.services_component_id, edit.field) == (sc2_id, "delete")
+
+
+def test_superuser_deleting_an_sc_discards_its_pending_period_edits(
+    modified_loe_enabled, basic_user_auth_client, power_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-01-31"}).status_code == 200
+
+    response = power_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
+
+    assert response.status_code == 200, response.json
+    assert _edits(loaded_db, awarded_agreement.id) == []
+
+
+def test_period_edit_and_delete_blocked_while_its_edit_is_in_review(
+    modified_loe_enabled, basic_user_auth_client, power_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-01-31"}).status_code == 200
+    submit_response = _submit(basic_user_auth_client, awarded_agreement.id)
+    assert submit_response.status_code == 201, submit_response.json
+
+    response = _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-06-30"})
+    assert response.status_code == 400, response.json
+    assert "services_component" in response.json["errors"]
+
+    for client in (basic_user_auth_client, power_user_auth_client):
+        response = client.delete(url_for("api.services-component-item", id=sc2_id))
+        assert response.status_code == 400, response.json
+
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id).period_end == datetime.date(2044, 1, 31)
+
+
+def test_concurrent_duplicate_period_edit_hits_the_unique_index(
+    modified_loe_enabled, loaded_db, awarded_agreement, app_ctx
+):
+    """ix_contract_modification_edit_one_pending_sc_field: a second pending row for the same
+    (SC, field) -- what a double-click/retry racing past the merge would insert -- is rejected."""
+    from sqlalchemy.exc import IntegrityError
+
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+
+    def _row():
+        return ContractModificationEdit(
+            agreement_id=awarded_agreement.id,
+            modification_type=ModificationEditType.MODIFIED_LOE,
+            services_component_id=sc2_id,
+            field="period_end",
+            old_value="2043-12-31",
+            new_value="2044-01-31",
+            requested_by_id=BASIC_USER_ID,
+        )
+
+    loaded_db.add(_row())
+    loaded_db.commit()
+    loaded_db.add(_row())
+    with pytest.raises(IntegrityError):
+        loaded_db.commit()
+    loaded_db.rollback()
+
+
+# ---=== The SC's number / optional are locked on an Awarded agreement (OPS-3268) ===---
+
+
+@pytest.mark.parametrize("body", [{"number": 3}, {"optional": True}], ids=["number", "optional"])
+def test_changing_locked_sc_fields_on_awarded_agreement_is_rejected(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx, body
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+
+    # Rejected as a whole: the period change in the same request isn't applied either.
+    response = _patch_sc(basic_user_auth_client, sc2_id, {**body, "period_end": "2044-01-31"})
+
+    assert response.status_code == 400, response.json
+    assert set(response.json["errors"]) == set(body)
+    loaded_db.expire_all()
+    sc2 = loaded_db.get(ServicesComponent, sc2_id)
+    assert (sc2.number, sc2.optional, sc2.period_end) == (2, False, datetime.date(2043, 12, 31))
+    assert _edits(loaded_db, awarded_agreement.id) == []
+
+
+def test_superuser_can_change_sc_number_on_awarded_agreement(
+    modified_loe_enabled, power_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+
+    response = _patch_sc(power_user_auth_client, sc2_id, {"number": 3, "optional": True})
+
+    assert response.status_code == 200, response.json
+    loaded_db.expire_all()
+    sc = loaded_db.get(ServicesComponent, sc2_id)
+    assert (sc.number, sc.optional) == (3, True)
+
+
+def test_bundle_period_edit_is_tracked_and_number_change_rejected(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    url = url_for("api.agreements-edit-bundle", id=awarded_agreement.id)
+
+    response = basic_user_auth_client.patch(
+        url, json={"services_components": {"update": [{"id": sc2_id, "number": 3}]}}
+    )
+    assert response.status_code == 400, response.json
+
+    response = basic_user_auth_client.patch(
+        url, json={"services_components": {"update": [{"id": sc2_id, "period_start": "2043-02-01"}]}}
+    )
+    assert response.status_code == 200, response.json
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert (edit.field, edit.old_value, edit.new_value) == ("period_start", "2043-01-01", "2043-02-01")
+
+
+# ---=== Deleting an SC with Executing/Obligated budget lines is blocked (OPS-3268) ===---
+
+
+@pytest.mark.parametrize("status", [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED])
+@pytest.mark.parametrize("client_fixture", ["basic_user_auth_client", "power_user_auth_client"])
+def test_deleting_sc_with_executing_or_obligated_budget_lines_is_blocked(
+    modified_loe_enabled, request, loaded_db, test_can, awarded_agreement, app_ctx, status, client_fixture
+):
+    """The SC->BLI FK is ON DELETE SET NULL, so the delete would silently unlink lines that are
+    on the contract, with no history. Blocked for every user, superusers too."""
+    client = request.getfixturevalue(client_fixture)
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2)
+    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, status)
+    sc2_id, bli_id = sc2.id, bli.id
+
+    response = client.delete(url_for("api.services-component-item", id=sc2_id))
+
+    assert response.status_code == 400, response.json
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
+    assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id == sc2_id
+    assert _edits(loaded_db, awarded_agreement.id) == []

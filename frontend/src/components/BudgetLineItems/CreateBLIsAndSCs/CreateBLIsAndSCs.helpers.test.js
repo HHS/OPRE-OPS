@@ -3,10 +3,12 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import {
     buildEditedBudgetLinePayload,
     buildSaveSuccessAlert,
+    clearDeletedServicesComponentLink,
     computeBudgetLinePageErrors,
     feesForCards,
     getEffectiveScDateRange,
     getServicesComponentAdditionsTrackedForModification,
+    getServicesComponentsWithPeriodEdits,
     totalsForCards
 } from "./CreateBLIsAndSCs.helpers";
 
@@ -227,4 +229,58 @@ describe("buildEditedBudgetLinePayload — Modified LOE amount edit (OPS-3072)",
             expect(payload.tempChangeRequest).toEqual({ amount: 600000 });
         }
     );
+});
+
+describe("getServicesComponentsWithPeriodEdits (OPS-3268)", () => {
+    const saved = { id: 1, number: 1, period_start: "2043-01-01", period_end: "2043-12-31" };
+
+    it.each([
+        ["a changed start", { period_start: "2043-02-01" }, true],
+        ["a changed end", { period_end: "2044-01-31" }, true],
+        ["a cleared end", { period_end: null }, true],
+        ["the saved dates", {}, false],
+        ["a description-only edit", { description: "new" }, false]
+    ])("with %s → %s", (_label, change, expected) => {
+        const result = getServicesComponentsWithPeriodEdits({
+            servicesComponents: [{ ...saved, ...change }],
+            savedServicesComponents: [saved]
+        });
+
+        expect(result.length > 0).toBe(expected);
+    });
+
+    it("ignores an SC that isn't saved yet", () => {
+        const result = getServicesComponentsWithPeriodEdits({
+            servicesComponents: [{ number: 2, period_start: "2043-01-01" }],
+            savedServicesComponents: [saved]
+        });
+
+        expect(result).toEqual([]);
+    });
+});
+
+describe("clearDeletedServicesComponentLink", () => {
+    const line = {
+        id: 9,
+        services_component_id: 5,
+        services_component_number: 2,
+        serviceComponentGroupingLabel: "SC2"
+    };
+
+    it("clears the link when the line's SC is being deleted", () => {
+        expect(clearDeletedServicesComponentLink(line, [5])).toEqual({
+            id: 9,
+            services_component_id: null,
+            services_component_number: undefined,
+            serviceComponentGroupingLabel: undefined
+        });
+    });
+
+    it.each([
+        ["another SC is deleted", line, [6]],
+        ["the line has no SC", { id: 9, services_component_id: null }, [5]],
+        ["there's no saved line", undefined, [5]]
+    ])("leaves the line as-is when %s", (_label, budgetLine, deletedIds) => {
+        expect(clearDeletedServicesComponentLink(budgetLine, deletedIds)).toBe(budgetLine);
+    });
 });

@@ -4,6 +4,28 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactMarkdown from "react-markdown";
 import MarkdownLink from "../Markdown/MarkdownLink";
 
+const FOCUSABLE_SELECTOR =
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * The element keyboard focus should move to when the alert closes: its close button unmounts, so
+ * focus would otherwise drop to <body> (WCAG 2.4.3). The next focusable element after the alert,
+ * else the page's main content.
+ * @param {HTMLElement | null} alertElement
+ * @returns {HTMLElement | null}
+ */
+const getFocusTargetAfterClose = (alertElement) => {
+    if (alertElement) {
+        const next = Array.from(document.querySelectorAll(FOCUSABLE_SELECTOR)).find(
+            (element) =>
+                !alertElement.contains(element) &&
+                Boolean(alertElement.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING)
+        );
+        if (next instanceof HTMLElement) return next;
+    }
+    return document.getElementById("main-content");
+};
+
 /**
     @typedef {Object} SimpleAlertProps
     @property {React.ReactNode} [children] - The child elements to render inside the alert. - optional
@@ -35,6 +57,7 @@ const SimpleAlert = ({
     const parsedLevel = typeof headingLevel === "number" ? headingLevel : parseInt(headingLevel);
     const level = isNaN(parsedLevel) ? 4 : Math.max(1, Math.min(6, parsedLevel));
     const headingTag = `h${level}`;
+    const alertRef = React.useRef(null);
 
     let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-2 margin-bottom-2";
 
@@ -70,6 +93,7 @@ const SimpleAlert = ({
     return isAlertVisible ? (
         <div
             className={classNames}
+            ref={alertRef}
             role={handleRole()}
             data-cy="alert"
             data-testid="alert"
@@ -102,7 +126,9 @@ const SimpleAlert = ({
                         data-position="top"
                         data-cy="close-alert"
                         onClick={() => {
+                            const focusTarget = getFocusTargetAfterClose(alertRef.current);
                             setIsAlertVisible(false);
+                            focusTarget?.focus();
                         }}
                     >
                         <FontAwesomeIcon

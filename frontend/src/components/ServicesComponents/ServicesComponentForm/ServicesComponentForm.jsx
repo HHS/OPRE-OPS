@@ -8,6 +8,8 @@ import TextArea from "../../UI/Form/TextArea";
 import { NON_SEVERABLE_OPTIONS, SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "../ServicesComponents.constants";
 import ServicesComponentSelect from "../ServicesComponentSelect";
 
+const NUMBER_LOCKED_HINT = "The Services Component number can't be changed after the agreement is awarded.";
+
 /**
  * @typedef {Object} Formdata
  * @property {number} number
@@ -32,6 +34,7 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes in the form.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {any} [props.scFormSuite] - Vest suite used to display field-level validation errors.
+ * @param {boolean} [props.locksServicesComponentNumbers] - Whether a saved SC's number and Optional flag are locked (Awarded agreement, OPS-3268).
  * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
  * @example
@@ -49,7 +52,8 @@ function ServicesComponentForm({
     isReviewMode = false,
     hasUnsavedChanges,
     workflow,
-    scFormSuite
+    scFormSuite,
+    locksServicesComponentNumbers = false
 }) {
     const [scSelectTouched, setScSelectTouched] = React.useState(false);
     React.useEffect(() => {
@@ -65,6 +69,9 @@ function ServicesComponentForm({
     }, [formData.number, scFormSuite]);
 
     const suiteErrors = scFormSuite?.get();
+    // On an Awarded agreement the contract refers to a saved SC by its number, so it (and the
+    // Optional flag) can't change; its period of performance and description still can (OPS-3268).
+    const isNumberLocked = locksServicesComponentNumbers && formData?.mode === "edit" && "created_on" in formData;
 
     if (!serviceTypeReq) {
         return (
@@ -118,12 +125,21 @@ function ServicesComponentForm({
                                         optional: false
                                     });
                                 }}
-                                value={formData?.number || ""}
+                                // A disabled Select shows its value as-is, so show the SC's label.
+                                value={
+                                    isNumberLocked
+                                        ? (options.find((option) => option.value === formData.number)?.label ??
+                                          formData.number)
+                                        : formData?.number || ""
+                                }
                                 options={optionsWithSelected}
                                 isRequired={true}
                                 messages={
                                     scSelectTouched ? (suiteErrors?.getErrors("servicesComponentSelect") ?? []) : []
                                 }
+                                isDisabled={isNumberLocked}
+                                hint={isNumberLocked ? NUMBER_LOCKED_HINT : ""}
+                                tooltipMsg={isNumberLocked ? NUMBER_LOCKED_HINT : ""}
                             />
                         </div>
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
@@ -142,7 +158,10 @@ function ServicesComponentForm({
                                         });
                                     }}
                                     disabled={
-                                        formData?.number === 0 || formData?.number === 1 || formData?.number === ""
+                                        isNumberLocked ||
+                                        formData?.number === 0 ||
+                                        formData?.number === 1 ||
+                                        formData?.number === ""
                                     }
                                 />
                                 <label

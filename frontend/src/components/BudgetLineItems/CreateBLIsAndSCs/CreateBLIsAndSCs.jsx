@@ -17,6 +17,7 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import { clearDeletedServicesComponentLink } from "./CreateBLIsAndSCs.helpers";
 import { findDescription, findIfOptional } from "../../../helpers/servicesComponent.helpers";
 import { findGrantDescription, findGrantPeriodEnd, findGrantPeriodStart } from "../../../helpers/budgetLines.helpers";
 import { cleanBudgetLineItemForApi, CONTRACT_MODIFICATION_NOTICE_HEADING } from "../../../helpers/agreement.helpers";
@@ -134,6 +135,7 @@ export const CreateBLIsAndSCs = ({
         effectiveScEndDate,
         requiresFinancialApproval,
         requiresContractModification,
+        locksServicesComponentNumbers,
         grantNumberNumber,
         setGrantNumberNumber,
         allowPastObligateByDates
@@ -350,28 +352,11 @@ export const CreateBLIsAndSCs = ({
                         // newly-assigned SC as "unchanged" and silently drop it from the update.
                         const linked = applyBliLink(cleaned, bli);
                         if (baseline) {
-                            // Deleting a Services Component clears its link on every budget line
-                            // locally (editor reducer's DELETE_SERVICE_COMPONENT), including ones
-                            // the user never otherwise touched. That alone isn't a real edit to
-                            // send: the backend's SC -> BLI foreign key already nulls the link
-                            // (ON DELETE SET NULL) as part of the SC delete itself -- and for a
-                            // non-superuser on an Obligated or Executing line, sending it here
-                            // would be rejected as "not in an editable state" and roll back the
-                            // whole bundle, including the SC delete that was the actual intent
-                            // (OPS-3268). Compare against the same cleared shape, mirroring
-                            // handleUpdateBLIsToAPI in CreateBLIsAndSCs.hooks.js.
-                            let comparisonBaseline = baseline;
-                            if (
-                                comparisonBaseline.services_component_id != null &&
-                                deletedServicesComponentsIds.includes(comparisonBaseline.services_component_id)
-                            ) {
-                                comparisonBaseline = {
-                                    ...comparisonBaseline,
-                                    services_component_id: null,
-                                    services_component_number: undefined,
-                                    serviceComponentGroupingLabel: undefined
-                                };
-                            }
+                            // A deleted SC's cleared link alone isn't an edit to send.
+                            const comparisonBaseline = clearDeletedServicesComponentLink(
+                                baseline,
+                                deletedServicesComponentsIds
+                            );
                             const { data: cleanedBaseline } = cleanBudgetLineItemForApi(comparisonBaseline);
                             if (JSON.stringify(linked) === JSON.stringify(cleanedBaseline)) {
                                 return null;
@@ -465,6 +450,7 @@ export const CreateBLIsAndSCs = ({
                                 hasUnsavedChanges={hasUnsavedChanges}
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
+                                locksServicesComponentNumbers={locksServicesComponentNumbers}
                             />
                         ))}
                     {!isGrant && (
@@ -531,6 +517,7 @@ export const CreateBLIsAndSCs = ({
                                 hasUnsavedChanges={hasUnsavedChanges}
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
+                                locksServicesComponentNumbers={locksServicesComponentNumbers}
                             />
                         ))}
                     {/* This is already the budget-line edit surface, so no inline Edit button belongs here. */}

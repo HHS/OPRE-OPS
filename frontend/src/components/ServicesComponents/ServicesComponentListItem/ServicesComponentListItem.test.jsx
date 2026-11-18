@@ -44,7 +44,8 @@ describe("ServicesComponentListItem", () => {
             />
         );
 
-    // The icons only render on hover; mouseover on the title enters the item.
+    // The icons show on hover (they're always rendered, see the keyboard tests below); mouseover on
+    // the title enters the item.
     const hoverItem = () => fireEvent.mouseOver(screen.getByText("Services Component 2"));
 
     it("disables edit and delete with the pending-change tooltip while a change is in review", () => {
@@ -76,6 +77,24 @@ describe("ServicesComponentListItem", () => {
         const [editButton, deleteButton] = screen.getAllByRole("button");
         expect(editButton).toBeEnabled();
         expect(deleteButton).toBeEnabled();
+    });
+
+    it("lets keyboard users reach edit and delete: they're in the tab order and show on focus (WCAG 2.1.1)", async () => {
+        const user = (await import("@testing-library/user-event")).default.setup();
+        renderItem();
+        const actions = screen.getByTestId("services-component-item-actions");
+        expect(actions).toHaveStyle({ opacity: "0" });
+
+        await user.tab();
+        expect(screen.getByRole("button", { name: "Edit" })).toHaveFocus();
+        expect(actions).toHaveStyle({ opacity: "1" });
+
+        await user.tab();
+        expect(screen.getByRole("button", { name: "Delete" })).toHaveFocus();
+        expect(actions).toHaveStyle({ opacity: "1" });
+
+        await user.tab();
+        expect(actions).toHaveStyle({ opacity: "0" });
     });
 });
 

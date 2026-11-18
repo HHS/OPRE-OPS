@@ -20,6 +20,7 @@ const addGrantNumberMock = vi.fn();
 const updateGrantNumberMock = vi.fn();
 const deleteGrantNumberMock = vi.fn();
 const useGetVersionQueryMock = vi.fn();
+const useGetServicesComponentsListQueryMock = vi.fn(() => ({ data: [] }));
 
 const goBackMock = vi.fn();
 const setIsEditModeMock = vi.fn();
@@ -65,7 +66,8 @@ vi.mock("../../../api/opsAPI", () => ({
     useAddGrantNumberMutation: () => [addGrantNumberMock],
     useUpdateGrantNumberMutation: () => [updateGrantNumberMock],
     useDeleteGrantNumberMutation: () => [deleteGrantNumberMock],
-    useGetVersionQuery: (...args) => useGetVersionQueryMock(...args)
+    useGetVersionQuery: (...args) => useGetVersionQueryMock(...args),
+    useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args)
 }));
 
 vi.mock("../../../helpers/agreement.helpers", () => ({
@@ -833,6 +835,54 @@ describe("useCreateBLIsAndSCs", () => {
                 const { result } = renderSubject({ selectedAgreement: awardedContract });
 
                 expect(result.current.requiresContractModification).toBe(false);
+            });
+
+            describe("period-of-performance edits (OPS-3268)", () => {
+                const saved = savedSc({ period_start: "2043-01-01", period_end: "2043-12-31" });
+
+                beforeEach(() => {
+                    useGetServicesComponentsListQueryMock.mockReturnValue({ data: [saved] });
+                });
+
+                it("flags a saved SC whose period of performance changed", () => {
+                    useEditAgreementMock.mockReturnValue({
+                        ...editAgreementMockData,
+                        services_components: [{ ...saved, period_end: "2044-01-31", has_changed: true }],
+                        budget_line_items: []
+                    });
+                    const { result } = renderSubject({ selectedAgreement: awardedContract });
+
+                    expect(result.current.requiresContractModification).toBe(true);
+                    expect(result.current.locksServicesComponentNumbers).toBe(true);
+                });
+
+                it("does not flag a period changed and put back, or a description-only edit", () => {
+                    useEditAgreementMock.mockReturnValue({
+                        ...editAgreementMockData,
+                        services_components: [{ ...saved, description: "new", has_changed: true }],
+                        budget_line_items: []
+                    });
+                    const { result } = renderSubject({ selectedAgreement: awardedContract });
+
+                    expect(result.current.requiresContractModification).toBe(false);
+                });
+
+                it("does not flag it, or lock the SC number, for a superuser", () => {
+                    useSelectorMock.mockImplementation((selector) =>
+                        selector({
+                            auth: { activeUser: { id: 1, is_superuser: true, roles: [{ name: "SYSTEM_OWNER" }] } }
+                        })
+                    );
+                    useEditAgreementMock.mockReturnValue({
+                        ...editAgreementMockData,
+                        services_components: [{ ...saved, period_end: "2044-01-31", has_changed: true }],
+                        budget_line_items: []
+                    });
+                    const { result } = renderSubject({ selectedAgreement: awardedContract });
+
+                    expect(result.current.requiresContractModification).toBe(false);
+                    expect(result.current.locksServicesComponentNumbers).toBe(false);
+                });
             });
 
             it("does not flag SC changes on an agreement that isn't Awarded", () => {

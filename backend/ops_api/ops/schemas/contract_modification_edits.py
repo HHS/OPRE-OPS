@@ -3,7 +3,13 @@
 from marshmallow import Schema, fields, validate
 from sqlalchemy.orm import object_session
 
-from models import PROJECT_OFFICER_EDIT_FIELD, ContractModificationRequestStatus, ModificationEditType, User
+from models import (
+    PROJECT_OFFICER_EDIT_FIELD,
+    ContractModificationRequestStatus,
+    ModificationEditType,
+    ServicesComponent,
+    User,
+)
 
 
 class RequestedBySchema(Schema):
@@ -21,13 +27,17 @@ class ContractModificationEditSchema(Schema):
     budget_line_item_id = fields.Integer(allow_none=True)
     services_component_id = fields.Integer(allow_none=True)
     # The edited field -- the card's "Change To". Modified LOE: "amount", "can_id", "date_needed",
-    # "status", "delete" or "services_component_create". Admin Change: "project_officer_id".
+    # "status", "delete", "services_component_create", or a Services Component's "period_start" /
+    # "period_end". Admin Change: "project_officer_id".
     field = fields.String(required=True)
     old_value = fields.Raw(allow_none=True)
     new_value = fields.Raw(allow_none=True)
     # Names for user-id values (the COR change's From and To); null for other fields.
     old_display_name = fields.Method("_old_display_name")
     new_display_name = fields.Method("_new_display_name")
+    # The Services Component's name for its period-of-performance edits, whose From/To are dates
+    # (an SC add/delete freezes the name in old_value/new_value instead); null otherwise.
+    services_component_display_name = fields.Method("_services_component_display_name")
     requested_by = fields.Nested(RequestedBySchema, allow_none=True)
     requested_on = fields.DateTime(allow_none=True)
     change_request_id = fields.Integer(allow_none=True)
@@ -47,6 +57,13 @@ class ContractModificationEditSchema(Schema):
 
     def _new_display_name(self, edit):
         return self._user_name(edit, edit.new_value)
+
+    @staticmethod
+    def _services_component_display_name(edit):
+        if edit.services_component_id is None or edit.field not in ("period_start", "period_end"):
+            return None
+        services_component = object_session(edit).get(ServicesComponent, edit.services_component_id)
+        return services_component.display_name if services_component else None
 
 
 class SubmitContractModificationRequestSchema(Schema):

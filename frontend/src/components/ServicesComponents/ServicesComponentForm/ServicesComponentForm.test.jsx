@@ -77,4 +77,55 @@ describe("ServicesComponentForm", () => {
         // Should not show error message
         expect(screen.queryByText("Please add a Service Requirement Type to the Agreement.")).not.toBeInTheDocument();
     });
+
+    describe("SC number lock on an Awarded agreement (OPS-3268)", () => {
+        const savedSc = { id: 7, number: 2, optional: false, mode: "edit", created_on: "2043-01-01T00:00:00Z" };
+        const renderForm = (props) =>
+            render(
+                <ServicesComponentForm
+                    {...defaultProps}
+                    serviceTypeReq="NON_SEVERABLE"
+                    isEditMode={true}
+                    {...props}
+                />
+            );
+
+        test("disables the number and Optional controls for a saved SC, and says why", () => {
+            renderForm({ formData: savedSc, locksServicesComponentNumbers: true });
+
+            expect(screen.getByRole("combobox", { name: "Services Component" })).toBeDisabled();
+            expect(screen.getByRole("combobox", { name: "Services Component" })).toHaveDisplayValue("SC2");
+            expect(screen.getByRole("checkbox", { name: "Optional Services Component" })).toBeDisabled();
+            // Shown as the field's hint (and its tooltip).
+            expect(
+                screen.getAllByText("The Services Component number can't be changed after the agreement is awarded.")
+                    .length
+            ).toBeGreaterThan(0);
+        });
+
+        test("keeps the period of performance editable", () => {
+            renderForm({ formData: savedSc, locksServicesComponentNumbers: true });
+
+            for (const input of [
+                ...screen.getAllByLabelText(/Period of Performance-Start/),
+                ...screen.getAllByLabelText(/Period of Performance-End/)
+            ]) {
+                expect(input).toBeEnabled();
+            }
+        });
+
+        test("leaves the number editable when not locked (pre-award or superuser)", () => {
+            renderForm({ formData: savedSc, locksServicesComponentNumbers: false });
+
+            expect(screen.getByRole("combobox", { name: "Services Component" })).toBeEnabled();
+            expect(screen.getByRole("checkbox", { name: "Optional Services Component" })).toBeEnabled();
+        });
+
+        test("leaves the number editable for an SC added in this session (not saved yet)", () => {
+            const { created_on, ...unsavedSc } = savedSc; // eslint-disable-line no-unused-vars
+            renderForm({ formData: unsavedSc, locksServicesComponentNumbers: true });
+
+            expect(screen.getByRole("combobox", { name: "Services Component" })).toBeEnabled();
+        });
+    });
 });

@@ -11,6 +11,7 @@ import {
     useDeleteBudgetLineItemMutation,
     useDeleteGrantNumberMutation,
     useDeleteServicesComponentMutation,
+    useGetServicesComponentsListQuery,
     useGetVersionQuery,
     useUpdateBudgetLineItemMutation,
     useUpdateGrantNumberMutation,
@@ -45,7 +46,9 @@ import {
     buildNewAgreementBudgetPayload,
     buildNewBudgetLineItem,
     buildSaveSuccessAlert,
+    clearDeletedServicesComponentLink,
     getServicesComponentAdditionsTrackedForModification,
+    getServicesComponentsWithPeriodEdits,
     computeBudgetLinePageErrors,
     feesForCards,
     getBudgetLinesUrl,
@@ -199,6 +202,14 @@ const useCreateBLIsAndSCs = (
     const hasServicesComponentAdditionsOrDeletions =
         pendingServicesComponentAdditions.length > 0 ||
         (awardedEditAppliesDirectly && deletedServicesComponentsIds.length > 0);
+    // An SC period-of-performance change is tracked too (OPS-3268). Compared with the saved SCs,
+    // which the hosting page has already fetched (same RTK Query cache entry).
+    const { data: savedServicesComponents } = useGetServicesComponentsListQuery(selectedAgreement?.id, {
+        skip: !awardedEditAppliesDirectly || !selectedAgreement?.id
+    });
+    const hasServicesComponentPeriodEdits =
+        awardedEditAppliesDirectly &&
+        getServicesComponentsWithPeriodEdits({ servicesComponents, savedServicesComponents }).length > 0;
 
     // Budget Team members and superusers write financial changes directly (no change-request
     // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.
@@ -349,27 +360,11 @@ const useCreateBLIsAndSCs = (
             const promises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
                 const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
 
-                let unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
-                // Deleting a Services Component clears its link on every budget line locally
-                // (editor reducer's DELETE_SERVICE_COMPONENT), including ones the user never
-                // otherwise touched. That alone isn't a real edit to send: the backend's SC ->
-                // BLI foreign key already nulls the link (ON DELETE SET NULL) as part of the SC
-                // delete itself, which runs after this -- and for a non-superuser on an Obligated
-                // or Executing line, sending it here would be rejected as "not in an editable
-                // state" and block the whole save, including the SC delete that was the actual
-                // intent (OPS-3268). Compare against the same cleared shape so this field alone
-                // doesn't count as a change; a genuine edit elsewhere on the same line still does.
-                if (
-                    unchangedBudgetLineItem?.services_component_id != null &&
-                    deletedServicesComponentsIds.includes(unchangedBudgetLineItem.services_component_id)
-                ) {
-                    unchangedBudgetLineItem = {
-                        ...unchangedBudgetLineItem,
-                        services_component_id: null,
-                        services_component_number: undefined,
-                        serviceComponentGroupingLabel: undefined
-                    };
-                }
+                // A deleted SC's cleared link alone isn't an edit to send.
+                const unchangedBudgetLineItem = clearDeletedServicesComponentLink(
+                    budgetLines.find((bli) => bli.id === existingBudgetLineItem.id),
+                    deletedServicesComponentsIds
+                );
                 let budgetLineHasChanged =
                     JSON.stringify(existingBudgetLineItem) !== JSON.stringify(unchangedBudgetLineItem); // We have to check every single property to see if there's ANY change
                 if (budgetLineHasChanged) {
@@ -1010,7 +1005,10 @@ const useCreateBLIsAndSCs = (
     });
     const requiresContractModification =
         awardedEditAppliesDirectly &&
-        (hasFinancialSnapshotChanges || hasDeletedNonDraftBLIs || hasServicesComponentAdditionsOrDeletions);
+        (hasFinancialSnapshotChanges ||
+            hasDeletedNonDraftBLIs ||
+            hasServicesComponentAdditionsOrDeletions ||
+            hasServicesComponentPeriodEdits);
 
     useCreateBLIsAndSCsSaveBlocker({
         blocker,
@@ -1080,6 +1078,9 @@ const useCreateBLIsAndSCs = (
         isAgreementNotYetDeveloped,
         requiresFinancialApproval,
         requiresContractModification,
+        // On an Awarded agreement a non-superuser can't change a saved SC's number or Optional
+        // flag (OPS-3268); the backend rejects it too.
+        locksServicesComponentNumbers: awardedEditAppliesDirectly,
         effectiveScStartDate,
         effectiveScEndDate
     };

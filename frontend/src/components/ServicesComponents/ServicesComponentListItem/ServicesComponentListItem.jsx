@@ -35,6 +35,10 @@ function ServicesComponentListItem({
     lockedMessage = ""
 }) {
     const [isHovered, setIsHovered] = React.useState(false);
+    const [hasFocusWithin, setHasFocusWithin] = React.useState(false);
+    // The Edit/Delete buttons show on hover, and also while one has keyboard focus: they're always
+    // rendered (just transparent), so keyboard users can tab to them (WCAG 2.1.1).
+    const showActions = isHovered || hasFocusWithin;
 
     const isFirstServiceComponent = number === 1;
     const isLocked = Boolean(lockedMessage);
@@ -58,6 +62,10 @@ function ServicesComponentListItem({
             style={{ minHeight: "8.375rem" }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onFocus={() => setHasFocusWithin(true)}
+            onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget)) setHasFocusWithin(false);
+            }}
         >
             <section className="display-flex flex-justify">
                 <h2
@@ -67,63 +75,59 @@ function ServicesComponentListItem({
                 >
                     {title}
                 </h2>
-                {isHovered && (
-                    <div>
-                        <Tooltip
-                            label={isEditDisabled ? disabledEditMsg : "Edit"}
-                            position="top"
-                            className="line-height-body-1"
+                <div
+                    style={{ opacity: showActions ? 1 : 0 }}
+                    data-cy="services-component-item-actions"
+                    data-testid="services-component-item-actions"
+                >
+                    <Tooltip
+                        label={isEditDisabled ? disabledEditMsg : "Edit"}
+                        position="top"
+                        className="line-height-body-1"
+                    >
+                        <button
+                            type="button"
+                            aria-label={isEditDisabled ? disabledEditMsg : "Edit"}
+                            data-cy="services-component-item-edit-button"
+                            onClick={() => {
+                                setFormDataById(id);
+                                scrollToCenter("services-component-form");
+                            }}
+                            disabled={isEditDisabled}
                         >
-                            <button
-                                type="button"
-                                id="edit"
-                                aria-label={isEditDisabled ? disabledEditMsg : "Edit"}
-                                data-cy="services-component-item-edit-button"
-                                onClick={() => {
-                                    setFormDataById(id);
-                                    scrollToCenter("services-component-form");
-                                }}
-                                disabled={isEditDisabled}
-                            >
-                                <FontAwesomeIcon
-                                    icon={faPen}
-                                    size="2x"
-                                    className={`${
-                                        isEditDisabled
-                                            ? "text-gray-30 cursor-not-allowed"
-                                            : "text-primary cursor-pointer"
-                                    } height-2 width-2 margin-right-1`}
-                                />
-                            </button>
-                        </Tooltip>
-                        <Tooltip
-                            label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
-                            position="top"
-                            className="line-height-body-1"
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                size="2x"
+                                className={`${
+                                    isEditDisabled ? "text-gray-30 cursor-not-allowed" : "text-primary cursor-pointer"
+                                } height-2 width-2 margin-right-1`}
+                            />
+                        </button>
+                    </Tooltip>
+                    <Tooltip
+                        label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
+                        position="top"
+                        className="line-height-body-1"
+                    >
+                        <button
+                            type="button"
+                            aria-label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
+                            data-cy="services-component-item-delete-button"
+                            onClick={() => {
+                                handleDelete(id);
+                            }}
+                            disabled={isDeleteDisabled}
                         >
-                            <button
-                                type="button"
-                                id="delete"
-                                aria-label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
-                                data-cy="services-component-item-delete-button"
-                                onClick={() => {
-                                    handleDelete(id);
-                                }}
-                                disabled={isDeleteDisabled}
-                            >
-                                <FontAwesomeIcon
-                                    icon={faTrash}
-                                    size="2x"
-                                    className={`${
-                                        isDeleteDisabled
-                                            ? "text-gray-30 cursor-not-allowed"
-                                            : "text-primary cursor-pointer"
-                                    } height-2 width-2 `}
-                                />
-                            </button>
-                        </Tooltip>
-                    </div>
-                )}
+                            <FontAwesomeIcon
+                                icon={faTrash}
+                                size="2x"
+                                className={`${
+                                    isDeleteDisabled ? "text-gray-30 cursor-not-allowed" : "text-primary cursor-pointer"
+                                } height-2 width-2 `}
+                            />
+                        </button>
+                    </Tooltip>
+                </div>
             </section>
             <ServicesComponentMetadata
                 periodStart={periodStart}

@@ -264,6 +264,45 @@ describe("useServicesComponents", () => {
         });
     });
 
+    describe("handleDelete — an SC with Executing or Obligated budget lines (OPS-3268)", () => {
+        const servicesComponents = [
+            { id: 1, number: 1, display_title: "SC1" },
+            { id: 2, number: 2, display_title: "SC2" }
+        ];
+
+        it.each(["IN_EXECUTION", "OBLIGATED"])("blocks the delete with an error when a %s line is on it", (status) => {
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [
+                { id: 900, status, services_component_id: 2 }
+            ]);
+
+            act(() => {
+                result.current.handleDelete(2);
+            });
+
+            expect(result.current.showModal).toBe(false);
+            expect(dispatchMock).not.toHaveBeenCalled();
+            expect(setAlertMock).toHaveBeenCalledWith(
+                expect.objectContaining({ type: "error", heading: "This services component can't be deleted" })
+            );
+        });
+
+        it("still allows the delete when its only non-Draft lines are Planned", () => {
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [
+                { id: 900, status: "PLANNED", services_component_id: 2 },
+                { id: 901, status: "OBLIGATED", services_component_id: 1 }
+            ]);
+
+            act(() => {
+                result.current.handleDelete(2);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(setAlertMock).not.toHaveBeenCalled();
+        });
+    });
+
     describe("handleDelete — PoP impact of removing an SC", () => {
         it("shows the generic delete confirmation (not the PoP modal) when no non-draft BLI is affected", () => {
             useEditAgreementMock.mockReturnValue({

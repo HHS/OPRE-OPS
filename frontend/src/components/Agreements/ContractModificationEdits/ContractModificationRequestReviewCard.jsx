@@ -41,9 +41,8 @@ const approvedMessage = (request) =>
 
 /**
  * The Division Director's Approve/Decline card for the agreement's in-review contract
- * modification (#1008), for viewers authorized to review it (`request.can_review`). Not rendered
- * for now: the Award & Modifications tab shows everyone the read-only "In Review" alert until the
- * review UI ships (#3331).
+ * modification (#1008), shown on the Award & Modifications tab to viewers authorized to review it
+ * (`request.can_review`); everyone else sees the read-only "In Review" alert.
  *
  * @component
  * @param {Object} props

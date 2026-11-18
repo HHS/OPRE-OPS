@@ -16,6 +16,7 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {import('vest').Suite<any, any>} [props.scFormSuite] - Vest validation suite for the SC form.
  * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.nonDraftBudgetLines] - Non-draft BLIs used by the SC form suite for PoP validation.
+ * @param {boolean} [props.locksServicesComponentNumbers] - Whether a saved SC's number and Optional flag are locked (Awarded agreement, OPS-3268).
  * @returns {React.ReactElement}
  *
  * @example
@@ -31,7 +32,8 @@ const ServicesComponents = ({
     setHasUnsavedChanges,
     hasUnsavedChanges,
     scFormSuite,
-    nonDraftBudgetLines = []
+    nonDraftBudgetLines = [],
+    locksServicesComponentNumbers = false
 }) => {
     const {
         formData,
@@ -80,6 +82,7 @@ const ServicesComponents = ({
                 hasUnsavedChanges={hasUnsavedChanges}
                 workflow={workflow}
                 scFormSuite={scFormSuite}
+                locksServicesComponentNumbers={locksServicesComponentNumbers}
             />
 
             <ServicesComponentsList

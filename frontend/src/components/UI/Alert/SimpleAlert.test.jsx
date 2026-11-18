@@ -1,3 +1,4 @@
+import React from "react";
 import { vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import SimpleAlert from "./SimpleAlert";
@@ -129,5 +130,52 @@ describe("SimpleAlert", () => {
         );
         heading = screen.getByRole("heading", { name: "Test Heading" });
         expect(heading.tagName).toBe("H6");
+    });
+
+    it("moves focus to the next focusable element when closed, so it doesn't drop to the page body", () => {
+        const Page = () => {
+            const [isAlertVisible, setIsAlertVisible] = React.useState(true);
+            return (
+                <main
+                    id="main-content"
+                    tabIndex={-1}
+                >
+                    <button type="button">Before</button>
+                    <SimpleAlert
+                        message="Closable"
+                        type="warning"
+                        isClosable={true}
+                        isAlertVisible={isAlertVisible}
+                        setIsAlertVisible={setIsAlertVisible}
+                    />
+                    <button type="button">After</button>
+                </main>
+            );
+        };
+        render(<Page />);
+
+        fireEvent.click(screen.getByLabelText("close"));
+
+        expect(screen.queryByText("Closable")).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "After" })).toHaveFocus();
+    });
+
+    it("moves focus to the main content when nothing focusable follows the alert", () => {
+        render(
+            <main
+                id="main-content"
+                tabIndex={-1}
+            >
+                <SimpleAlert
+                    message="Closable"
+                    type="warning"
+                    isClosable={true}
+                />
+            </main>
+        );
+
+        fireEvent.click(screen.getByLabelText("close"));
+
+        expect(screen.getByRole("main")).toHaveFocus();
     });
 });

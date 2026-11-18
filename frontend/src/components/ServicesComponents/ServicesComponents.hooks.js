@@ -1,4 +1,5 @@
 import React from "react";
+import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { useEditAgreement, useEditAgreementDispatch } from "../Agreements/AgreementEditor/AgreementEditorContext.hooks";
@@ -8,6 +9,11 @@ import popValidationSuite from "./ServicesComponentForm/popValidationSuite";
 
 const POP_CONFIRMATION_MESSAGE =
     "Changing the Period of Performance dates will alter the agreement’s Period of Performance. Some budget lines will need an updated Obligate By Date to fit within the new timeframe. Do you want to continue updating this services component?";
+
+// Mirrors the backend's block (OPS-3268): the SC->BLI link is ON DELETE SET NULL, so deleting the SC
+// would silently unlink lines that are on the contract.
+const HAS_EXECUTING_BUDGET_LINES_MESSAGE =
+    "This services component has Executing or Obligated budget lines. Move them to another services component before deleting it.";
 
 const POP_DELETE_CONFIRMATION_MESSAGE =
     "Deleting this Services Component will alter the agreement’s overall Period of Performance. Some budget lines will need an updated Obligate By Date to fit within the new timeframe. Do you want to continue deleting this services component?";
@@ -189,6 +195,23 @@ const useServicesComponents = (
     const handleDelete = (number) => {
         const index = servicesComponents.findIndex((component) => component.number === number);
         const selectedServicesComponent = servicesComponents[index];
+        const hasExecutingBudgetLines =
+            selectedServicesComponent?.id != null &&
+            nonDraftBudgetLines.some(
+                (budgetLine) =>
+                    budgetLine.services_component_id === selectedServicesComponent.id &&
+                    [BLI_STATUS.EXECUTING, BLI_STATUS.OBLIGATED].includes(budgetLine.status)
+            );
+        if (hasExecutingBudgetLines) {
+            setAlert({
+                type: "error",
+                heading: "This services component can't be deleted",
+                message: HAS_EXECUTING_BUDGET_LINES_MESSAGE,
+                isCloseable: true,
+                isToastMessage: true
+            });
+            return;
+        }
         const remainingServicesComponents = servicesComponents.filter((component) => component.number !== number);
 
         const popCheck = popValidationSuite.run({

@@ -106,3 +106,16 @@ Index(
     unique=True,
     postgresql_where=text("agreement_mod_id IS NULL AND budget_line_item_id IS NOT NULL"),
 )
+
+# At most one pending direct edit per (Services Component, field), e.g. its period of performance
+# (OPS-3268): the same double-click/retry guard as above. budget_line_item_id IS NULL keeps it to
+# the SC's own rows; "services_component_create"/"delete" are one per SC anyway.
+Index(
+    "ix_contract_modification_edit_one_pending_sc_field",
+    ContractModificationEdit.__table__.c.services_component_id,
+    ContractModificationEdit.__table__.c.field,
+    unique=True,
+    postgresql_where=text(
+        "agreement_mod_id IS NULL AND services_component_id IS NOT NULL AND budget_line_item_id IS NULL"
+    ),
+)

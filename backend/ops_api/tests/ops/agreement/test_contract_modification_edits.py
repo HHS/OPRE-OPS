@@ -27,6 +27,7 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequestStatus,
+    ChangeRequestType,
     ContractAgreement,
     ContractBudgetLineItem,
     ContractModificationEdit,
@@ -730,3 +731,58 @@ def test_latest_per_budget_line_field_keys_services_components_separately():
     latest = ContractModificationEditService._latest_per_budget_line_field([sc2_add, sc3_add, amount])
 
     assert latest == [sc2_add, sc3_add, amount]
+
+
+# ---=== An approved change request merges with a pending direct edit (OPS-3268) ===---
+
+
+def _approved_change_request(agreement, bli, field, old, new):
+    """A legacy change request approved after the award, as change_requests.py passes it."""
+    return SimpleNamespace(
+        id=None,
+        change_request_type=ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+        status=ChangeRequestStatus.APPROVED,
+        requires_contract_modification=True,
+        requested_change_data={field: new},
+        requested_change_diff={field: {"old": old, "new": new}},
+        agreement_id=agreement.id,
+        budget_line_item_id=bli.id,
+        created_by=SYSTEM_OWNER_USER_ID,
+        created_on=datetime.datetime.now(),
+        reviewed_by_id=SYSTEM_OWNER_USER_ID,
+        reviewed_on=datetime.datetime.now(),
+    )
+
+
+@pytest.mark.parametrize(
+    "field, old, new, expected",
+    [
+        pytest.param("amount", 500000.0, 700000.0, ("amount", 600000.0, 700000.0), id="same field merges"),
+        pytest.param("amount", 500000.0, 600000.0, None, id="nets to nothing"),
+        pytest.param("delete", 500000.0, "Deleted", ("delete", 600000.0, "Deleted"), id="delete replaces"),
+    ],
+)
+def test_approved_change_request_merges_with_a_pending_direct_edit(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+    field,
+    old,
+    new,
+    expected,
+):
+    """Inserting without merging tripped ix_contract_modification_edit_one_pending_bli_field (a
+    500) when the line already had a pending direct edit to the same field."""
+    agreement, bli = make_agreement(test_can)
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 500000.00)
+
+    ContractModificationEditService(loaded_db).create_from_approved_change_request(
+        _approved_change_request(agreement, bli, field, old, new)
+    )
+    loaded_db.commit()
+
+    edits = [(e.field, e.old_value, e.new_value) for e in _edits(loaded_db, agreement.id)]
+    assert edits == ([expected] if expected else [])
