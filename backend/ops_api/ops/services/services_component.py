@@ -260,8 +260,7 @@ class ServicesComponentService:
         number, Optional flag or sub-component, and return its period-of-performance changes as
         ``{field: (old, new)}`` to record as Modified LOE edits (OPS-3268). For a superuser, return
         only the changes to a field that already has a pending edit (so that edit stays current).
-        Empty otherwise. A period change is rejected for every user while the SC's edits are in
-        review."""
+        Empty otherwise. Any change is rejected for every user while the SC's edits are in review."""
 
         def changed(field):
             return field in updated_fields and updated_fields[field] != getattr(services_component, field)
@@ -271,11 +270,11 @@ class ServicesComponentService:
             for field in SERVICES_COMPONENT_TRACKED_FIELDS
             if changed(field)
         }
-        # Locked for every user, superusers too, like the other in-review locks: the edits are
-        # what the Division Director is reviewing.
-        if tracked_changes and ContractModificationEditService(
-            self.db_session
-        ).services_component_in_review_modification(services_component.id):
+        # The whole SC is locked for every user, superusers too, like the other in-review locks
+        # (and as the UI shows it): its edits are what the Division Director is reviewing.
+        if ContractModificationEditService(self.db_session).services_component_in_review_modification(
+            services_component.id
+        ):
             raise ValidationError({"services_component": [SC_IN_REVIEW_MODIFICATION_MESSAGE]})
 
         if not sc_requires_approval_gate(services_component.agreement):

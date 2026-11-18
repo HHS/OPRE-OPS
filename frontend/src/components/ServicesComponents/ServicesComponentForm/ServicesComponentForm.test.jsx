@@ -141,8 +141,17 @@ describe("ServicesComponentForm", () => {
             const select = screen.getByRole("combobox", { name: "Services Component" });
             expect(select).toHaveAccessibleDescription(LOCKED_MESSAGE);
             expect(screen.getByRole("tooltip", { hidden: true })).toHaveClass("width-mobile-lg", "text-wrap");
-            // Only the tooltip carries the message: no visible hint repeats it.
-            expect(screen.getAllByText(LOCKED_MESSAGE)).toEqual([screen.getByRole("tooltip", { hidden: true })]);
+            // The disabled Optional checkbox is locked for the same reason and says so to screen readers.
+            expect(screen.getByRole("checkbox", { name: "Optional Services Component" })).toHaveAccessibleDescription(
+                LOCKED_MESSAGE
+            );
+            // No visible hint repeats it: besides the tooltip, the only copy is screen-reader-only.
+            const copies = screen.getAllByText(LOCKED_MESSAGE);
+            expect(copies).toHaveLength(2);
+            expect(copies).toContain(screen.getByRole("tooltip", { hidden: true }));
+            expect(copies.find((copy) => copy !== screen.getByRole("tooltip", { hidden: true }))).toHaveClass(
+                "usa-sr-only"
+            );
         });
 
         test("keeps the period of performance editable", () => {

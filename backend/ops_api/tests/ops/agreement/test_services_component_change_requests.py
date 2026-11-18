@@ -882,9 +882,11 @@ def test_period_edit_and_delete_blocked_while_its_edit_is_in_review(
     assert {sc["id"]: sc["in_review_modification"] for sc in listed.json}[sc2_id] is True
 
     for client in (basic_user_auth_client, power_user_auth_client):
-        response = _patch_sc(client, sc2_id, {"period_end": "2044-06-30"})
-        assert response.status_code == 400, response.json
-        assert "services_component" in response.json["errors"]
+        # The whole SC is locked, as the UI shows it, not just its period of performance.
+        for body in ({"period_end": "2044-06-30"}, {"description": "changed"}):
+            response = _patch_sc(client, sc2_id, body)
+            assert response.status_code == 400, response.json
+            assert "services_component" in response.json["errors"]
 
     for client in (basic_user_auth_client, power_user_auth_client):
         response = client.delete(url_for("api.services-component-item", id=sc2_id))
