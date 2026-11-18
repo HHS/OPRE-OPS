@@ -16,7 +16,7 @@ from models import (
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.contract_modification_edits import (
     ContractModificationEditSchema,
     ContractModificationRequestSchema,
@@ -24,7 +24,7 @@ from ops_api.ops.schemas.contract_modification_edits import (
     SubmitContractModificationRequestSchema,
 )
 from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
-from ops_api.ops.services.contract_modification_requests import ContractModificationRequestService
+from ops_api.ops.services.contract_modification_requests import ContractModificationRequestService, mod_type
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -132,6 +132,32 @@ class AgreementContractModificationsAPI(BaseItemAPI):
                 }
             )
             return make_response_with_headers(data, 201)
+
+
+class ContractModificationRequestsPendingReviewAPI(BaseListAPI):
+    """Contract modification requests pending the current user's review, across all agreements (#6546)."""
+
+    def __init__(self, model: Type[BaseModel] = ContractModificationRequest):
+        super().__init__(model)
+
+    @error_simulator
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    def get(self) -> Response:
+        """
+        GET /contract-modification-requests/pending-review/
+
+        Returns every IN_REVIEW contract modification request the current user may
+        approve/decline, newest first, shaped as ``{"data": [ {request}, ... ]}``. ``can_review``
+        is true on every row (the query is already scoped to requests this user can review), and
+        ``modification_type`` ("MODIFIED_LOE" | "ADMIN" | "AS_IS") is set for display.
+        """
+        service = ContractModificationRequestService(current_app.db_session)
+        requests = service.get_pending_for_user(get_current_user())
+        data = ContractModificationRequestSchema(many=True).dump(requests)
+        for dumped, mod_request in zip(data, requests):
+            dumped["can_review"] = True
+            dumped["modification_type"] = mod_type(mod_request).name
+        return make_response_with_headers({"data": data})
 
 
 class ContractModificationRequestItemAPI(BaseItemAPI):
