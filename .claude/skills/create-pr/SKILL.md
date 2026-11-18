@@ -13,7 +13,9 @@ Create a GitHub pull request using `gh pr create`, populating every section of t
 
 Before writing the PR body, collect information about what changed on this branch — not just the latest commit, but ALL commits since the branch diverged from the base.
 
-The base branch is `$ARGUMENTS` if one was given, otherwise `main`. Write it literally into each command below (shown as `main`); each Bash call is a fresh shell, so a shell variable set in one won't exist in the next.
+Base branch argument (blank if none was given): $ARGUMENTS
+
+If that is blank, the base branch is `main`; otherwise it is the value above. Write the base branch literally into each command below (shown as `main`); each Bash call is a fresh shell, so a shell variable set in one won't exist in the next.
 
 ```bash
 # All commits on this branch
