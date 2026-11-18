@@ -613,7 +613,7 @@ describe("UserInfo", () => {
         await browserUser.type(comboInput, "{arrowdown}");
 
         // Wait for the dropdown to open and options to be available
-        // Use getAllByText since there are multiple ACTIVE elements (selected value + dropdown option)
+        // Use getAllByText since there are multiple "Active" elements (selected value + dropdown option)
         await waitFor(
             () => {
                 const activeElements = screen.getAllByText("Active");
@@ -622,7 +622,7 @@ describe("UserInfo", () => {
             { timeout: 5000 }
         );
 
-        // Click the LOCKED option
+        // Click the "Locked" option
         await browserUser.click(screen.getByRole("option", { name: /LOCKED/i }));
 
         // The component should make an API call to update the user status
