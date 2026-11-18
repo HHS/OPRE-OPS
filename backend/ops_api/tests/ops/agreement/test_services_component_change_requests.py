@@ -723,9 +723,11 @@ def test_period_edits_merge_and_net_to_nothing(
     assert first.status_code == 200
     # The response is the saved SC, not just the fields sent.
     assert (first.json["number"], first.json["display_name"]) == (2, "SC2")
+    first_id = _edits(loaded_db, awarded_agreement.id)[0].id
     assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-06-30"}).status_code == 200
     (edit,) = _edits(loaded_db, awarded_agreement.id)
     assert (edit.old_value, edit.new_value) == ("2043-12-31", "2044-06-30")
+    assert (edit.id, edit.updated_by) == (first_id, BASIC_USER_ID)
 
     # Back to the awarded value: the edit is dropped.
     assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2043-12-31"}).status_code == 200

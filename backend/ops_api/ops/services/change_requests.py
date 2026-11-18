@@ -8,6 +8,7 @@ from flask_jwt_extended import current_user
 from loguru import logger
 from marshmallow.experimental.context import Context
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from models import (
     Agreement,
@@ -146,7 +147,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             model_to_update.acting_change_request_id = change_request.id
             self.db_session.add(model_to_update)
 
-        self.db_session.commit()
+        self._commit_review()
         self._notify_submitter_of_review_outcome(change_request)
 
         # Deletion-on-approval must happen LAST. The change_request row has
@@ -177,6 +178,21 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             self.withdraw_services_component_add_if_unneeded(withdraw_check_sc_id)
 
         return change_request, 200
+
+    def _commit_review(self) -> None:
+        try:
+            self.db_session.commit()
+        except IntegrityError:
+            # ix_contract_modification_edit_one_pending_bli_field: a concurrent save recorded an
+            # edit to the same field after this approval read the pending edits (OPS-3268).
+            self.db_session.rollback()
+            raise ValidationError(
+                {
+                    "change_request": [
+                        "Another change to this budget line was saved at the same time. Refresh and try again."
+                    ]
+                }
+            ) from None
 
     def delete(self, id: int) -> None:
         change_request = self.db_session.get(ChangeRequest, id)
