@@ -18622,6 +18622,83 @@
       certified: false,
       closed: false,
     },
+    {
+      // Current-FY PLANNED BLIs on CONTRACT #523 (OPS-3268), appended at the end of this array so
+      // they get fresh auto-assigned ids and don't shift any existing budget line's id -- so
+      // Start Modification's "Select Budget Lines" checkboxes have current-FY lines to actually
+      // select. LI 4 above is PLANNED but dated FY2044, so it's permanently disabled ("Only
+      // current FY Budget Lines can be changed..."). Two lines on SC1 exercise multi-select and
+      // "select all in this Services Component"; a third on SC2 gives that a separate group, and
+      // a fourth non-current-FY line on SC2 shows an enabled and a disabled row side by side in
+      // the same group. Left SC3/SC4 alone -- they're seeded with no budget lines on purpose, for
+      // the OPS-6440/OPS-3268 SC-delete and pending-Add-SC manual tests above. Pick dates clear of
+      // the fiscal-year boundary (Oct 1) so this doesn't flip stale the moment the file is next
+      // touched.
+      budget_line_item_type: "CONTRACT",
+      line_description: "LI 5",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 523,
+      amount: 50000.0,
+      status: "PLANNED",
+      date_needed: "2027-03-01T14:00:00",
+      proc_shop_fee_percentage: 0,
+      services_component_id: 54,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
+    {
+      budget_line_item_type: "CONTRACT",
+      line_description: "LI 6",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 523,
+      amount: 75000.0,
+      status: "PLANNED",
+      date_needed: "2027-03-01T14:00:00",
+      proc_shop_fee_percentage: 0,
+      services_component_id: 54,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
+    {
+      budget_line_item_type: "CONTRACT",
+      line_description: "LI 7",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 523,
+      amount: 60000.0,
+      status: "PLANNED",
+      date_needed: "2027-03-01T14:00:00",
+      proc_shop_fee_percentage: 0,
+      services_component_id: 55,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
+    {
+      // Not current FY: shows a disabled row ("Only current FY Budget Lines...") next to LI 7's
+      // enabled one in SC2's group.
+      budget_line_item_type: "CONTRACT",
+      line_description: "LI 8",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 523,
+      amount: 30000.0,
+      status: "PLANNED",
+      date_needed: "2025-03-01T14:00:00",
+      proc_shop_fee_percentage: 0,
+      services_component_id: 55,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
   ],
   direct_obligation_budget_line_item: [
     {

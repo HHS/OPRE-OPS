@@ -15,7 +15,7 @@ import {
 import {
     buildProcurementShopChangeAlert,
     cleanAgreementForApi,
-    COR_CONTRACT_MODIFICATION_HEADING,
+    CONTRACT_MODIFICATION_NOTICE_HEADING,
     formatTeamMember,
     isCorChangeTrackedAsContractModification
 } from "../../../helpers/agreement.helpers.js";
@@ -639,7 +639,7 @@ const useAgreementEditForm = (
         // together: the shop change request is only for agreements that aren't awarded.
         let confirmation = null;
         if (requiresCorModification) {
-            confirmation = { heading: COR_CONTRACT_MODIFICATION_HEADING, actionButtonText: "Save Changes" };
+            confirmation = { heading: CONTRACT_MODIFICATION_NOTICE_HEADING, actionButtonText: "Save Changes" };
         } else if (shouldRequestChange) {
             confirmation = {
                 heading:

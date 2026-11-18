@@ -38,11 +38,13 @@ describe("useCreateBLIsAndSCsSaveBlocker", () => {
         expect(modalProps.actionButtonText).toBe("Save & Send to Approval");
     });
 
-    // OPS-3072: e.g. deleting a Planned BL on an Awarded agreement has no financial snapshot
-    // change, but still routes to approval and requires a contract modification.
+    // OPS-3072/OPS-3268: e.g. deleting a Planned BL on an Awarded agreement has no financial
+    // snapshot change, but still applies directly and is tracked for a contract modification
+    // (no Division Director approval of any kind).
     it("uses the contract-modification copy when the changes require one, even without financial changes", () => {
         const modalProps = getBlockerModalProps({ requiresContractModification: true });
         expect(modalProps.description).toMatch(/require a contract modification/);
-        expect(modalProps.actionButtonText).toBe("Save & Send to Approval");
+        expect(modalProps.description).not.toMatch(/approval/);
+        expect(modalProps.actionButtonText).toBe("Save Changes");
     });
 });

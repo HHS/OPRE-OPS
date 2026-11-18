@@ -16,7 +16,6 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {import('vest').Suite<any, any>} [props.scFormSuite] - Vest validation suite for the SC form.
  * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.nonDraftBudgetLines] - Non-draft BLIs used by the SC form suite for PoP validation.
- * @param {function(number): boolean} [props.isDeleteDisabled] - Whether the saved services component with this id can't be deleted because it has non-Draft budget lines on an awarded agreement (OPS-6440).
  * @returns {React.ReactElement}
  *
  * @example
@@ -32,8 +31,7 @@ const ServicesComponents = ({
     setHasUnsavedChanges,
     hasUnsavedChanges,
     scFormSuite,
-    nonDraftBudgetLines = [],
-    isDeleteDisabled
+    nonDraftBudgetLines = []
 }) => {
     const {
         formData,
@@ -88,7 +86,6 @@ const ServicesComponents = ({
                 servicesComponents={servicesComponents}
                 setFormDataById={setFormDataById}
                 handleDelete={handleDelete}
-                isDeleteDisabled={isDeleteDisabled}
             />
         </>
     );

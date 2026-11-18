@@ -95,16 +95,21 @@ const SimpleAlert = ({
                     {children}
                 </div>
                 {isClosable && (
-                    <FontAwesomeIcon
-                        icon={faClose}
-                        className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                    <button
+                        type="button"
+                        className="usa-button usa-button--unstyled height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                         aria-label="close"
                         data-position="top"
                         data-cy="close-alert"
                         onClick={() => {
                             setIsAlertVisible(false);
                         }}
-                    />
+                    >
+                        <FontAwesomeIcon
+                            icon={faClose}
+                            aria-hidden={true}
+                        />
+                    </button>
                 )}
             </div>
         </div>

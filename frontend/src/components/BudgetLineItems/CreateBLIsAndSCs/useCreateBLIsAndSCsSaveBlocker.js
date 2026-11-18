@@ -45,14 +45,15 @@ const useCreateBLIsAndSCsSaveBlocker = ({
             // Only surface the "require approval" wording when the changes actually route for
             // review. With the capability ON (and the edits in the flag's scope) they apply
             // immediately, so fall through to the neutral "Save Changes" copy.
-            // A contract-modification save (e.g. deleting a Planned BL on an Awarded agreement) routes
-            // to approval even without a financial snapshot change, so it gets its own copy.
+            // An Awarded agreement's changes (e.g. deleting a Planned BL) apply directly and are
+            // tracked for the next contract modification, with no Division Director approval of
+            // any kind — informational copy, not an approval prompt.
             const modalContent = requiresContractModification
                 ? {
                       heading: "Save changes before leaving?",
                       description:
-                          "You have unsaved changes on an awarded agreement. If you save, they will require a contract modification and approval from your Division Director, and will be tracked on the Award & Modifications Tab once approved. If you leave without saving, these changes will be lost.",
-                      actionButtonText: "Save & Send to Approval",
+                          "You have unsaved changes on an awarded agreement. If you save, they will require a contract modification and will be tracked on the Award & Modifications Tab. If you leave without saving, these changes will be lost.",
+                      actionButtonText: "Save Changes",
                       secondaryButtonText: "Leave without saving"
                   }
                 : requiresFinancialApproval

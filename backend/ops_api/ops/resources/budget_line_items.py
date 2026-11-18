@@ -8,7 +8,7 @@ from loguru import logger
 from marshmallow import ValidationError
 from marshmallow.experimental.context import Context
 
-from models import BaseModel, BudgetLineItem, BudgetLineItemStatus, OpsEventType
+from models import BaseModel, BudgetLineItem, OpsEventType
 from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -112,10 +112,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         old_bli_dict = old_bli.to_dict()
 
         # Peek at how the delete will be handled so we only emit a DELETE_BLI audit event for an
-        # actual hard-delete. PLANNED/IN_EXECUTION deletions route to a change request (202) and
-        # emit their own CREATE_CHANGE_REQUEST event inside the service; emitting DELETE_BLI here
-        # would write a spurious "Budget Line Deleted" history record on mere request submission.
-        is_immediate_delete = is_super_user(current_user, current_app) or old_bli.status == BudgetLineItemStatus.DRAFT
+        # actual hard-delete. A PLANNED/IN_EXECUTION deletion not covered by
+        # BudgetLineItemService.is_immediate_delete routes to a change request (202) and emits its
+        # own CREATE_CHANGE_REQUEST event inside the service; emitting DELETE_BLI here would write
+        # a spurious "Budget Line Deleted" history record on mere request submission.
+        is_immediate_delete = BudgetLineItemService.is_immediate_delete(old_bli)
 
         if is_immediate_delete:
             with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:

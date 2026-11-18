@@ -34,8 +34,13 @@ from models import (
 from ops_api.ops.schemas.agreements import MetaSchema
 from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemListFilterOptionResponseSchema,
+    PATCHRequestBodySchema,
 )
 from ops_api.ops.services.change_requests import ChangeRequestService
+from ops_api.ops.services.contract_modification_edits import (
+    BLI_IN_REVIEW_MODIFICATION_MESSAGE,
+    ContractModificationEditService,
+)
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     ResourceNotFoundError,
@@ -177,10 +182,12 @@ class BudgetLineItemService:
         """
         Delete a Budget Line Item with the given id.
 
-        DRAFT BLIs (and any delete by a super user) are hard-deleted immediately and 200 is
-        returned. PLANNED and IN_EXECUTION BLIs route through an approval workflow: a deletion
-        change request is created and 202 is returned (the BLI is left intact until the request
-        is approved).
+        DRAFT BLIs, any delete by a super user, and (OPS-3072/OPS-3268) a PLANNED/IN_EXECUTION
+        BLI on an Awarded, tracked agreement are hard-deleted immediately and 200 is returned —
+        the last case is also recorded as an "Edit That Requires a Contract Modification". Any
+        other PLANNED/IN_EXECUTION BLI routes through an approval workflow: a deletion change
+        request is created and 202 is returned (the BLI is left intact until the request is
+        approved).
 
         Returns ``(bli, status_code, change_request_id)``. ``change_request_id`` is None for a
         hard delete and the created deletion CR's id for the 202 path.
@@ -206,7 +213,20 @@ class BudgetLineItemService:
             )
 
         is_super = is_super_user(current_user, current_app)
-        if is_super or bli.status == BudgetLineItemStatus.DRAFT:
+        if self.is_immediate_delete(bli):
+            is_awarded_tracked_delete = (
+                not is_super and bli.status != BudgetLineItemStatus.DRAFT and tracks_contract_modifications(bli)
+            )
+            if is_awarded_tracked_delete:
+                self._validate_not_in_review_modification(bli)
+                if not compute_bli_editable(bli, bli.in_review, is_super):
+                    raise ValidationError(
+                        {"status": "Budget Line Item is not in a deletable state."},
+                    )
+                old_amount = PATCHRequestBodySchema(only=["amount"]).dump({"amount": bli.amount}).get("amount")
+                ContractModificationEditService(self.db_session).record_direct_delete(
+                    bli, old_amount, get_current_user().id
+                )
             services_component_id = bli.services_component_id
             self.db_session.delete(bli)
             if commit:
@@ -219,9 +239,9 @@ class BudgetLineItemService:
                 self._sync_services_component_approval(services_component_id, None, commit)
             return bli, 200, None
 
-        # PLANNED / IN_EXECUTION: deletion is a budget change and must be reviewed. Reuse the
-        # shared editability gate (in_review + OBE + Pre-Award/Award step block) so the rules
-        # cannot drift from the edit path.
+        # PLANNED / IN_EXECUTION, not Awarded-and-tracked: deletion is a budget change and must
+        # be reviewed. Reuse the shared editability gate (in_review + OBE + Pre-Award/Award step
+        # block) so the rules cannot drift from the edit path.
         if not compute_bli_editable(bli, bli.in_review, is_super):
             raise ValidationError(
                 {"status": "Budget Line Item is not in a deletable state."},
@@ -725,6 +745,7 @@ class BudgetLineItemService:
         """
         budget_line_item = self._get_budget_line_item(id)
         self._validation(budget_line_item, updated_fields)
+        self._validate_not_in_review_modification(budget_line_item)
         previous_services_component_id = budget_line_item.services_component_id
 
         # Extract key elements from updated_fields
@@ -763,6 +784,12 @@ class BudgetLineItemService:
         )
 
         directly_editable = existing_bypass or flag_allows_direct
+        # On an Awarded agreement, a non-superuser's direct edit still needs recording as an
+        # "Edit That Requires a Contract Modification" (OPS-3268). Superusers bypass via
+        # existing_bypass above, so they never reach here.
+        is_awarded_direct_edit = (
+            not existing_bypass and flag_allows_direct and tracks_contract_modifications(budget_line_item)
+        )
 
         # Lazy CLIN creation: if clin_id is provided and looks like a CLIN number (1-10),
         # ensure CLIN record exists and replace with actual CLIN ID
@@ -791,7 +818,12 @@ class BudgetLineItemService:
             # Draft→Planned. Existing bypasses (superuser/budget-team/draft) keep the
             # historical full-dict behavior.
             fields_to_apply = None if existing_bypass else flagged_fields_to_apply
-            self._apply_direct_edits(budget_line_item, updated_fields, commit=commit, fields_to_apply=fields_to_apply)
+            if is_awarded_direct_edit:
+                self._apply_awarded_direct_edit(budget_line_item, updated_fields, fields_to_apply, commit)
+            else:
+                self._apply_direct_edits(
+                    budget_line_item, updated_fields, commit=commit, fields_to_apply=fields_to_apply
+                )
         else:
             change_request_ids = self._handle_change_requests(
                 budget_line_item, id, request, schema, updated_fields, commit=commit
@@ -802,6 +834,18 @@ class BudgetLineItemService:
                 self._sync_services_component_approval(
                     previous_services_component_id, budget_line_item.services_component_id, commit
                 )
+            )
+        elif (
+            is_awarded_direct_edit
+            and has_status_change
+            and parsed_partial.get("status") == BudgetLineItemStatus.PLANNED
+            and budget_line_item.services_component_id is not None
+        ):
+            # Draft->Planned applied directly (no SC change): the now-non-Draft budget line can
+            # make its already-linked SC's pending addition apply too (mirrors the CR path's
+            # pending_planned handling in ChangeRequestService.add_bli_change_requests).
+            change_request_ids.extend(
+                self._sync_services_component_approval(None, budget_line_item.services_component_id, commit)
             )
 
         logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
@@ -882,28 +926,43 @@ class BudgetLineItemService:
         diff_data: dict,
         has_status_change: bool,
     ) -> tuple[bool, set[str]]:
-        """Decide whether the SKIP_CR_FOR_DRAFT_PLANNED capability allows this edit to
-        apply directly, and return the exact set of fields that may be written.
+        """Decide whether this edit may apply directly instead of through a Change Request, and
+        return the exact set of fields that may be written.
 
-        Returns ``(allows_direct, fields_to_apply)``. When the flag is off or the edit
-        doesn't match a covered path, returns ``(False, set())``. The ``fields_to_apply``
-        set is intentionally narrow (Defect A / Defect B): only the fields specific to the
-        matched path, never the None-filled full body.
+        On an Awarded agreement (OPS-3072/OPS-3268), Draft→Planned and amount/can_id/date_needed
+        edits always apply directly and are recorded as an "Edit That Requires a Contract
+        Modification" by the caller — independent of ``SKIP_CR_FOR_DRAFT_PLANNED``, which only
+        covers the same edits on a non-awarded agreement. Either way, Planned→Executing still
+        requires a Change Request (reaching that status at all is otherwise blocked, see
+        ``validate_no_execution_status_change_on_awarded``).
+
+        Returns ``(allows_direct, fields_to_apply)``. When no gate applies or the edit doesn't
+        match a covered path, returns ``(False, set())``. The ``fields_to_apply`` set is
+        intentionally narrow (Defect A / Defect B): only the fields specific to the matched path,
+        never the None-filled full body.
         """
-        if not current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False):
-            return False, set()
-
         # Never apply directly while a pre-award lock is active: _validation rejects other users
         # then, but lets Budget Team through on the understanding that their edits still route
         # through a change request for DD review.
         if get_pre_award_lock(budget_line_item.agreement):
             return False, set()
 
-        # On an Awarded agreement these edits require a contract modification (OPS-3072), so
-        # they must go through Division Director approval instead of applying directly.
-        if tracks_contract_modifications(budget_line_item):
+        if not tracks_contract_modifications(budget_line_item) and not current_app.config.get(
+            "SKIP_CR_FOR_DRAFT_PLANNED", False
+        ):
             return False, set()
 
+        return self._direct_edit_match(budget_line_item, parsed_partial, diff_data, has_status_change)
+
+    def _direct_edit_match(
+        self,
+        budget_line_item: BudgetLineItem,
+        parsed_partial: dict,
+        diff_data: dict,
+        has_status_change: bool,
+    ) -> tuple[bool, set[str]]:
+        """Shared Draft→Planned / in-Planned-or-Executing budget-detail matching logic, used by
+        both the awarded-agreement path and the ``SKIP_CR_FOR_DRAFT_PLANNED`` path."""
         # Exactly Draft → Planned (status is a BudgetLineItemStatus(str, Enum)).
         is_draft_to_planned = (
             has_status_change
@@ -931,6 +990,65 @@ class BudgetLineItemService:
                 return True, changed_budget_keys | always_direct_sent
 
         return False, set()
+
+    # Fields that get recorded as an "Edit That Requires a Contract Modification" when applied
+    # directly on an Awarded agreement; "status" only ever matters here for Draft→Planned.
+    MODIFICATION_EDIT_FIELDS = (*BudgetLineItemChangeRequest.budget_field_names, "status")
+
+    def _apply_awarded_direct_edit(
+        self,
+        budget_line_item: BudgetLineItem,
+        updated_fields: dict,
+        fields_to_apply: set[str],
+        commit: bool,
+    ) -> None:
+        """Apply a direct edit on an Awarded agreement and record it (OPS-3072/OPS-3268).
+
+        Snapshots old values before applying, same as the change-request path
+        (``add_bli_change_requests``), so the two recording paths can't drift in format.
+        """
+        modification_fields = fields_to_apply & set(self.MODIFICATION_EDIT_FIELDS)
+        schema = PATCHRequestBodySchema(only=list(modification_fields)) if modification_fields else None
+        old_values = schema.dump({key: getattr(budget_line_item, key) for key in modification_fields}) if schema else {}
+
+        # Flush only here: the field mutation and its Contract-Modification tracking row must
+        # commit together in one transaction, or a concurrent duplicate save (double-click/retry)
+        # could durably apply the former while the latter's unique-index check fails and is lost.
+        self._apply_direct_edits(budget_line_item, updated_fields, commit=False, fields_to_apply=fields_to_apply)
+
+        if modification_fields:
+            new_values = schema.dump({key: getattr(budget_line_item, key) for key in modification_fields})
+            edit_service = ContractModificationEditService(self.db_session)
+            user_id = get_current_user().id
+            for field in modification_fields:
+                edit_service.record_direct_edit(
+                    budget_line_item, field, old_values.get(field), new_values.get(field), user_id
+                )
+
+        if commit:
+            self.db_session.commit()
+        else:
+            self.db_session.flush()
+
+    def _validate_not_in_review_modification(self, budget_line_item: BudgetLineItem) -> None:
+        if tracks_contract_modifications(budget_line_item) and ContractModificationEditService(
+            self.db_session
+        ).budget_line_in_review_modification(budget_line_item.id):
+            raise ValidationError({"status": [BLI_IN_REVIEW_MODIFICATION_MESSAGE]})
+
+    @staticmethod
+    def is_immediate_delete(budget_line_item: BudgetLineItem) -> bool:
+        """Whether a delete applies (and, for Awarded agreements, is recorded) right away instead
+        of going through a deletion Change Request: a superuser, a Draft line, or a Planned/
+        Executing line on an Awarded, tracked agreement (OPS-3072/OPS-3268)."""
+        return (
+            is_super_user(current_user, current_app)
+            or budget_line_item.status == BudgetLineItemStatus.DRAFT
+            or (
+                tracks_contract_modifications(budget_line_item)
+                and budget_line_item.status in BudgetLineItemService.DIRECT_BUDGET_EDIT_STATUSES
+            )
+        )
 
     @staticmethod
     def _value_changed(key: str, new_value: Any, budget_line_item: BudgetLineItem) -> bool:
@@ -1588,6 +1706,10 @@ def get_is_editable_meta_data(serialized_bli):
         data_for_meta["isEditable"] = compute_bli_editable(budget_line_item, in_review, is_super)
         data_for_meta["isDeletable"] = compute_bli_is_deletable(budget_line_item, in_review, is_super)
         data_for_meta["lockedMessage"] = get_bli_locked_message(budget_line_item, in_review, is_super)
+        if budget_line_item and ContractModificationEditService(
+            current_app.db_session
+        ).budget_line_in_review_modification(budget_line_item.id):
+            _lock_for_in_review_modification(data_for_meta)
 
     meta = meta_schema.dump(data_for_meta)
 
@@ -1614,6 +1736,9 @@ def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
 
     is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
     is_super = is_super_user(current_user, current_app)
+    in_review_modification_ids = ContractModificationEditService(
+        current_app.db_session
+    ).budget_line_ids_in_review_modification(bli_ids)
 
     for bli in serialized_agreement["budget_line_items"]:
         bli_id = bli.get("id")
@@ -1634,8 +1759,18 @@ def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
                 "isDeletable": compute_bli_is_deletable(budget_line_item, in_review, is_super),
                 "lockedMessage": get_bli_locked_message(budget_line_item, in_review, is_super),
             }
+            if bli_id in in_review_modification_ids:
+                _lock_for_in_review_modification(bli["_meta"])
         else:
             bli["_meta"] = {"isEditable": False, "isDeletable": False, "lockedMessage": None}
+
+
+def _lock_for_in_review_modification(meta: dict) -> None:
+    """Lock a budget line's edit/delete meta while it's selected for, or has edits attached to,
+    a contract modification request that is in review (OPS-3268)."""
+    meta["isEditable"] = False
+    meta["isDeletable"] = False
+    meta["lockedMessage"] = BLI_IN_REVIEW_MODIFICATION_MESSAGE
 
 
 def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreement_ids: list[int]) -> dict:

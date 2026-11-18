@@ -11,6 +11,7 @@ from models import (
     CAN,
     Agreement,
     AgreementType,
+    BudgetLineItemStatus,
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
@@ -177,6 +178,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     history_type=AgreementHistoryType.BUDGET_LINE_ITEM_DELETED,
                 )
             )
+
         case OpsEventType.UPDATE_PROCUREMENT_SHOP:
             history_events.extend(create_proc_shop_fee_history_events(event, session, system_user, event_user))
         case OpsEventType.CREATE_NEW_AGREEMENT:

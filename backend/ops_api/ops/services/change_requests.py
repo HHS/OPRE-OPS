@@ -43,7 +43,6 @@ from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
     agreement_tracks_contract_modifications,
     get_division_for_budget_line_item,
-    sc_requires_approval_gate,
     tracks_contract_modifications,
     update_data,
     validate_no_execution_status_change_on_awarded,
@@ -55,6 +54,7 @@ from ops_api.ops.utils.change_requests_helpers import (
     get_model_class_by_type,
 )
 from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.users import is_super_user
 
 
 def _is_draft_to_planned(key: str, budget_line_item: BudgetLineItem, change_data: dict) -> bool:
@@ -531,68 +531,29 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
     # --- ServicesComponent-specific Operations (OPS-6440) ---
 
-    def add_services_component_create_change_request(
-        self, services_component: ServicesComponent, commit: bool = True
-    ) -> int:
-        """Request approval to add a Services Component on an Awarded agreement.
-
-        The SC row already exists (so budget lines can point at it); approval clears its
-        ``awaiting_add_approval`` flag, and a decline removes it. ``commit=False`` follows
-        ``add_bli_change_requests``: no commit and no notification.
-        """
-        field = ServicesComponentChangeRequest.create_field_name
-        with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
-            change_request_data = {
-                "services_component_id": services_component.id,
-                "agreement_id": services_component.agreement_id,
-                "requested_change_data": {field: True},
-                # Display names are frozen here so history survives the SC being removed.
-                "requested_change_diff": {field: {"old": None, "new": services_component.display_name}},
-                "requested_change_info": {
-                    "target_display_name": services_component.display_name,
-                    "requires_contract_modification": agreement_tracks_contract_modifications(
-                        services_component.agreement
-                    ),
-                    "linked_budget_line_item_ids": self._linked_budget_line_item_ids(services_component.id),
-                },
-                "change_request_type": ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
-            }
-
-            change_request = self.create(change_request_data, commit=commit)
-            cr_meta.metadata.update(
-                {"services_component_id": services_component.id, "change_request": change_request.to_dict()}
-            )
-            return change_request.id
-
     def ensure_services_component_add_change_request(
         self, services_component: ServicesComponent, commit: bool = True, pending_planned: bool = False
     ) -> int | None:
-        """Create the add change request for a pending SC once it needs approval.
+        """Legacy: finish tracking an SC add created before OPS-3268's direct-apply change, once
+        it needs to be.
 
-        A pending SC (``awaiting_add_approval``) needs approval once it has a non-Draft budget
-        line, or when ``pending_planned`` says a Draft->Planned request was just made for one of
-        its budget lines. Idempotent: if an add request is already in review, only its linked
-        budget line ids are refreshed. Returns the new change request id, or None.
+        An SC created going forward is tracked immediately on ``ServicesComponentService.create``
+        (OPS-3268 UX feedback item 5), so ``awaiting_add_approval`` is always false for it and
+        this is a no-op. It only still does something for an SC created before that change
+        shipped, whose addition is recorded once it has a non-Draft budget line, or when
+        ``pending_planned`` says a Draft->Planned request was just made for one of its budget
+        lines. Idempotent: calling it again on an already-recorded SC is a no-op. A legacy add
+        request already IN_REVIEW (created before this change shipped) keeps its existing
+        approve/decline flow; only its linked budget line ids are refreshed here. Always returns
+        None now that an add is never routed through a change request.
         """
         if services_component is None or not services_component.awaiting_add_approval:
             return None
-        # Budget line PATCHes for the same SC run in parallel; serialize them so only one creates the request.
+        # Budget line PATCHes for the same SC run in parallel; serialize them so only one records it.
         self.lock_services_component(services_component.id)
         # The flag was read before the lock; a review that committed while we waited may have cleared it.
         self.db_session.refresh(services_component, attribute_names=["awaiting_add_approval"])
         if not services_component.awaiting_add_approval:
-            return None
-        if not sc_requires_approval_gate(services_component.agreement):
-            # A superuser (or a flag/award change) applies the addition directly once it has a
-            # non-Draft budget line, so the SC isn't left pending with no request.
-            if services_component.has_non_draft_budget_lines and (
-                self._in_review_services_component_create_change_request(services_component.id) is None
-            ):
-                services_component.awaiting_add_approval = False
-                if commit:
-                    self.db_session.commit()
-                else:
-                    self.db_session.flush()
             return None
 
         existing = self._in_review_services_component_create_change_request(services_component.id)
@@ -606,7 +567,19 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         if not (pending_planned or services_component.has_non_draft_budget_lines):
             return None
-        return self.add_services_component_create_change_request(services_component, commit=commit)
+
+        if not is_super_user(current_user, current_app) and agreement_tracks_contract_modifications(
+            services_component.agreement
+        ):
+            ContractModificationEditService(self.db_session).record_services_component_add(
+                services_component, current_user.id
+            )
+        services_component.awaiting_add_approval = False
+        if commit:
+            self.db_session.commit()
+        else:
+            self.db_session.flush()
+        return None
 
     def withdraw_services_component_add_if_unneeded(self, services_component_id: int, commit: bool = True) -> bool:
         """Withdraw a pending SC's add change request once nothing on it needs approval.

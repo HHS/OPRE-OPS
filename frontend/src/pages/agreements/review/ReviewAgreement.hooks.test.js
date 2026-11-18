@@ -649,7 +649,7 @@ describe("useReviewAgreement", () => {
         await waitFor(() => {
             expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([101]);
         });
-        expect(result.current.submitButtonText).toBe("Send to Approval");
+        expect(result.current.submitButtonText).toBe("Change BL Status");
 
         act(() => {
             result.current.handleSendToApproval();
@@ -671,7 +671,7 @@ describe("useReviewAgreement", () => {
         });
         await waitFor(() => {
             expect(setAlertMock).toHaveBeenCalledWith(
-                expect.objectContaining({ type: "success", heading: "Changes Sent to Approval" })
+                expect.objectContaining({ type: "success", heading: "Agreement Updated" })
             );
         });
     });

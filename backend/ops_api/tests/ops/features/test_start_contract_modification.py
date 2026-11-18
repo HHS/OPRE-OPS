@@ -13,7 +13,7 @@ from models import (
 )
 from tests.ops.agreement.test_contract_modification_edits import (  # noqa: F401 (fixtures)
     BASIC_USER_ID,
-    _approved_amount_edit,
+    _direct_amount_edit,
     _edits,
     _get_pending,
     make_agreement,
@@ -39,12 +39,11 @@ def awarded_agreement_with_edit(
     modified_loe_enabled,  # noqa: F811
     make_agreement,  # noqa: F811
     basic_user_auth_client,
-    division_director_auth_client,
     loaded_db,
     test_can,
 ):
     agreement, bli = make_agreement(test_can)
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 500000.00)
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 500000.00)
     return agreement
 
 
