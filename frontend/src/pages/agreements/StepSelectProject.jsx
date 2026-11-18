@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useBlocker, useNavigate } from "react-router-dom";
 import { useDeleteAgreementMutation, useGetAllProjectsQuery } from "../../api/opsAPI";
 import {
     useEditAgreement,
@@ -8,11 +8,9 @@ import {
 } from "../../components/Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import ProjectSelectWithSummaryCard from "../../components/Projects/ProjectSelectWithSummaryCard";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
-import { SaveChangesAndExitModal } from "../../components/UI/Modals/SaveChangesAndExitModal";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import useAlert from "../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../hooks/useHasStateChanged.hooks";
-import useUnsavedChangesBlocker from "../../hooks/useUnsavedChangesBlocker.hooks";
 import EditModeTitle from "./EditModeTitle";
 
 /**
@@ -63,30 +61,35 @@ export const StepSelectProject = ({
     // Wrapped in an object because useHasStateChanged spreads its argument into a plain
     // object snapshot — a bare null/undefined would spread to {} and immediately mismatch.
     const hasProjectChanged = useHasStateChanged({ id: selectedResearchProject?.id ?? null });
-    const { showBlockerModal, blockerModalProps, isBypassingRef } = useUnsavedChangesBlocker({
-        // Suppress while the in-wizard Cancel dialog is already open (showModal), so browser
-        // Back can't pop this blocker's modal on top of that one — they share hardcoded DOM
-        // ids and each registers its own keydown trap, so both mounted at once is an a11y bug.
-        hasChanged: hasProjectChanged && !showModal,
-        heading: "Leave without finishing?",
-        description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
-        actionButtonText: "Go back",
-        secondaryButtonText: "Leave without saving"
-    });
 
-    if (isLoadingProjects) {
-        return <div>Loading...</div>;
-    }
-    if (errorProjects) {
-        navigate("/error");
-        return;
-    }
+    // Bypass ref (not state): a confirmed Cancel can navigate synchronously via Alert's
+    // redirectUrl effect, before a state update would have propagated to the blocker's
+    // registered predicate (react-router only re-registers it inside an effect).
+    const isBypassingRef = React.useRef(false);
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !isBypassingRef.current &&
+            hasProjectChanged &&
+            // Suppress while the Cancel dialog is already open, so browser Back can't
+            // re-trigger it on top of itself.
+            !showModal &&
+            currentLocation.pathname !== nextLocation.pathname
+    );
+    const blockerRef = React.useRef(blocker);
+    React.useEffect(() => {
+        blockerRef.current = blocker;
+    }, [blocker]);
 
-    const handleContinue = () => {
-        if (selectedResearchProject?.id) {
-            goToNext({ project: selectedResearchProject.id });
+    // Closes the Cancel confirmation (whichever trigger opened it — the Cancel button or
+    // the browser-Back guard below) and discards any pending blocked back-navigation so the
+    // user stays on the page instead of leaving a blocked transition dangling.
+    const handleCloseModal = (value) => {
+        setShowModal(value);
+        if (!value && blockerRef.current.state === "blocked") {
+            blockerRef.current.reset();
         }
     };
+
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
@@ -96,10 +99,9 @@ export const StepSelectProject = ({
             handleConfirm: () => {
                 setModalProps({});
                 // Bypass the unsaved-changes blocker: this is an intentional, confirmed exit.
-                // A ref (not state) because the exit below can navigate synchronously via
-                // Alert's redirectUrl effect, which can fire before a state update would have
-                // propagated to the blocker's registered predicate (react-router only updates
-                // it inside an effect) — see useUnsavedChangesBlocker's isBypassingRef.
+                // handleCloseModal already reset any blocked back-navigation; this also keeps
+                // the redirect below (fired via Alert's redirectUrl effect) from being blocked
+                // again, since react-router only re-registers the predicate inside an effect.
                 isBypassingRef.current = true;
                 if (selectedAgreementId && !isEditMode && !isReviewMode) {
                     deleteAgreement(selectedAgreementId)
@@ -134,6 +136,31 @@ export const StepSelectProject = ({
         });
     };
 
+    // Browser Back with an unsaved project selection opens the same Cancel confirmation as
+    // the page's Cancel button, rather than a separate "leave without saving" modal —
+    // confirming cancels the agreement (same as Cancel) instead of resuming navigation to
+    // wherever Back was headed.
+    React.useEffect(() => {
+        if (blocker.state === "blocked") {
+            handleCancel();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [blocker.state]);
+
+    if (isLoadingProjects) {
+        return <div>Loading...</div>;
+    }
+    if (errorProjects) {
+        navigate("/error");
+        return;
+    }
+
+    const handleContinue = () => {
+        if (selectedResearchProject?.id) {
+            goToNext({ project: selectedResearchProject.id });
+        }
+    };
+
     const handleAddProject = () => {
         navigate("/projects/create");
     };
@@ -143,21 +170,10 @@ export const StepSelectProject = ({
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
-                    setShowModal={setShowModal}
+                    setShowModal={handleCloseModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
-                />
-            )}
-            {showBlockerModal && (
-                <SaveChangesAndExitModal
-                    heading={blockerModalProps.heading}
-                    description={blockerModalProps.description}
-                    actionButtonText={blockerModalProps.actionButtonText}
-                    secondaryButtonText={blockerModalProps.secondaryButtonText}
-                    handleConfirm={blockerModalProps.handleConfirm}
-                    handleSecondary={blockerModalProps.handleSecondary}
-                    closeModal={blockerModalProps.closeModal}
                 />
             )}
             <EditModeTitle isEditMode={isEditMode || isReviewMode} />
