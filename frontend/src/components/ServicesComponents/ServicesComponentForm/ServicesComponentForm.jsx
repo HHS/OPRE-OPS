@@ -158,6 +158,8 @@ function ServicesComponentForm({
                                             optional: !formData?.optional
                                         });
                                     }}
+                                    // Locked with the SC number: point to the hint that says why.
+                                    aria-describedby={isNumberLocked ? "servicesComponentSelect-hint" : undefined}
                                     disabled={
                                         isNumberLocked ||
                                         formData?.number === 0 ||

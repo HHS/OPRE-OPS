@@ -96,6 +96,9 @@ describe("ServicesComponentForm", () => {
             expect(screen.getByRole("combobox", { name: "Services Component" })).toBeDisabled();
             expect(screen.getByRole("combobox", { name: "Services Component" })).toHaveDisplayValue("SC2");
             expect(screen.getByRole("checkbox", { name: "Optional Services Component" })).toBeDisabled();
+            expect(screen.getByRole("checkbox", { name: "Optional Services Component" })).toHaveAccessibleDescription(
+                "The Services Component number and Optional setting can't be changed after the agreement is awarded."
+            );
             // Shown as the field's hint (and its tooltip).
             expect(
                 screen.getAllByText(
