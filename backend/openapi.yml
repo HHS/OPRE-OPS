@@ -8908,6 +8908,14 @@ components:
           description: The services component's add change requests in review, or null.
           items:
             $ref: "#/components/schemas/GenericChangeRequest"
+        in_review_modification:
+          type: boolean
+          readOnly: true
+          example: false
+          description: >-
+            True while the services component's own edits (e.g. its period of performance) are in
+            a contract modification that is in review. Until the modification is approved or
+            declined, its period of performance can't be changed and it can't be deleted.
     ServicesComponentRequest:
       type: object
       properties:

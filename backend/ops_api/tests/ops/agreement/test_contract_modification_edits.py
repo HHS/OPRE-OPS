@@ -40,7 +40,10 @@ from models import (
     ServicesComponent,
     User,
 )
-from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
+from ops_api.ops.services.contract_modification_edits import (
+    BLI_IN_REVIEW_MODIFICATION_MESSAGE,
+    ContractModificationEditService,
+)
 from ops_api.ops.services.ops_service import ValidationError
 
 SYSTEM_OWNER_USER_ID = 503
@@ -840,14 +843,20 @@ def test_approving_a_change_request_merges_with_a_pending_edit_and_keeps_audit_f
     cr = loaded_db.get(BudgetLineItemChangeRequest, cr_id)
     assert cr.status == ChangeRequestStatus.APPROVED
     assert cr.updated_by == director.id
-    history = loaded_db.scalars(
-        select(OpsDBHistory).where(
-            OpsDBHistory.class_name == "BudgetLineItemChangeRequest",
-            OpsDBHistory.row_key == str(cr_id),
-            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
-        )
-    ).all()
-    assert history
+
+    def _updated_by_director(class_name, row_id):
+        # Filtered to the director: the setup commits wrote UPDATED rows for these too.
+        return loaded_db.scalars(
+            select(OpsDBHistory).where(
+                OpsDBHistory.class_name == class_name,
+                OpsDBHistory.row_key == str(row_id),
+                OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+                OpsDBHistory.created_by == director.id,
+            )
+        ).all()
+
+    assert _updated_by_director("BudgetLineItemChangeRequest", cr_id)
+    assert _updated_by_director("ContractModificationEdit", edit.id)
 
 
 def test_approving_a_change_request_on_a_line_in_an_in_review_modification_is_rejected(
@@ -871,6 +880,7 @@ def test_approving_a_change_request_on_a_line_in_an_in_review_modification_is_re
     )
 
     assert response.status_code == 400, response.json
+    assert response.json["errors"]["status"] == [BLI_IN_REVIEW_MODIFICATION_MESSAGE]
     (edit,) = _edits(loaded_db, agreement.id)
     assert edit.new_value == 500000.0
     assert loaded_db.get(BudgetLineItemChangeRequest, cr_id).status == ChangeRequestStatus.IN_REVIEW

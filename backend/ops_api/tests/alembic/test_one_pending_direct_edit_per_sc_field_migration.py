@@ -137,3 +137,39 @@ def test_adds_the_display_name_column_and_the_index_rejects_a_duplicate(loaded_d
     )
     with pytest.raises(IntegrityError):
         loaded_db.flush()
+
+
+def _display_name_column_tables(loaded_db):
+    return set(
+        loaded_db.execute(
+            text(
+                "SELECT table_name FROM information_schema.columns "
+                "WHERE column_name = 'services_component_display_name' "
+                "AND table_name IN ('contract_modification_edit', 'contract_modification_edit_version')"
+            )
+        ).scalars()
+    )
+
+
+def test_upgrade_adds_the_display_name_column_to_the_table_and_its_version_table(loaded_db, migration, test_bli):
+    _run_upgrade(loaded_db, migration)
+
+    assert _display_name_column_tables(loaded_db) == {
+        "contract_modification_edit",
+        "contract_modification_edit_version",
+    }
+
+
+def test_downgrade_removes_the_display_name_column_and_upgrade_restores_it(loaded_db, migration, test_bli):
+    _run_upgrade(loaded_db, migration)
+
+    ctx = MigrationContext.configure(loaded_db.connection())
+    with Operations.context(ctx):
+        migration.downgrade()
+    assert _display_name_column_tables(loaded_db) == set()
+
+    _run_upgrade(loaded_db, migration)
+    assert _display_name_column_tables(loaded_db) == {
+        "contract_modification_edit",
+        "contract_modification_edit_version",
+    }
