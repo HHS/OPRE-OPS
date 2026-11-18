@@ -106,9 +106,31 @@ class ContractModificationEditService:
         old_value, new_value = diff.get("old"), diff.get("new")
 
         if budget_line_item_id is not None:
-            old_value = self._merge_with_pending_for_budget_line(budget_line_item_id, field, old_value)
-            if field != "delete" and old_value == new_value:
-                return None
+            pending = self._pending_for_budget_line(budget_line_item_id, None if field == "delete" else field)
+            if pending and field != "delete":
+                # Merge into the line's pending edit to the same field (at most one, per
+                # ix_contract_modification_edit_one_pending_bli_field), the same as
+                # record_direct_edit: its From is the awarded value. Updated in place rather than
+                # replaced, so nothing needs flushing here: the session isn't autoflushed, and an
+                # early flush would write the approval before the before_commit audit hooks
+                # (created_by/updated_by, OpsDBHistory) see it.
+                (edit,) = pending
+                if edit.old_value == new_value:
+                    self.db_session.delete(edit)
+                    return None
+                edit.new_value = new_value
+                edit.change_request_id = change_request.id
+                edit.requested_by_id = change_request.created_by
+                edit.requested_on = change_request.created_on
+                edit.approved_by_id = change_request.reviewed_by_id
+                edit.approved_on = change_request.reviewed_on
+                return edit
+            if pending:
+                # A delete replaces the line's other pending edits; its From is the awarded amount.
+                # The "delete" row has its own index key, so no flush is needed before inserting it.
+                old_value = next((edit.old_value for edit in pending if edit.field == "amount"), old_value)
+                for edit in pending:
+                    self.db_session.delete(edit)
 
         edit = ContractModificationEdit(
             agreement_id=change_request.agreement_id,
@@ -125,33 +147,7 @@ class ContractModificationEditService:
             approved_on=change_request.reviewed_on,
         )
         self.db_session.add(edit)
-        try:
-            self.db_session.flush()
-        except IntegrityError:
-            # A concurrent save on the same field won. The caller rolls back the session.
-            raise ValidationError(
-                {field: ["Another change to this field was saved at the same time. Refresh and try again."]}
-            ) from None
         return edit
-
-    def _merge_with_pending_for_budget_line(self, budget_line_item_id: int, field: str, old_value):
-        """Remove the line's pending edits that a new edit to ``field`` replaces, and return the
-        new edit's From: the oldest pending From (the awarded value), the same as
-        ``record_direct_edit`` / ``record_direct_delete``. Otherwise inserting the new edit trips
-        ``ix_contract_modification_edit_one_pending_bli_field``. A delete replaces all of them."""
-        is_delete = field == "delete"
-        pending = self._pending_for_budget_line(budget_line_item_id, None if is_delete else field)
-        if not pending:
-            return old_value
-        if is_delete:
-            old_value = next((edit.old_value for edit in pending if edit.field == "amount"), old_value)
-        else:
-            old_value = pending[0].old_value
-        for edit in pending:
-            self.db_session.delete(edit)
-        # Flush the deletes first so the INSERT doesn't trip the unique index.
-        self.db_session.flush()
-        return old_value
 
     def record_direct_edit(self, budget_line_item, field: str, old_value, new_value, user_id: int) -> None:
         """Record an edit applied directly on an Awarded agreement, with no change request.
@@ -261,7 +257,14 @@ class ContractModificationEditService:
         if old_value == new_value:
             return
         self._add_direct_edit(
-            services_component.agreement_id, None, services_component.id, field, old_value, new_value, user_id
+            services_component.agreement_id,
+            None,
+            services_component.id,
+            field,
+            old_value,
+            new_value,
+            user_id,
+            services_component_display_name=services_component.display_name,
         )
         try:
             self.db_session.flush()
@@ -320,9 +323,11 @@ class ContractModificationEditService:
         old_value,
         new_value,
         user_id: int,
+        services_component_display_name: Optional[str] = None,
     ) -> None:
         self.db_session.add(
             ContractModificationEdit(
+                services_component_display_name=services_component_display_name,
                 agreement_id=agreement_id,
                 modification_type=ModificationEditType.MODIFIED_LOE,
                 budget_line_item_id=budget_line_item_id,

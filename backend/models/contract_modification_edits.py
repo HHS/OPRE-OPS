@@ -59,6 +59,9 @@ class ContractModificationEdit(BaseModel):
     budget_line_item_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     # Set for Services Component add rows (OPS-6440). No FK, so the row survives the SC's deletion.
     services_component_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    # A Services Component period-of-performance edit's SC name (OPS-3268), snapshotted because
+    # its From/To are dates and the card outlives the SC. Null for other rows.
+    services_component_display_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     field: Mapped[str] = mapped_column(String, nullable=False)
     old_value: Mapped[Optional[Any]] = mapped_column(JSONB, nullable=True)

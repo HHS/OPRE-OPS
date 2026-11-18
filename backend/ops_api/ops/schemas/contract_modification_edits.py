@@ -7,7 +7,6 @@ from models import (
     PROJECT_OFFICER_EDIT_FIELD,
     ContractModificationRequestStatus,
     ModificationEditType,
-    ServicesComponent,
     User,
 )
 
@@ -35,9 +34,9 @@ class ContractModificationEditSchema(Schema):
     # Names for user-id values (the COR change's From and To); null for other fields.
     old_display_name = fields.Method("_old_display_name")
     new_display_name = fields.Method("_new_display_name")
-    # The Services Component's name for its period-of-performance edits, whose From/To are dates
-    # (an SC add/delete freezes the name in old_value/new_value instead); null otherwise.
-    services_component_display_name = fields.Method("_services_component_display_name")
+    # The Services Component's name for its period-of-performance edits, whose From/To are dates,
+    # snapshotted on the row (an SC add/delete freezes it in old_value/new_value instead).
+    services_component_display_name = fields.String(allow_none=True)
     requested_by = fields.Nested(RequestedBySchema, allow_none=True)
     requested_on = fields.DateTime(allow_none=True)
     change_request_id = fields.Integer(allow_none=True)
@@ -57,13 +56,6 @@ class ContractModificationEditSchema(Schema):
 
     def _new_display_name(self, edit):
         return self._user_name(edit, edit.new_value)
-
-    @staticmethod
-    def _services_component_display_name(edit):
-        if edit.services_component_id is None or edit.field not in ("period_start", "period_end"):
-            return None
-        services_component = object_session(edit).get(ServicesComponent, edit.services_component_id)
-        return services_component.display_name if services_component else None
 
 
 class SubmitContractModificationRequestSchema(Schema):
