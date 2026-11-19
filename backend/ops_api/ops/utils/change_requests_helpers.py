@@ -80,8 +80,10 @@ def get_division_ids_user_can_review_for(user_id: int) -> set[int]:
     return {row[0] for row in current_app.db_session.execute(stmt).all()}
 
 
-def _get_reviewable_agreement_ids_subquery(user_id: int):
-    """Subquery returning agreement IDs where the user is a division director or deputy via BLI→CAN→Portfolio→Division."""
+def get_reviewable_agreement_ids_subquery(user_id: int):
+    """Subquery returning agreement IDs where the user is a division director or deputy via BLI→CAN→Portfolio→Division.
+
+    Public (no longer module-private): reused by ContractModificationRequestService.get_pending_for_user (#6546)."""
     return (
         select(Agreement.id)
         .distinct()
@@ -105,7 +107,7 @@ def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int =
     )
 
     reviewable_division_ids = get_division_ids_user_can_review_for(user_id)
-    reviewable_agreement_ids_subq = _get_reviewable_agreement_ids_subquery(user_id)
+    reviewable_agreement_ids_subq = get_reviewable_agreement_ids_subquery(user_id)
 
     bli_filter = and_(
         ChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,

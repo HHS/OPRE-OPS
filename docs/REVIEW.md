@@ -61,7 +61,7 @@ What the terms mean:
 Choosing a level:
 
 - **Pick a level by the outcome your scenario actually shows.** If it only *might* reach a higher level, pick the lower one and say what evidence would raise it.
-- **A PR that changes money math, authorization, a migration, workflow state or a data write must include a test for that change.** A missing one, or a test that doesn't actually exercise the change, is S1. Any other missing or ineffective test is S2.
+- **A PR that changes money math, authorization, a migration, workflow state, a data write, or a custom or changed accessibility-relevant interaction (focus management, a live-region announcement, keyboard operability — not a native element's default behavior, like a plain `<button>`'s built-in keyboard support) must include a test for that change.** A missing one, or a test that doesn't actually exercise the change — for example, one that only asserts a mock's recorded call arguments instead of rendering the real component — is S1. Rendering the real component with a mocked data hook is fine (see [TESTING.md](TESTING.md#component-mocking)); the problem is mocking the behavior under test itself. Any other missing or ineffective test is S2.
 - **Wrong comments, docstrings or PR descriptions** in a code PR, and **tests in the wrong file** (see [TESTING.md](TESTING.md)), are S3.
 - **If a tool uses its own severity scale** (for example Critical/High/Medium/Low), also label each finding S0–S3. Only the S0–S3 label decides whether it blocks.
 
@@ -80,6 +80,7 @@ A review is done when **no blocking finding is open**: no S0 or S1, unless [Scop
 - An AI reviewer will always find *something*. Running more passes to look for more S2 and S3 findings doesn't make the PR safer; it makes it slower. Verification steps that re-check findings already reported are fine; this is about hunting for new ones.
 - A re-review after new commits covers **the commits since the last review, plus any already-reviewed code whose behavior they change** (for example, callers of a helper whose signature or return value changed), and findings that are still open. It doesn't start over on the whole diff.
 - Re-running a review until it stops reporting an S0 or S1 doesn't close that finding. Only a fix, or an agreed won't-fix, closes it.
+- For a finding that can only be confirmed against live data (the migration rule in [Project Rules to Check](#project-rules-to-check)), a second developer's PR comment posting the verification query's result closes it the same way: no violating rows resolves it, violating rows confirms it at S0. The author can't post this closure themselves, for the same reason they can't self-clear a won't-fix.
 
 ## Reporting Findings
 
@@ -174,6 +175,7 @@ These rules already live elsewhere. Reviewers check against them; this document 
 | Fee percentages are whole numbers (`5.0` = 5%), never pre-divided | [CLAUDE.md](../CLAUDE.md#fee-percentage-format-convention), [backend](../backend/ops_api/CLAUDE.md#fee-percentage-format), [frontend](../frontend/CLAUDE.md#fee-percentage-storage) | S0 |
 | Routes use `@is_authorized`; agreement edits check ownership (`associated_with_agreement`, `check_user_association` in `ops/utils/agreements_helpers.py`) | [backend/ops_api/CLAUDE.md](../backend/ops_api/CLAUDE.md#authorization) | S0 |
 | Migrations are reviewed before applying; a new `BaseModel` model also needs its sqlalchemy-continuum `*_version` table | [backend/ops_api/CLAUDE.md](../backend/ops_api/CLAUDE.md#database-migrations), `/db-migrations` skill, `backend/models/base.py` | S0 |
+| A migration adding a `UNIQUE`/`CHECK` constraint to an existing table traces every pre-existing code path that writes that table and includes a ready-to-run verification query against staging — reviewer agents have no DB access, so a second developer must run it and post the result (see [When a Review Is Done](#when-a-review-is-done)) | `/ops-pr-review` skill, step 4 | S1 by default until run; S0 if the query returns rows |
 | Static data import only writes tables in the `ALLOWED_TABLES` allowlist | [backend/data_tools/CLAUDE.md](../backend/data_tools/CLAUDE.md) | S0 |
 | `backend/openapi.yml` stays in sync after endpoint changes | [backend/ops_api/CLAUDE.md](../backend/ops_api/CLAUDE.md#api-documentation-openapi), `/sync-openapi` skill | S2 |
 | Currency shows exactly two-digit cents; percentages follow the `<1%` and 99-cap rules | [frontend/CLAUDE.md](../frontend/CLAUDE.md#numeric-display-conventions) | S1 when users see a wrong value, otherwise S2 |
@@ -190,6 +192,6 @@ This is a team standard. Change it through a normal PR that the whole team can r
 
 The **Code Review** section of the root [CLAUDE.md](../CLAUDE.md#code-review) summarizes this document, because some AI review tools read only `CLAUDE.md` files. Change both in the same PR. If they ever differ, this document wins.
 
-The [`/ops-pr-review` skill](../.claude/skills/ops-pr-review/SKILL.md) reads this document on every run instead of copying it, but it points to some sections by name (Scope, Risk Tiers, When a Review Is Done, Reporting Findings, Disputes and Won't-Fix, Project Rules to Check). If you rename or remove one of those, update the skill in the same PR.
+The [`/ops-pr-review` skill](../.claude/skills/ops-pr-review/SKILL.md) reads this document on every run instead of copying it, but it points to some sections by name (Scope, What Can Block, Risk Tiers, When a Review Is Done, Reporting Findings, Disputes and Won't-Fix, Project Rules to Check). If you rename or remove one of those, update the skill in the same PR.
 
 When the same kind of S1 or S2 finding keeps showing up across PRs, prefer turning it into a deterministic check (a lint rule, a test, a `CLAUDE.md` convention or a project skill) over relying on reviewers to catch it again. Then add it to [Project Rules to Check](#project-rules-to-check).

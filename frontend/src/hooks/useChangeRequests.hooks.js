@@ -5,6 +5,7 @@ import {
     useGetPendingPreAwardApprovalsQuery,
     useGetPendingBudgetRequisitionsQuery,
     useGetPendingAwardApprovalsQuery,
+    useGetPendingContractModificationsForMeQuery,
     useGetProcurementShopsQuery
 } from "../api/opsAPI";
 import { useGetAllCans } from "./useGetAllCans";
@@ -51,13 +52,23 @@ export const useChangeRequestTotal = () => {
     const { data: preAwardApprovals } = useGetPendingPreAwardApprovalsQuery(undefined, { skip: !userId });
     const { data: budgetRequisitions } = useGetPendingBudgetRequisitionsQuery(undefined, { skip: !userId });
     const { data: awardApprovals } = useGetPendingAwardApprovalsQuery(undefined, { skip: !userId });
+    const { data: contractModRequests } = useGetPendingContractModificationsForMeQuery(undefined, {
+        skip: !userId
+    });
 
     const changeRequestsCount = changeRequestsResponse?.count || 0;
     const preAwardApprovalsCount = preAwardApprovals?.length || 0;
     const budgetRequisitionsCount = budgetRequisitions?.length || 0;
     const awardApprovalsCount = awardApprovals?.length || 0;
+    const contractModRequestsCount = contractModRequests?.length || 0;
 
-    return changeRequestsCount + preAwardApprovalsCount + budgetRequisitionsCount + awardApprovalsCount;
+    return (
+        changeRequestsCount +
+        preAwardApprovalsCount +
+        budgetRequisitionsCount +
+        awardApprovalsCount +
+        contractModRequestsCount
+    );
 };
 
 /**

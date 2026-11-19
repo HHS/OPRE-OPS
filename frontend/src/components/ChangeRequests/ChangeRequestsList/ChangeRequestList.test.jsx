@@ -13,7 +13,9 @@ import {
     useGetPendingPreAwardApprovalsQuery,
     useGetPendingBudgetRequisitionsQuery,
     useGetPendingAwardApprovalsQuery,
-    useUpdateChangeRequestMutation
+    useGetPendingContractModificationsForMeQuery,
+    useUpdateChangeRequestMutation,
+    useReviewContractModificationMutation
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { agreement, budgetLine, changeRequests } from "../../../tests/data";
@@ -25,6 +27,7 @@ vi.mock("../../../api/opsAPI");
 vi.mock("../../../hooks/user.hooks");
 describe("ChangeRequestList", () => {
     useUpdateChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
+    useReviewContractModificationMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
     useLazyGetCansQuery.mockReturnValue([
         vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
         { isLoading: false, isError: false }
@@ -49,6 +52,7 @@ describe("ChangeRequestList", () => {
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingContractModificationsForMeQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         useGetCanByIdQuery.mockReturnValue({ data: { display_name: "CAN Name" }, isSuccess: true });
         useGetUserFullNameFromId.mockReturnValue("unknown");
@@ -75,6 +79,7 @@ describe("ChangeRequestList", () => {
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingContractModificationsForMeQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
@@ -130,6 +135,7 @@ describe("ChangeRequestList", () => {
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingContractModificationsForMeQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
         useGetCanByIdQuery.mockReturnValue({ data: agreement.budget_line_items[0].can, isSuccess: true });
@@ -171,6 +177,7 @@ describe("ChangeRequestList", () => {
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingContractModificationsForMeQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetUserFullNameFromId.mockReturnValue("Admin Demo");
 
@@ -220,6 +227,7 @@ describe("ChangeRequestList", () => {
         });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingContractModificationsForMeQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
         useGetCanByIdQuery.mockReturnValue({ data: agreement.budget_line_items[0].can, isSuccess: true });
@@ -237,6 +245,44 @@ describe("ChangeRequestList", () => {
         const cards = await screen.findAllByTestId(/review-card|pre-award-review-card/);
         // Pre-award card (newer) should appear before the budget-change card (older)
         expect(cards[0]).toHaveAttribute("data-cy", "pre-award-review-card");
+    });
+
+    it("renders a Contract Modification request as its own card (#6546)", async () => {
+        const contractModRequest = {
+            id: 88,
+            agreement_id: agreement.id,
+            created_by: 500,
+            created_on: "2026-11-01T00:00:00",
+            modification_type: "MODIFIED_LOE",
+            can_review: true,
+            edits: [],
+            budget_line_items: []
+        };
+
+        useGetChangeRequestsListQuery.mockReturnValue({ data: { data: [], count: 0, limit: 1000, offset: 0 } });
+        useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingContractModificationsForMeQuery.mockReturnValue({
+            data: [contractModRequest],
+            isLoading: false,
+            isError: false
+        });
+        useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
+        useGetUserFullNameFromId.mockReturnValue("Admin Demo");
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <ChangeRequestList handleReviewChangeRequest={vi.fn()} />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(await screen.findByTestId("contract-modification-review-card")).toBeInTheDocument();
+        expect(screen.getByText("Modified LOE")).toBeInTheDocument();
+        // No "Review agreement" link/detail view — the quick icons are the only interaction (#6546).
+        expect(screen.queryByText(/review agreement/i)).not.toBeInTheDocument();
     });
 
     it("clamps currentPage to totalPages when allItems shrinks after a refetch", async () => {
@@ -259,6 +305,7 @@ describe("ChangeRequestList", () => {
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingContractModificationsForMeQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
         useGetCanByIdQuery.mockReturnValue({ data: agreement.budget_line_items[0].can, isSuccess: true });
@@ -311,6 +358,7 @@ describe("ChangeRequestList", () => {
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingContractModificationsForMeQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
 
         render(
             <Provider store={emptyUserStore}>

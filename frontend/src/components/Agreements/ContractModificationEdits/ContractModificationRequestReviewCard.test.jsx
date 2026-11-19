@@ -12,7 +12,8 @@ vi.mock("../../../api/opsAPI", () => ({
 }));
 
 vi.mock("../../../hooks/lookup.hooks", () => ({
-    useGetNameForCanId: (id) => (id ? `CAN-${id}` : "unknown")
+    useGetNameForCanId: (id) => (id ? `CAN-${id}` : "unknown"),
+    useGetAgreementName: () => "Agreement Name B"
 }));
 
 vi.mock("../../../hooks/use-alert.hooks", () => ({
@@ -46,6 +47,7 @@ const BUDGET_LINE_SUMMARY = {
 
 const baseRequest = {
     id: 9,
+    agreement_id: 42,
     requestor_notes: null,
     edits: [],
     budget_line_item_ids: [],
@@ -98,7 +100,7 @@ describe("ContractModificationRequestReviewCard", () => {
         // anything happened is this page-level alert (OPS-6479 follow-up: previously there was none).
         await vi.waitFor(() =>
             expect(mockSetAlert).toHaveBeenCalledWith(
-                expect.objectContaining({ type: "success", heading: "Contract Modification Approved" })
+                expect.objectContaining({ type: "success", heading: "Agreement Approved for Contract Modification" })
             )
         );
     });
@@ -117,20 +119,13 @@ describe("ContractModificationRequestReviewCard", () => {
     };
 
     it.each([
-        [
-            "budget lines only",
-            { budget_line_items: [BUDGET_LINE_SUMMARY] },
-            "The selected budget lines have been moved to Executing."
-        ],
-        [
-            "a COR change and budget lines",
-            { edits: [COR_EDIT], budget_line_items: [BUDGET_LINE_SUMMARY] },
-            "The selected budget lines have been moved to Executing."
-        ],
-        // The COR changed when it was saved (#3269), so a COR-only approval changes nothing else.
-        ["a COR change only", { edits: [COR_EDIT] }, "The Contract Modification has been approved."],
-        ["other edits only", { edits: [AMOUNT_EDIT] }, "The Contract Modification has been approved."]
-    ])("approving %s says what the approval changed", async (_, request, message) => {
+        ["budget lines only", { budget_line_items: [BUDGET_LINE_SUMMARY] }],
+        ["a COR change and budget lines", { edits: [COR_EDIT], budget_line_items: [BUDGET_LINE_SUMMARY] }],
+        // The COR changed when it was saved (#3269), so a COR-only approval changes nothing else
+        // in OPS -- but the success message is the same regardless, naming the agreement either way.
+        ["a COR change only", { edits: [COR_EDIT] }],
+        ["other edits only", { edits: [AMOUNT_EDIT] }]
+    ])("approving %s names the agreement in the success message", async (_, request) => {
         mockReview.mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) });
         useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
 
@@ -139,7 +134,13 @@ describe("ContractModificationRequestReviewCard", () => {
         const confirmButtons = screen.getAllByRole("button", { name: "Approve" });
         await userEvent.click(confirmButtons[confirmButtons.length - 1]);
 
-        await vi.waitFor(() => expect(mockSetAlert).toHaveBeenCalledWith(expect.objectContaining({ message })));
+        await vi.waitFor(() =>
+            expect(mockSetAlert).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: 'Agreement "Agreement Name B" has been successfully approved for Contract Modification.'
+                })
+            )
+        );
     });
 
     it("disables Approve/Decline after a successful review, closing the window before the refetch unmounts the card", async () => {

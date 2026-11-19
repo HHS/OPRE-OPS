@@ -1409,6 +1409,11 @@ export const opsApi = createApi({
         getPendingAwardApprovals: builder.query({
             query: () => `/procurement-tracker-steps/pending-award-approvals/`,
             providesTags: ["Procurement Tracker Steps"]
+        }),
+        getPendingContractModificationsForMe: builder.query({
+            query: () => `/contract-modification-requests/pending-review/`,
+            transformResponse: (response) => response?.data ?? [],
+            providesTags: ["ContractModifications"]
         })
     })
 });
@@ -1537,5 +1542,6 @@ export const {
     useGetPendingPreAwardApprovalsQuery,
     useGetPendingBudgetRequisitionsQuery,
     useGetPendingAwardApprovalsQuery,
+    useGetPendingContractModificationsForMeQuery,
     useGetVersionQuery
 } = opsApi;

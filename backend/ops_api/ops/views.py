@@ -84,6 +84,7 @@ from ops_api.ops.resources.contract_modification_edits import (
     AgreementContractModificationEditsAPI,
     AgreementContractModificationsAPI,
     ContractModificationRequestItemAPI,
+    ContractModificationRequestsPendingReviewAPI,
 )
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.grant_number import GrantNumberItemAPI, GrantNumberListAPI
@@ -162,6 +163,9 @@ AGREEMENT_CONTRACT_MODIFICATIONS_API_VIEW_FUNC = AgreementContractModificationsA
 )
 CONTRACT_MODIFICATION_REQUEST_ITEM_API_VIEW_FUNC = ContractModificationRequestItemAPI.as_view(
     "contract-modification-requests-item", ContractModificationRequest
+)
+CONTRACT_MODIFICATION_REQUESTS_PENDING_REVIEW_API_VIEW_FUNC = ContractModificationRequestsPendingReviewAPI.as_view(
+    "contract-modification-requests-pending-review", ContractModificationRequest
 )
 AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC = AgreementEditBundleAPI.as_view("agreements-edit-bundle", Agreement)
 
