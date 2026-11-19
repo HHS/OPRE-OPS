@@ -1,9 +1,7 @@
 import { useEffect, useReducer, useRef } from "react";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
-import { defaultState, editAgreementReducer, initialState } from "./AgreementEditorContext.hooks";
+import { defaultState, editAgreementReducer } from "./AgreementEditorContext.hooks";
 import { AgreementEditorContext, EditAgreementDispatchContext } from "./contexts";
-
-let modifiedInitialState = { ...initialState };
 
 /**
  * Decorates raw budget lines with the UI-only linkage keys the editor and grouping
@@ -32,6 +30,43 @@ function decorateBudgetLinesForEditor(budgetLines, { isGrant, servicesComponents
             : `${serviceComponentNumber}`;
         return { ...bli, services_component_number: serviceComponentNumber, serviceComponentGroupingLabel };
     });
+}
+
+/**
+ * Builds a fresh editor state for one provider instance (the lazy `useReducer` initializer).
+ * Never mutates `defaultState` or any other shared object.
+ * @param {Object} props - The provider props used to seed the draft.
+ * @returns {Object} The initial editor state.
+ */
+function buildInitialState({
+    agreement,
+    projectOfficer,
+    alternateProjectOfficer,
+    servicesComponents,
+    grantNumbers,
+    budgetLines
+}) {
+    if (!agreement) {
+        return { ...defaultState };
+    }
+    // eslint-disable-next-line no-unused-vars
+    const { project, product_service_code, status, ...agreementFields } = agreement;
+    return {
+        ...defaultState,
+        agreement: agreementFields,
+        selected_project: agreement.project,
+        selected_product_service_code: agreement.product_service_code,
+        selected_procurement_shop: agreement.procurement_shop,
+        services_components: servicesComponents || [],
+        grant_numbers: grantNumbers || [],
+        budget_line_items: decorateBudgetLinesForEditor(budgetLines || [], {
+            isGrant: agreement.agreement_type === AGREEMENT_TYPES.GRANT,
+            servicesComponents: servicesComponents || [],
+            grantNumbers: grantNumbers || []
+        }),
+        ...(projectOfficer && { selected_project_officer: projectOfficer }),
+        ...(alternateProjectOfficer && { selected_alternate_project_officer: alternateProjectOfficer })
+    };
 }
 
 /**
@@ -65,32 +100,12 @@ export function EditAgreementProvider({
     budgetLinesReseedKey = 0,
     children
 }) {
-    if (agreement) {
-        modifiedInitialState.agreement = { ...agreement };
-        modifiedInitialState.selected_project = agreement.project;
-        modifiedInitialState.selected_product_service_code = agreement.product_service_code;
-        modifiedInitialState.selected_procurement_shop = agreement.procurement_shop;
-        modifiedInitialState.services_components = servicesComponents || [];
-        modifiedInitialState.grant_numbers = grantNumbers || [];
-        modifiedInitialState.budget_line_items = decorateBudgetLinesForEditor(budgetLines || [], {
-            isGrant: agreement.agreement_type === AGREEMENT_TYPES.GRANT,
-            servicesComponents: servicesComponents || [],
-            grantNumbers: grantNumbers || []
-        });
-        if (projectOfficer) {
-            modifiedInitialState.selected_project_officer = projectOfficer;
-        }
-        if (alternateProjectOfficer) {
-            modifiedInitialState.selected_alternate_project_officer = alternateProjectOfficer;
-        }
-        delete modifiedInitialState.agreement.project;
-        delete modifiedInitialState.agreement.product_service_code;
-        delete modifiedInitialState.agreement.status;
-    } else {
-        modifiedInitialState = { ...defaultState };
-    }
-
-    const [state, dispatch] = useReducer(editAgreementReducer, modifiedInitialState);
+    // Seeded once per provider instance; later prop changes go through the reseed effects below.
+    const [state, dispatch] = useReducer(
+        editAgreementReducer,
+        { agreement, projectOfficer, alternateProjectOfficer, servicesComponents, grantNumbers, budgetLines },
+        buildInitialState
+    );
 
     // Reseed services_components from the latest prop only when the parent
     // explicitly bumps `servicesComponentsReseedKey` (e.g. after a save failure
