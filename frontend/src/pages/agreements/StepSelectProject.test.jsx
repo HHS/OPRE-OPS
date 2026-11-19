@@ -17,6 +17,7 @@ let blockerCallback;
 let blockerState = "unblocked";
 const mockReset = vi.fn();
 const mockProceed = vi.fn();
+const mockDeleteAgreement = vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 42 }) }));
 
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
@@ -132,7 +133,7 @@ function renderComponent(props = {}) {
 describe("StepSelectProject", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        useDeleteAgreementMutation.mockReturnValue([vi.fn()]);
+        useDeleteAgreementMutation.mockReturnValue([mockDeleteAgreement]);
         mockSelectedProject = null;
         blockerState = "unblocked";
     });
@@ -309,18 +310,36 @@ describe("StepSelectProject", () => {
             expect(shouldBlock).toBe(false);
         });
 
-        it("does not block again while the Cancel confirmation dialog is already open", async () => {
+        it("still blocks further navigation while the Cancel confirmation dialog is already open", async () => {
             const user = userEvent.setup();
+            mockSelectedProject = null;
+            const { rerender } = renderComponent();
+
+            // Select a project only after mount so hasProjectChanged is genuinely true —
+            // a project selected before the first render would already pin it false,
+            // independent of anything this test is meant to exercise.
             mockSelectedProject = { id: 1, title: "Child Care Research" };
-            renderComponent();
+            rerender(
+                <Provider store={store}>
+                    <MemoryRouter>
+                        <StepSelectProject {...defaultProps} />
+                    </MemoryRouter>
+                </Provider>
+            );
 
             await user.click(screen.getByRole("button", { name: /cancel/i }));
 
+            // Opening the modal must not disable the guard itself — only confirming or
+            // declining it (via handleCloseModal) should. Letting navigation slip through
+            // just because the modal happens to be open would abandon it mid-flow.
             const shouldBlock = blockerCallback({
                 currentLocation: { pathname: "/agreements/create" },
                 nextLocation: { pathname: "/agreements" }
             });
-            expect(shouldBlock).toBe(false);
+            expect(shouldBlock).toBe(true);
+            // Re-triggering the same confirmation while it's already open is a harmless
+            // no-op, not a second stacked modal.
+            expect(screen.getAllByTestId("confirmation-modal")).toHaveLength(1);
         });
 
         it("opens the same Cancel confirmation modal when browser Back is blocked", () => {
@@ -349,19 +368,55 @@ describe("StepSelectProject", () => {
         it("resets the blocked navigation and bypasses the blocker when Cancel Agreement is confirmed", async () => {
             const user = userEvent.setup();
             blockerState = "blocked";
+            mockSelectedProject = null;
+            const { rerender } = renderComponent();
+
+            // Select a project only after mount, and rerender, so hasProjectChanged is
+            // genuinely true by the time Cancel is confirmed below. If it were already
+            // true before mount (as in an earlier version of this test), the final
+            // assertion would pass regardless of isBypassingRef — hasProjectChanged alone
+            // would already force the predicate to false, proving nothing about the bypass.
             mockSelectedProject = { id: 1, title: "Child Care Research" };
-            renderComponent();
+            rerender(
+                <Provider store={store}>
+                    <MemoryRouter>
+                        <StepSelectProject {...defaultProps} />
+                    </MemoryRouter>
+                </Provider>
+            );
 
             await user.click(screen.getByRole("button", { name: "Cancel Agreement" }));
 
             expect(mockReset).toHaveBeenCalled();
             // isBypassingRef is now set — the predicate must no longer block, even though
-            // the project selection (hasProjectChanged) hasn't changed.
+            // hasProjectChanged is genuinely true at this point.
             const shouldBlock = blockerCallback({
                 currentLocation: { pathname: "/agreements/create" },
                 nextLocation: { pathname: "/agreements" }
             });
             expect(shouldBlock).toBe(false);
+        });
+
+        it("deletes the draft agreement when browser Back is blocked and Cancel Agreement is confirmed", async () => {
+            const user = userEvent.setup();
+            blockerState = "blocked";
+            mockSelectedProject = { id: 1, title: "Child Care Research" };
+            renderComponent({ selectedAgreementId: 42, isEditMode: false, isReviewMode: false });
+
+            await user.click(screen.getByRole("button", { name: "Cancel Agreement" }));
+
+            expect(mockDeleteAgreement).toHaveBeenCalledWith(42);
+        });
+
+        it("does not delete the agreement when confirming Cancel in edit mode via a blocked Back", async () => {
+            const user = userEvent.setup();
+            blockerState = "blocked";
+            mockSelectedProject = { id: 1, title: "Child Care Research" };
+            renderComponent({ selectedAgreementId: 42, isEditMode: true });
+
+            await user.click(screen.getByRole("button", { name: "Cancel Agreement" }));
+
+            expect(mockDeleteAgreement).not.toHaveBeenCalled();
         });
     });
 });

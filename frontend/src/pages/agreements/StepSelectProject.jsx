@@ -68,12 +68,7 @@ export const StepSelectProject = ({
     const isBypassingRef = React.useRef(false);
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            !isBypassingRef.current &&
-            hasProjectChanged &&
-            // Suppress while the Cancel dialog is already open, so browser Back can't
-            // re-trigger it on top of itself.
-            !showModal &&
-            currentLocation.pathname !== nextLocation.pathname
+            !isBypassingRef.current && hasProjectChanged && currentLocation.pathname !== nextLocation.pathname
     );
     const blockerRef = React.useRef(blocker);
     React.useEffect(() => {
