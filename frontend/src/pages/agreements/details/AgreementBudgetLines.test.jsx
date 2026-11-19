@@ -91,6 +91,44 @@ describe("AgreementBudgetLines", () => {
         isAgreementNotaContract: false
     };
 
+    // OPS-6488: the Agreement Total nets out pending de-obligations; the obligated amount is unchanged.
+    test("nets pending de-obligations out of the agreement subtotal and total", () => {
+        const store = configureStore({
+            reducer: { auth: () => ({ activeUser: { id: 1, roles: [{ name: USER_ROLES.VIEWER_EDITOR }] } }) }
+        });
+        const agreement = {
+            ...mockAgreement,
+            budget_line_items: [
+                {
+                    id: 10,
+                    status: "OBLIGATED",
+                    amount: 500000,
+                    net_amount: 400000,
+                    requested_de_obligation_amount: 100000,
+                    fees: 0
+                },
+                { id: 11, status: "PLANNED", amount: 50000, net_amount: 50000, fees: 0 }
+            ]
+        };
+
+        render(
+            <Provider store={store}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementBudgetLines
+                        {...defaultProps}
+                        agreement={agreement}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        // $450,000 subtotal, not the $550,000 gross (the FY card still sums gross obligated amounts).
+        expect(screen.getByText("$450,000.00")).toBeInTheDocument();
+    });
+
     test("super user can edit budget lines on GRANT agreements", () => {
         // Create a test store with super user
         const testStore = configureStore({

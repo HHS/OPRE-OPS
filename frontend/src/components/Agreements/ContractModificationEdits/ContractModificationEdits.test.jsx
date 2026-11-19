@@ -298,6 +298,37 @@ describe("ContractModificationEdits", () => {
         ]);
     });
 
+    it("renders a de-obligation as an Amount change from the original to the net amount (OPS-6488)", () => {
+        mockQuery({
+            data: [
+                {
+                    ...AMOUNT_EDIT,
+                    modification_type: "DE_OBLIGATION",
+                    field: "requested_de_obligation_amount",
+                    old_value: 500000.0,
+                    new_value: 100000.0
+                }
+            ]
+        });
+
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
+
+        const [card] = getCards();
+        expect(cardValues(card)).toEqual([
+            "First Last Name",
+            "De-obligation",
+            "123458",
+            "Amount",
+            "$500,000.00",
+            "$400,000.00"
+        ]);
+    });
+
     it("renders one card per edit, including CAN and delete edits", () => {
         mockQuery({
             data: [

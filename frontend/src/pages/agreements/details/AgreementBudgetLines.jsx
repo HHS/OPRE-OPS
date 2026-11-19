@@ -183,11 +183,16 @@ const AgreementBudgetLines = ({
         totals["Agreement"]["total"] += total;
     });
 
-    // Use backend-calculated fees for displaying current agreement totals
-    const agreementTotal = calculateAgreementTotal(agreement?.budget_line_items ?? [], null, includeDrafts);
+    // Use backend-calculated fees for displaying current agreement totals. Amounts are net of any
+    // pending de-obligation (OPS-6488), matching the backend's agreement subtotal.
+    const netBudgetLines = (agreement?.budget_line_items ?? []).map((bli) => ({
+        ...bli,
+        amount: bli.net_amount ?? bli.amount
+    }));
+    const agreementTotal = calculateAgreementTotal(netBudgetLines, null, includeDrafts);
     const agreementSubtotal = includeDrafts
-        ? agreement.budget_line_items?.reduce((n, { amount }) => n + amount, 0) || 0
-        : getAgreementSubTotal(agreement);
+        ? netBudgetLines.reduce((n, { amount }) => n + amount, 0) || 0
+        : getAgreementSubTotal({ ...agreement, budget_line_items: netBudgetLines });
     const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
 
     // Use useMemo instead of useEffect + useState to prevent infinite loops

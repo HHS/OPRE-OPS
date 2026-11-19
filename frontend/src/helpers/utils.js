@@ -239,7 +239,7 @@ export const codesToDisplayText = {
         delete: "Deleted",
         services_component_create: "Add Services Component",
         project_officer_id: "COR",
-        requested_de_obligation_amount: "De-obligated Amount"
+        requested_de_obligation_amount: "Amount"
     },
     modificationEditType: {
         MODIFIED_LOE: "Modified Level of Effort",
