@@ -1178,5 +1178,23 @@ describe("AgreementBudgetLines", () => {
 
             expect(screen.getByTestId("edit-wizard")).toHaveTextContent("grants:1");
         });
+
+        // Save nulls any budget line link it can't resolve against these lists, so opening the
+        // editor after a failed load would unlink every existing budget line.
+        test("shows an error instead of the edit wizard when the services components fail to load", () => {
+            useGetServicesComponentsListQueryMock.mockReturnValue({ data: undefined, isLoading: false, isError: true });
+            render(ui(mockAgreement));
+
+            expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+            expect(screen.getByRole("alert")).toHaveTextContent(/services components could not be loaded/i);
+        });
+
+        test("shows an error instead of the edit wizard when the grant numbers fail to load", () => {
+            useGetGrantNumbersListQueryMock.mockReturnValue({ data: undefined, isLoading: false, isError: true });
+            render(ui({ ...mockAgreement, agreement_type: "GRANT" }));
+
+            expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+            expect(screen.getByRole("alert")).toHaveTextContent(/grant numbers could not be loaded/i);
+        });
     });
 });
