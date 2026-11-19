@@ -58,6 +58,8 @@ const Select = ({
     function handleChange(e) {
         onChange(name, e.target.value);
     }
+    // Link the hint to the select so screen readers announce it with the field.
+    const hintId = hint && messages.length === 0 ? `${name}-hint` : undefined;
 
     return (
         <fieldset
@@ -100,6 +102,7 @@ const Select = ({
                     >
                         <select
                             id={name}
+                            aria-describedby={hintId}
                             className={`width-mobile-lg usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
                             name={name}
                             onChange={() => {}}
@@ -112,6 +115,7 @@ const Select = ({
                 ) : (
                     <select
                         id={name}
+                        aria-describedby={hintId}
                         className={`usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
                         name={name}
                         onChange={handleChange}

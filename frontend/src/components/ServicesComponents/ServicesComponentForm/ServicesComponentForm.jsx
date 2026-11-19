@@ -60,6 +60,23 @@ function ServicesComponentForm({
     React.useEffect(() => {
         setScSelectTouched(false);
     }, [formKey]);
+    // Clicking an SC's Edit (formKey changes, mode "edit") loads it here: move focus into the form
+    // so keyboard and screen-reader users land on what they're editing, not back on the list
+    // (OPS-3268). preventScroll leaves the scroll to the list item's scrollToCenter.
+    const formRef = React.useRef(/** @type {HTMLFormElement | null} */ (null));
+    const isEditingExisting = formData?.mode === "edit";
+    React.useEffect(() => {
+        if (!isEditingExisting || !formRef.current) return;
+        // The first field that takes focus: USWDS date pickers keep a hidden original input that
+        // matches the selector but can't.
+        const fields = formRef.current.querySelectorAll(
+            'select:not([disabled]), input:not([disabled]):not([type="hidden"]), textarea:not([disabled])'
+        );
+        for (const field of fields) {
+            field.focus({ preventScroll: true });
+            if (document.activeElement === field) return;
+        }
+    }, [formKey, isEditingExisting]);
     const [, forceUpdate] = React.useReducer((n) => n + 1, 0);
     React.useEffect(() => {
         if (!scFormSuite) return;
@@ -104,6 +121,7 @@ function ServicesComponentForm({
 
     return (
         <form
+            ref={formRef}
             onSubmit={handleSubmit}
             id="services-component-form"
             className={isReviewMode ? "margin-top-8" : undefined}
@@ -140,7 +158,6 @@ function ServicesComponentForm({
                                 }
                                 isDisabled={isNumberLocked}
                                 hint={isNumberLocked ? NUMBER_LOCKED_HINT : ""}
-                                tooltipMsg={isNumberLocked ? NUMBER_LOCKED_HINT : ""}
                             />
                         </div>
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
@@ -158,6 +175,8 @@ function ServicesComponentForm({
                                             optional: !formData?.optional
                                         });
                                     }}
+                                    // Locked with the SC number: point to the hint that says why.
+                                    aria-describedby={isNumberLocked ? "servicesComponentSelect-hint" : undefined}
                                     disabled={
                                         isNumberLocked ||
                                         formData?.number === 0 ||

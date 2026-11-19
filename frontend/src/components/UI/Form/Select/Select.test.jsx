@@ -302,4 +302,30 @@ describe("Select Component", () => {
             expect(screen.getByText("Option C")).toBeInTheDocument();
         });
     });
+
+    describe("hint", () => {
+        it.each([false, true])("describes the select with its hint (disabled: %s)", (isDisabled) => {
+            render(
+                <Select
+                    {...defaultProps}
+                    hint="Pick the closest match."
+                    isDisabled={isDisabled}
+                />
+            );
+
+            expect(screen.getByRole("combobox")).toHaveAccessibleDescription("Pick the closest match.");
+        });
+
+        it("drops the hint, and its description, while an error is shown", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    hint="Pick the closest match."
+                    messages={["This is required information"]}
+                />
+            );
+
+            expect(screen.getByRole("combobox")).not.toHaveAttribute("aria-describedby");
+        });
+    });
 });

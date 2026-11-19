@@ -5,6 +5,8 @@ import ServicesComponentForm from "./ServicesComponentForm";
 
 // Mock the SERVICE_REQ_TYPES and options
 const mockFn = vi.fn();
+const LOCKED_HINT =
+    "The Services Component number and Optional setting can't be changed after the agreement is awarded.";
 
 describe("ServicesComponentForm", () => {
     const defaultProps = {
@@ -78,6 +80,43 @@ describe("ServicesComponentForm", () => {
         expect(screen.queryByText("Please add a Service Requirement Type to the Agreement.")).not.toBeInTheDocument();
     });
 
+    describe("moving focus into the form when an SC is loaded for editing (OPS-3268)", () => {
+        const savedSc = { id: 7, number: 2, optional: false, mode: "edit", created_on: "2043-01-01T00:00:00Z" };
+
+        test("focuses the first field that can be changed", () => {
+            render(
+                <ServicesComponentForm
+                    {...defaultProps}
+                    isEditMode={true}
+                    formData={savedSc}
+                />
+            );
+
+            expect(screen.getByRole("combobox", { name: "Services Component" })).toHaveFocus();
+        });
+
+        test("skips a locked number and focuses the period of performance instead", () => {
+            render(
+                <ServicesComponentForm
+                    {...defaultProps}
+                    serviceTypeReq="NON_SEVERABLE"
+                    isEditMode={true}
+                    formData={savedSc}
+                    locksServicesComponentNumbers={true}
+                />
+            );
+
+            // The visible date input (USWDS also keeps a hidden one with the same label).
+            expect(screen.getByRole("textbox", { name: /Period of Performance-Start/ })).toHaveFocus();
+        });
+
+        test("leaves focus alone when the form is empty (adding an SC)", () => {
+            render(<ServicesComponentForm {...defaultProps} />);
+
+            expect(document.body).toHaveFocus();
+        });
+    });
+
     describe("SC number lock on an Awarded agreement (OPS-3268)", () => {
         const savedSc = { id: 7, number: 2, optional: false, mode: "edit", created_on: "2043-01-01T00:00:00Z" };
         const renderForm = (props) =>
@@ -96,12 +135,14 @@ describe("ServicesComponentForm", () => {
             expect(screen.getByRole("combobox", { name: "Services Component" })).toBeDisabled();
             expect(screen.getByRole("combobox", { name: "Services Component" })).toHaveDisplayValue("SC2");
             expect(screen.getByRole("checkbox", { name: "Optional Services Component" })).toBeDisabled();
-            // Shown as the field's hint (and its tooltip).
-            expect(
-                screen.getAllByText(
-                    "The Services Component number and Optional setting can't be changed after the agreement is awarded."
-                ).length
-            ).toBeGreaterThan(0);
+            // Shown once, as the field's hint, and read with both locked controls.
+            expect(screen.getByText(LOCKED_HINT)).toBeInTheDocument();
+            expect(screen.getByRole("combobox", { name: "Services Component" })).toHaveAccessibleDescription(
+                LOCKED_HINT
+            );
+            expect(screen.getByRole("checkbox", { name: "Optional Services Component" })).toHaveAccessibleDescription(
+                LOCKED_HINT
+            );
         });
 
         test("keeps the period of performance editable", () => {
