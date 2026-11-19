@@ -1,5 +1,5 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { faCircleInfo, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useLocation } from "react-router-dom";
 import {
@@ -23,6 +23,7 @@ import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandab
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import deObligationIcon from "../../../images/de-obligation-icon.svg";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass, isDateOutsidePopRange } from "./BLIRow.helpers";
 
@@ -174,11 +175,12 @@ const BLIRow = ({
                             budgetLine.amount
                         )} with ${formatCurrency(pendingDeObligationAmount)} de-obligated in a modification`}
                     >
-                        <FontAwesomeIcon
-                            icon={faCircleInfo}
-                            className="text-base-dark height-2 width-2 margin-left-1"
-                            aria-hidden="true"
-                            title="Pending de-obligation"
+                        <img
+                            src={deObligationIcon}
+                            width={16}
+                            height={16}
+                            alt="Pending de-obligation"
+                            className="margin-left-1 text-middle"
                             data-testid="pending-de-obligation-icon"
                         />
                     </Tooltip>
