@@ -10,10 +10,9 @@ import { formatServiceComponent } from "../ServicesComponents.helpers";
  * @param {string} [props.className] - Additional CSS classes to apply to the component
  * @param {string} props.value - The current value of the select
  * @param {Function} props.onChange - Handler to be called when the select value changes
- * @param {boolean} [props.isDisabled] - Whether the select is disabled
  * @returns {JSX.Element | null} - The rendered component
  */
-function AllServicesComponentSelect({ messages, className, value, onChange, isDisabled = false }) {
+function AllServicesComponentSelect({ messages, className, value, onChange }) {
     const { agreement, services_components: servicesComponents } = useEditAgreement();
 
     const selectOptions = [...servicesComponents]
@@ -42,7 +41,6 @@ function AllServicesComponentSelect({ messages, className, value, onChange, isDi
             messages={messages}
             defaultOption=""
             options={selectOptions}
-            isDisabled={isDisabled}
         />
     );
 }

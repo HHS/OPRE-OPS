@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import suite from "./deObligationSuite";
+import suite from "./suite";
 
 describe("De-obligation Validation Suite", () => {
     beforeEach(() => {

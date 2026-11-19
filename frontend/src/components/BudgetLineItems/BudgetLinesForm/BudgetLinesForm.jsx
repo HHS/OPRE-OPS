@@ -9,8 +9,6 @@ import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComp
 import CurrencyInput from "../../UI/Form/CurrencyInput";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
-import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
-import deObligationSuite from "./deObligationSuite";
 
 /**
  * @component A form for creating or editing a budget line.
@@ -42,8 +40,6 @@ import deObligationSuite from "./deObligationSuite";
  * @param {string | null} [props.scStartDate] - The earliest SC start date (YYYY-MM-DD) from the agreement.
  * @param {string | null} [props.scEndDate] - The latest SC end date (YYYY-MM-DD) from the agreement.
  * @param {boolean} [props.allowPastObligateByDates] - ALLOW_PAST_OBLIGATE_BY_DATES from /version/; skips the future-date rule.
- * @param {boolean} [props.isDeObligating] - Editing an Obligated line, where the amount is the only editable field and holds the amount to de-obligate (OPS-6488).
- * @param {number} [props.deObligationMaxAmount] - The line's obligated amount: the most that can be de-obligated.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
@@ -72,9 +68,7 @@ export const BudgetLinesForm = ({
     workflow,
     scStartDate = null,
     scEndDate = null,
-    allowPastObligateByDates = false,
-    isDeObligating = false,
-    deObligationMaxAmount = 0
+    allowPastObligateByDates = false
 }) => {
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
 
@@ -106,7 +100,7 @@ export const BudgetLinesForm = ({
     let needByDateCn = "success";
 
     // validate all budget line fields if in review mode and is editing
-    if (isEditing && !isDeObligating) {
+    if (isEditing) {
         if (isReviewMode || isBudgetLineNotDraft) {
             const validationResult = budgetFormSuite.run(
                 {
@@ -175,10 +169,7 @@ export const BudgetLinesForm = ({
             allowPastObligateByDates
         );
     };
-    const deObligationRes = deObligationSuite.get();
-    const isFormNotValid = isDeObligating
-        ? enteredAmount == null || deObligationRes.hasErrors()
-        : dateRes.hasErrors() || budgetFormSuite.hasErrors();
+    const isFormNotValid = dateRes.hasErrors() || budgetFormSuite.hasErrors();
 
     return (
         <form
@@ -208,7 +199,6 @@ export const BudgetLinesForm = ({
                                 <AllServicesComponentSelect
                                     messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
                                     value={servicesComponentNumber || ""}
-                                    isDisabled={isDeObligating}
                                     onChange={(name, value) => {
                                         if (isReviewMode) {
                                             validateBudgetForm("servicesComponentNumber", +value);
@@ -226,15 +216,10 @@ export const BudgetLinesForm = ({
                             name="needByDate"
                             label="Obligate by Date"
                             hint="mm/dd/yyyy"
-                            messages={
-                                isDeObligating
-                                    ? []
-                                    : [
-                                          ...(budgetFormSuite.getErrors("needByDate") || []),
-                                          ...(dateRes.getErrors("needByDate") || [])
-                                      ]
-                            }
-                            isDisabled={isDeObligating}
+                            messages={[
+                                ...(budgetFormSuite.getErrors("needByDate") || []),
+                                ...(dateRes.getErrors("needByDate") || [])
+                            ]}
                             className={needByDateCn}
                             value={needByDate}
                             onChange={(e) => {
@@ -258,7 +243,6 @@ export const BudgetLinesForm = ({
                                 className={canCn}
                                 selectedCan={selectedCan}
                                 setSelectedCan={setSelectedCan}
-                                isDisabled={isDeObligating}
                                 onChange={(name, value) => {
                                     if (isReviewMode) {
                                         validateBudgetForm(name, value);
@@ -268,37 +252,19 @@ export const BudgetLinesForm = ({
                         </div>
                     </div>
                     <div className="grid-col-6">
-                        {isDeObligating ? (
-                            <CurrencyInput
-                                name="enteredAmount"
-                                label="De-obligated Amount"
-                                hint={`Above $0 up to ${formatCurrency(deObligationMaxAmount)}`}
-                                messages={deObligationRes.getErrors("requestedAmount")}
-                                value={enteredAmount ?? ""}
-                                setEnteredAmount={setEnteredAmount}
-                                onChange={(_name, value) => {
-                                    deObligationSuite.run(
-                                        { requestedAmount: value === "" ? null : Number(value) },
-                                        deObligationMaxAmount
-                                    );
-                                }}
-                                dataCy="de-obligation-amount-input"
-                            />
-                        ) : (
-                            <CurrencyInput
-                                name="enteredAmount"
-                                label="Amount"
-                                messages={budgetFormSuite.getErrors("enteredAmount")}
-                                className={enteredAmountCn}
-                                value={enteredAmount ?? ""}
-                                setEnteredAmount={setEnteredAmount}
-                                onChange={(name, value) => {
-                                    if (isReviewMode) {
-                                        validateBudgetForm(name, value);
-                                    }
-                                }}
-                            />
-                        )}
+                        <CurrencyInput
+                            name="enteredAmount"
+                            label="Amount"
+                            messages={budgetFormSuite.getErrors("enteredAmount")}
+                            className={enteredAmountCn}
+                            value={enteredAmount ?? ""}
+                            setEnteredAmount={setEnteredAmount}
+                            onChange={(name, value) => {
+                                if (isReviewMode) {
+                                    validateBudgetForm(name, value);
+                                }
+                            }}
+                        />
                     </div>
                 </div>
                 {hasUnsavedChanges && workflow != "agreement" && (
@@ -317,7 +283,6 @@ export const BudgetLinesForm = ({
                     label="Description (optional)"
                     value={enteredDescription || ""}
                     maxLength={150}
-                    isDisabled={isDeObligating}
                     onChange={(name, value) => {
                         setEnteredDescription(value);
                     }}
