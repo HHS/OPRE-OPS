@@ -5,8 +5,7 @@ import ServicesComponentForm from "./ServicesComponentForm";
 
 // Mock the SERVICE_REQ_TYPES and options
 const mockFn = vi.fn();
-const LOCKED_MESSAGE =
-    "The Services Component number and Optional setting can't be changed after the agreement is awarded.";
+const LOCKED_MESSAGE = "Services components cannot be edited on awarded agreements";
 
 describe("ServicesComponentForm", () => {
     const defaultProps = {
