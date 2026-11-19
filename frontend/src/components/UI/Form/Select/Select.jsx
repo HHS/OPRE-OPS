@@ -104,6 +104,9 @@ const Select = ({
                         label={tooltipMsg}
                         position="right"
                         maxWidth={tooltipMaxWidth}
+                        // The tooltip wraps the select in inline spans; with no fixed width, let them
+                        // fill the column so the select is as wide as the enabled one.
+                        className={disabledWidthClassName ? undefined : "width-full select-tooltip-fill"}
                     >
                         <select
                             id={name}

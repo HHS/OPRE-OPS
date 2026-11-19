@@ -160,7 +160,7 @@ function ServicesComponentForm({
                                 // Like the app's other locked fields: the reason is a tooltip, capped
                                 // so it wraps instead of running across the form.
                                 tooltipMsg={isNumberLocked ? NUMBER_LOCKED_MESSAGE : ""}
-                                tooltipMaxWidth="mobile"
+                                tooltipMaxWidth="mobile-lg"
                             />
                         </div>
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (

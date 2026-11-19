@@ -141,7 +141,7 @@ describe("ServicesComponentForm", () => {
             // read as the select's description.
             const select = screen.getByRole("combobox", { name: "Services Component" });
             expect(select).toHaveAccessibleDescription(LOCKED_MESSAGE);
-            expect(screen.getByRole("tooltip", { hidden: true })).toHaveClass("width-mobile", "text-wrap");
+            expect(screen.getByRole("tooltip", { hidden: true })).toHaveClass("width-mobile-lg", "text-wrap");
             // Only the tooltip carries the message: no visible hint repeats it.
             expect(screen.getAllByText(LOCKED_MESSAGE)).toEqual([screen.getByRole("tooltip", { hidden: true })]);
         });
