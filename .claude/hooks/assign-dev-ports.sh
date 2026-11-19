@@ -26,7 +26,7 @@ fi
 # restart from 0 for every separate clone on the same machine. Small chance
 # two unrelated worktrees hash to the same slot -- acceptable for a dev
 # convenience, not a correctness guarantee.
-SLOT=$(( $(printf '%s' "$TOPLEVEL" | cksum | awk '{print $1}') % 1000 ))
+SLOT=$(( $(printf '%s' "$TOPLEVEL" | cksum | awk '{print $1}') % 9999 ))
 
 DB_PORT=$((5432 + SLOT))
 BACKEND_PORT=$((8080 + SLOT))
