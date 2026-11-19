@@ -13,11 +13,13 @@ vi.mock("../../../api/opsAPI", () => ({
 }));
 
 vi.mock("../../../hooks/lookup.hooks", () => ({
-    useGetNameForCanId: (id) => (id ? `CAN-${id}` : "unknown")
+    useGetNameForCanId: (id) => (id ? `CAN-${id}` : "unknown"),
+    useGetAgreementName: () => "Agreement Name B"
 }));
 
 const baseRequest = {
     id: 9,
+    agreement_id: 42,
     requestor_notes: null,
     edits: [],
     budget_line_item_ids: []
@@ -68,6 +70,6 @@ describe("ContractModificationRequestReviewCard + Alert (real Redux alert, not m
         await userEvent.click(confirmButtons[confirmButtons.length - 1]);
 
         const status = await screen.findByRole("status");
-        expect(status).toHaveTextContent("Contract Modification Approved");
+        expect(status).toHaveTextContent("Agreement Approved for Contract Modification");
     });
 });

@@ -33,6 +33,7 @@ from ops_api.ops.services.contract_modification_edits import ContractModificatio
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import check_user_association, get_division_directors_for_agreement
+from ops_api.ops.utils.change_requests_helpers import get_reviewable_agreement_ids_subquery
 
 APPROVE = "APPROVE"
 DECLINE = "DECLINE"
@@ -66,6 +67,30 @@ class ContractModificationRequestService:
 
     def get_in_review(self, agreement_id: int) -> Optional[ContractModificationRequest]:
         return self.db_session.scalars(self._in_review_query(agreement_id)).first()
+
+    def get_pending_for_user(self, user) -> list[ContractModificationRequest]:
+        """IN_REVIEW requests ``user`` may approve/decline, newest first: every one for a
+        superuser, otherwise only those on agreements in
+        ``get_reviewable_agreement_ids_subquery`` (the division director/deputy scoping already
+        used by the ChangeRequest "pending for me" queries — reused here rather than
+        re-deriving the BLI→CAN→Portfolio→Division join)."""
+        stmt = (
+            select(ContractModificationRequest)
+            .options(
+                selectinload(ContractModificationRequest.edits),
+                selectinload(ContractModificationRequest.budget_line_items),
+            )
+            .where(ContractModificationRequest.status == ContractModificationRequestStatus.IN_REVIEW)
+        )
+        if not user.is_superuser:
+            stmt = stmt.where(
+                ContractModificationRequest.agreement_id.in_(get_reviewable_agreement_ids_subquery(user.id))
+            )
+        return list(
+            self.db_session.scalars(
+                stmt.order_by(ContractModificationRequest.created_on.desc(), ContractModificationRequest.id.desc())
+            )
+        )
 
     def get_in_review_edit_ids(self, agreement_id: int) -> set[int]:
         """Ids of the pending edits included in the agreement's request that is in review."""
@@ -206,7 +231,7 @@ class ContractModificationRequestService:
         if changed:
             raise ValidationError({"budget_line_item_ids": changed})
 
-        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=_mod_type(request))
+        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=mod_type(request))
         self.db_session.add(agreement_mod)
         self.db_session.flush()
 
@@ -257,11 +282,10 @@ class ContractModificationRequestService:
                 {
                     "contract_modification_request_id": request.id,
                     "title": "Contract Modification Approval Request",
-                    # Not "Please review and approve": the Division Director can't approve or
-                    # decline in OPS until #3331, so the linked tab only shows it as In Review.
                     "message": (
-                        "A Contract Modification has been submitted for your review. Reviewing it in "
-                        f"OPS is coming soon. \n\\\n\\\n[Link]({link})"
+                        "A Contract Modification has been submitted for your review. "
+                        "You can review and approve or decline it from your For Review list. "
+                        f"\n\\\n\\\n[Link]({link})"
                     ),
                     "is_read": False,
                     "recipient_id": recipient_id,
@@ -329,7 +353,7 @@ class ContractModificationRequestService:
         )
 
 
-def _mod_type(request: ContractModificationRequest) -> ModType:
+def mod_type(request: ContractModificationRequest) -> ModType:
     """As-is for pure budget-line execution (#1008), Admin when only Admin Changes such as a COR
     change ride along (#3269), and Modified LOE when any Modified LOE edit does (#3072)."""
     if not request.edits:

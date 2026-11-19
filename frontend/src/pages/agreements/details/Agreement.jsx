@@ -14,6 +14,7 @@ import {
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
 import AwardApprovalAlert from "../../../components/Agreements/AwardApprovalAlert/AwardApprovalAlert";
+import ContractModificationApprovalAlert from "../../../components/Agreements/ContractModificationApprovalAlert/ContractModificationApprovalAlert";
 import PreAwardApprovalAlert from "../../../components/Agreements/PreAwardApprovalAlert/PreAwardApprovalAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
@@ -326,6 +327,11 @@ const Agreement = () => {
                         isVisible={true}
                     />
                     <AwardApprovalAlert
+                        notifications={user_agreement_notifications}
+                        isVisible={true}
+                    />
+                    <ContractModificationApprovalAlert
+                        agreementId={agreement?.id}
                         notifications={user_agreement_notifications}
                         isVisible={true}
                     />

@@ -1,46 +1,11 @@
-import * as React from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
-    useDismissNotificationMutation,
     useGetAgreementContractModificationEditsByIdQuery,
-    useGetAgreementContractModificationsByIdQuery,
-    useGetNotificationsByUserIdAndAgreementIdQuery
+    useGetAgreementContractModificationsByIdQuery
 } from "../../../api/opsAPI";
 import { useCanEditByRole } from "../../../hooks/user.hooks";
-import SimpleAlert from "../../UI/Alert/SimpleAlert";
 import DisabledButtonWithTooltip from "../../UI/Button/DisabledButtonWithTooltip";
 import ContractModificationEditCard from "./ContractModificationEditCard";
-import ContractModificationRequestReviewCard from "./ContractModificationRequestReviewCard";
-
-const MOD_REQUEST_NOTIFICATION = "CONTRACT_MODIFICATION_REQUEST_NOTIFICATION";
-
-/**
- * The submitter's Approved / Declined alert for a contract modification.
- * @param {Object} props
- * @param {Object} props.notification - A CONTRACT_MODIFICATION_REQUEST_NOTIFICATION
- * @param {Function} props.onDismiss
- */
-const ReviewOutcomeAlert = ({ notification, onDismiss }) => {
-    const { status, reviewer_notes: reviewerNotes } = notification.contract_modification_request;
-    const approved = status === "APPROVED";
-    return (
-        <SimpleAlert
-            type={approved ? "success" : "error"}
-            heading={notification.title}
-            message={notification.message}
-            isClosable={true}
-            setIsAlertVisible={onDismiss}
-            headingLevel={2}
-        >
-            {!approved && reviewerNotes && (
-                <div className="margin-top-2">
-                    <strong>Notes:</strong> {reviewerNotes}
-                </div>
-            )}
-        </SimpleAlert>
-    );
-};
 
 /**
  * "Contract Modifications" section of the Award & Modifications tab. Lists the edits made in
@@ -48,6 +13,9 @@ const ReviewOutcomeAlert = ({ notification, onDismiss }) => {
  * actual contract: approved Modified LOE edits (OPS-3072), and COR changes recorded on save as
  * pending Admin Changes (OPS-3153). Starts the modification (#3268).
  * Edits stay listed, marked In Review, until the Division Director approves the modification.
+ * The submitter's Approved/Declined outcome alert lives at the agreement level
+ * (`ContractModificationApprovalAlert`, #6546) so it's visible regardless of which tab is active,
+ * not just here.
  *
  * @component
  * @param {Object} props
@@ -57,7 +25,6 @@ const ReviewOutcomeAlert = ({ notification, onDismiss }) => {
  */
 const ContractModificationEdits = ({ agreementId, isAgreementEditable = false }) => {
     const navigate = useNavigate();
-    const activeUser = useSelector((state) => state.auth.activeUser);
     const {
         data: edits,
         isLoading,
@@ -66,39 +33,11 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
         skip: !agreementId,
         refetchOnMountOrArgChange: true
     });
-    const { data: modificationRequests = [], isSuccess: hasLoadedRequests } =
-        useGetAgreementContractModificationsByIdQuery(agreementId, {
-            skip: !agreementId,
-            refetchOnMountOrArgChange: true
-        });
-    const { data: notifications = [] } = useGetNotificationsByUserIdAndAgreementIdQuery(
-        { user_oidc_id: activeUser?.oidc_id, agreement_id: agreementId },
-        { skip: !activeUser?.oidc_id || !agreementId }
-    );
-    const [dismissNotification] = useDismissNotificationMutation();
+    const { data: modificationRequests = [] } = useGetAgreementContractModificationsByIdQuery(agreementId, {
+        skip: !agreementId,
+        refetchOnMountOrArgChange: true
+    });
     const canEditByRole = useCanEditByRole();
-
-    // Only the most recent modification's outcome is shown (requests come newest first). Outcomes
-    // of earlier modifications are stale, so they're marked read instead of piling up.
-    const latestRequestId = modificationRequests[0]?.id;
-    const reviewOutcomes = notifications.filter(
-        (notification) =>
-            notification.notification_type === MOD_REQUEST_NOTIFICATION &&
-            ["APPROVED", "DECLINED"].includes(notification.contract_modification_request?.status)
-    );
-    const latestOutcome = reviewOutcomes.find(
-        (notification) => notification.contract_modification_request.id === latestRequestId
-    );
-    const staleOutcomeIds = reviewOutcomes
-        .filter((notification) => notification.contract_modification_request.id !== latestRequestId)
-        .map((notification) => notification.id)
-        .join(",");
-
-    React.useEffect(() => {
-        // Wait for the requests to load, so "latest" is known before anything is marked read.
-        if (!hasLoadedRequests || !staleOutcomeIds) return;
-        staleOutcomeIds.split(",").forEach((id) => dismissNotification(Number(id)));
-    }, [hasLoadedRequests, staleOutcomeIds, dismissNotification]);
 
     if (isLoading) {
         return null;
@@ -138,13 +77,6 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
             className="margin-bottom-6"
             data-cy="contract-modifications-section"
         >
-            {latestOutcome && (
-                <ReviewOutcomeAlert
-                    notification={latestOutcome}
-                    onDismiss={() => dismissNotification(latestOutcome.id)}
-                />
-            )}
-            {inReviewRequest?.can_review && <ContractModificationRequestReviewCard request={inReviewRequest} />}
             <h2 className="font-sans-lg">Contract Modifications</h2>
             <p className="font-sans-sm line-height-body-5 margin-bottom-3">
                 After an agreement has been awarded, it will require a Contract Modification in order to make changes or

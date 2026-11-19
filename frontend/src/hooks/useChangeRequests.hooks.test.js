@@ -16,6 +16,7 @@ const useGetChangeRequestsListQueryMock = vi.fn();
 const useGetPendingPreAwardApprovalsQueryMock = vi.fn();
 const useGetPendingBudgetRequisitionsQueryMock = vi.fn();
 const useGetPendingAwardApprovalsQueryMock = vi.fn();
+const useGetPendingContractModificationsForMeQueryMock = vi.fn();
 const useGetProcurementShopsQueryMock = vi.fn();
 const useGetAllCansMock = vi.fn();
 const getChangeRequestMessagesMock = vi.fn();
@@ -30,6 +31,8 @@ vi.mock("../api/opsAPI", () => ({
     useGetPendingPreAwardApprovalsQuery: (...args) => useGetPendingPreAwardApprovalsQueryMock(...args),
     useGetPendingBudgetRequisitionsQuery: (...args) => useGetPendingBudgetRequisitionsQueryMock(...args),
     useGetPendingAwardApprovalsQuery: (...args) => useGetPendingAwardApprovalsQueryMock(...args),
+    useGetPendingContractModificationsForMeQuery: (...args) =>
+        useGetPendingContractModificationsForMeQueryMock(...args),
     useGetProcurementShopsQuery: (...args) => useGetProcurementShopsQueryMock(...args)
 }));
 
@@ -79,6 +82,7 @@ describe("useChangeRequestTotal", () => {
         useGetPendingPreAwardApprovalsQueryMock.mockReturnValue({ data: [] });
         useGetPendingBudgetRequisitionsQueryMock.mockReturnValue({ data: [] });
         useGetPendingAwardApprovalsQueryMock.mockReturnValue({ data: [] });
+        useGetPendingContractModificationsForMeQueryMock.mockReturnValue({ data: [] });
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
@@ -89,12 +93,28 @@ describe("useChangeRequestTotal", () => {
         expect(result.current).toBe(2);
     });
 
+    it("includes pending contract modification requests in the total (#6546)", () => {
+        useSelectorMock.mockImplementation((selector) => selector({ auth: { activeUser: { id: 8 } } }));
+        useGetChangeRequestsListQueryMock.mockReturnValue({
+            data: { data: [], count: 0, limit: 10, offset: 0 }
+        });
+        useGetPendingPreAwardApprovalsQueryMock.mockReturnValue({ data: [] });
+        useGetPendingBudgetRequisitionsQueryMock.mockReturnValue({ data: [] });
+        useGetPendingAwardApprovalsQueryMock.mockReturnValue({ data: [] });
+        useGetPendingContractModificationsForMeQueryMock.mockReturnValue({ data: [{ id: 1 }, { id: 2 }, { id: 3 }] });
+
+        const { result } = renderHook(() => useChangeRequestTotal());
+
+        expect(result.current).toBe(3);
+    });
+
     it("falls back to zero when no list data and missing user", () => {
         useSelectorMock.mockImplementation((selector) => selector({ auth: { activeUser: null } }));
         useGetChangeRequestsListQueryMock.mockReturnValue({ data: undefined });
         useGetPendingPreAwardApprovalsQueryMock.mockReturnValue({ data: undefined });
         useGetPendingBudgetRequisitionsQueryMock.mockReturnValue({ data: undefined });
         useGetPendingAwardApprovalsQueryMock.mockReturnValue({ data: undefined });
+        useGetPendingContractModificationsForMeQueryMock.mockReturnValue({ data: undefined });
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
