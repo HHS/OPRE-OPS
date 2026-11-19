@@ -951,3 +951,27 @@ def test_deleting_sc_with_executing_or_obligated_budget_lines_is_blocked(
     assert loaded_db.get(ServicesComponent, sc2_id) is not None
     assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id == sc2_id
     assert _edits(loaded_db, awarded_agreement.id) == []
+
+
+def test_losing_a_concurrent_period_edit_save_returns_a_400_and_rolls_back(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx, monkeypatch
+):
+    """Two saves of the same SC date that both read no pending edit (a double-click/retry): the
+    second hits ix_contract_modification_edit_one_pending_sc_field. That is a 400 saying so, with
+    nothing applied, not a 500."""
+    from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
+
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-01-31"}).status_code == 200
+
+    # The second save read before the first committed, so it doesn't see the pending edit.
+    monkeypatch.setattr(ContractModificationEditService, "_pending_for_services_component", lambda *a, **k: [])
+    response = _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-06-30"})
+    monkeypatch.undo()
+
+    assert response.status_code == 400, response.json
+    assert "saved at the same time" in response.json["errors"]["period_end"][0]
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id).period_end == datetime.date(2044, 1, 31)
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert (edit.old_value, edit.new_value) == ("2043-12-31", "2044-01-31")
