@@ -30,6 +30,8 @@ function ServicesComponentSelect({ value, onChange, options, isRequired, ...rest
             options={options}
             isRequired={isRequired}
             isRequiredNoShow={true}
+            // It sits in a narrow column: when locked, fill it like the enabled select does.
+            disabledWidthClassName=""
             {...rest}
         />
     );

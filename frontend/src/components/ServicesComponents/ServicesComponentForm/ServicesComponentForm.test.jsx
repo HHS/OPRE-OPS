@@ -5,7 +5,7 @@ import ServicesComponentForm from "./ServicesComponentForm";
 
 // Mock the SERVICE_REQ_TYPES and options
 const mockFn = vi.fn();
-const LOCKED_HINT =
+const LOCKED_MESSAGE =
     "The Services Component number and Optional setting can't be changed after the agreement is awarded.";
 
 describe("ServicesComponentForm", () => {
@@ -134,15 +134,16 @@ describe("ServicesComponentForm", () => {
 
             expect(screen.getByRole("combobox", { name: "Services Component" })).toBeDisabled();
             expect(screen.getByRole("combobox", { name: "Services Component" })).toHaveDisplayValue("SC2");
+            // As wide as the enabled select, not the shared disabled Select's fixed width.
+            expect(screen.getByRole("combobox", { name: "Services Component" })).not.toHaveClass("width-mobile-lg");
             expect(screen.getByRole("checkbox", { name: "Optional Services Component" })).toBeDisabled();
-            // Shown once, as the field's hint, and read with both locked controls.
-            expect(screen.getByText(LOCKED_HINT)).toBeInTheDocument();
-            expect(screen.getByRole("combobox", { name: "Services Component" })).toHaveAccessibleDescription(
-                LOCKED_HINT
-            );
-            expect(screen.getByRole("checkbox", { name: "Optional Services Component" })).toHaveAccessibleDescription(
-                LOCKED_HINT
-            );
+            // Like the app's other locked fields: a tooltip (no hint), capped so it wraps, and
+            // read as the select's description.
+            const select = screen.getByRole("combobox", { name: "Services Component" });
+            expect(select).toHaveAccessibleDescription(LOCKED_MESSAGE);
+            expect(screen.getByRole("tooltip", { hidden: true })).toHaveClass("width-mobile", "text-wrap");
+            // Only the tooltip carries the message: no visible hint repeats it.
+            expect(screen.getAllByText(LOCKED_MESSAGE)).toEqual([screen.getByRole("tooltip", { hidden: true })]);
         });
 
         test("keeps the period of performance editable", () => {

@@ -8,7 +8,7 @@ import TextArea from "../../UI/Form/TextArea";
 import { NON_SEVERABLE_OPTIONS, SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "../ServicesComponents.constants";
 import ServicesComponentSelect from "../ServicesComponentSelect";
 
-const NUMBER_LOCKED_HINT =
+const NUMBER_LOCKED_MESSAGE =
     "The Services Component number and Optional setting can't be changed after the agreement is awarded.";
 
 /**
@@ -157,7 +157,10 @@ function ServicesComponentForm({
                                     scSelectTouched ? (suiteErrors?.getErrors("servicesComponentSelect") ?? []) : []
                                 }
                                 isDisabled={isNumberLocked}
-                                hint={isNumberLocked ? NUMBER_LOCKED_HINT : ""}
+                                // Like the app's other locked fields: the reason is a tooltip, capped
+                                // so it wraps instead of running across the form.
+                                tooltipMsg={isNumberLocked ? NUMBER_LOCKED_MESSAGE : ""}
+                                tooltipMaxWidth="mobile"
                             />
                         </div>
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
@@ -175,8 +178,6 @@ function ServicesComponentForm({
                                             optional: !formData?.optional
                                         });
                                     }}
-                                    // Locked with the SC number: point to the hint that says why.
-                                    aria-describedby={isNumberLocked ? "servicesComponentSelect-hint" : undefined}
                                     disabled={
                                         isNumberLocked ||
                                         formData?.number === 0 ||
