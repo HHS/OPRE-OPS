@@ -1768,6 +1768,8 @@ def get_is_editable_meta_data(serialized_bli):
             _lock_for_in_review_modification(data_for_meta)
 
     meta = meta_schema.dump(data_for_meta)
+    # The shared agreement MetaSchema has no inReviewModification field, so carry it over (OPS-6488).
+    meta["inReviewModification"] = data_for_meta.get("inReviewModification", False)
 
     return meta
 
@@ -1827,6 +1829,9 @@ def _lock_for_in_review_modification(meta: dict) -> None:
     meta["isEditable"] = False
     meta["isDeletable"] = False
     meta["lockedMessage"] = BLI_IN_REVIEW_MODIFICATION_MESSAGE
+    # isEditable is always false for Obligated lines, so the de-obligation control (OPS-6488)
+    # needs this to know the line is locked.
+    meta["inReviewModification"] = True
 
 
 def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreement_ids: list[int]) -> dict:

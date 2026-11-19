@@ -11,6 +11,7 @@ from flask import url_for
 from sqlalchemy import select, text
 
 from models import (
+    AgreementHistory,
     AgreementReason,
     AgreementType,
     AwardType,
@@ -22,10 +23,12 @@ from models import (
     ContractModificationRequestStatus,
     ContractType,
     ModificationEditType,
+    ModType,
     OpsEvent,
     OpsEventType,
     ProcurementAction,
     ProcurementActionStatus,
+    Project,
     ServicesComponent,
     User,
 )
@@ -112,13 +115,15 @@ def _make_bli(loaded_db, agreement, test_can, status, amount=500000.00):
 
 def _cleanup(loaded_db, agreement_id, bli_id, sc):
     loaded_db.rollback()
-    loaded_db.execute(text("DELETE FROM contract_modification_edit WHERE agreement_id = :id"), {"id": agreement_id})
-    loaded_db.execute(text("DELETE FROM procurement_action WHERE agreement_id = :id"), {"id": agreement_id})
+    params = {"id": agreement_id}
+    loaded_db.execute(text("DELETE FROM contract_modification_request WHERE agreement_id = :id"), params)
+    loaded_db.execute(text("DELETE FROM contract_modification_edit WHERE agreement_id = :id"), params)
+    loaded_db.execute(text("DELETE FROM agreement_mod WHERE agreement_id = :id"), params)
+    loaded_db.execute(text("DELETE FROM procurement_action WHERE agreement_id = :id"), params)
     loaded_db.commit()
-    bli = loaded_db.get(ContractBudgetLineItem, bli_id)
-    if bli is not None:
+    for bli in loaded_db.query(ContractBudgetLineItem).filter_by(agreement_id=agreement_id).all():
         loaded_db.delete(bli)
-        loaded_db.commit()
+    loaded_db.commit()
     loaded_db.delete(sc)
     loaded_db.commit()
     agreement = loaded_db.get(ContractAgreement, agreement_id)
@@ -188,7 +193,57 @@ def test_agreement_total_nets_the_pending_de_obligation(
         loaded_db.refresh(agreement)
         assert agreement.agreement_subtotal == 400000.00
         assert agreement.lifetime_obligated == 400000.00
+        assert agreement.fy_obligated(2043) == 400000.00
+        assert agreement.spending_by_fiscal_year[2043] == 400000.00
     finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
+def test_project_spending_nets_the_pending_de_obligation(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+):
+    """Project totals and per-FY totals both net the pending de-obligation, so they agree."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="P")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
+    try:
+        before = loaded_db.get(Project, test_project.id).project_list_metadata
+        assert _submit_de_obligation(basic_user_auth_client, bli.id, 100000.00).status_code == 200
+        loaded_db.expire_all()
+        after = loaded_db.get(Project, test_project.id).project_list_metadata
+
+        assert before["total"] - after["total"] == 100000
+        assert before["total_by_fiscal_year"][2043] - after["total_by_fiscal_year"][2043] == 100000
+        contract_before = before["spending_type_by_fiscal_year"][2043]["contract"]
+        assert contract_before - after["spending_type_by_fiscal_year"][2043]["contract"] == 100000
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
+def test_submit_and_clear_write_agreement_history(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+):
+    """AC: the original and requested amounts are viewable in the agreement history."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="H")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
+    try:
+        assert _submit_de_obligation(basic_user_auth_client, bli.id, 100000.00).status_code == 200
+        assert _submit_de_obligation(basic_user_auth_client, bli.id, None).status_code == 200
+
+        history = loaded_db.scalars(
+            select(AgreementHistory)
+            .where(AgreementHistory.agreement_id_record == agreement.id)
+            .order_by(AgreementHistory.id)
+        ).all()
+        requested, removed = [h for h in history if h.history_title.startswith("De-obligation")]
+        assert requested.history_title == "De-obligation Requested"
+        assert requested.budget_line_id_record == bli.id
+        assert "$100,000.00" in requested.history_message
+        assert "$500,000.00" in requested.history_message
+        assert removed.history_title == "De-obligation Removed"
+    finally:
+        loaded_db.rollback()
+        loaded_db.execute(text("DELETE FROM agreement_history WHERE agreement_id_record = :id"), {"id": agreement.id})
+        loaded_db.commit()
         _cleanup(loaded_db, agreement.id, bli.id, sc)
 
 
@@ -349,6 +404,74 @@ def test_approving_a_de_obligation_request_is_rejected(
 
         request = loaded_db.get(ContractModificationRequest, mod_request_id)
         assert request.status == ContractModificationRequestStatus.IN_REVIEW
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
+def test_approving_a_mixed_request_executes_the_rest_and_leaves_the_de_obligation_pending(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    test_project,
+    app_ctx,
+):
+    """A pending de-obligation doesn't block approving other work on the agreement."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="N")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
+    planned = ContractBudgetLineItem(
+        agreement_id=agreement.id,
+        line_description="Planned line to execute",
+        amount=50000.00,
+        can_id=test_can.id,
+        date_needed=datetime.date.today(),
+        status=BudgetLineItemStatus.PLANNED,
+        proc_shop_fee_percentage=0,
+        created_by=SYSTEM_OWNER_USER_ID,
+        services_component_id=sc.id,
+    )
+    loaded_db.add(planned)
+    loaded_db.commit()
+    try:
+        assert _submit_de_obligation(basic_user_auth_client, bli.id, 100000.00).status_code == 200
+        submitted = _submit_mod(basic_user_auth_client, agreement.id, budget_line_item_ids=[planned.id])
+        assert submitted.status_code == 201, submitted.json
+
+        response = _review_mod(division_director_auth_client, submitted.json["id"], "APPROVE")
+        assert response.status_code == 200, response.json
+
+        loaded_db.expire_all()
+        request = loaded_db.get(ContractModificationRequest, submitted.json["id"])
+        assert request.status == ContractModificationRequestStatus.APPROVED
+        assert request.agreement_mod.mod_type == ModType.AS_IS
+        assert loaded_db.get(ContractBudgetLineItem, planned.id).status == BudgetLineItemStatus.IN_EXECUTION
+        assert _get_edit(loaded_db, bli.id) is not None  # still pending, for OPS-6489
+        assert float(loaded_db.get(ContractBudgetLineItem, bli.id).requested_de_obligation_amount) == 100000.00
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
+def test_resubmitting_while_the_modification_is_in_review_is_rejected(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+):
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="R")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
+    try:
+        assert _submit_de_obligation(basic_user_auth_client, bli.id, 100000.00).status_code == 200
+        mod_request_id = _submit_mod(basic_user_auth_client, agreement.id).json["id"]
+        edit_id = _get_edit(loaded_db, bli.id).id
+
+        response = _submit_de_obligation(basic_user_auth_client, bli.id, 150000.00)
+        assert response.status_code == 400, response.json
+
+        loaded_db.expire_all()
+        request = loaded_db.get(ContractModificationRequest, mod_request_id)
+        assert [edit.id for edit in request.edits] == [edit_id]
+        assert float(loaded_db.get(ContractBudgetLineItem, bli.id).requested_de_obligation_amount) == 100000.00
+
+        meta = basic_user_auth_client.get(url_for("api.budget-line-items-item", id=bli.id)).json["_meta"]
+        assert meta["inReviewModification"] is True
     finally:
         _cleanup(loaded_db, agreement.id, bli.id, sc)
 

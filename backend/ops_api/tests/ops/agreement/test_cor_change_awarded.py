@@ -1141,8 +1141,8 @@ def test_mod_type_follows_the_bundled_edits(edit_types, expected):
 
     from ops_api.ops.services.contract_modification_requests import _mod_type
 
-    request = SimpleNamespace(edits=[SimpleNamespace(modification_type=t) for t in edit_types])
-    assert _mod_type(request) == expected
+    edits = [SimpleNamespace(modification_type=t) for t in edit_types]
+    assert _mod_type(edits) == expected
 
 
 def test_agreement_meta_says_why_the_cor_is_locked_while_its_change_is_in_review(

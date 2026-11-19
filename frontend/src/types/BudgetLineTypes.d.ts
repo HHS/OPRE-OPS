@@ -68,6 +68,7 @@ export type BudgetLine = {
         isEditable: boolean;
         isDeletable?: boolean;
         lockedMessage?: string | null;
+        inReviewModification?: boolean;
         limit: number;
         number_of_pages: number;
         offset: number;

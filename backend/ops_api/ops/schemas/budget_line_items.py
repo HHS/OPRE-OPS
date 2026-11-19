@@ -188,6 +188,7 @@ class MetaSchema(Schema):
     isEditable = fields.Bool(dump_default=False, required=True)
     isDeletable = fields.Bool(dump_default=False, load_default=False, required=False)
     lockedMessage = fields.Str(allow_none=True, dump_default=None, load_default=None, required=False)
+    inReviewModification = fields.Bool(dump_default=False, load_default=False, required=False)
 
 
 class QueryParametersSchema(PaginationListSchema):

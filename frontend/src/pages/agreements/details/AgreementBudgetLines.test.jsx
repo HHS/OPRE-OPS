@@ -125,8 +125,12 @@ describe("AgreementBudgetLines", () => {
             </Provider>
         );
 
-        // $450,000 subtotal, not the $550,000 gross (the FY card still sums gross obligated amounts).
+        // $450,000 subtotal, not the $550,000 gross.
         expect(screen.getByText("$450,000.00")).toBeInTheDocument();
+        // Agreement Total renders dollars and cents in separate spans.
+        const totalCard = screen.getByTestId("currency-summary-card-total");
+        expect(totalCard).toHaveTextContent("$ 450,000");
+        expect(totalCard).not.toHaveTextContent("550,000");
     });
 
     test("super user can edit budget lines on GRANT agreements", () => {

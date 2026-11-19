@@ -10390,6 +10390,12 @@ components:
           description: >-
             Server-computed human-readable reason the budget line item is locked when the frontend
             cannot derive it on its own (e.g. the agreement has reached Pre-Award). Null when editable.
+        inReviewModification:
+          type: boolean
+          default: false
+          description: >-
+            Whether the budget line item is selected for, or has edits attached to, a contract
+            modification request that is in review, so it can't be changed or de-obligated.
         total_count:
           type: integer
           description: Total number of budget line items in the system matching the query

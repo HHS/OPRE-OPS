@@ -13,7 +13,10 @@ import CurrencyCard from "../../../UI/Cards/CurrencyCard";
  */
 const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD", isGrant = false }) => {
     return (
-        <div data-cy="currency-summary-card-total">
+        <div
+            data-cy="currency-summary-card-total"
+            data-testid="currency-summary-card-total"
+        >
             <CurrencyCard
                 headerText="Agreement Total"
                 amount={total}

@@ -165,6 +165,7 @@ class BudgetLineItemDeObligationAPI(BaseItemAPI):
                     "budget_line_item_id": id,
                     "agreement_id": bli.agreement_id,
                     "requested_de_obligation_amount": data["requested_amount"],
+                    "original_obligated_amount": float(bli.amount or 0),
                 }
             )
             return make_response_with_headers(self._response_schema.dump(bli), 200)

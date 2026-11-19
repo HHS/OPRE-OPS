@@ -7,6 +7,7 @@ import {
     feesForCards,
     getEffectiveScDateRange,
     getServicesComponentAdditionsTrackedForModification,
+    subTotalForCards,
     totalsForCards
 } from "./CreateBLIsAndSCs.helpers";
 
@@ -227,4 +228,24 @@ describe("buildEditedBudgetLinePayload — Modified LOE amount edit (OPS-3072)",
             expect(payload.tempChangeRequest).toEqual({ amount: 600000 });
         }
     );
+});
+
+// OPS-6488: the editor's Agreement Subtotal and Total net pending de-obligations; fees don't change.
+describe("subTotalForCards with a pending de-obligation", () => {
+    const budgetLines = [
+        { id: 1, status: "OBLIGATED", amount: 500000, requested_de_obligation_amount: 100000, fees: 25000 },
+        { id: 2, status: "PLANNED", amount: 50000, fees: 2500 }
+    ];
+
+    it("subtracts the pending de-obligation from the subtotal", () => {
+        expect(subTotalForCards(budgetLines)).toBe(450000);
+    });
+
+    it("carries the netted subtotal into the total, with fees unchanged", () => {
+        expect(totalsForCards(subTotalForCards(budgetLines), budgetLines)).toBe(477500);
+    });
+
+    it("uses the edited amount rather than a stale net_amount from the API", () => {
+        expect(subTotalForCards([{ id: 3, status: "PLANNED", amount: 999999, net_amount: 1000000 }])).toBe(999999);
+    });
 });

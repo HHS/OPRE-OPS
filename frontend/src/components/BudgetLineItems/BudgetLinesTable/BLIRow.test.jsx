@@ -568,6 +568,41 @@ describe("BLIRow", () => {
             expect(expanded.queryByText("De-obligated Amount")).not.toBeInTheDocument();
         });
 
+        it("shows the locked icons, not the pencil, while the line is in a modification in review", async () => {
+            renderComponent(
+                [],
+                true,
+                {
+                    status: "OBLIGATED",
+                    _meta: { isEditable: false, inReviewModification: true, lockedMessage: "In review" }
+                },
+                false,
+                { tracksContractModifications: true }
+            );
+
+            await userEvent.setup().hover(screen.getByText("Obligated"));
+
+            expect(screen.queryByTestId("de-obligate-row")).not.toBeInTheDocument();
+            expect(screen.getByTestId("edit-row")).toBeDisabled();
+        });
+
+        it("reaches the de-obligate button by keyboard through the expanded row", async () => {
+            const handleDeObligateBudgetLine = vi.fn();
+            renderComponent([], true, { status: "OBLIGATED" }, false, {
+                tracksContractModifications: true,
+                handleDeObligateBudgetLine
+            });
+            const user = userEvent.setup();
+
+            screen.getByRole("button", { name: "Expand row details" }).focus();
+            await user.keyboard("{Enter}");
+            await user.tab();
+            expect(screen.getByRole("button", { name: "De-obligate funding" })).toHaveFocus();
+            await user.keyboard("{Enter}");
+
+            expect(handleDeObligateBudgetLine).toHaveBeenCalledWith(1);
+        });
+
         it("starts a de-obligation from an Obligated line on a tracked agreement", async () => {
             const handleDeObligateBudgetLine = vi.fn();
             renderComponent([], true, { status: "OBLIGATED" }, false, {

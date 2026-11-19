@@ -23,8 +23,8 @@ import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandab
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
-import deObligationIcon from "../../../images/de-obligation-icon.svg";
 import ChangeIcons from "../ChangeIcons";
+import PendingDeObligationIcon from "../PendingDeObligationIcon";
 import { addErrorClassIfNotFound, futureDateErrorClass, isDateOutsidePopRange } from "./BLIRow.helpers";
 
 /**
@@ -81,7 +81,11 @@ const BLIRow = ({
     // OPS-6488: the only edit an Obligated line on a tracked, awarded agreement can have is a
     // de-obligation request. Independent of isBudgetLineEditable, which stays false for
     // OBLIGATED (EDITABLE_STATUSES excludes it) -- this is a narrower, separate affordance.
-    const canDeObligate = !readOnly && tracksContractModifications && budgetLine?.status === "OBLIGATED";
+    const canDeObligate =
+        !readOnly &&
+        tracksContractModifications &&
+        budgetLine?.status === "OBLIGATED" &&
+        !budgetLine?._meta?.inReviewModification;
     const pendingDeObligationAmount = budgetLine?.requested_de_obligation_amount;
     const hasPendingDeObligation = pendingDeObligationAmount != null;
 
@@ -168,23 +172,7 @@ const BLIRow = ({
             </td>
             <td className={isReviewMode && budgetLine?.amount == null ? "table-item-error" : ""}>
                 {budgetLine?.amount != null ? formatCurrency(netAmount) : NO_DATA}
-                {hasPendingDeObligation && (
-                    <Tooltip
-                        position="right"
-                        label={`Original obligated amount was ${formatCurrency(
-                            budgetLine.amount
-                        )} with ${formatCurrency(pendingDeObligationAmount)} de-obligated in a modification`}
-                    >
-                        <img
-                            src={deObligationIcon}
-                            width={16}
-                            height={16}
-                            alt="Pending de-obligation"
-                            className="margin-left-1 text-middle"
-                            data-testid="pending-de-obligation-icon"
-                        />
-                    </Tooltip>
-                )}
+                <PendingDeObligationIcon budgetLine={budgetLine} />
             </td>
             {/* Grants have no procurement shop, so no Fee or Total columns. */}
             {!isGrant && (

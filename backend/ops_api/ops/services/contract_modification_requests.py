@@ -21,6 +21,7 @@ from models import (
     AgreementMod,
     BudgetLineItem,
     BudgetLineItemStatus,
+    ContractModificationEdit,
     ContractModificationRequest,
     ContractModificationRequestNotification,
     ContractModificationRequestStatus,
@@ -191,13 +192,13 @@ class ContractModificationRequestService:
         request.status = ContractModificationRequestStatus.DECLINED
 
     def _approve(self, request: ContractModificationRequest) -> None:
-        # Submitting a de-obligation on an Obligated budget line never applies amount/CAN
-        # changes (OPS-6488); approving one into a real modification is OPS-6489's job, not yet
-        # implemented. Block it here rather than silently completing: mod_type() below has no
-        # DE_OBLIGATION branch, and nothing after this point touches
-        # requested_de_obligation_amount, so an unguarded approval would mislabel the resulting
-        # AgreementMod and leave the pending amount permanently stranded on the budget line.
-        if any(edit.modification_type == ModificationEditType.DE_OBLIGATION for edit in request.edits):
+        # Applying an approved de-obligation is OPS-6489. Until then, approve everything else in
+        # the request and leave de-obligation edits pending, so a de-obligation doesn't block
+        # unrelated work on the agreement; a request with nothing else in it can't be approved.
+        approvable_edits = [
+            edit for edit in request.edits if edit.modification_type != ModificationEditType.DE_OBLIGATION
+        ]
+        if len(approvable_edits) < len(request.edits) and not approvable_edits and not request.budget_line_items:
             raise ValidationError(
                 {"action": "De-obligation requests can't be approved yet; that's tracked separately (OPS-6489)."}
             )
@@ -217,12 +218,12 @@ class ContractModificationRequestService:
         if changed:
             raise ValidationError({"budget_line_item_ids": changed})
 
-        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=_mod_type(request))
+        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=_mod_type(approvable_edits))
         self.db_session.add(agreement_mod)
         self.db_session.flush()
 
         self._edit_service.attach_pending_edits_to_mod(
-            request.agreement_id, agreement_mod.id, [edit.id for edit in request.edits]
+            request.agreement_id, agreement_mod.id, [edit.id for edit in approvable_edits]
         )
         # Set directly: the BLI update and change request paths reject Executing on an Awarded
         # agreement (validate_no_execution_status_change_on_awarded), because this approval is
@@ -340,15 +341,12 @@ class ContractModificationRequestService:
         )
 
 
-def _mod_type(request: ContractModificationRequest) -> ModType:
+def _mod_type(edits: list[ContractModificationEdit]) -> ModType:
     """As-is for pure budget-line execution (#1008), Admin when only Admin Changes such as a COR
     change ride along (#3269), and Modified LOE when any Modified LOE edit does (#3072).
-
-    No DE_OBLIGATION branch is needed (OPS-6488): _approve() rejects a request containing a
-    DE_OBLIGATION edit before this is ever called for one.
-    """
-    if not request.edits:
+    ``edits`` are the ones being approved, so pending de-obligations don't count (OPS-6488)."""
+    if not edits:
         return ModType.AS_IS
-    if all(edit.modification_type == ModificationEditType.ADMIN_CHANGE for edit in request.edits):
+    if all(edit.modification_type == ModificationEditType.ADMIN_CHANGE for edit in edits):
         return ModType.ADMIN
     return ModType.MODIFIED_LOE
