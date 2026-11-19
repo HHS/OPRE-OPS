@@ -205,6 +205,8 @@ See [`frontend/.storybook/README.md`](./frontend/.storybook/README.md) for conve
 Whether you run the application through Docker or locally, you can access the frontend at `http://localhost:3000` and
 the backend api at `http://localhost:8080`.
 
+A Claude Code session in a git worktree auto-assigns different ports (see `.claude/hooks/assign-dev-ports.sh`) so parallel worktrees don't collide; check that worktree's `.env` for its actual ports.
+
 [Storybook](https://storybook.js.org/) (component documentation) is available at:
 
 - **Local**: `http://localhost:6006` (see [Running Storybook](#running-storybook) below)

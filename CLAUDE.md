@@ -7,6 +7,8 @@ OPRE OPS is the Portfolio Management System for OPRE (Office of Planning, Resear
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8080
 
+A Claude Code session in a git worktree auto-assigns different ports (`.claude/hooks/assign-dev-ports.sh`); check that worktree's `.env` for its actual ports.
+
 ## Subdirectory Guides
 
 Each major directory has its own `CLAUDE.md` with detailed commands, architecture, and patterns:
