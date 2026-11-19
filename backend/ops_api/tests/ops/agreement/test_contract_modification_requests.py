@@ -144,11 +144,11 @@ def test_submit_puts_edits_in_review_and_notifies_the_director(
         )
     ).one()
     assert notification.recipient_id == DIVISION_DIRECTOR_USER_ID
-    # Approving or declining in OPS is #3331, so the notification doesn't ask for it yet.
+    # The Division Director can now review and act from their For Review list (#6546).
     assert notification.message.startswith(
-        "A Contract Modification has been submitted for your review. Reviewing it in OPS is coming soon."
+        "A Contract Modification has been submitted for your review. "
+        "You can review and approve or decline it from your For Review list."
     )
-    assert "approve" not in notification.message.lower()
 
     # AC13: who / when / what / remote IP.
     event = _latest_event(loaded_db, OpsEventType.START_CONTRACT_MODIFICATION)
@@ -736,6 +736,87 @@ def test_get_requests_can_review_is_true_for_superuser_and_deputy_director(
     loaded_db.commit()
 
     assert can_review_for(division_6_director_auth_client) is True
+
+
+# ---=== Pending Review List (#6546) ===---
+
+
+def _get_pending_review(client):
+    return client.get(url_for("api.contract-modification-requests-pending-review"))
+
+
+def test_pending_review_director_sees_it_submitter_and_unrelated_director_do_not(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, division_6_director_auth_client
+):
+    agreement, _, _ = awarded_with_edit
+    in_review_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+
+    by_client = {
+        "director": division_director_auth_client,
+        "submitter": basic_user_auth_client,
+        "unrelated_director": division_6_director_auth_client,
+    }
+    sees_it_by_client = {
+        name: in_review_id in [r["id"] for r in _get_pending_review(client).json["data"]]
+        for name, client in by_client.items()
+    }
+
+    assert sees_it_by_client == {"director": True, "submitter": False, "unrelated_director": False}
+
+
+def test_pending_review_superuser_and_deputy_director_see_it(
+    awarded_with_edit,
+    basic_user_auth_client,
+    power_user_auth_client,
+    division_6_director_auth_client,
+    loaded_db,
+    test_can,
+):
+    """The superuser and deputy-director branches, neither exercised by the test above (which
+    only covers the primary-director branch) -- mirrors
+    test_get_requests_can_review_is_true_for_superuser_and_deputy_director."""
+    agreement, _, _ = awarded_with_edit
+    in_review_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+
+    def sees_it(client):
+        return in_review_id in [r["id"] for r in _get_pending_review(client).json["data"]]
+
+    # Superuser branch: sees it regardless of division.
+    assert sees_it(power_user_auth_client) is True
+
+    # Deputy branch: make Director Derrek (division_6_director_auth_client's user) the *deputy*
+    # of the agreement's own division -- confirmed not its director by the test above.
+    division = test_can.portfolio.division
+    division.deputy_division_director_id = DIVISION_6_DIRECTOR_USER_ID
+    loaded_db.add(division)
+    loaded_db.commit()
+
+    assert sees_it(division_6_director_auth_client) is True
+
+
+def test_pending_review_excludes_an_already_decided_request(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client
+):
+    agreement, _, _ = awarded_with_edit
+    request_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+    _review_mod(division_director_auth_client, request_id, "DECLINE")
+
+    ids = [r["id"] for r in _get_pending_review(division_director_auth_client).json["data"]]
+
+    assert request_id not in ids
+
+
+def test_pending_review_response_includes_can_review_true_and_modification_type(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client
+):
+    agreement, _, _ = awarded_with_edit
+    in_review_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+
+    row = next(r for r in _get_pending_review(division_director_auth_client).json["data"] if r["id"] == in_review_id)
+
+    assert row["can_review"] is True
+    # awarded_with_edit's request carries one approved amount edit (MODIFIED_LOE), no COR change.
+    assert row["modification_type"] == "MODIFIED_LOE"
 
 
 def test_agreement_notifications_include_contract_modification_requests(

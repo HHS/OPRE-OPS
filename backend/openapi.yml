@@ -952,6 +952,43 @@ paths:
           description: Forbidden - User is not associated with the agreement
         "404":
           description: Not Found - Agreement does not exist
+  /contract-modification-requests/pending-review/:
+    get:
+      tags:
+        - Agreements
+      operationId: getPendingContractModificationReviews
+      summary: List contract modification requests pending the current user's review
+      description: |
+        Every IN_REVIEW contract modification request the current user may approve/decline,
+        across all agreements, newest first: every one for a superuser, otherwise only those on
+        agreements where the user is a Division Director or deputy. Powers the "For Review" list
+        and its badge count. `can_review` is always true on every returned row, since the query
+        is already scoped to requests the caller may review.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/ContractModificationRequest"
+                        - type: object
+                          properties:
+                            modification_type:
+                              type: string
+                              enum: [MODIFIED_LOE, ADMIN, AS_IS]
+                              description: |
+                                Derived from the request's edits (no Modified LOE edits and only
+                                Admin Changes -> ADMIN; no edits at all -> AS_IS; otherwise
+                                MODIFIED_LOE). For display only.
+                              example: MODIFIED_LOE
+        "401":
+          description: Unauthorized
   /contract-modification-requests/{id}/:
     patch:
       tags:

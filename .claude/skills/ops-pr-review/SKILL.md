@@ -14,7 +14,7 @@ Don't restate REVIEW.md from memory: read it at the start of every run, because 
 ## 1. Set up
 
 1. **Read `docs/REVIEW.md` in full.** Every reviewer and skeptic gets the whole file by path, not a summary or a hand-picked list of sections, so this skill keeps working when REVIEW.md changes.
-2. **Find the PR.** Use `$ARGUMENTS` if given; otherwise `gh pr view --json number`. With no PR, review `git diff origin/main...HEAD` and skip the steps that need one (Turn 0, posting).
+2. **Find the PR.** PR number argument (blank if none was given): $ARGUMENTS. Use it if given; otherwise `gh pr view --json number`. With no PR, review `git diff origin/main...HEAD` and skip the steps that need one (Turn 0, posting).
 3. **Gather context:**
    ```bash
    gh pr view <n> --json number,title,body,author,isDraft,headRefOid,baseRefName,files,labels
@@ -31,7 +31,7 @@ Don't restate REVIEW.md from memory: read it at the start of every run, because 
 Decide both from REVIEW.md before launching any reviewer, and state them at the top of the report:
 
 - **Scope** (REVIEW.md → Scope): feature/fix/refactor, bot, docs-only, tooling or hotfix. This sets what can block. For a bot PR only S0 blocks, so a skim of the dependency's breaking changes plus green CI is enough; run the orchestrator only if the bump touches auth, data writes or the build.
-- **Risk tier** (REVIEW.md → Risk Tiers): the highest tier of any change, judged by **the changed lines**, not just the path list.
+- **Risk tier** (REVIEW.md → Risk Tiers): the highest tier of any change, judged by **the changed lines**, not just the path list. The tier sets how much human review the PR gets. It doesn't limit what reviewers trace, so don't use a tier rationale such as "only adds a read-only parameter" to narrow step 4's brief.
 
 **Ask before launching reviewers when something is missing that the review needs.** Put all questions in one short message, and only these:
 
@@ -70,6 +70,14 @@ git merge-base --is-ancestor <baseline> <headRefOid> && git diff --name-only <ba
 
 Intersect that file list with `gh pr diff <n> --name-only`, then add already-reviewed code whose behavior those hunks change. If the baseline commit is missing, or the ancestry check exits non-zero (the branch was rebased or force-pushed), tell the user which one it was and do a full review instead.
 
+**Carry forward findings from review bodies, not just inline threads.** The orchestrator's own existing-thread lookup only reads `reviewThreads` (line-anchored inline comments). A finding reported in a review's top-level body — because its code wasn't part of any diff hunk, so it couldn't be posted inline — won't show up there, and a later delta re-review can call the PR clean without ever having seen it. Before every delta re-review, also fetch review bodies:
+
+```bash
+gh api --paginate repos/{owner}/{repo}/pulls/<n>/reviews --jq '.[] | {user: .user.login, state, body, submitted_at}'
+```
+
+Extract any `[S0]`/`[S1]` block from each review body, plus the author's own `<!-- shared-review -->` PR comments already fetched in step 3 above — `gh api .../reviews` only returns formal reviews, not issue comments, which is where the author's markers actually live. Carry each one forward into the resolution table until it's fixed in code or a second developer has agreed to won't-fix in a PR comment (REVIEW.md → Disputes and Won't-Fix). Check each one's current status first: don't re-report a finding that's already fixed, resolved, or agreed won't-fix just because an old body still mentions it.
+
 **Skeptic turns:** N = 3 for Tier 3 PRs, N = 2 otherwise.
 
 ## 4. Run the orchestrator
@@ -102,7 +110,13 @@ Base copies come from the **merge-base**, the commit the PR branched from, not t
 
 When the review is done, clean up with `git worktree remove --force /tmp/ops-pr-review-<n>/head && rm -rf /tmp/ops-pr-review-<n>`. If a run was interrupted and the directory is already gone, `git worktree prune` clears the stale entry.
 
-Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode above and follow it, with these additions to every reviewer agent's launch brief and every skeptic's brief:
+**Require specific reviewer agents by file type — don't leave this to the orchestrator's own "add specialists" judgment call.** This is a deliberate exception to "the orchestrator decides which reviewers run" above, not a conflict to reconcile later: that call is advisory, and has been observed to vary run-to-run on the same diff — one run of this skill on a PR picked 4 generic reviewers, another run on the same PR at the same commit picked 5 including two specialists, and only the second caught two real S1s. Decide the roster yourself from the diff's file list and tell the orchestrator to use it instead of deciding on its own:
+
+- Any diff under `frontend/src/**` that changes a `.jsx`/`.tsx` element's interaction (an `onClick`/`onKeyDown` handler, a `role=` attribute, a focus/`tabIndex` change), a form, a modal, or a mutation (an API call that writes data); a `*.hooks.js` file; `opsAPI.js` or `opsAuthAPI.js`; or a component's `.scss`/`.css`/`.module.scss` file: always include `flexion-engineer-base:frontend-expert-review` and `flexion-engineer-base:accessibility-expert-review`.
+- Any `backend/alembic/**` diff: always include `flexion-engineer-base:database-expert-review`.
+- `flexion-engineer-base:pragmatic-reviewer` always runs, per the orchestrator's own default.
+
+Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode above and follow it, with this roster and these additions to every reviewer agent's launch brief and every skeptic's brief. Each applies within the review's scope from step 3 (the whole PR in a full review, the delta in a Delta Re-Review):
 
 1. **Include the path to `docs/REVIEW.md`** with an instruction to read all of it, plus the PR's scope and tier, and the acceptance criteria (or "not available").
 2. **Label every finding S0–S3 by REVIEW.md's definitions,** alongside the orchestrator's Likelihood × Impact score. The S label decides blocking; the Critical/High/Medium/Low label doesn't.
@@ -112,6 +126,17 @@ Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode ab
 6. **Check every rule in REVIEW.md → Project Rules to Check**, and REVIEW.md's rule on tests required for money math, authorization, migrations, workflow state and data writes.
 7. **Skeptics re-derive the S label independently**, citing code. If a skeptic's S label differs from Turn 1's, the skeptic's label wins, the same as the orchestrator's rule for scores.
 8. **A resolved or outdated thread doesn't close an S0/S1.** This overrides the orchestrator's Turn 0 suppression rule for blockers: suppress an S0/S1 on a resolved thread only if the code at that location changed to fix it, or a PR comment records a second developer agreeing to won't-fix (REVIEW.md → Disputes and Won't-Fix). Otherwise report it as `REOPENED` and cite the unchanged code. Suppression still applies to S2/S3.
+9. **Trace what the change newly exposes, to a sibling code path as well as to a renderer.** When the PR removes a guard, widens a filter, or adds a branch so that an existing shared save/fetch helper (a `rowMapper`, a bundle-save function, an RTK Query mutation's `invalidatesTags`) now has to handle a record state it didn't handle before, check that helper's *other* callers and siblings that save or read the same data — not just the call site the diff touches. Two shapes to check:
+   - A renderer, export, report or email consumer whose output should match the on-screen table for special-cased states (OBE, in review, null or `--` dates, missing CAN). List every consumer and compare field-by-field.
+   - A second function that prepares or saves the same payload through a different path (for example, a bundle-save path alongside a direct-edit path, or a cache tag another screen depends on) that was updated for this case while its sibling wasn't.
+
+   Scope this to the helper's own other call sites, not every function in the codebase that happens to touch the same field name — an unbounded search produces noise, not a finding. A mismatch or stale sibling is a "makes reachable" defect (REVIEW.md → What Can Block); it needs a demonstrated wrong output, not just "wasn't traced," to count as S1 rather than S3.
+10. **For a UI diff, check accessibility by simulating, not just reading.**
+    - For any new or changed action that triggers a mutation, trace the full lifecycle for both outcomes: where does focus land after success and after failure, and is the result announced through a live region, not just a visual change?
+    - For a changed responsive or grid/flex layout, check WCAG 1.4.10 Reflow (320 CSS px) and WCAG 1.4.4 Resize Text (200% zoom / 640 CSS px) as two separate checks, not one "zoom" pass. If you can render the component, measure for overflow at both widths; if you can't, reason it out from the CSS (compute the minimum content width the grid/flex rules imply) and say explicitly that the check was static reasoning, not a real render.
+    - When a value is passed into an existing status- or role-mapping function (for example, an alert's `type` prop), verify it against that function's actual branches, not just that *some* value was passed.
+11. **As part of item 6's test-requirement check: verify a test exercises the real behavior, not only a mock.** A test that asserts against a mock's recorded call arguments, or renders a component with the thing under test mocked out, doesn't exercise the change. REVIEW.md's rule that a test must exercise the change — for money math, authorization, migrations, workflow state, data writes and accessibility-relevant behavior — isn't met by that kind of test, even if it passes.
+12. **For a migration that adds a `UNIQUE` or `CHECK` constraint to an existing table, trace every pre-existing code path that inserts or updates rows in that table.** If you find a plausible path that could have already written a violating row (for example, an old approval flow that never deduplicated), this is **S1, blocking, by default** — not an open question with no effect on the verdict. You have no database access, so you can't confirm whether it actually happened, but you can write the one query that would: include it verbatim in the finding's `Fix:` line, as a ready-to-run `SELECT ... GROUP BY ... HAVING count(*) > 1`-style check against the column(s) the new constraint covers. State in the finding that it escalates to S0 if that query returns rows on staging, and stays S1 — not cleared — until a second developer has actually run it and posted the result in a PR comment, which closes it the same way a fix or a won't-fix does (REVIEW.md → When a Review Is Done). The author can't clear this alone by asserting it's fine or by running the query themselves.
 
 If the PR has open CodeQL, Semgrep or Snyk alerts on lines it changed, map them with REVIEW.md's scanner rules and include them as findings.
 
@@ -119,7 +144,7 @@ If the PR has open CodeQL, Semgrep or Snyk alerts on lines it changed, map them 
 
 Keep the orchestrator's disposition table, with a **Final S** column added. Then:
 
-- **Header:** PR number, head SHA reviewed, scope, tier, mode (full or delta from `<sha>`), N.
+- **Header:** PR number, head SHA reviewed, scope, tier, mode (full or delta from `<sha>`), N, and which specialist reviewers step 4's file-type rule added to the roster.
 - **Blocking findings:** every **open** S0 and S1 that blocks under the PR's Scope, in the finding format from REVIEW.md → Reporting Findings. Open means a surviving finding from this run, plus any S0/S1 the orchestrator listed as **Already tracked** (tag it `[tracked]` and link the thread), plus any prior finding the delta's resolution table marks `UNRESOLVED` or `PARTIALLY-RESOLVED` (tag it `[unresolved]`). Give tracked and unresolved items an S label too if they don't have one.
 - **Non-blocking:** at most 5 S2/S3 findings, most important first; sum up any others in one line. Rejected findings don't count toward the 5.
 - **Pre-existing:** listed separately with their `[Pre-existing S<n>]` labels.

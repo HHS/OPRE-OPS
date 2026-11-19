@@ -5,7 +5,8 @@ import {
     useGetChangeRequestsListQuery,
     useGetPendingPreAwardApprovalsQuery,
     useGetPendingBudgetRequisitionsQuery,
-    useGetPendingAwardApprovalsQuery
+    useGetPendingAwardApprovalsQuery,
+    useGetPendingContractModificationsForMeQuery
 } from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
@@ -14,6 +15,7 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
 import PreAwardReviewCard from "../PreAwardReviewCard";
 import BudgetTeamRequisitionReviewCard from "../BudgetTeamRequisitionReviewCard";
 import AwardReviewCard from "../AwardReviewCard";
+import ContractModificationReviewCard from "../ContractModificationReviewCard";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import { useNavigate } from "react-router-dom";
 /** @typedef {import("../../../types/ProcurementTrackerTypes").ProcurementTrackerPreAwardStep} ProcurementTrackerPreAwardStep */
@@ -67,6 +69,13 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         isError: errorAwardApprovals
     } = useGetPendingAwardApprovalsQuery(undefined, { refetchOnMountOrArgChange: true });
 
+    // Fetch pending contract modification requests (#6546)
+    const {
+        data: contractModRequests,
+        isLoading: loadingContractModRequests,
+        isError: errorContractModRequests
+    } = useGetPendingContractModificationsForMeQuery(undefined, { refetchOnMountOrArgChange: true });
+
     const calculateExecutingTotal = (budgetLineItems = []) => {
         return budgetLineItems
             .filter((bli) => bli.status === BLI_STATUS_IN_EXECUTION)
@@ -90,6 +99,11 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         _type: "award",
         _sortDate: step.approval_requested_date ?? "",
         item: step
+    }));
+    const taggedContractModRequests = (contractModRequests ?? []).map((request) => ({
+        _type: "contractMod",
+        _sortDate: request.created_on ?? "",
+        item: request
     }));
     const taggedBudgetRequisitions = (budgetRequisitions ?? []).map(
         (/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
@@ -122,6 +136,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         ...taggedBudgetRequisitions,
         ...taggedPreAwardApprovals,
         ...taggedAwardApprovals,
+        ...taggedContractModRequests,
         ...taggedChangeRequests
     ].sort((a, b) =>
         b._sortDate > a._sortDate
@@ -140,10 +155,23 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
 
     // Handle navigation to error page in useEffect to avoid setState during render
     React.useEffect(() => {
-        if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions || errorAwardApprovals) {
+        if (
+            errorChangeRequests ||
+            errorPreAwardApprovals ||
+            errorBudgetRequisitions ||
+            errorAwardApprovals ||
+            errorContractModRequests
+        ) {
             navigate("/error");
         }
-    }, [errorChangeRequests, errorPreAwardApprovals, errorBudgetRequisitions, errorAwardApprovals, navigate]);
+    }, [
+        errorChangeRequests,
+        errorPreAwardApprovals,
+        errorBudgetRequisitions,
+        errorAwardApprovals,
+        errorContractModRequests,
+        navigate
+    ]);
 
     // Clamp currentPage when allItems shrinks (e.g. after approving an item reduces totalPages)
     useEffect(() => {
@@ -152,10 +180,22 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         }
     }, [currentPage, totalPages]);
 
-    if (loadingChangeRequests || loadingPreAwardApprovals || loadingBudgetRequisitions || loadingAwardApprovals) {
+    if (
+        loadingChangeRequests ||
+        loadingPreAwardApprovals ||
+        loadingBudgetRequisitions ||
+        loadingAwardApprovals ||
+        loadingContractModRequests
+    ) {
         return <h1>Loading...</h1>;
     }
-    if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions || errorAwardApprovals) {
+    if (
+        errorChangeRequests ||
+        errorPreAwardApprovals ||
+        errorBudgetRequisitions ||
+        errorAwardApprovals ||
+        errorContractModRequests
+    ) {
         return null;
     }
 
@@ -214,6 +254,14 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                             requestDate={item.approval_requested_date ?? undefined}
                             awardAmount={item.award_amount ?? undefined}
                             awardDate={item.award_date ?? undefined}
+                        />
+                    );
+                }
+                if (_type === "contractMod") {
+                    return (
+                        <ContractModificationReviewCard
+                            key={`contract-mod-${item.id}`}
+                            request={item}
                         />
                     );
                 }
