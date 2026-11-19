@@ -34,11 +34,12 @@ export const feesForCards = (budgetLines) =>
     budgetLines.reduce((totalFees, budgetLine) => totalFees + (budgetLine.fees || 0), 0);
 
 /**
- * Get the sub total for the cards
+ * Get the sub total for the cards, net of any pending de-obligations (OPS-6488)
  * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
  * @returns {number} - The sub total
  */
-export const subTotalForCards = (budgetLines) => budgetLinesTotal(budgetLines);
+export const subTotalForCards = (budgetLines) =>
+    budgetLinesTotal(budgetLines.map((bli) => ({ ...bli, amount: bli.net_amount ?? bli.amount })));
 
 /**
  * Get the totals for the cards

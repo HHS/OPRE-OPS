@@ -457,6 +457,10 @@ export const cleanBudgetLineItemForApi = (data) => {
     delete cleanData.clin;
     delete cleanData.agreement;
     delete cleanData.financialSnapshotChanged;
+    // Response-only / UI-only de-obligation fields; a de-obligation is sent through its own endpoint.
+    delete cleanData.net_amount;
+    delete cleanData.requested_de_obligation_amount;
+    delete cleanData.deObligationChanged;
     delete cleanData.fees;
     delete cleanData.display_title;
     delete cleanData.services_component_number;

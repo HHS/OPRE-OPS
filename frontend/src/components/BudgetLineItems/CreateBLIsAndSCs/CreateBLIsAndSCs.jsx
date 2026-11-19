@@ -88,6 +88,9 @@ export const CreateBLIsAndSCs = ({
         blocker,
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
+        handleDeObligateBudgetLine,
+        budgetLineBeingEdited,
+        isDeObligating,
         handleEditBLI,
         handleResetForm,
         handleSetBudgetLineForEditingById,
@@ -408,6 +411,7 @@ export const CreateBLIsAndSCs = ({
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
+                    description={modalProps.description}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
@@ -586,6 +590,8 @@ export const CreateBLIsAndSCs = ({
                     scStartDate={effectiveScStartDate}
                     scEndDate={effectiveScEndDate}
                     allowPastObligateByDates={allowPastObligateByDates}
+                    isDeObligating={isDeObligating}
+                    deObligationMaxAmount={tempBudgetLines.find((bl) => bl.id === budgetLineBeingEdited)?.amount ?? 0}
                 />
             )}
 
@@ -692,6 +698,7 @@ export const CreateBLIsAndSCs = ({
                                     isReviewMode={isReviewMode}
                                     showClinColumn={showClinColumn}
                                     tracksContractModifications={tracksContractModifications}
+                                    handleDeObligateBudgetLine={handleDeObligateBudgetLine}
                                 />
                             </ServicesComponentAccordion>
                         </div>
