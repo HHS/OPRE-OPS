@@ -1,6 +1,6 @@
 import cryptoRandomString from "crypto-random-string";
 import { cleanAgreementForApi, cleanBudgetLineItemsForApi, formatTeamMember } from "../../../helpers/agreement.helpers";
-import { BLI_STATUS, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, budgetLinesTotal, getNetAmount } from "../../../helpers/budgetLines.helpers";
 import { formatDateForApi, renderField } from "../../../helpers/utils";
 
 /**
@@ -39,7 +39,7 @@ export const feesForCards = (budgetLines) =>
  * @returns {number} - The sub total
  */
 export const subTotalForCards = (budgetLines) =>
-    budgetLinesTotal(budgetLines.map((bli) => ({ ...bli, amount: bli.net_amount ?? bli.amount })));
+    budgetLinesTotal(budgetLines.map((bli) => ({ ...bli, amount: getNetAmount(bli) })));
 
 /**
  * Get the totals for the cards

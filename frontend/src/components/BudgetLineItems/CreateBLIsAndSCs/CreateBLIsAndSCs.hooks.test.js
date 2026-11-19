@@ -303,7 +303,6 @@ describe("useCreateBLIsAndSCs", () => {
             expect(staged).toMatchObject({
                 amount: 500000,
                 requested_de_obligation_amount: 100000,
-                net_amount: 400000,
                 deObligationChanged: true
             });
             expect(result.current.hasUnsavedChanges).toBe(true);

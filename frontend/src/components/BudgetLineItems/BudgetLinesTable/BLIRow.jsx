@@ -7,6 +7,7 @@ import {
     canLabel,
     getBudgetLineCreatedDate,
     getClinDisplayValue,
+    getNetAmount,
     getProcurementShopFeeTooltip,
     getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
@@ -63,7 +64,7 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const netAmount = budgetLine?.net_amount ?? budgetLine?.amount;
+    const netAmount = getNetAmount(budgetLine);
     const budgetLineTotalPlusFees = (netAmount ?? 0) + (budgetLine?.fees ?? 0);
     const isBudgetLineEditable = budgetLine._meta?.isEditable;
     const isBudgetLineDeletable = budgetLine._meta?.isDeletable ?? isBudgetLineEditable;

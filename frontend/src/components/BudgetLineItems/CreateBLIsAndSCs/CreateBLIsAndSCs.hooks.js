@@ -674,7 +674,6 @@ const useCreateBLIsAndSCs = (
                 payload: {
                     ...currentBudgetLine,
                     requested_de_obligation_amount: enteredAmount,
-                    net_amount: (currentBudgetLine.amount ?? 0) - enteredAmount,
                     deObligationChanged: true
                 }
             });

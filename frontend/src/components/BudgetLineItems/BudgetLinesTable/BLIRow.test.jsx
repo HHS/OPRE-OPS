@@ -549,6 +549,15 @@ describe("BLIRow", () => {
             expect(expanded).toHaveTextContent(/De-obligated Amount\s*-\$100,000\.00/);
         });
 
+        // Regression: the API's net_amount goes stale once the editor changes amount locally.
+        it("shows a locally edited amount, not the API's stale net_amount", () => {
+            renderComponent([], true, { status: "PLANNED", amount: 999_999, fees: 0, net_amount: 1_000_000 });
+
+            const cells = within(screen.getByTestId("budget-line-row-1")).getAllByRole("cell");
+            expect(cells[4]).toHaveTextContent("$999,999.00");
+            expect(screen.queryByTestId("pending-de-obligation-icon")).not.toBeInTheDocument();
+        });
+
         it("leaves the expanded details unchanged when there is no pending de-obligation", async () => {
             renderComponent([], true, { status: "OBLIGATED" });
 

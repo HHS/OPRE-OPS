@@ -36,6 +36,7 @@ import {
     findGrantPeriodEnd,
     findGrantPeriodStart,
     findGrantState,
+    getNetAmount,
     groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
@@ -187,7 +188,7 @@ const AgreementBudgetLines = ({
     // pending de-obligation (OPS-6488), matching the backend's agreement subtotal.
     const netBudgetLines = (agreement?.budget_line_items ?? []).map((bli) => ({
         ...bli,
-        amount: bli.net_amount ?? bli.amount
+        amount: getNetAmount(bli)
     }));
     const agreementTotal = calculateAgreementTotal(netBudgetLines, null, includeDrafts);
     const agreementSubtotal = includeDrafts
