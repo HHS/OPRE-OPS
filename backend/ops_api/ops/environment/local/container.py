@@ -16,8 +16,8 @@ SQLALCHEMY_MAX_OVERFLOW = 20
 # remapped (e.g. by .claude/hooks/assign-dev-ports.sh for parallel worktrees). This does
 # NOT fix logingov/hhsams: those external IDPs validate redirect_uri against a value
 # pre-registered on their side, which a dynamically-hashed port can't match. To test real
-# SSO against them, pin FRONTEND_PORT back to whatever's registered (default 3000) or set
-# OPRE_OPS_DISABLE_DEV_PORT_HOOK=1.
+# SSO against them, set FRONTEND_PORT in this worktree's .env back to the registered port
+# (default 3000).
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {
         "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",

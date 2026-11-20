@@ -7,12 +7,12 @@ SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://ops:ops@localhost:5432/postgres
 SQLALCHEMY_ECHO = False
 
 # redirect_uri derives from OPS_FRONTEND_URL (same pattern as environment/azure/preview.py)
-# rather than hardcoding localhost:3000, so fakeauth keeps working when FRONTEND_PORT is
-# remapped (e.g. by .claude/hooks/assign-dev-ports.sh for parallel worktrees). This does
-# NOT fix logingov/hhsams: those external IDPs validate redirect_uri against a value
-# pre-registered on their side, which a dynamically-hashed port can't match. To test real
-# SSO against them, pin FRONTEND_PORT back to whatever's registered (default 3000) or set
-# OPRE_OPS_DISABLE_DEV_PORT_HOOK=1.
+# rather than hardcoding localhost:3000, so fakeauth follows the frontend when it runs on
+# another port. This profile runs outside Docker and doesn't load .env, so set
+# OPS_FRONTEND_URL in your environment to change it. This does NOT fix logingov/hhsams:
+# those external IDPs validate redirect_uri against a value pre-registered on their side,
+# so to test real SSO against them the frontend must be on the registered port (default
+# 3000).
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {
         "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
