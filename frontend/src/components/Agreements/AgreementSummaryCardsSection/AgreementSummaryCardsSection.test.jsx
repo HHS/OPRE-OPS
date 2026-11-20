@@ -2,34 +2,19 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import AgreementSummaryCardsSection from "./AgreementSummaryCardsSection";
 
-// Mock child components to isolate unit tests
-vi.mock("../AgreementCountSummaryCard", () => ({
-    default: ({ title, fiscalYear, totals }) => (
-        <div data-testid="fy-spending-card">
-            <span data-testid="fy-spending-title">{title}</span>
-            <span data-testid="fy-spending-fiscal-year">{fiscalYear}</span>
-            <span data-testid="fy-spending-count">{totals?.total_agreements_count ?? 0}</span>
-        </div>
-    )
+vi.mock("../../UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
+    default: () => <div data-testid="donut-chart" />
 }));
 
-vi.mock("../AgreementSpendingSummaryCard", () => ({
-    default: ({ titlePrefix, contractTotal, partnerTotal, grantTotal, directObligationTotal }) => (
-        <div data-testid="type-summary-card">
-            <span data-testid="type-title-prefix">{titlePrefix}</span>
-            <span data-testid="contract-total">{contractTotal}</span>
-            <span data-testid="partner-total">{partnerTotal}</span>
-            <span data-testid="grant-total">{grantTotal}</span>
-            <span data-testid="do-total">{directObligationTotal}</span>
-        </div>
-    )
+vi.mock("../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent", () => ({
+    default: () => () => null
 }));
 
 const testTotals = {
     total_contract_amount: 6300,
-    total_partner_amount: 2100,
+    total_partner_amount: 2200,
     total_grant_amount: 5250,
-    total_direct_obligation_amount: 2100,
+    total_direct_obligation_amount: 1100,
     total_agreements_count: 6,
     type_counts: { CONTRACT: 2, GRANT: 1, DIRECT_OBLIGATION: 1, AA: 1, IAA: 1 },
     new_count: 3,
@@ -38,107 +23,70 @@ const testTotals = {
     continuing_type_counts: { CONTRACT: 1, IAA: 1 }
 };
 
+const spendingByLabel = () => {
+    const labels = screen.getAllByTestId("label-container").map((el) => el.textContent);
+    const values = screen.getAllByTestId("value-container").map((el) => el.textContent);
+    return Object.fromEntries(labels.map((label, i) => [label, values[i]]));
+};
+
 describe("AgreementSummaryCardsSection", () => {
-    it("renders both child cards", () => {
+    it("titles the cards with the selected fiscal year", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
                 totals={testTotals}
             />
         );
-        expect(screen.getByTestId("fy-spending-card")).toBeInTheDocument();
-        expect(screen.getByTestId("type-summary-card")).toBeInTheDocument();
+
+        expect(screen.getByRole("heading", { name: "2025 Agreements" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "2025 New" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "2025 Continuing" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "2025 Spending by Agreement Type" })).toBeInTheDocument();
     });
 
-    it("passes the correct title based on a numeric fiscal year", () => {
-        render(
-            <AgreementSummaryCardsSection
-                fiscalYear="2025"
-                totals={testTotals}
-            />
-        );
-        expect(screen.getByTestId("fy-spending-title")).toHaveTextContent("2025 Agreements");
-        expect(screen.getByTestId("type-title-prefix")).toHaveTextContent("2025");
-    });
-
-    it("uses 'Multiple Years' prefix when fiscalYear is 'Multi'", () => {
+    it("titles the cards 'Multiple Years' when several fiscal years are selected", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="Multi"
                 totals={testTotals}
             />
         );
-        expect(screen.getByTestId("fy-spending-title")).toHaveTextContent("Multiple Years Agreements");
-        expect(screen.getByTestId("type-title-prefix")).toHaveTextContent("Multiple Years");
+
+        expect(screen.getByRole("heading", { name: "Multiple Years Agreements" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Multiple Years Spending by Agreement Type" })).toBeInTheDocument();
     });
 
-    it("passes the correct agreement count to FY spending card", () => {
+    it("shows the agreement count and each type's spending from the totals", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
                 totals={testTotals}
             />
         );
-        expect(screen.getByTestId("fy-spending-count")).toHaveTextContent("6");
+
+        expect(screen.getByText("6")).toBeInTheDocument();
+        expect(spendingByLabel()).toEqual({
+            Contract: "$6,300.00",
+            Partner: "$2,200.00",
+            Grant: "$5,250.00",
+            "Direct Obligation": "$1,100.00"
+        });
     });
 
-    it("passes correct contract totals from backend totals", () => {
-        render(
-            <AgreementSummaryCardsSection
-                fiscalYear="2025"
-                totals={testTotals}
-            />
-        );
-        expect(screen.getByTestId("contract-total")).toHaveTextContent("6300");
-    });
-
-    it("passes correct partner totals from backend totals", () => {
-        render(
-            <AgreementSummaryCardsSection
-                fiscalYear="2025"
-                totals={testTotals}
-            />
-        );
-        expect(screen.getByTestId("partner-total")).toHaveTextContent("2100");
-    });
-
-    it("passes correct grant totals from backend totals", () => {
-        render(
-            <AgreementSummaryCardsSection
-                fiscalYear="2025"
-                totals={testTotals}
-            />
-        );
-        expect(screen.getByTestId("grant-total")).toHaveTextContent("5250");
-    });
-
-    it("passes correct direct obligation totals from backend totals", () => {
-        render(
-            <AgreementSummaryCardsSection
-                fiscalYear="2025"
-                totals={testTotals}
-            />
-        );
-        expect(screen.getByTestId("do-total")).toHaveTextContent("2100");
-    });
-
-    it("handles null totals gracefully", () => {
+    it("shows zero spending for every type when there are no totals", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
                 totals={null}
             />
         );
-        expect(screen.getByTestId("fy-spending-count")).toHaveTextContent("0");
-        expect(screen.getByTestId("contract-total")).toHaveTextContent("0");
-        expect(screen.getByTestId("partner-total")).toHaveTextContent("0");
-        expect(screen.getByTestId("grant-total")).toHaveTextContent("0");
-        expect(screen.getByTestId("do-total")).toHaveTextContent("0");
-    });
 
-    it("handles undefined totals gracefully", () => {
-        render(<AgreementSummaryCardsSection fiscalYear="2025" />);
-        expect(screen.getByTestId("fy-spending-count")).toHaveTextContent("0");
-        expect(screen.getByTestId("contract-total")).toHaveTextContent("0");
+        expect(spendingByLabel()).toEqual({
+            Contract: "$0",
+            Partner: "$0",
+            Grant: "$0",
+            "Direct Obligation": "$0"
+        });
+        expect(screen.queryByTestId("donut-chart")).not.toBeInTheDocument();
     });
 });
