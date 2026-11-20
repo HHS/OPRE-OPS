@@ -780,6 +780,44 @@ def test_period_edit_not_tracked_with_flag_off_or_for_superuser(
     assert loaded_db.get(ServicesComponent, sc2_id).period_start == datetime.date(2043, 3, 1)
 
 
+@pytest.mark.parametrize(
+    "superuser_end, expected",
+    [
+        pytest.param("2044-06-30", [("2043-12-31", "2044-06-30")], id="later change updates the pending card"),
+        pytest.param("2043-12-31", [], id="putting it back drops the pending card"),
+    ],
+)
+def test_superuser_period_edit_keeps_an_existing_pending_card_current(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    power_user_auth_client,
+    loaded_db,
+    awarded_agreement,
+    app_ctx,
+    superuser_end,
+    expected,
+):
+    """A superuser's change isn't tracked on its own, but a card a team member's edit already
+    recorded mustn't go to the Division Director with a stale To value."""
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-01-31"}).status_code == 200
+
+    response = _patch_sc(power_user_auth_client, sc2_id, {"period_end": superuser_end})
+
+    assert response.status_code == 200, response.json
+    assert [(e.old_value, e.new_value) for e in _edits(loaded_db, awarded_agreement.id)] == expected
+
+
+def test_superuser_period_edit_still_records_nothing_without_a_pending_card(
+    modified_loe_enabled, power_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+
+    assert _patch_sc(power_user_auth_client, sc2_id, {"period_end": "2044-06-30"}).status_code == 200
+
+    assert _edits(loaded_db, awarded_agreement.id) == []
+
+
 def test_period_edit_on_non_awarded_agreement_is_not_tracked(
     modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
 ):

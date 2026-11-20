@@ -21,6 +21,7 @@ from ops_api.ops.services.ops_service import (
 )
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.budget_line_items_helpers import (
+    agreement_tracks_contract_modifications,
     get_agreement_pre_award_lock_message,
     sc_requires_approval_gate,
 )
@@ -255,8 +256,10 @@ class ServicesComponentService:
     ) -> dict[str, tuple[Any, Any]]:
         """On an Awarded, tracked agreement (non-superuser): reject a change to the SC's number,
         Optional flag or sub-component, and return its period-of-performance changes as
-        ``{field: (old, new)}`` to record as Modified LOE edits (OPS-3268). Empty otherwise.
-        A period change is rejected for every user while the SC's edits are in review."""
+        ``{field: (old, new)}`` to record as Modified LOE edits (OPS-3268). For a superuser, only
+        the changes to a field that already has a pending edit (so that edit stays current).
+        Empty otherwise. A period change is rejected for every user while the SC's edits are in
+        review."""
 
         def changed(field):
             return field in updated_fields and updated_fields[field] != getattr(services_component, field)
@@ -274,7 +277,17 @@ class ServicesComponentService:
             raise ValidationError({"services_component": [SC_IN_REVIEW_MODIFICATION_MESSAGE]})
 
         if not sc_requires_approval_gate(services_component.agreement):
-            return {}
+            # A superuser's change isn't tracked, but it still has to update (or, if it puts the
+            # date back, drop) a pending card someone else's edit already recorded, or that card
+            # goes into the next modification with a stale To value.
+            if not agreement_tracks_contract_modifications(services_component.agreement):
+                return {}
+            edit_service = ContractModificationEditService(self.db_session)
+            return {
+                field: change
+                for field, change in tracked_changes.items()
+                if edit_service.has_pending_services_component_edit(services_component.id, field)
+            }
         locked = [field for field in AWARDED_LOCKED_FIELDS if changed(field)]
         if locked:
             raise ValidationError({field: [AWARDED_LOCKED_MESSAGE] for field in locked})

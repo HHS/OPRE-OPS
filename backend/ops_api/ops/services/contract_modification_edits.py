@@ -275,6 +275,10 @@ class ContractModificationEditService:
                 {field: ["Another change to this field was saved at the same time. Refresh and try again."]}
             ) from None
 
+    def has_pending_services_component_edit(self, services_component_id: int, field: str) -> bool:
+        """Whether the SC has a pending (not yet in a modification) edit to ``field``."""
+        return bool(self._pending_for_services_component(services_component_id, field))
+
     def services_component_in_review_modification(self, services_component_id: int) -> bool:
         """Whether any of the SC's edits are in a contract modification request that is in review.
         They are what the Division Director is reviewing, so the SC can't be changed until the
