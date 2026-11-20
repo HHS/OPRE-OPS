@@ -26,11 +26,19 @@ const getFocusCandidatesAfterClose = (alertElement) => {
 };
 
 /**
- * Move focus to the first candidate that actually takes it (a hidden or inert element matches the
+ * True when focus has nowhere to be: the close button that had it is gone. A user who has already
+ * moved on to another control keeps their place.
+ * @returns {boolean}
+ */
+const isFocusLost = () => !document.activeElement || document.activeElement === document.body;
+
+/**
+ * Move focus only if it was lost, to the first candidate that actually takes it (a hidden or inert element matches the
  * selector but can't).
  * @param {HTMLElement[]} candidates
  */
-const focusFirstFocusable = (candidates) => {
+const restoreFocus = (candidates) => {
+    if (!isFocusLost()) return;
     for (const candidate of candidates) {
         // Keep the page where it is: only the focus moves.
         candidate.focus({ preventScroll: true });
@@ -62,7 +70,7 @@ const SimpleAlert = ({
     type,
     isClosable = false,
     isAlertVisible = true,
-    setIsAlertVisible = () => {},
+    setIsAlertVisible,
     headingLevel = 4
 }) => {
     // Validate heading level (1-6)
@@ -70,19 +78,19 @@ const SimpleAlert = ({
     const level = isNaN(parsedLevel) ? 4 : Math.max(1, Math.min(6, parsedLevel));
     const headingTag = `h${level}`;
     const alertRef = React.useRef(null);
-    // Where focus goes once the alert has actually closed. Set on close; used only if the alert
-    // then hides or unmounts. A caller with no setter (the default no-op) keeps it on screen, and
-    // focus then stays on the close button.
+    // Where focus goes once the alert has actually closed. Set on close, and used only if the alert
+    // then hides or unmounts while focus is lost. A caller with no setter keeps the alert on screen,
+    // so nothing is saved and focus stays on the close button.
     const pendingFocusRef = React.useRef(/** @type {HTMLElement[] | null} */ (null));
     React.useEffect(() => {
         if (!isAlertVisible && pendingFocusRef.current) {
-            focusFirstFocusable(pendingFocusRef.current);
+            restoreFocus(pendingFocusRef.current);
             pendingFocusRef.current = null;
         }
     }, [isAlertVisible]);
     React.useEffect(
         () => () => {
-            if (pendingFocusRef.current) focusFirstFocusable(pendingFocusRef.current);
+            if (pendingFocusRef.current) restoreFocus(pendingFocusRef.current);
         },
         []
     );
@@ -154,6 +162,7 @@ const SimpleAlert = ({
                         data-position="top"
                         data-cy="close-alert"
                         onClick={() => {
+                            if (!setIsAlertVisible) return;
                             pendingFocusRef.current = getFocusCandidatesAfterClose(alertRef.current);
                             setIsAlertVisible(false);
                         }}
