@@ -8,6 +8,7 @@ import TextArea from "../../UI/Form/TextArea";
 import { NON_SEVERABLE_OPTIONS, SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "../ServicesComponents.constants";
 import ServicesComponentSelect from "../ServicesComponentSelect";
 
+const OPTIONAL_LOCKED_REASON_ID = "optional-services-component-locked-reason";
 const NUMBER_LOCKED_MESSAGE = "Services components cannot be edited on awarded agreements";
 
 /**
@@ -179,6 +180,9 @@ function ServicesComponentForm({
                                             optional: !formData?.optional
                                         });
                                     }}
+                                    // Locked with the SC number; the reason is on the select's tooltip,
+                                    // so give screen readers the same text here.
+                                    aria-describedby={isNumberLocked ? OPTIONAL_LOCKED_REASON_ID : undefined}
                                     disabled={
                                         isNumberLocked ||
                                         formData?.number === 0 ||
@@ -192,6 +196,14 @@ function ServicesComponentForm({
                                 >
                                     Optional Services Component
                                 </label>
+                                {isNumberLocked && (
+                                    <span
+                                        id={OPTIONAL_LOCKED_REASON_ID}
+                                        className="usa-sr-only"
+                                    >
+                                        {NUMBER_LOCKED_MESSAGE}
+                                    </span>
+                                )}
                             </div>
                         ) : (
                             <div style={{ height: "3.90rem" }} />
