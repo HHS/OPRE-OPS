@@ -66,6 +66,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
  * @param {boolean} [props.isPostPreAwardLocked] - if the agreement is permanently locked after full pre-award approval
+ * @param {boolean} [props.isAgreementFetching] - Whether the agreement query is (re)fetching, e.g. right after a save.
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -77,7 +78,8 @@ const AgreementBudgetLines = ({
     isAgreementAwarded,
     isPreAwardInReview = false,
     isAwardInReview = false,
-    isPostPreAwardLocked = false
+    isPostPreAwardLocked = false,
+    isAgreementFetching = false
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useTrailNavigate();
@@ -94,11 +96,13 @@ const AgreementBudgetLines = ({
     const {
         data: servicesComponents,
         isLoading: isServicesComponentsLoading,
+        isFetching: isServicesComponentsFetching,
         isError: isServicesComponentsError
     } = useGetServicesComponentsListQuery(agreement?.id);
     const {
         data: grantNumbers,
         isLoading: isGrantNumbersLoading,
+        isFetching: isGrantNumbersFetching,
         isError: isGrantNumbersError
     } = useGetGrantNumbersListQuery(agreement?.id, {
         skip: !agreement?.id
@@ -139,6 +143,20 @@ const AgreementBudgetLines = ({
     // or SC) against them and nulls any it can't find. Opening it after a failed load would unlink
     // every existing budget line on save, so keep it closed and show an error instead.
     const editorDataLoadFailed = isServicesComponentsError || isGrantNumbersError;
+    // A save only invalidates the cache, so right after one this page still shows the pre-save
+    // agreement and lists while they refetch (isLoading stays false). The editor seeds once on mount,
+    // so opening it then would freeze the stale budget lines, and the next save would write the old
+    // values back. Wait for any refetch before opening it, then keep it open: saving from the editor
+    // starts refetches while the save is still running, and unmounting would drop that save.
+    const isEditorDataFetching = isAgreementFetching || isServicesComponentsFetching || isGrantNumbersFetching;
+    const [isEditorOpen, setIsEditorOpen] = React.useState(false);
+    const canOpenEditor = showEditWizard && !editorDataLoadFailed && !isEditorDataLoading && !isEditorDataFetching;
+    if (canOpenEditor && !isEditorOpen) {
+        setIsEditorOpen(true);
+    }
+    if (!showEditWizard && isEditorOpen) {
+        setIsEditorOpen(false);
+    }
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -347,9 +365,9 @@ const AgreementBudgetLines = ({
                 </>
             )}
 
-            {showEditWizard && !editorDataLoadFailed && isEditorDataLoading && <BudgetLinesTableLoading />}
+            {showEditWizard && !editorDataLoadFailed && !isEditorOpen && <BudgetLinesTableLoading />}
 
-            {showEditWizard && !editorDataLoadFailed && !isEditorDataLoading && (
+            {showEditWizard && !editorDataLoadFailed && isEditorOpen && (
                 <EditAgreementProvider
                     agreement={agreement}
                     projectOfficer={""}
