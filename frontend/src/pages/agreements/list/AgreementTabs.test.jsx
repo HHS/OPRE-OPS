@@ -125,10 +125,12 @@ describe("AgreementTabs", () => {
         expect(screen.getByText("For Review")).toBeInTheDocument();
     });
 
-    test("applies correct class based on location", () => {
-        useLocation.mockReturnValueOnce({
-            search: "?filter=my-agreements"
-        });
+    test.each([
+        ["", "All Agreements"],
+        ["?filter=my-agreements", "My Agreements"],
+        ["?filter=change-requests", "For Review"]
+    ])("marks only the tab for search %j as the current page", (search, currentLabel) => {
+        useLocation.mockReturnValue({ search });
 
         render(
             <Provider store={store}>
@@ -138,9 +140,12 @@ describe("AgreementTabs", () => {
             </Provider>
         );
 
-        expect(screen.getByText("My Agreements").className).toMatch(/ .*listItemSelected.*/);
-        expect(screen.getByText("All Agreements").className).toMatch(/ .*listItemNotSelected.*/);
-        expect(screen.getByText("For Review").className).toMatch(/ .*listItemNotSelected.*/);
+        const labels = ["All Agreements", "My Agreements", "For Review"];
+        const currentByLabel = labels.map((label) => [
+            label,
+            screen.getByRole("link", { name: label }).getAttribute("aria-current")
+        ]);
+        expect(currentByLabel).toEqual(labels.map((label) => [label, label === currentLabel ? "page" : null]));
     });
 
     test("displays notification circle with correct number", () => {

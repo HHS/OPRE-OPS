@@ -9,18 +9,20 @@ import store from "../../../store";
 /* eslint-disable testing-library/no-node-access */
 
 const mockNavigate = vi.fn();
+const mockUseLocation = vi.fn();
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return {
         ...actual,
         useNavigate: () => mockNavigate,
-        useLocation: () => ({ pathname: "/agreements/1" })
+        useLocation: () => mockUseLocation()
     };
 });
 
 describe("DetailsTabs", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockUseLocation.mockReturnValue({ pathname: "/agreements/1" });
     });
 
     it("renders without crashing", () => {
@@ -269,23 +271,44 @@ describe("DetailsTabs", () => {
         expect(mockNavigate).toHaveBeenCalledWith("/agreements/1/budget-lines");
     });
 
-    it("applies selected style to the current tab", () => {
+    const renderContractTabs = () =>
         render(
             <Provider store={store}>
-                <MemoryRouter initialEntries={["/agreements/1"]}>
+                <MemoryRouter>
                     <DetailsTabs
                         agreementId={1}
                         isAgreementNotDeveloped={false}
                         isAgreementAwarded={false}
                         hasInExecutionBli={false}
+                        isContractOrAa={true}
                     />
                 </MemoryRouter>
             </Provider>
         );
 
-        const agreementDetailsTab = screen.getByText("Agreement Details");
-        // Check for the hashed CSS module class name pattern
-        expect(agreementDetailsTab.className).toMatch(/listItemSelected/);
+    const currentPageTabs = () =>
+        screen.getAllByRole("button").filter((tab) => tab.getAttribute("aria-current") === "page");
+
+    it.each([
+        ["/agreements/1", "Agreement Details"],
+        ["/agreements/1/budget-lines", "SCs & Budget Lines"]
+    ])("marks only the tab for %s as the current page", (pathname, label) => {
+        mockUseLocation.mockReturnValue({ pathname });
+        renderContractTabs();
+
+        const current = currentPageTabs();
+        expect(current).toHaveLength(1);
+        expect(current[0]).toHaveTextContent(label);
+    });
+
+    it("marks a disabled tab as the current page when its route is open", () => {
+        mockUseLocation.mockReturnValue({ pathname: "/agreements/1/documents" });
+        renderContractTabs();
+
+        const current = currentPageTabs();
+        expect(current).toHaveLength(1);
+        expect(current[0]).toHaveTextContent("Documents");
+        expect(current[0]).toHaveAttribute("aria-disabled", "true");
     });
 
     it("renders with correct data-cy attributes", () => {
