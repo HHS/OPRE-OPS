@@ -1264,17 +1264,28 @@ class DefaultProcurementTracker(ProcurementTracker):
         return f"DefaultProcurementTracker#{self.id}"
 
     @classmethod
-    def create_with_steps(cls, agreement_id: int, **kwargs) -> "DefaultProcurementTracker":
+    def create_with_steps(
+        cls,
+        agreement_id: int,
+        skipped_step_types: frozenset["ProcurementTrackerStepType"] = frozenset(),
+        **kwargs,
+    ) -> "DefaultProcurementTracker":
         """
         Factory method to create a DefaultProcurementTracker with all 6 steps.
 
         Args:
             agreement_id: The agreement ID to associate with this tracker
+            skipped_step_types: Step types this cycle doesn't need (e.g. steps 2-4 for an As-Is
+                contract mod). They are created as SKIPPED so step numbers stay 1-6. Step 1 and
+                the final AWARD step can never be skipped.
             **kwargs: Additional fields for the tracker (status, procurement_action, etc.)
 
         Returns:
             DefaultProcurementTracker instance with 6 steps attached
         """
+        if skipped_step_types & {ProcurementTrackerStepType.ACQUISITION_PLANNING, ProcurementTrackerStepType.AWARD}:
+            raise ValueError("Step 1 (Acquisition Planning) and step 6 (Award) cannot be skipped.")
+
         tracker = cls(agreement_id=agreement_id, active_step_number=1, **kwargs)
 
         # Define the 6 steps
@@ -1296,6 +1307,12 @@ class DefaultProcurementTracker(ProcurementTracker):
                     step_type=step_type,
                     status=ProcurementTrackerStepStatus.ACTIVE,
                     step_start_date=date.today(),
+                )
+            elif step_type in skipped_step_types:
+                step = DefaultProcurementTrackerStep(
+                    step_number=step_number,
+                    step_type=step_type,
+                    status=ProcurementTrackerStepStatus.SKIPPED,
                 )
             else:
                 step = DefaultProcurementTrackerStep(

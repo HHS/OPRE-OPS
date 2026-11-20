@@ -61,6 +61,20 @@ def escape_markdown(text: str) -> str:
     return text
 
 
+# Action types whose award approval marks the action AWARDED: the initial award, and a contract
+# mod's own procurement cycle (OPS-6513).
+_AWARDABLE_ACTION_TYPES = frozenset({AwardType.NEW_AWARD, AwardType.MODIFICATION})
+
+
+def _is_contract_mod_action(procurement_action: ProcurementAction | None) -> bool:
+    """A MODIFICATION action created by a Division Director's contract mod approval."""
+    return (
+        procurement_action is not None
+        and procurement_action.award_type == AwardType.MODIFICATION
+        and procurement_action.agreement_mod_id is not None
+    )
+
+
 class ProcurementTrackerStepService:
     """Service for procurement tracker step operations."""
 
@@ -370,22 +384,28 @@ class ProcurementTrackerStepService:
             tracker_modified = False
 
             all_steps = sorted(procurement_tracker.steps, key=lambda s: s.step_number)
-            total_steps = len(all_steps)
+
+            # The next step this cycle needs: SKIPPED steps (e.g. 2-4 on an As-Is contract mod,
+            # OPS-6513) are jumped over, so completing step 1 there activates step 5.
+            next_step = next(
+                (
+                    s
+                    for s in all_steps
+                    if s.step_number > step.step_number and s.status != ProcurementTrackerStepStatus.SKIPPED
+                ),
+                None,
+            )
 
             # Check if this is not the final step
-            if step.step_number < total_steps:
-                # Increment active_step_number in the procurement tracker
-                procurement_tracker.active_step_number = step.step_number + 1
+            if next_step:
+                procurement_tracker.active_step_number = next_step.step_number
                 tracker_modified = True
-                logger.debug(f"Incremented active_step_number to {procurement_tracker.active_step_number}")
+                logger.debug(f"Set active_step_number to {procurement_tracker.active_step_number}")
 
-                # Find the next step and set its step_start_date and status
-                next_step = next((s for s in all_steps if s.step_number == step.step_number + 1), None)
-                if next_step:
-                    next_step.step_start_date = date.today()
-                    next_step.status = ProcurementTrackerStepStatus.ACTIVE
-                    logger.debug(f"Set next step (step {next_step.step_number}) step_start_date to {date.today()}")
-                    logger.debug(f"Set next step (step {next_step.step_number}) status to ACTIVE")
+                next_step.step_start_date = date.today()
+                next_step.status = ProcurementTrackerStepStatus.ACTIVE
+                logger.debug(f"Set next step (step {next_step.step_number}) step_start_date to {date.today()}")
+                logger.debug(f"Set next step (step {next_step.step_number}) status to ACTIVE")
             else:
                 logger.debug("This is the final step; marking procurement tracker as completed.")
                 procurement_tracker.status = ProcurementTrackerStatus.COMPLETED
@@ -393,7 +413,7 @@ class ProcurementTrackerStepService:
 
                 if procurement_tracker.procurement_action:
                     procurement_action = self.db_session.get(ProcurementAction, procurement_tracker.procurement_action)
-                    if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
+                    if procurement_action and procurement_action.award_type in _AWARDABLE_ACTION_TYPES:
                         # Only mark AWARDED on step completion if Budget Team has already approved
                         # (award_approval_status == AWARD_APPROVED_STATUS). If approval is still pending,
                         # the agreement will be awarded when Budget Team approves via _handle_award_approval.
@@ -1105,6 +1125,24 @@ class ProcurementTrackerStepService:
         procurement_action.agreement_total = total
         logger.debug(f"Snapshotted agreement_total {total} onto ProcurementAction {procurement_action.id}")
 
+    @staticmethod
+    def _budget_lines_awarded_by(procurement_action: ProcurementAction | None, agreement: Agreement) -> list:
+        """A contract mod's award obligates only the budget lines that mod executed (OPS-6513);
+        another cycle's Executing lines on the same agreement aren't part of it. The initial
+        award covers the whole agreement."""
+        if _is_contract_mod_action(procurement_action):
+            return procurement_action.budget_line_items
+        return agreement.budget_line_items
+
+    @staticmethod
+    def _record_mod_number(procurement_action: ProcurementAction | None, step) -> None:
+        """A contract mod's number is the Modification # entered on its AWARD step (OPS-6513)."""
+        if not _is_contract_mod_action(procurement_action) or procurement_action.agreement_mod is None:
+            return
+        modification_number = getattr(step, "award_modification_number", None)
+        if modification_number:
+            procurement_action.agreement_mod.number = modification_number
+
     def _handle_award_approval(self, step, approval_status, obligated_date, current_user):
         """
         Apply BLI transitions and mark procurement action AWARDED when award is approved.
@@ -1132,7 +1170,11 @@ class ProcurementTrackerStepService:
         # OPS-5892: apply the proposed agreement title exactly at approval.
         self._apply_proposed_agreement_title(step, agreement)
 
-        for bli in agreement.budget_line_items:
+        procurement_action = None
+        if step.procurement_tracker.procurement_action:
+            procurement_action = self.db_session.get(ProcurementAction, step.procurement_tracker.procurement_action)
+
+        for bli in self._budget_lines_awarded_by(procurement_action, agreement):
             if bli.status == BudgetLineItemStatus.IN_EXECUTION:
                 bli.status = BudgetLineItemStatus.OBLIGATED
                 # Defense-in-depth: the validator guarantees obligated_date on the production
@@ -1141,11 +1183,12 @@ class ProcurementTrackerStepService:
                     bli.date_needed = obligated_date
                 logger.debug(f"Transitioned BLI {bli.id} IN_EXECUTION → OBLIGATED")
 
-        # Set procurement action date and status — only for NEW_AWARD actions
-        # (consistent with _advance_active_step_if_needed which gates on NEW_AWARD)
-        if step.procurement_tracker.procurement_action:
-            procurement_action = self.db_session.get(ProcurementAction, step.procurement_tracker.procurement_action)
-            if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
+        self._record_mod_number(procurement_action, step)
+
+        # Set procurement action date and status — for the initial award and for contract mods
+        # (consistent with _advance_active_step_if_needed)
+        if procurement_action is not None:
+            if procurement_action.award_type in _AWARDABLE_ACTION_TYPES:
                 # Require an obligated_date before marking AWARDED — an action must never be
                 # AWARDED without a recorded obligation date. The production path is guarded by
                 # AwardApprovalObligatedDateRequiredRule; this couples the service method

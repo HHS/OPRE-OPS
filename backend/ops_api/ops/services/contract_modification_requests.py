@@ -27,7 +27,9 @@ from models import (
     ModificationEditType,
     ModType,
     NotificationType,
+    User,
 )
+from models.procurement_workflow import create_procurement_records_for_contract_mod
 from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
 from ops_api.ops.services.notifications import NotificationService
@@ -190,7 +192,7 @@ class ContractModificationRequestService:
                 raise ValidationError({"status": "This contract modification has already been reviewed."})
 
             if action == APPROVE:
-                self._approve(request)
+                self._approve(request, user)
             else:
                 self._decline(request)
 
@@ -215,7 +217,7 @@ class ContractModificationRequestService:
                 self.project_officer_revert = self._edit_service.revert_project_officer_change(request.agreement, edit)
         request.status = ContractModificationRequestStatus.DECLINED
 
-    def _approve(self, request: ContractModificationRequest) -> None:
+    def _approve(self, request: ContractModificationRequest, user: User) -> None:
         # Re-run the submit-time checks before writing anything: a budget line may have been
         # executed, edited into review, or moved out of the current FY since the request was sent.
         self._get_executable_budget_lines(
@@ -246,6 +248,16 @@ class ContractModificationRequestService:
 
         request.status = ContractModificationRequestStatus.APPROVED
         request.agreement_mod_id = agreement_mod.id
+
+        # Approval starts this mod's procurement cycle: its own Procurement Tracker (OPS-6513).
+        create_procurement_records_for_contract_mod(
+            self.db_session,
+            request.agreement,
+            agreement_mod,
+            list(request.budget_line_items),
+            created_by=user.id,
+            source="Contract modification approval",
+        )
 
     def _get_executable_budget_lines(self, agreement_id: int, budget_line_item_ids: list[int]) -> list[BudgetLineItem]:
         """Only Planned, current-FY budget lines not already in review, and not in a Services

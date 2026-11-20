@@ -27,6 +27,7 @@ ALLOWED_TABLES = [
     "can_fiscal_year",
     "can_funding_sources",
     "agreement",
+    "agreement_mod",
     "contract_agreement",
     "grant_agreement",
     "iaa_agreement",

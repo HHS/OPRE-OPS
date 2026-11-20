@@ -98,6 +98,10 @@ class ProcurementTrackerService:
         count_stmt = select(func.count()).select_from(stmt.subquery())
         total_count = self.db_session.scalar(count_stmt) or 0
 
+        # Newest first, so the first tracker is the most recent procurement cycle — the latest
+        # contract mod's, once there is one (OPS-6513).
+        stmt = stmt.order_by(ProcurementTracker.created_on.desc(), ProcurementTracker.id.desc())
+
         # Apply pagination
         stmt = self._apply_pagination(stmt, limit, offset)
 

@@ -75,6 +75,18 @@ def _award(loaded_db, agreement):
     loaded_db.refresh(agreement)
 
 
+def delete_mods_and_procurement_records(loaded_db, agreement_id):
+    """Delete an agreement's mods with their procurement actions and trackers (OPS-6513), in FK order."""
+    params = {"id": agreement_id}
+    loaded_db.execute(text("UPDATE budget_line_item SET procurement_action_id = NULL WHERE agreement_id = :id"), params)
+    trackers = "(SELECT id FROM procurement_tracker WHERE agreement_id = :id)"
+    loaded_db.execute(text(f"DELETE FROM procurement_tracker_step WHERE procurement_tracker_id IN {trackers}"), params)
+    loaded_db.execute(text(f"DELETE FROM default_procurement_tracker WHERE id IN {trackers}"), params)
+    loaded_db.execute(text("DELETE FROM procurement_tracker WHERE agreement_id = :id"), params)
+    loaded_db.execute(text("DELETE FROM procurement_action WHERE agreement_id = :id"), params)
+    loaded_db.execute(text("DELETE FROM agreement_mod WHERE agreement_id = :id"), params)
+
+
 @pytest.fixture()
 def make_agreement(loaded_db, test_project):
     """Factory for a Contract agreement (optionally Awarded) with one BLI on ``test_can``.
@@ -131,9 +143,8 @@ def make_agreement(loaded_db, test_project):
         params = {"id": agreement_id}
         loaded_db.execute(text("DELETE FROM contract_modification_request WHERE agreement_id = :id"), params)
         loaded_db.execute(text("DELETE FROM contract_modification_edit WHERE agreement_id = :id"), params)
-        loaded_db.execute(text("DELETE FROM agreement_mod WHERE agreement_id = :id"), params)
         loaded_db.execute(text("DELETE FROM change_request WHERE agreement_id = :id"), params)
-        loaded_db.execute(text("DELETE FROM procurement_action WHERE agreement_id = :id"), params)
+        delete_mods_and_procurement_records(loaded_db, agreement_id)
         loaded_db.commit()
         for bli in loaded_db.query(ContractBudgetLineItem).filter_by(agreement_id=agreement_id).all():
             loaded_db.delete(bli)

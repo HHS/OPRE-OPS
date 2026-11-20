@@ -1222,6 +1222,19 @@
       agreement_id: 28,
     },
   ],
+  agreement_mod: [
+    {
+      // An approved As-Is contract mod on CONTRACT #523 (OPS-6513): LI 9 below moved from Planned
+      // to Executing with nothing else changed. Its own procurement action (117) and tracker (the
+      // last default_procurement_tracker row) are in progress, so the Procurement Tracker tab shows
+      // a mod tracker with steps 2-4 skipped. No number yet: it comes from step 6's Modification #
+      // at award approval.
+      id: 1,
+      agreement_id: 523,
+      mod_type: "AS_IS",
+      mod_date: "2026-11-02",
+    },
+  ],
   procurement_action: [
     {
       id: 100,
@@ -1458,6 +1471,17 @@
       date_awarded_obligated: null,
       need_by_date: "2027-06-01",
       action_description: "Initial award for CONTRACT #28: OPS-6195 executing edit test",
+      created_by: 503,
+    },
+    {
+      // Procurement action for CONTRACT #523's As-Is mod (agreement_mod 1, OPS-6513).
+      id: 117,
+      agreement_id: 523,
+      agreement_mod_id: 1,
+      award_type: "MODIFICATION",
+      status: "PLANNED",
+      action_description: "As-Is modification for CONTRACT #523: Modified LOE Test Contract (OPS-6513)",
+      comments: "Seeded for manual testing of a contract mod's Procurement Tracker (OPS-6513).",
       created_by: 503,
     },
   ],
@@ -18699,6 +18723,25 @@
       certified: false,
       closed: false,
     },
+    {
+      // Executed by CONTRACT #523's approved As-Is mod (OPS-6513); linked to its procurement
+      // action 117. Appended last so it gets a fresh auto-assigned id.
+      budget_line_item_type: "CONTRACT",
+      line_description: "LI 9",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 523,
+      amount: 90000.0,
+      status: "IN_EXECUTION",
+      date_needed: "2027-03-01T14:00:00",
+      proc_shop_fee_percentage: 0,
+      services_component_id: 54,
+      procurement_action_id: 117,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
   ],
   direct_obligation_budget_line_item: [
     {
@@ -19351,6 +19394,16 @@
       status: "ACTIVE",
       tracker_type: "DEFAULT",
       active_step_number: 5,
+      created_by: 503,
+    },
+    {
+      // Tracker for CONTRACT #523's As-Is mod (OPS-6513). This is the 18th row in this array, so its
+      // auto-increment id is 18 -- matching procurement_tracker_step.procurement_tracker_id below.
+      agreement_id: 523,
+      procurement_action: 117,
+      status: "ACTIVE",
+      tracker_type: "DEFAULT",
+      active_step_number: 1,
       created_by: 503,
     },
   ],
@@ -20235,6 +20288,50 @@
     },
     {
       procurement_tracker_id: 17,
+      step_number: 6,
+      step_class: "default_step",
+      step_type: "AWARD",
+      status: "PENDING",
+    },
+    {
+      // Steps for tracker 18 (CONTRACT #523 As-Is mod, OPS-6513): an As-Is mod skips steps 2-4.
+      procurement_tracker_id: 18,
+      step_number: 1,
+      step_class: "default_step",
+      step_type: "ACQUISITION_PLANNING",
+      status: "ACTIVE",
+      step_start_date: "2026-11-02",
+    },
+    {
+      procurement_tracker_id: 18,
+      step_number: 2,
+      step_class: "default_step",
+      step_type: "PRE_SOLICITATION",
+      status: "SKIPPED",
+    },
+    {
+      procurement_tracker_id: 18,
+      step_number: 3,
+      step_class: "default_step",
+      step_type: "SOLICITATION",
+      status: "SKIPPED",
+    },
+    {
+      procurement_tracker_id: 18,
+      step_number: 4,
+      step_class: "default_step",
+      step_type: "EVALUATION",
+      status: "SKIPPED",
+    },
+    {
+      procurement_tracker_id: 18,
+      step_number: 5,
+      step_class: "default_step",
+      step_type: "PRE_AWARD",
+      status: "PENDING",
+    },
+    {
+      procurement_tracker_id: 18,
       step_number: 6,
       step_class: "default_step",
       step_type: "AWARD",
