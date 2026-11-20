@@ -7,6 +7,8 @@ OPRE OPS is the Portfolio Management System for OPRE (Office of Planning, Resear
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8080
 
+A Claude Code session started in a linked git worktree (not the main checkout) auto-assigns different ports (`.claude/hooks/assign-dev-ports.sh`); check that worktree's `.env` for its actual ports. An existing `.env` is never overwritten, and a worktree entered partway through a session gets no `.env` until you run that script from its root. Cypress doesn't read `.env`, so source `.claude/actions/dev-env.sh` before running E2E tests or curling the app in a worktree.
+
 ## Subdirectory Guides
 
 Each major directory has its own `CLAUDE.md` with detailed commands, architecture, and patterns:

@@ -205,6 +205,15 @@ See [`frontend/.storybook/README.md`](./frontend/.storybook/README.md) for conve
 Whether you run the application through Docker or locally, you can access the frontend at `http://localhost:3000` and
 the backend api at `http://localhost:8080`.
 
+A Claude Code session started in a linked git worktree (not the main checkout) auto-assigns different ports (see `.claude/hooks/assign-dev-ports.sh`) so parallel worktrees don't collide; check that worktree's `.env` for its actual ports.
+
+- A worktree that already has a `.env` keeps it and gets no ports added.
+- A worktree Claude enters partway through a session gets no `.env`. Create one by running `bash .claude/hooks/assign-dev-ports.sh` from that worktree's root, before `docker compose up` there.
+- The `.env` also sets `COMPOSE_PROJECT_NAME`. If a stack was already running in a worktree before its `.env` existed, plain `docker compose down` no longer finds it; stop it with `docker compose -p <name> down`, where `<name>` is the worktree's folder name in lowercase (`docker compose ls` lists running project names).
+- Cypress doesn't read the root `.env`. To run E2E tests in a worktree, run this from its root (the subshell keeps the ports from leaking into later commands in your terminal): `( . .claude/actions/dev-env.sh && cd frontend && bun run test:e2e )`. The `e2e-tests` and `visual-check` skills already do this.
+- In the Claude Desktop app, hooks load from the main checkout, so the main checkout must be on a branch that includes this hook.
+- To opt out, set `OPRE_OPS_DISABLE_DEV_PORT_HOOK=1` in your shell profile or in the `env` block of `~/.claude/settings.json`.
+
 [Storybook](https://storybook.js.org/) (component documentation) is available at:
 
 - **Local**: `http://localhost:6006` (see [Running Storybook](#running-storybook) below)

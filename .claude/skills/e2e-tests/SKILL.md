@@ -18,14 +18,17 @@ Interpret `$ARGUMENTS` to decide the action:
 
 Run E2E tests locally. The Docker stack MUST be running first.
 
+**Use this checkout's ports.** In a linked git worktree, `.claude/hooks/assign-dev-ports.sh` moves the stack off 3000/8080 and records the ports in the repo-root `.env`, which Cypress doesn't read. Source `.claude/actions/dev-env.sh` at the start of every command block below (each Bash call is a fresh shell). It exports `FRONTEND_PORT`, `BACKEND_DOMAIN` and `FRONTEND_URL`, which Cypress picks up, and falls back to 3000/8080. Without it, a worktree run silently tests the main checkout's stack.
+
 **Pre-flight checks** (run these first):
 ```bash
+. "$(git rev-parse --show-toplevel)/.claude/actions/dev-env.sh"
 # Verify Docker services are up
 docker compose ps --format json 2>/dev/null | jq -r '.Name + " " + .State' || docker compose ps
 # Verify frontend is reachable
-curl -sf http://localhost:3000 > /dev/null && echo "Frontend: OK" || echo "Frontend: NOT REACHABLE"
+curl -sf "$FRONTEND_URL" > /dev/null && echo "Frontend: OK ($FRONTEND_URL)" || echo "Frontend: NOT REACHABLE ($FRONTEND_URL)"
 # Verify backend is reachable
-curl -sf http://localhost:8080/api/v1/health/ > /dev/null && echo "Backend: OK" || echo "Backend: NOT REACHABLE"
+curl -sf "$BACKEND_DOMAIN/api/v1/health/" > /dev/null && echo "Backend: OK ($BACKEND_DOMAIN)" || echo "Backend: NOT REACHABLE ($BACKEND_DOMAIN)"
 ```
 
 If services are not running, tell the user and suggest:
@@ -38,12 +41,14 @@ Then wait for services to be healthy before proceeding.
 
 If a specific spec is provided (e.g., `run agreementList`):
 ```bash
+. "$(git rev-parse --show-toplevel)/.claude/actions/dev-env.sh"
 cd frontend
 npx cypress run --config-file ./cypress.config.js --headless --spec "cypress/e2e/*<pattern>*.cy.js" 2>&1 | tee /tmp/cypress-output.log
 ```
 
 If no spec is provided, run the full suite:
 ```bash
+. "$(git rev-parse --show-toplevel)/.claude/actions/dev-env.sh"
 cd frontend
 bun run test:e2e 2>&1 | tee /tmp/cypress-output.log
 ```
@@ -182,6 +187,7 @@ Common failure categories:
 **Step 7: Verify the fix locally** (if Docker stack is running)
 
 ```bash
+. "$(git rev-parse --show-toplevel)/.claude/actions/dev-env.sh"
 cd frontend
 npx cypress run --config-file ./cypress.config.js --headless --spec "cypress/e2e/<spec-file>.cy.js" 2>&1 | tee /tmp/cypress-fix-output.log
 ```
@@ -228,6 +234,7 @@ Analyze or run the accessibility regression tests. CI runs a dedicated `a11y-reg
 
 **Run a11y specs locally:**
 ```bash
+. "$(git rev-parse --show-toplevel)/.claude/actions/dev-env.sh"
 cd frontend
 A11Y_REGRESSION_GATE=true npx cypress run --config-file ./cypress.config.js --headless --spec "cypress/e2e/agreementList.cy.js,cypress/e2e/agreementsPagination.cy.js,cypress/e2e/agreementDetails.cy.js" 2>&1 | tee /tmp/cypress-a11y-output.log
 ```

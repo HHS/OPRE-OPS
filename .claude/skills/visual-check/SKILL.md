@@ -44,9 +44,13 @@ Look at the UI the current branch changes the way a reviewer would, and report w
   Note which link came from where, and which target each one maps to (by `node-id` or surrounding text). Links without a `node-id` point at a whole file — ask the user which frame rather than guessing.
 List the targets (and any Figma links found) to the user in one line before capturing. Cap at ~6 targets; ask before doing more.
 
-**2. Running?** App: `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000` and `:8080`. If not up, tell the user and offer `docker compose up --build -d` — takes minutes; don't start it silently. Storybook: `http://localhost:6006`; offer `cd frontend && bun run storybook` in the background.
+**2. Running?** Check this checkout's stack with one command; each Bash call is a fresh shell, so the variables don't carry over to a separate call:
+```bash
+. "$(git rev-parse --show-toplevel)/.claude/actions/dev-env.sh" && { echo "$FRONTEND_URL $BACKEND_DOMAIN"; curl -s -o /dev/null -w "frontend %{http_code}\n" "$FRONTEND_URL"; curl -s -o /dev/null -w "backend %{http_code}\n" "$BACKEND_DOMAIN"; }
+```
+In a linked worktree the URLs come from the `.env` that `.claude/hooks/assign-dev-ports.sh` wrote, not 3000/8080; checking the defaults there would screenshot the main checkout's stack instead of this branch. Use the printed URLs, as literal values, in every step below. If not up, tell the user and offer `docker compose up --build -d` — takes minutes; don't start it silently. Storybook: `http://localhost:6006`; offer `cd frontend && bun run storybook` in the background.
 
-**3. Sign in (app mode only).** Navigate to `http://localhost:3000/login`, click "Sign in with FakeAuth®", choose the user type (default `system_owner`; use `basic_user` when checking permission-dependent UI). These are local seeded test users only.
+**3. Sign in (app mode only).** Navigate to `<FRONTEND_URL>/login` (the URL from step 2), click "Sign in with FakeAuth®", choose the user type (default `system_owner`; use `basic_user` when checking permission-dependent UI). These are local seeded test users only.
 
 **4. Capture.** For each target, at **1280×800** and **375×812** (`browser_resize`):
 - Navigate, `browser_wait_for` the main content (not a fixed sleep), then `browser_take_screenshot` (full page).

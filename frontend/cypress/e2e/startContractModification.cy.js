@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { testLogin } from "./utils";
+import { BACKEND_DOMAIN, testLogin } from "./utils";
 
 // Seeded Awarded contract with Obligated budget lines (OPS-3072 manual-testing fixture). Its
 // seeded Planned budget line is in a future FY, so the spec adds a current-FY one to execute and
@@ -8,7 +8,7 @@ import { testLogin } from "./utils";
 const AGREEMENT_ID = 523;
 const SERVICES_COMPONENT_ID = 55;
 const CAN_ID = 504;
-const API = "http://localhost:8080/api/v1";
+const API = `${BACKEND_DOMAIN}/api/v1`;
 
 /** Request with the signed-in user's token, read when the command runs (not when it's queued). */
 const apiRequest = (options) =>
