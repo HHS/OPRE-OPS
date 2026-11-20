@@ -18,6 +18,7 @@ from loguru import logger
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from models.agreements import AgreementMod, ModType
 from models.budget_line_items import BudgetLineItem, BudgetLineItemStatus
 from models.events import OpsEvent, OpsEventStatus, OpsEventType
 from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
@@ -38,6 +39,8 @@ __all__ = [
     "link_blis_to_action",
     "get_or_create_procurement_records_for_new_award",
     "get_or_create_procurement_records_for_modification",
+    "create_procurement_records_for_contract_mod",
+    "skipped_step_types_for_mod",
 ]
 
 # The AWARD step's award_approval_status value that marks a Budget Team award
@@ -333,9 +336,7 @@ def get_or_create_procurement_records_for_new_award(
         or step_1.acquisition_planning_task_completed_by
     )
     tracker_is_untouched = (
-        tracker.active_step_number <= 1
-        and tracker.status != ProcurementTrackerStatus.COMPLETED
-        and not step_1_has_data
+        tracker.active_step_number <= 1 and tracker.status != ProcurementTrackerStatus.COMPLETED and not step_1_has_data
     )
     if tracker_status == ProcurementTrackerStatus.COMPLETED:
         if needs_step_setup or tracker_is_untouched:
@@ -451,3 +452,73 @@ def get_or_create_procurement_records_for_modification(
         )
 
     return action, tracker, action_created, tracker_created
+
+
+# An As-Is mod only moves budget lines from Planned to Executing on the existing award, so it
+# skips the solicitation steps (OPS-6513). Every other mod type, including ones added later,
+# needs the full tracker.
+_AS_IS_SKIPPED_STEP_TYPES = frozenset(
+    {
+        ProcurementTrackerStepType.PRE_SOLICITATION,
+        ProcurementTrackerStepType.SOLICITATION,
+        ProcurementTrackerStepType.EVALUATION,
+    }
+)
+
+
+def skipped_step_types_for_mod(mod_type: Optional[ModType]) -> frozenset[ProcurementTrackerStepType]:
+    """The tracker steps a contract mod of this type doesn't need."""
+    return _AS_IS_SKIPPED_STEP_TYPES if mod_type == ModType.AS_IS else frozenset()
+
+
+def create_procurement_records_for_contract_mod(
+    session: Session,
+    agreement: "Agreement",
+    agreement_mod: AgreementMod,
+    budget_line_items: list[BudgetLineItem],
+    created_by: Optional[int] = None,
+    source: Optional[str] = None,
+) -> tuple[ProcurementAction, DefaultProcurementTracker]:
+    """
+    Create the MODIFICATION ProcurementAction and ACTIVE tracker for a contract mod the
+    Division Director just approved, and link the mod's budget lines to the action.
+
+    Always creates new records: each approved mod is its own procurement cycle, so an open
+    MODIFICATION action from another mod must never be reused (unlike
+    get_or_create_procurement_records_for_modification, which data_tools uses).
+
+    Returns (action, tracker).
+    """
+    action = ProcurementAction(
+        agreement_id=agreement.id,
+        agreement_mod_id=agreement_mod.id,
+        award_type=AwardType.MODIFICATION,
+        status=ProcurementActionStatus.PLANNED,
+        procurement_shop_id=agreement.awarding_entity_id,
+        created_by=created_by,
+    )
+    session.add(action)
+    session.flush()
+    _create_action_event(session, action, created_by=created_by, source=source)
+
+    for budget_line_item in budget_line_items:
+        budget_line_item.procurement_action_id = action.id
+
+    tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=agreement.id,
+        skipped_step_types=skipped_step_types_for_mod(agreement_mod.mod_type),
+        procurement_action=action.id,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=created_by,
+    )
+    session.add(tracker)
+    session.flush()
+    _create_tracker_event(
+        session, tracker, created_by=created_by, source=source, award_type_label=AwardType.MODIFICATION.name
+    )
+    logger.info(
+        f"Created MODIFICATION ProcurementAction {action.id} and tracker {tracker.id} for "
+        f"AgreementMod {agreement_mod.id} ({agreement_mod.mod_type.name if agreement_mod.mod_type else None}) "
+        f"on Agreement {agreement.id}, linking {len(budget_line_items)} budget line(s)"
+    )
+    return action, tracker

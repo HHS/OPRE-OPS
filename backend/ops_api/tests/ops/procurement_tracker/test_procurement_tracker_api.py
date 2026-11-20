@@ -64,8 +64,9 @@ def test_get_procurement_trackers_list(auth_client, app_ctx):
     data = response.json["data"]
     # 2 if this test is run individually, otherwise can be more.
     assert len(data) == 10
-    assert data[0]["id"] == 1
-    assert data[1]["id"] == 2
+    # Newest first (OPS-6513), so an agreement's first tracker is its latest procurement cycle.
+    order_keys = [(tracker["created_on"], tracker["id"]) for tracker in data]
+    assert order_keys == sorted(order_keys, reverse=True)
 
     # Verify steps are included in list response
     assert "steps" in data[0]
@@ -82,7 +83,7 @@ def test_get_procurement_trackers_list_with_pagination(auth_client, app_ctx):
     assert response.json["limit"] == 1
     assert response.json["offset"] == 0
     assert len(response.json["data"]) == 1
-    assert response.json["data"][0]["id"] == 1
+    first = response.json["data"][0]
 
     # Get second tracker only
     response = auth_client.get("/api/v1/procurement-trackers/?limit=1&offset=1")
@@ -91,7 +92,8 @@ def test_get_procurement_trackers_list_with_pagination(auth_client, app_ctx):
     assert response.json["limit"] == 1
     assert response.json["offset"] == 1
     assert len(response.json["data"]) == 1
-    assert response.json["data"][0]["id"] == 2
+    second = response.json["data"][0]
+    assert (first["created_on"], first["id"]) > (second["created_on"], second["id"])
 
 
 def test_get_procurement_trackers_list_filter_by_agreement_id(auth_client, app_ctx):
