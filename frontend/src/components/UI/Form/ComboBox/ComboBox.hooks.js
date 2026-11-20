@@ -1,5 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
 
+// Disabled matches the app's disabled native select (sass/uswds/styles.scss): white with a
+// feedback-disabled-dark border and text, rather than USWDS's grey fill.
+export const DISABLED_COLOR = "var(--feedback-disabled-dark)";
+
 /**
  * Custom hook for managing ComboBox component state and functionality
  * @param {Array<Object>} data - The array of data items to populate the combobox options
@@ -92,10 +96,6 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
         });
     }, [data, optionText]);
 
-    // Disabled matches the app's disabled native select (sass/uswds/styles.scss): white with a
-    // feedback-disabled-dark border and text, rather than USWDS's grey fill.
-    const DISABLED_COLOR = "var(--feedback-disabled-dark)";
-
     const customStyles = {
         control: (provided, state) => ({
             ...provided,
@@ -148,9 +148,9 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             height: "40px"
         }),
 
-        clearIndicator: (provided, state) => ({
+        clearIndicator: (provided) => ({
             ...provided,
-            color: state.isDisabled ? DISABLED_COLOR : "#1b1b1b"
+            color: "#1b1b1b"
         }),
 
         dropdownIndicator: (provided, state) => ({
@@ -158,9 +158,9 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             color: state.isDisabled ? DISABLED_COLOR : "#1b1b1b"
         }),
 
-        multiValueLabel: (provided, state) => ({
+        multiValueLabel: (provided) => ({
             ...provided,
-            color: state.isDisabled ? DISABLED_COLOR : "#1b1b1b"
+            color: "#1b1b1b"
         })
     };
 

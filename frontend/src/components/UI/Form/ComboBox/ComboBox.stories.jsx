@@ -33,12 +33,7 @@ export default {
     title: "UI/Form/ComboBox",
     component: ComboBox,
     tags: ["autodocs"],
-    render: (args) => <ComboBoxWithState {...args} />,
-    argTypes: {
-        isDisabled: { control: "boolean" },
-        isMulti: { control: "boolean" },
-        isLoading: { control: "boolean" }
-    }
+    render: (args) => <ComboBoxWithState {...args} />
 };
 
 export const Default = {

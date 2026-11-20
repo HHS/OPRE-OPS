@@ -1,6 +1,6 @@
 import { render, fireEvent, screen, renderHook } from "@testing-library/react";
 import ComboBox from "./ComboBox";
-import useComboBox from "./ComboBox.hooks";
+import useComboBox, { DISABLED_COLOR } from "./ComboBox.hooks";
 import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
@@ -290,7 +290,6 @@ describe("ComboBox", () => {
 
     // Disabled matches the app's disabled native select: white, with a grey border, text and chevron.
     describe("disabled styles", () => {
-        const DISABLED_COLOR = "var(--feedback-disabled-dark)";
         const { result } = renderHook(() =>
             useComboBox(researchProjects, researchProjects[0], mockSetSelectedProject, (d) => d.title, {}, false, false)
         );
@@ -303,14 +302,12 @@ describe("ComboBox", () => {
             expect(disabled["&:hover"].borderColor).toBe(DISABLED_COLOR);
         });
 
-        it("greys the value, placeholder, input and indicators when disabled", () => {
+        it("greys the value, placeholder, input and chevron when disabled", () => {
             const state = { isDisabled: true };
             expect(customStyles.singleValue({}, state).color).toBe(DISABLED_COLOR);
             expect(customStyles.placeholder({}, state).color).toBe(DISABLED_COLOR);
             expect(customStyles.input({}, state).color).toBe(DISABLED_COLOR);
             expect(customStyles.dropdownIndicator({}, state).color).toBe(DISABLED_COLOR);
-            expect(customStyles.clearIndicator({}, state).color).toBe(DISABLED_COLOR);
-            expect(customStyles.multiValueLabel({}, state).color).toBe(DISABLED_COLOR);
         });
 
         it("leaves the enabled styles unchanged", () => {
