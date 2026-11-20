@@ -975,3 +975,33 @@ def test_losing_a_concurrent_period_edit_save_returns_a_400_and_rolls_back(
     assert loaded_db.get(ServicesComponent, sc2_id).period_end == datetime.date(2044, 1, 31)
     (edit,) = _edits(loaded_db, awarded_agreement.id)
     assert (edit.old_value, edit.new_value) == ("2043-12-31", "2044-01-31")
+
+
+def test_a_second_delete_of_the_same_sc_returns_404_and_records_nothing(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx, monkeypatch
+):
+    """A double-clicked save sends two DELETEs. The second waits on the row lock until the first
+    commits; by then the SC is gone, so it's a 404, not a second pending delete (which would hit
+    ix_contract_modification_edit_one_pending_sc_field and return a 500)."""
+    from ops_api.ops.services.change_requests import ChangeRequestService
+
+    sc2_id = _add_sc(loaded_db, awarded_agreement, 2).id
+    # The lock query finds no row: the first DELETE has already committed.
+    monkeypatch.setattr(ChangeRequestService, "lock_services_component", lambda self, _id: False)
+
+    response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
+    monkeypatch.undo()
+
+    assert response.status_code == 404, response.json
+    assert _edits(loaded_db, awarded_agreement.id) == []
+
+
+def test_lock_services_component_reports_whether_the_row_still_exists(loaded_db, awarded_agreement, app_ctx):
+    from ops_api.ops.services.change_requests import ChangeRequestService
+
+    sc2_id = _add_sc(loaded_db, awarded_agreement, 2).id
+    service = ChangeRequestService(loaded_db)
+
+    assert service.lock_services_component(sc2_id) is True
+    assert service.lock_services_component(99999999) is False
+    loaded_db.rollback()

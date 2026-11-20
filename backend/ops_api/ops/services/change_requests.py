@@ -632,10 +632,15 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                 self.db_session.flush()
         return True
 
-    def lock_services_component(self, services_component_id: int) -> None:
-        """Lock the SC row until commit, so concurrent requests don't both see "no request in review"."""
-        self.db_session.execute(
-            select(ServicesComponent.id).where(ServicesComponent.id == services_component_id).with_for_update()
+    def lock_services_component(self, services_component_id: int) -> bool:
+        """Lock the SC row until commit, so concurrent requests don't both see "no request in review".
+        Returns whether the row still exists once the lock is held: a concurrent request that
+        deleted it first commits before this one wakes."""
+        return (
+            self.db_session.scalar(
+                select(ServicesComponent.id).where(ServicesComponent.id == services_component_id).with_for_update()
+            )
+            is not None
         )
 
     def _in_review_services_component_create_change_request(

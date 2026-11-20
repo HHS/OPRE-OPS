@@ -219,7 +219,10 @@ class ServicesComponentService:
 
         services_component = self.get(obj_id)
         self._check_pre_award_lock(services_component.agreement)
-        ChangeRequestService(self.db_session).lock_services_component(obj_id)
+        if not ChangeRequestService(self.db_session).lock_services_component(obj_id):
+            # A concurrent delete of the same SC (e.g. a double-clicked save) committed while this
+            # one waited for the lock: it's gone, so don't record a second delete (OPS-3268).
+            raise ResourceNotFoundError("ServicesComponent", obj_id)
         self._check_not_in_review(services_component)
         self._check_not_in_review_modification(obj_id)
         self._check_no_executing_budget_lines(obj_id)

@@ -167,6 +167,12 @@ def test_downgrade_removes_the_display_name_column_and_upgrade_restores_it(loade
     with Operations.context(ctx):
         migration.downgrade()
     assert _display_name_column_tables(loaded_db) == set()
+    assert (
+        loaded_db.execute(
+            text("SELECT 1 FROM pg_indexes WHERE indexname = :name"), {"name": migration.PENDING_SC_FIELD_INDEX}
+        ).first()
+        is None
+    )
 
     _run_upgrade(loaded_db, migration)
     assert _display_name_column_tables(loaded_db) == {
