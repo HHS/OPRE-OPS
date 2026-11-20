@@ -100,7 +100,9 @@ export function EditAgreementProvider({
     budgetLinesReseedKey = 0,
     children
 }) {
-    // Seeded once per provider instance; later prop changes go through the reseed effects below.
+    // Seeded once per provider instance. Later prop changes are ignored unless the parent bumps a
+    // reseed key (services components, grant numbers, budget lines); officers reseed when their id arrives.
+    // Parents must therefore wait for the lookup data before mounting the provider.
     const [state, dispatch] = useReducer(
         editAgreementReducer,
         { agreement, projectOfficer, alternateProjectOfficer, servicesComponents, grantNumbers, budgetLines },

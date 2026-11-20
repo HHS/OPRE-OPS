@@ -2,7 +2,12 @@ import { act, render, renderHook } from "@testing-library/react";
 import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { EditAgreementProvider } from "./AgreementEditorContext";
-import { defaultState, editAgreementReducer, useEditAgreement } from "./AgreementEditorContext.hooks";
+import {
+    defaultState,
+    editAgreementReducer,
+    useEditAgreement,
+    useEditAgreementDispatch
+} from "./AgreementEditorContext.hooks";
 
 describe("editAgreementReducer - RESEED_GRANT_NUMBERS", () => {
     it("reseeds grant_numbers and clears deleted_grant_numbers_ids in the same dispatch", () => {
@@ -378,13 +383,70 @@ describe("EditAgreementProvider - per-instance initial state", () => {
         expect(result.current.budget_line_items[0].services_component_number).toBe(0);
     });
 
-    it("does not mutate the shared defaultState", () => {
-        const snapshot = structuredClone(defaultState);
-        const { result, unmount } = renderHook(() => useEditAgreement(), {
-            wrapper: ({ children }) => <EditAgreementProvider agreement={agreementA}>{children}</EditAgreementProvider>
+    it("seeds the draft from the agreement: strips nested fields and decorates grant budget lines", () => {
+        const grantAgreement = {
+            id: 3,
+            name: "Grant Agreement",
+            agreement_type: "GRANT",
+            team_members: [],
+            project: { id: 7, title: "Project X" },
+            product_service_code: { id: 8, name: "PSC" },
+            procurement_shop: { id: 9, abbr: "PSC-SHOP" },
+            status: "DRAFT",
+            budget_line_items: []
+        };
+        const { result } = renderHook(() => useEditAgreement(), {
+            wrapper: ({ children }) => (
+                <EditAgreementProvider
+                    agreement={grantAgreement}
+                    grantNumbers={[{ id: 70, number: 2 }]}
+                    budgetLines={[{ id: 1, grant_number_id: 70 }]}
+                >
+                    {children}
+                </EditAgreementProvider>
+            )
         });
-        expect(result.current).not.toBe(defaultState);
-        unmount();
+
+        const state = result.current;
+        expect(state.agreement).toMatchObject({ id: 3, agreement_type: "GRANT" });
+        expect(state.agreement).not.toHaveProperty("project");
+        expect(state.agreement).not.toHaveProperty("product_service_code");
+        expect(state.agreement).not.toHaveProperty("status");
+        expect(state.selected_project).toEqual(grantAgreement.project);
+        expect(state.selected_product_service_code).toEqual(grantAgreement.product_service_code);
+        expect(state.selected_procurement_shop).toEqual(grantAgreement.procurement_shop);
+        expect(state.grant_numbers).toEqual([{ id: 70, number: 2 }]);
+        expect(state.budget_line_items[0]).toMatchObject({ id: 1, grant_number_id: 70, grant_number_number: 2 });
+        // The agreement prop (RTK Query cache data) is left untouched.
+        expect(grantAgreement).toHaveProperty("project");
+        expect(grantAgreement).toHaveProperty("status", "DRAFT");
+    });
+
+    it("starts the create flow from defaults after an edit provider unmounts, without touching defaultState", () => {
+        const snapshot = structuredClone(defaultState);
+        const officer = { id: 10, full_name: "Jane Smith" };
+        const { unmount: unmountEdit } = renderHook(() => useEditAgreement(), {
+            wrapper: ({ children }) => (
+                <EditAgreementProvider
+                    agreement={agreementA}
+                    projectOfficer={officer}
+                    budgetLines={[{ id: 100 }]}
+                >
+                    {children}
+                </EditAgreementProvider>
+            )
+        });
+        unmountEdit();
+
+        // CreateAgreement mounts the provider with no agreement.
+        const { result } = renderHook(() => ({ state: useEditAgreement(), dispatch: useEditAgreementDispatch() }), {
+            wrapper: ({ children }) => <EditAgreementProvider budgetLines={[]}>{children}</EditAgreementProvider>
+        });
+        expect(result.current.state).toEqual(defaultState);
+
+        act(() => result.current.dispatch({ type: "ADD_TEAM_MEMBER", payload: { id: 5 } }));
+
+        expect(result.current.state.agreement.team_members).toEqual([{ id: 5 }]);
         expect(defaultState).toEqual(snapshot);
     });
 });
