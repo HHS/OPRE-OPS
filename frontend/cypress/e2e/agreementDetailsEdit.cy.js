@@ -238,6 +238,8 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             cy.get("h1").contains(testAgreement.name);
             cy.get("#edit").click();
+            // Check for the SC item itself: the list's empty-state <p> is also one child.
+            cy.get("[data-cy='services-component-list']").should("not.contain", "You have not added any");
             cy.get("[data-cy='services-component-list'] > *").should("have.length", 1);
             cy.get("#servicesComponentSelect").select("2");
             cy.get("#pop-start-date").type("01/01/2044");
