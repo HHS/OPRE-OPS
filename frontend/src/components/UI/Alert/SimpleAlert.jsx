@@ -32,7 +32,8 @@ const getFocusCandidatesAfterClose = (alertElement) => {
  */
 const focusFirstFocusable = (candidates) => {
     for (const candidate of candidates) {
-        candidate.focus();
+        // Keep the page where it is: only the focus moves.
+        candidate.focus({ preventScroll: true });
         if (document.activeElement === candidate) return;
     }
 };

@@ -213,7 +213,7 @@ const useServicesComponents = (
                 type: "error",
                 heading: "This services component can't be deleted",
                 message: HAS_EXECUTING_BUDGET_LINES_MESSAGE,
-                isCloseable: true,
+                isCloseable: false,
                 isToastMessage: true
             });
             return;

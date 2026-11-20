@@ -283,7 +283,12 @@ describe("useServicesComponents", () => {
             expect(result.current.showModal).toBe(false);
             expect(dispatchMock).not.toHaveBeenCalled();
             expect(setAlertMock).toHaveBeenCalledWith(
-                expect.objectContaining({ type: "error", heading: "This services component can't be deleted" })
+                // Not closeable: the shared Alert's close icon can't be reached by keyboard.
+                expect.objectContaining({
+                    type: "error",
+                    heading: "This services component can't be deleted",
+                    isCloseable: false
+                })
             );
         });
 
