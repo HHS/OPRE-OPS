@@ -1695,3 +1695,35 @@ describe("opsAPI - reviewing a contract modification refreshes the Services Comp
         subscription.unsubscribe();
     });
 });
+
+describe("opsAPI - submitting a contract modification refreshes the agreement (OPS-3268)", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("refetches getAgreementById, so the budget lines' lock state is current", async () => {
+        let agreementRequests = 0;
+        server.use(
+            http.get("*/api/v1/agreements/7", () => {
+                agreementRequests += 1;
+                return HttpResponse.json({ id: 7, budget_line_items: [] });
+            }),
+            http.post("*/api/v1/agreements/7/contract-modifications/", () =>
+                HttpResponse.json({ id: 3 }, { status: 201 })
+            )
+        );
+        const { store } = setupApiStore(opsApi);
+        const subscription = store.dispatch(opsApi.endpoints.getAgreementById.initiate(7));
+        await subscription;
+        expect(agreementRequests).toBe(1);
+
+        await store.dispatch(
+            opsApi.endpoints.submitContractModification.initiate({
+                agreementId: 7,
+                budgetLineItemIds: [],
+                requestorNotes: ""
+            })
+        );
+
+        await vi.waitFor(() => expect(agreementRequests).toBe(2));
+        subscription.unsubscribe();
+    });
+});
