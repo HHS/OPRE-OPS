@@ -92,24 +92,28 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
         });
     }, [data, optionText]);
 
+    // Disabled matches the app's disabled native select (sass/uswds/styles.scss): white with a
+    // feedback-disabled-dark border and text, rather than USWDS's grey fill.
+    const DISABLED_COLOR = "var(--feedback-disabled-dark)";
+
     const customStyles = {
         control: (provided, state) => ({
             ...provided,
-            background: state.isDisabled ? "#c9c9c9" : "#fff",
-            borderColor: "#565c65",
+            background: "#fff",
+            borderColor: state.isDisabled ? DISABLED_COLOR : "#565c65",
             minHeight: "2.5rem",
             boxShadow: state.isFocused ? "" : "",
             outline: state.isFocused ? "0.25rem solid #2491ff" : "",
             borderRadius: 0,
             "&:hover": {
-                borderColor: "#565c65"
+                borderColor: state.isDisabled ? DISABLED_COLOR : "#565c65"
             },
             ...overrideStyles
         }),
 
         placeholder: (provided, state) => ({
             ...provided,
-            color: state.isDisabled ? "#454545" : "#565C65"
+            color: state.isDisabled ? DISABLED_COLOR : "#565C65"
         }),
 
         // react-select's default "No options" text (#999999 on white) fails WCAG AA contrast
@@ -121,7 +125,7 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
 
         singleValue: (provided, state) => ({
             ...provided,
-            color: state.isDisabled ? "#454545" : provided.color
+            color: state.isDisabled ? DISABLED_COLOR : provided.color
         }),
 
         valueContainer: (provided) => ({
@@ -132,7 +136,7 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
         input: (provided, state) => ({
             ...provided,
             margin: "0px",
-            color: state.isDisabled ? "#454545" : provided.color
+            color: state.isDisabled ? DISABLED_COLOR : provided.color
         }),
 
         indicatorSeparator: () => ({
@@ -144,19 +148,19 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             height: "40px"
         }),
 
-        clearIndicator: (provided) => ({
+        clearIndicator: (provided, state) => ({
             ...provided,
-            color: "#1b1b1b"
+            color: state.isDisabled ? DISABLED_COLOR : "#1b1b1b"
         }),
 
-        dropdownIndicator: (provided) => ({
+        dropdownIndicator: (provided, state) => ({
             ...provided,
-            color: "#1b1b1b"
+            color: state.isDisabled ? DISABLED_COLOR : "#1b1b1b"
         }),
 
-        multiValueLabel: (provided) => ({
+        multiValueLabel: (provided, state) => ({
             ...provided,
-            color: "#1b1b1b"
+            color: state.isDisabled ? DISABLED_COLOR : "#1b1b1b"
         })
     };
 

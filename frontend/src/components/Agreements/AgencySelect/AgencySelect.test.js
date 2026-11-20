@@ -346,8 +346,9 @@ describe("AgencySelect", () => {
             />
         );
 
-        // Component renders successfully with isDisabled prop
-        expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
+        // The label and hint sit outside a disabled fieldset, so they get their own disabled classes.
+        expect(screen.getByText("Servicing Agency", { selector: "label" })).toHaveClass("usa-label--disabled");
+        expect(screen.getByText("Required Information*")).toHaveClass("usa-hint--disabled");
     });
 
     it("renders with isDisabled prop when set to false", () => {
@@ -365,8 +366,8 @@ describe("AgencySelect", () => {
             />
         );
 
-        // Component renders successfully with isDisabled prop
-        expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
+        expect(screen.getByText("Servicing Agency", { selector: "label" })).not.toHaveClass("usa-label--disabled");
+        expect(screen.getByText("Required Information*")).not.toHaveClass("usa-hint--disabled");
     });
 
     it("renders with tooltipMsg prop", () => {

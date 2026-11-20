@@ -49,7 +49,7 @@ const AgencySelect = ({
             style={{ width: "508px" }}
         >
             <label
-                className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
+                className={`${legendClassname} ${messages.length ? "usa-label--error" : ""} ${isDisabled ? "usa-label--disabled" : ""}`}
                 htmlFor={`${agencyType.toLowerCase()}-agency-combobox-input`}
                 id={`${agencyType.toLowerCase()}-agency-combobox-label`}
             >
@@ -64,7 +64,7 @@ const AgencySelect = ({
                     {messages[0]}
                 </span>
             ) : (
-                <span className="usa-hint">Required Information*</span>
+                <span className={cx("usa-hint", isDisabled && "usa-hint--disabled")}>Required Information*</span>
             )}
             <div className="margin-top-05">
                 <ComboBox

@@ -1,5 +1,6 @@
-import { render, fireEvent, screen } from "@testing-library/react";
+import { render, fireEvent, screen, renderHook } from "@testing-library/react";
 import ComboBox from "./ComboBox";
+import useComboBox from "./ComboBox.hooks";
 import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
@@ -285,5 +286,39 @@ describe("ComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         expect(screen.getByTestId("combobox-loading-skeleton")).toBeInTheDocument();
+    });
+
+    // Disabled matches the app's disabled native select: white, with a grey border, text and chevron.
+    describe("disabled styles", () => {
+        const DISABLED_COLOR = "var(--feedback-disabled-dark)";
+        const { result } = renderHook(() =>
+            useComboBox(researchProjects, researchProjects[0], mockSetSelectedProject, (d) => d.title, {}, false, false)
+        );
+        const { customStyles } = result.current;
+
+        it("keeps a white control with a grey border when disabled", () => {
+            const disabled = customStyles.control({}, { isDisabled: true, isFocused: false });
+            expect(disabled.background).toBe("#fff");
+            expect(disabled.borderColor).toBe(DISABLED_COLOR);
+            expect(disabled["&:hover"].borderColor).toBe(DISABLED_COLOR);
+        });
+
+        it("greys the value, placeholder, input and indicators when disabled", () => {
+            const state = { isDisabled: true };
+            expect(customStyles.singleValue({}, state).color).toBe(DISABLED_COLOR);
+            expect(customStyles.placeholder({}, state).color).toBe(DISABLED_COLOR);
+            expect(customStyles.input({}, state).color).toBe(DISABLED_COLOR);
+            expect(customStyles.dropdownIndicator({}, state).color).toBe(DISABLED_COLOR);
+            expect(customStyles.clearIndicator({}, state).color).toBe(DISABLED_COLOR);
+            expect(customStyles.multiValueLabel({}, state).color).toBe(DISABLED_COLOR);
+        });
+
+        it("leaves the enabled styles unchanged", () => {
+            const enabled = customStyles.control({}, { isDisabled: false, isFocused: false });
+            expect(enabled.background).toBe("#fff");
+            expect(enabled.borderColor).toBe("#565c65");
+            expect(customStyles.dropdownIndicator({}, { isDisabled: false }).color).toBe("#1b1b1b");
+            expect(customStyles.placeholder({}, { isDisabled: false }).color).toBe("#565C65");
+        });
     });
 });

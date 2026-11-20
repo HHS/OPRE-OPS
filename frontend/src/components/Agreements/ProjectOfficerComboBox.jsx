@@ -80,7 +80,7 @@ export const ProjectOfficerComboBox = ({
             })}
         >
             <label
-                className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
+                className={`${legendClassname} ${messages.length ? "usa-label--error" : ""} ${isDisabled ? "usa-label--disabled" : ""}`}
                 htmlFor={inputId}
                 id={labelId}
             >
