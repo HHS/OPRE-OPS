@@ -34,6 +34,7 @@ const NUMBER_LOCKED_MESSAGE = "Services components cannot be edited on awarded a
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes in the form.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {any} [props.scFormSuite] - Vest suite used to display field-level validation errors.
+ * @param {React.RefObject<HTMLButtonElement>} [props.addButtonRef] - Ref to the "Add Services Component" button, where focus returns after editing or deleting an SC.
  * @param {boolean} [props.locksServicesComponentNumbers] - Whether a saved SC's number and Optional flag are locked (Awarded agreement, OPS-3268).
  * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
@@ -53,7 +54,8 @@ function ServicesComponentForm({
     hasUnsavedChanges,
     workflow,
     scFormSuite,
-    locksServicesComponentNumbers = false
+    locksServicesComponentNumbers = false,
+    addButtonRef
 }) {
     const [scSelectTouched, setScSelectTouched] = React.useState(false);
     React.useEffect(() => {
@@ -241,6 +243,7 @@ function ServicesComponentForm({
                         </>
                     ) : (
                         <button
+                            ref={addButtonRef}
                             className="usa-button usa-button--outline margin-right-0"
                             data-cy="add-services-component-btn"
                         >

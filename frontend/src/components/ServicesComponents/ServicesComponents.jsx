@@ -1,3 +1,4 @@
+import React from "react";
 import ConfirmationModal from "../UI/Modals/ConfirmationModal";
 import ServicesComponentForm from "./ServicesComponentForm";
 import useServicesComponents from "./ServicesComponents.hooks";
@@ -57,6 +58,20 @@ const ServicesComponents = ({
         nonDraftBudgetLines
     );
 
+    // Leaving edit mode (Update or Cancel) swaps the focused button for "Add Services Component",
+    // and a confirmed delete removes the item that had focus, so keyboard focus would drop to
+    // <body> (WCAG 2.4.3). When that happens, put it on the Add button instead.
+    const addButtonRef = React.useRef(/** @type {HTMLButtonElement | null} */ (null));
+    const previous = React.useRef({ mode: formData.mode, showModal });
+    React.useEffect(() => {
+        const leftEditMode = previous.current.mode === "edit" && formData.mode !== "edit";
+        const closedModal = previous.current.showModal && !showModal;
+        previous.current = { mode: formData.mode, showModal };
+        if (!leftEditMode && !closedModal) return;
+        const focusLost = !document.activeElement || document.activeElement === document.body;
+        if (focusLost) addButtonRef.current?.focus();
+    }, [formData.mode, showModal]);
+
     return (
         <>
             {showModal && (
@@ -83,6 +98,7 @@ const ServicesComponents = ({
                 workflow={workflow}
                 scFormSuite={scFormSuite}
                 locksServicesComponentNumbers={locksServicesComponentNumbers}
+                addButtonRef={addButtonRef}
             />
 
             <ServicesComponentsList
