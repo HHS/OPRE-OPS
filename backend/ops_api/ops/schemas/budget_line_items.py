@@ -81,9 +81,12 @@ class DeObligationRequestSchema(Schema):
 
     `requested_amount` is the amount to de-obligate (the delta), not the resulting net amount.
     Omitted, null, or 0 clears a pending de-obligation instead of submitting one.
+    `line_description`, the one other field editable on an Obligated line, applies right away
+    when present; omitted leaves the description unchanged.
     """
 
     requested_amount = fields.Float(allow_none=True, load_default=None)
+    line_description = fields.Str(allow_none=True, validate=Length(max=150))
 
 
 class NestedBudgetLineItemRequestSchema(RequestBodySchema):

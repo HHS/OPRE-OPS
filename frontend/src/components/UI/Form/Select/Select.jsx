@@ -94,13 +94,16 @@ const Select = ({
             )}
             <div className="display-flex flex-align-center margin-top-1">
                 {isDisabled ? (
+                    // USWDS wraps a tooltip trigger in an inline-block span, so a disabled select with a
+                    // tooltip needs a fixed width. Without one, fill the column like the enabled select.
                     <Tooltip
                         label={tooltipMsg}
                         position="right"
+                        className={tooltipMsg ? undefined : "width-full"}
                     >
                         <select
                             id={name}
-                            className={`width-mobile-lg usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
+                            className={`${tooltipMsg ? "width-mobile-lg " : ""}usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
                             name={name}
                             onChange={() => {}}
                             value={value}

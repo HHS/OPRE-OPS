@@ -166,6 +166,39 @@ def test_submit_records_pending_edit_and_requested_amount(
         _cleanup(loaded_db, agreement.id, bli.id, sc)
 
 
+def test_submit_updates_the_description_only_when_sent(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+):
+    """Figma leaves Description editable on an Obligated line; it applies right away, unlike the amount."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="DESC")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
+    try:
+        bli.line_description = "Original description"
+        loaded_db.commit()
+
+        response = basic_user_auth_client.post(
+            _de_obligation_url(bli.id), json={"requested_amount": "100000.00", "line_description": "Updated"}
+        )
+        assert response.status_code == 200, response.json
+        loaded_db.refresh(bli)
+        assert bli.line_description == "Updated"
+        assert float(bli.amount) == 500000.00
+
+        # Omitted: the description is left as it is.
+        assert _submit_de_obligation(basic_user_auth_client, bli.id, 50000.00).status_code == 200
+        loaded_db.refresh(bli)
+        assert bli.line_description == "Updated"
+
+        too_long = basic_user_auth_client.post(
+            _de_obligation_url(bli.id), json={"requested_amount": "50000.00", "line_description": "x" * 151}
+        )
+        assert too_long.status_code == 400
+        loaded_db.refresh(bli)
+        assert bli.line_description == "Updated"
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
 def test_full_amount_de_obligation_is_accepted(
     modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
 ):

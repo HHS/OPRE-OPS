@@ -159,7 +159,9 @@ class BudgetLineItemDeObligationAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.SUBMIT_DE_OBLIGATION) as meta:
             data = self._request_schema.load(request.json or {})
             service = BudgetLineItemService(current_app.db_session)
-            bli = service.submit_de_obligation(id, data["requested_amount"])
+            # Pass line_description only when sent, so an omitted one keeps the current description.
+            description = {"line_description": data["line_description"]} if "line_description" in data else {}
+            bli = service.submit_de_obligation(id, data["requested_amount"], **description)
             meta.metadata.update(
                 {
                     "budget_line_item_id": id,

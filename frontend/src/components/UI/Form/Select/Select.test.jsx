@@ -239,6 +239,18 @@ describe("Select Component", () => {
             expect(selectElement).toHaveClass("width-mobile-lg");
         });
 
+        it("fills its column instead of a fixed width when disabled without a tooltip", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    value="OPTION_A"
+                    isDisabled={true}
+                />
+            );
+
+            expect(screen.getByRole("combobox")).not.toHaveClass("width-mobile-lg");
+        });
+
         it("applies error styling even when disabled", () => {
             render(
                 <Select

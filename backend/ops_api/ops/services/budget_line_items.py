@@ -70,6 +70,9 @@ from ops_api.ops.utils.budget_line_items_helpers import (
 )
 from ops_api.ops.utils.users import is_budget_team, is_super_user
 
+# submit_de_obligation's default: no line_description sent, so keep the current one (OPS-6488).
+_KEEP_DESCRIPTION = object()
+
 
 @dataclass
 class BudgetLineItemFilters:
@@ -1030,14 +1033,22 @@ class BudgetLineItemService:
         else:
             self.db_session.flush()
 
-    def submit_de_obligation(self, id: int, requested_amount: Optional[float], commit: bool = True) -> BudgetLineItem:
+    def submit_de_obligation(
+        self,
+        id: int,
+        requested_amount: Optional[float],
+        commit: bool = True,
+        line_description: Optional[str] | object = _KEEP_DESCRIPTION,
+    ) -> BudgetLineItem:
         """Submit (or clear) a de-obligation request on an Obligated budget line (OPS-6488).
 
         Separate from the generic ``update``/direct-edit path on purpose: Obligated isn't in
         ``EDITABLE_STATUSES``, and this never writes ``amount`` -- only the pending
         ``requested_de_obligation_amount`` and its tracking ``ContractModificationEdit`` row (see
         ``ContractModificationEditService.record_de_obligation_request``). ``requested_amount``
-        of 0 or None clears a pending de-obligation instead of submitting one.
+        of 0 or None clears a pending de-obligation instead of submitting one. ``line_description``
+        is the only other field the de-obligation form edits; unlike the amount it applies right
+        away, and leaving it out keeps the current description.
 
         Raises:
             ResourceNotFoundError: The budget line doesn't exist (404).
@@ -1079,6 +1090,8 @@ class BudgetLineItemService:
         if requested_amount and not tracks_contract_modifications(budget_line_item):
             raise ValidationError({"agreement_id": "Contract modifications are not enabled."})
         edit_service.record_de_obligation_request(budget_line_item, requested_amount, user.id)
+        if line_description is not _KEEP_DESCRIPTION:
+            budget_line_item.line_description = line_description
 
         if commit:
             self.db_session.commit()

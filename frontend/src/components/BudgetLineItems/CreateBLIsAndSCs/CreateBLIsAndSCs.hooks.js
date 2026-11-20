@@ -37,6 +37,8 @@ import {
 } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
+import deObligationSuite from "../BudgetLinesForm/deObligationSuite";
+import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import scFormSuite from "../../ServicesComponents/ServicesComponentForm/suite";
 import suite from "./suite";
 import {
@@ -138,8 +140,8 @@ const useCreateBLIsAndSCs = (
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [groupedBudgetLinesByGrantNumber, setGroupedBudgetLinesByGrantNumber] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
-    // OPS-6488: the Obligated line whose de-obligation amount is being asked for, if any.
-    const [budgetLineToDeObligate, setBudgetLineToDeObligate] = React.useState(null);
+    // OPS-6488: editing an Obligated line, where the form's amount holds the amount to de-obligate.
+    const [isDeObligating, setIsDeObligating] = React.useState(false);
     const navigate = useTrailNavigate();
     const { setAlert } = useAlert();
     const [addAgreement] = useAddAgreementMutation();
@@ -455,9 +457,11 @@ const useCreateBLIsAndSCs = (
         setNeedByDate(null);
         setEnteredDescription(null);
         setBudgetLineBeingEdited(null);
+        setIsDeObligating(false);
         suite.reset();
         budgetFormSuite.reset();
         datePickerSuite.reset();
+        deObligationSuite.reset();
     }, []);
     /**
      * NOTE: 4th useCallback in this file
@@ -655,6 +659,38 @@ const useCreateBLIsAndSCs = (
             return;
         }
 
+        if (isDeObligating) {
+            if (
+                enteredAmount == null ||
+                deObligationSuite.run({ requestedAmount: enteredAmount }, currentBudgetLine.amount ?? 0).hasErrors()
+            ) {
+                return;
+            }
+            // Only the pending de-obligation and the description change -- the real amount is
+            // untouched until a Division Director approves the modification. Sent on Save & Exit via
+            // the de-obligation endpoint, not the generic budget line update (which rejects any edit
+            // to an Obligated line). Figma leaves Description editable here, over the AC's "no other
+            // edits"; see the note on OPS-6488.
+            dispatch({
+                type: "UPDATE_BUDGET_LINE_ITEM",
+                payload: {
+                    ...currentBudgetLine,
+                    requested_de_obligation_amount: enteredAmount,
+                    line_description: enteredDescription,
+                    deObligationChanged: true
+                }
+            });
+            setHasUnsavedChanges(true);
+            setAlert({
+                type: "success",
+                message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click ${continueBtnText} below.`,
+                isCloseable: false,
+                isToastMessage: true
+            });
+            resetForm();
+            return;
+        }
+
         // Match by id (not array position) — tempBudgetLines and the original budgetLines
         // prop can drift out of index-alignment after any add/delete/duplicate, so an
         // index-based lookup here could compare against the wrong BLI's original values.
@@ -679,7 +715,7 @@ const useCreateBLIsAndSCs = (
 
         setAlert({
             type: "success",
-            message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`,
+            message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click ${continueBtnText} below.`,
             isCloseable: false,
             isToastMessage: true
         });
@@ -746,7 +782,8 @@ const useCreateBLIsAndSCs = (
         }
     };
     /**
-     * Confirm the user means to de-obligate, then ask how much (OPS-6488).
+     * Confirm the user means to de-obligate, then open the form on an Obligated line with the amount
+     * as the only editable field, prefilled with any pending de-obligation (OPS-6488).
      * @param {number} budgetLineId - The ID of the Obligated budget line
      * @returns {void}
      */
@@ -760,35 +797,12 @@ const useCreateBLIsAndSCs = (
             actionButtonText: "Yes, De-obligate Funding",
             secondaryButtonText: "Go back",
             handleConfirm: () => {
-                resetForm();
-                setBudgetLineToDeObligate(tempBudgetLines.find((bl) => bl.id === budgetLineId) ?? null);
+                const budgetLine = tempBudgetLines.find((bl) => bl.id === budgetLineId);
+                handleSetBudgetLineForEditingById(budgetLineId);
+                setIsDeObligating(true);
+                setEnteredAmount(budgetLine?.requested_de_obligation_amount ?? null);
+                scrollToCenter("budget-line-form");
             }
-        });
-    };
-
-    /**
-     * Stage the amount to de-obligate. Only the pending de-obligation changes -- the real amount is
-     * untouched until a Division Director approves the modification. Sent on Save & Exit via the
-     * de-obligation endpoint, not the generic budget line update (which rejects edits to Obligated lines).
-     * @param {number} amount - The amount to de-obligate
-     * @returns {void}
-     */
-    const handleStageDeObligation = (amount) => {
-        const budgetLine = budgetLineToDeObligate;
-        setBudgetLineToDeObligate(null);
-        if (!budgetLine) {
-            return;
-        }
-        dispatch({
-            type: "UPDATE_BUDGET_LINE_ITEM",
-            payload: { ...budgetLine, requested_de_obligation_amount: amount, deObligationChanged: true }
-        });
-        setHasUnsavedChanges(true);
-        setAlert({
-            type: "success",
-            message: `Budget line ${BLILabel(budgetLine)} was updated.  When you’re done editing, click ${continueBtnText} below.`,
-            isCloseable: false,
-            isToastMessage: true
         });
     };
     /**
@@ -940,7 +954,11 @@ const useCreateBLIsAndSCs = (
                 existingBudgetLineItemsWithIds
                     .filter((bli) => bli.deObligationChanged)
                     .map((bli) =>
-                        submitDeObligation({ id: bli.id, requestedAmount: bli.requested_de_obligation_amount }).unwrap()
+                        submitDeObligation({
+                            id: bli.id,
+                            requestedAmount: bli.requested_de_obligation_amount,
+                            lineDescription: bli.line_description
+                        }).unwrap()
                     )
             );
             const existingBudgetLineItemsToUpdate = existingBudgetLineItemsWithIds.filter(
@@ -1114,9 +1132,6 @@ const useCreateBLIsAndSCs = (
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
         handleDeObligateBudgetLine,
-        budgetLineToDeObligate,
-        handleStageDeObligation,
-        handleCancelDeObligation: () => setBudgetLineToDeObligate(null),
         handleEditBLI,
         hasUnsavedChanges,
         setHasUnsavedChanges,
@@ -1125,6 +1140,7 @@ const useCreateBLIsAndSCs = (
         handleSave,
         handleSetBudgetLineForEditingById,
         isBudgetLineNotDraft,
+        isDeObligating,
         isEditing,
         modalProps,
         needByDate,

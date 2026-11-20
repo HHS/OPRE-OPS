@@ -15,7 +15,6 @@ import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import SaveChangesAndExitModal from "../../UI/Modals/SaveChangesAndExitModal";
 import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
-import DeObligationAmountModal from "../DeObligationAmountModal";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findDescription, findIfOptional } from "../../../helpers/servicesComponent.helpers";
@@ -90,9 +89,8 @@ export const CreateBLIsAndSCs = ({
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
         handleDeObligateBudgetLine,
-        budgetLineToDeObligate,
-        handleStageDeObligation,
-        handleCancelDeObligation,
+        budgetLineBeingEdited,
+        isDeObligating,
         handleEditBLI,
         handleResetForm,
         handleSetBudgetLineForEditingById,
@@ -421,14 +419,6 @@ export const CreateBLIsAndSCs = ({
                 />
             )}
 
-            {budgetLineToDeObligate && (
-                <DeObligationAmountModal
-                    budgetLine={budgetLineToDeObligate}
-                    onConfirm={handleStageDeObligation}
-                    onClose={handleCancelDeObligation}
-                />
-            )}
-
             {blocker.state === "blocked" && (
                 <SaveChangesAndExitModal
                     heading={modalProps.heading}
@@ -600,6 +590,8 @@ export const CreateBLIsAndSCs = ({
                     scStartDate={effectiveScStartDate}
                     scEndDate={effectiveScEndDate}
                     allowPastObligateByDates={allowPastObligateByDates}
+                    isDeObligating={isDeObligating}
+                    deObligationMaxAmount={tempBudgetLines.find((bl) => bl.id === budgetLineBeingEdited)?.amount ?? 0}
                 />
             )}
 

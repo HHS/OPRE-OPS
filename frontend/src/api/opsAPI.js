@@ -710,11 +710,15 @@ export const opsApi = createApi({
             invalidatesTags: ["ContractModifications", "BudgetLineItems", "Notifications"]
         }),
         submitDeObligation: builder.mutation({
-            query: ({ id, requestedAmount }) => ({
+            query: ({ id, requestedAmount, lineDescription }) => ({
                 url: `/budget-line-items/${id}/de-obligation/`,
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: { requested_amount: requestedAmount || null }
+                body: {
+                    requested_amount: requestedAmount || null,
+                    // Omitted when not given, so the description is left as it is.
+                    ...(lineDescription !== undefined && { line_description: lineDescription || null })
+                }
             }),
             // Nets the Agreement's totals immediately (OPS-6488), so Agreements must refetch too,
             // not just the budget line and its pending mod card.

@@ -5285,6 +5285,15 @@ paths:
                     greater than $0 and no more than the line's obligated amount, or 0/omitted to
                     clear a pending request.
                   example: 100000.00
+                line_description:
+                  type: string
+                  nullable: true
+                  maxLength: 150
+                  description: >-
+                    The line's description, the only other field editable on an Obligated line.
+                    Applies right away (it isn't part of the contract modification); omit it to
+                    leave the description unchanged.
+                  example: Research and analysis, reduced scope
       responses:
         "200":
           description: OK
