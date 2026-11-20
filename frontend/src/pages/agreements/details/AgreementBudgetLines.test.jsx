@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import { Router } from "react-router-dom";
@@ -1118,8 +1118,13 @@ describe("AgreementBudgetLines", () => {
         });
     });
     describe("edit wizard seeding", () => {
+        // Stand-in for the RTK Query slice, so a test can mark an unrelated request as pending.
+        const idleOpsApi = { queries: {}, mutations: {} };
+        const opsApiReducer = (state = idleOpsApi, action) =>
+            action.type === "test/setOpsApi" ? action.payload : state;
         const superUserStore = configureStore({
             reducer: {
+                opsApi: opsApiReducer,
                 auth: () => ({
                     activeUser: {
                         id: 1,
@@ -1130,6 +1135,10 @@ describe("AgreementBudgetLines", () => {
                     }
                 })
             }
+        });
+
+        beforeEach(() => {
+            superUserStore.dispatch({ type: "test/setOpsApi", payload: idleOpsApi });
         });
 
         const ui = (agreement, props = {}) => (
@@ -1274,6 +1283,62 @@ describe("AgreementBudgetLines", () => {
                 expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
 
                 rerender(ui(freshAgreement, { isAgreementFetching: true }));
+
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
+            });
+
+            // RTK Query (invalidationBehavior "delayed") holds a save's tag invalidation while any other
+            // request in the slice is in flight, so the agreement refetch may not have started yet even
+            // though none of the editor's own queries is fetching.
+            test("waits while any other API request is pending before mounting the edit wizard", () => {
+                act(() =>
+                    superUserStore.dispatch({
+                        type: "test/setOpsApi",
+                        payload: {
+                            queries: { "getAgreementContractModificationsById(1)": { status: "pending" } },
+                            mutations: {}
+                        }
+                    })
+                );
+                const { rerender } = render(ui(staleAgreement));
+
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                // When that request settles, RTK flushes the held invalidation and starts the agreement
+                // refetch in the same dispatch, so the slice never looks idle while the data is stale.
+                act(() =>
+                    superUserStore.dispatch({
+                        type: "test/setOpsApi",
+                        payload: { queries: { "getAgreementById(1)": { status: "pending" } }, mutations: {} }
+                    })
+                );
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                rerender(ui(freshAgreement));
+                act(() => superUserStore.dispatch({ type: "test/setOpsApi", payload: idleOpsApi }));
+
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
+            });
+
+            test("waits for the refetch again after a load error clears while in edit mode", () => {
+                const { rerender } = render(ui(staleAgreement));
+                expect(screen.getByTestId("edit-wizard")).toBeInTheDocument();
+
+                useGetServicesComponentsListQueryMock.mockReturnValue({ data: [], isLoading: false, isError: true });
+                rerender(ui(staleAgreement));
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                useGetServicesComponentsListQueryMock.mockReturnValue({ data: [], isLoading: false, isFetching: true });
+                rerender(ui(staleAgreement, { isAgreementFetching: true }));
+
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                useGetServicesComponentsListQueryMock.mockReturnValue({
+                    data: [],
+                    isLoading: false,
+                    isFetching: false
+                });
+                rerender(ui(freshAgreement));
 
                 expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
             });

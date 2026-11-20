@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { useAncestryForChildren, useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { buildTrailState, LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
@@ -54,6 +55,15 @@ import { handleExport } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import { PacmanLoader } from "react-spinners";
 import icons from "../../../uswds/img/sprite.svg";
+
+/**
+ * Whether any query or mutation in the opsApi slice is in flight.
+ * @param {Object} state - The Redux state.
+ * @returns {boolean}
+ */
+const selectIsAnyOpsApiRequestPending = (state) =>
+    Object.values(state.opsApi?.queries ?? {}).some((query) => query?.status === "pending") ||
+    Object.values(state.opsApi?.mutations ?? {}).some((mutation) => mutation?.status === "pending");
 
 /**
  * Renders Agreement budget lines view
@@ -148,13 +158,19 @@ const AgreementBudgetLines = ({
     // so opening it then would freeze the stale budget lines, and the next save would write the old
     // values back. Wait for any refetch before opening it, then keep it open: saving from the editor
     // starts refetches while the save is still running, and unmounting would drop that save.
-    const isEditorDataFetching = isAgreementFetching || isServicesComponentsFetching || isGrantNumbersFetching;
+    // RTK Query's default "delayed" invalidation holds a save's tag invalidation while any other request in
+    // the slice is in flight, so a refetch of the editor's data may not have started yet. Waiting for the
+    // whole slice to settle mirrors that rule: once nothing is pending, every held refetch has run.
+    const isAnyApiRequestPending = useSelector(selectIsAnyOpsApiRequestPending);
+    const isEditorDataFetching =
+        isAgreementFetching || isServicesComponentsFetching || isGrantNumbersFetching || isAnyApiRequestPending;
     const [isEditorOpen, setIsEditorOpen] = React.useState(false);
     const canOpenEditor = showEditWizard && !editorDataLoadFailed && !isEditorDataLoading && !isEditorDataFetching;
     if (canOpenEditor && !isEditorOpen) {
         setIsEditorOpen(true);
     }
-    if (!showEditWizard && isEditorOpen) {
+    // Also close it after a failed load, so a retry has to finish before the editor reopens.
+    if ((!showEditWizard || editorDataLoadFailed) && isEditorOpen) {
         setIsEditorOpen(false);
     }
     const filters = { agreementIds: [agreement?.id] };
