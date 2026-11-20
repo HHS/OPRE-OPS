@@ -70,6 +70,22 @@ const SimpleAlert = ({
     const level = isNaN(parsedLevel) ? 4 : Math.max(1, Math.min(6, parsedLevel));
     const headingTag = `h${level}`;
     const alertRef = React.useRef(null);
+    // Where focus goes once the alert has actually closed. Set on close; used only if the alert
+    // then hides or unmounts. A caller with no setter (the default no-op) keeps it on screen, and
+    // focus then stays on the close button.
+    const pendingFocusRef = React.useRef(/** @type {HTMLElement[] | null} */ (null));
+    React.useEffect(() => {
+        if (!isAlertVisible && pendingFocusRef.current) {
+            focusFirstFocusable(pendingFocusRef.current);
+            pendingFocusRef.current = null;
+        }
+    }, [isAlertVisible]);
+    React.useEffect(
+        () => () => {
+            if (pendingFocusRef.current) focusFirstFocusable(pendingFocusRef.current);
+        },
+        []
+    );
 
     let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-2 margin-bottom-2";
 
@@ -138,9 +154,8 @@ const SimpleAlert = ({
                         data-position="top"
                         data-cy="close-alert"
                         onClick={() => {
-                            const focusCandidates = getFocusCandidatesAfterClose(alertRef.current);
+                            pendingFocusRef.current = getFocusCandidatesAfterClose(alertRef.current);
                             setIsAlertVisible(false);
-                            focusFirstFocusable(focusCandidates);
                         }}
                     >
                         <FontAwesomeIcon
