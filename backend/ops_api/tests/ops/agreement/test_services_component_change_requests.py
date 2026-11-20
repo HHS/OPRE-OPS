@@ -38,6 +38,7 @@ from ops_api.ops.services.change_requests import ChangeRequestService
 
 SYSTEM_OWNER_USER_ID = 503
 BASIC_USER_ID = 521
+POWER_USER_ID = 528
 
 
 @pytest.fixture()
@@ -805,7 +806,10 @@ def test_superuser_period_edit_keeps_an_existing_pending_card_current(
     response = _patch_sc(power_user_auth_client, sc2_id, {"period_end": superuser_end})
 
     assert response.status_code == 200, response.json
-    assert [(e.old_value, e.new_value) for e in _edits(loaded_db, awarded_agreement.id)] == expected
+    edits = _edits(loaded_db, awarded_agreement.id)
+    assert [(e.old_value, e.new_value) for e in edits] == expected
+    # The card now shows the superuser's value, so it's attributed to them.
+    assert [e.requested_by_id for e in edits] == [POWER_USER_ID] * len(expected)
 
 
 def test_superuser_period_edit_still_records_nothing_without_a_pending_card(

@@ -254,10 +254,10 @@ class ServicesComponentService:
     def _awarded_tracked_changes(
         self, services_component: ServicesComponent, updated_fields: dict[str, Any]
     ) -> dict[str, tuple[Any, Any]]:
-        """On an Awarded, tracked agreement (non-superuser): reject a change to the SC's number,
-        Optional flag or sub-component, and return its period-of-performance changes as
-        ``{field: (old, new)}`` to record as Modified LOE edits (OPS-3268). For a superuser, only
-        the changes to a field that already has a pending edit (so that edit stays current).
+        """On an Awarded, tracked agreement: for a non-superuser, reject a change to the SC's
+        number, Optional flag or sub-component, and return its period-of-performance changes as
+        ``{field: (old, new)}`` to record as Modified LOE edits (OPS-3268). For a superuser, return
+        only the changes to a field that already has a pending edit (so that edit stays current).
         Empty otherwise. A period change is rejected for every user while the SC's edits are in
         review."""
 

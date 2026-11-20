@@ -49,9 +49,10 @@ const savedSc = (id, number) => ({
     created_on: "2043-01-01T00:00:00Z"
 });
 
-const renderServicesComponents = () =>
+const renderServicesComponents = ({ nonDraftBudgetLines } = {}) =>
     render(
         <ServicesComponents
+            nonDraftBudgetLines={nonDraftBudgetLines}
             serviceRequirementType="SEVERABLE"
             agreementId={1}
             continueBtnText="Save & Exit"
@@ -93,6 +94,31 @@ describe("ServicesComponents — keyboard focus after editing or deleting an SC 
 
         expect(screen.queryByRole("button", { name: "Delete Services Component 2" })).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Add Services Component" })).toHaveFocus();
+    });
+
+    it("moves focus to Add Services Component after confirming the PoP warning with Continue with Updates", async () => {
+        const user = userEvent.setup();
+        // A non-draft line dated after every SC's PoP, so saving the edit raises the PoP warning.
+        renderServicesComponents({ nonDraftBudgetLines: [{ id: 1, date_needed: "2050-06-30" }] });
+
+        await user.click(screen.getByRole("button", { name: "Edit Services Component 2" }));
+        await user.click(screen.getByRole("button", { name: "Update Services Component" }));
+        await user.click(screen.getByRole("button", { name: "Continue with Updates" }));
+
+        expect(screen.queryByRole("button", { name: "Continue with Updates" })).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Add Services Component" })).toHaveFocus();
+    });
+
+    it("leaves focus on the Delete button when the delete is cancelled", async () => {
+        const user = userEvent.setup();
+        renderServicesComponents();
+        const deleteButton = screen.getByRole("button", { name: "Delete Services Component 2" });
+
+        await user.click(deleteButton);
+        await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+        expect(deleteButton).toHaveFocus();
+        expect(screen.getByRole("button", { name: "Add Services Component" })).not.toHaveFocus();
     });
 
     it("doesn't move focus when nothing was edited or deleted", () => {
