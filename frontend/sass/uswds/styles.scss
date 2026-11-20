@@ -340,13 +340,12 @@ button {
 }
 // change the text color for labels within a fieldset when disabled to feedback-disabled-dark
 // also target usa-hint class to ensure hint text is also changed
-// .usa-label--disabled and .usa-hint--disabled are for a disabled control whose label sits outside a
-// disabled fieldset (e.g. CanComboBox); textareas get the same outlined look instead of USWDS's grey fill
+// .usa-label--disabled is for a disabled control whose label sits outside a disabled fieldset
+// (e.g. CanComboBox); textareas get the same outlined look instead of USWDS's grey fill
 fieldset[disabled] .usa-select,
 fieldset[disabled] .usa-hint,
 fieldset[disabled] .usa-label,
 .usa-label.usa-label--disabled,
-.usa-hint.usa-hint--disabled,
 .usa-input:disabled,
 .usa-textarea:disabled,
 .usa-textarea:disabled:hover,

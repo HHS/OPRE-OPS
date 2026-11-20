@@ -48,40 +48,47 @@ const AgencySelect = ({
             className={cx("usa-form-group margin-top-3", messages.length && "usa-form-group--error", className)}
             style={{ width: "508px" }}
         >
-            <label
-                className={`${legendClassname} ${messages.length ? "usa-label--error" : ""} ${isDisabled ? "usa-label--disabled" : ""}`}
-                htmlFor={`${agencyType.toLowerCase()}-agency-combobox-input`}
-                id={`${agencyType.toLowerCase()}-agency-combobox-label`}
+            {/* A disabled fieldset greys the label and hint (fieldset[disabled] rules in styles.scss) and
+                tells axe they belong to a disabled control, so their contrast isn't checked. */}
+            <fieldset
+                className="usa-fieldset"
+                disabled={isDisabled}
             >
-                {`${agencyType} Agency`}
-            </label>
-            {messages?.length > 0 ? (
-                <span
-                    className="usa-error-message"
-                    id={`${agencyType.toLowerCase()}-agency-combobox-error`}
-                    role="alert"
+                <label
+                    className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
+                    htmlFor={`${agencyType.toLowerCase()}-agency-combobox-input`}
+                    id={`${agencyType.toLowerCase()}-agency-combobox-label`}
                 >
-                    {messages[0]}
-                </span>
-            ) : (
-                <span className={cx("usa-hint", isDisabled && "usa-hint--disabled")}>Required Information*</span>
-            )}
-            <div className="margin-top-05">
-                <ComboBox
-                    namespace={`${agencyType.toLowerCase()}-agency-combobox`}
-                    data={data}
-                    selectedData={value}
-                    setSelectedData={handleChange}
-                    defaultString="-Select an option-"
-                    optionText={(agency) => agency.name ?? agency.abbr}
-                    messages={messages}
-                    className={className}
-                    isMulti={false}
-                    isDisabled={isDisabled}
-                    tooltipMsg={tooltipMsg}
-                    {...rest}
-                />
-            </div>
+                    {`${agencyType} Agency`}
+                </label>
+                {messages?.length > 0 ? (
+                    <span
+                        className="usa-error-message"
+                        id={`${agencyType.toLowerCase()}-agency-combobox-error`}
+                        role="alert"
+                    >
+                        {messages[0]}
+                    </span>
+                ) : (
+                    <span className="usa-hint">Required Information*</span>
+                )}
+                <div className="margin-top-05">
+                    <ComboBox
+                        namespace={`${agencyType.toLowerCase()}-agency-combobox`}
+                        data={data}
+                        selectedData={value}
+                        setSelectedData={handleChange}
+                        defaultString="-Select an option-"
+                        optionText={(agency) => agency.name ?? agency.abbr}
+                        messages={messages}
+                        className={className}
+                        isMulti={false}
+                        isDisabled={isDisabled}
+                        tooltipMsg={tooltipMsg}
+                        {...rest}
+                    />
+                </div>
+            </fieldset>
         </div>
     );
 };

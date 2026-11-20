@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, vi, describe, it, beforeEach } from "vitest";
 import { useGetAllAgreementAgenciesQuery } from "../../../api/opsAPI";
@@ -346,9 +346,12 @@ describe("AgencySelect", () => {
             />
         );
 
-        // The label and hint sit outside a disabled fieldset, so they get their own disabled classes.
-        expect(screen.getByText("Servicing Agency", { selector: "label" })).toHaveClass("usa-label--disabled");
-        expect(screen.getByText("Required Information*")).toHaveClass("usa-hint--disabled");
+        // A disabled fieldset greys the label and hint, and tells axe they belong to a disabled control
+        // (a class alone left the grey hint failing axe's color-contrast check).
+        const group = screen.getByRole("group");
+        expect(group).toBeDisabled();
+        expect(within(group).getByText("Servicing Agency", { selector: "label" })).toBeInTheDocument();
+        expect(within(group).getByText("Required Information*")).toBeInTheDocument();
     });
 
     it("renders with isDisabled prop when set to false", () => {
@@ -366,8 +369,7 @@ describe("AgencySelect", () => {
             />
         );
 
-        expect(screen.getByText("Servicing Agency", { selector: "label" })).not.toHaveClass("usa-label--disabled");
-        expect(screen.getByText("Required Information*")).not.toHaveClass("usa-hint--disabled");
+        expect(screen.getByRole("group")).toBeEnabled();
     });
 
     it("renders with tooltipMsg prop", () => {
