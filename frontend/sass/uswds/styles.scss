@@ -359,6 +359,7 @@ fieldset[disabled] .usa-label,
 
 // Keep USWDS's high-contrast disabled colour, which the rule above would otherwise override
 @media (forced-colors: active) {
+    fieldset[disabled] .usa-select,
     .usa-input:disabled,
     .usa-textarea:disabled,
     .usa-textarea:disabled:hover,

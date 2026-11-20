@@ -33,11 +33,7 @@ export default {
     title: "UI/Form/ComboBox",
     component: ComboBox,
     tags: ["autodocs"],
-    render: (args) => <ComboBoxWithState {...args} />,
-    // ComboBox has no PropTypes to infer this from, so declare the toggle for every story.
-    argTypes: {
-        isDisabled: { control: "boolean" }
-    }
+    render: (args) => <ComboBoxWithState {...args} />
 };
 
 export const Default = {
