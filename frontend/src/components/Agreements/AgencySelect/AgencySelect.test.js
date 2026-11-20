@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, vi, describe, it, beforeEach } from "vitest";
 import { useGetAllAgreementAgenciesQuery } from "../../../api/opsAPI";
@@ -346,12 +346,10 @@ describe("AgencySelect", () => {
             />
         );
 
-        // A disabled fieldset greys the label and hint, and tells axe they belong to a disabled control
-        // (a class alone left the grey hint failing axe's color-contrast check).
         const group = screen.getByRole("group");
         expect(group).toBeDisabled();
-        expect(within(group).getByText("Servicing Agency", { selector: "label" })).toBeInTheDocument();
-        expect(within(group).getByText("Required Information*")).toBeInTheDocument();
+        expect(group).toContainElement(screen.getByText("Servicing Agency", { selector: "label" }));
+        expect(group).toContainElement(screen.getByText("Required Information*"));
     });
 
     it("renders with isDisabled prop when set to false", () => {

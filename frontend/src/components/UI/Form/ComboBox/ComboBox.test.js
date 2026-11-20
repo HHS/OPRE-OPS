@@ -290,12 +290,27 @@ describe("ComboBox", () => {
 
     // Disabled matches the app's disabled native select: white, with a grey border, text and chevron.
     describe("disabled styles", () => {
-        const { result } = renderHook(() =>
-            useComboBox(researchProjects, researchProjects[0], mockSetSelectedProject, (d) => d.title, {}, false, false)
-        );
-        const { customStyles } = result.current;
+        const getCustomStyles = () => {
+            const { result } = renderHook(() =>
+                useComboBox(
+                    researchProjects,
+                    researchProjects[0],
+                    mockSetSelectedProject,
+                    (d) => d.title,
+                    {},
+                    false,
+                    false
+                )
+            );
+            return result.current.customStyles;
+        };
+
+        it("uses the feedback-disabled-dark token", () => {
+            expect(DISABLED_COLOR).toBe("var(--feedback-disabled-dark)");
+        });
 
         it("keeps a white control with a grey border when disabled", () => {
+            const customStyles = getCustomStyles();
             const disabled = customStyles.control({}, { isDisabled: true, isFocused: false });
             expect(disabled.background).toBe("#fff");
             expect(disabled.borderColor).toBe(DISABLED_COLOR);
@@ -303,6 +318,7 @@ describe("ComboBox", () => {
         });
 
         it("greys the value, placeholder, input and chevron when disabled", () => {
+            const customStyles = getCustomStyles();
             const state = { isDisabled: true };
             expect(customStyles.singleValue({}, state).color).toBe(DISABLED_COLOR);
             expect(customStyles.placeholder({}, state).color).toBe(DISABLED_COLOR);
@@ -311,6 +327,7 @@ describe("ComboBox", () => {
         });
 
         it("leaves the enabled styles unchanged", () => {
+            const customStyles = getCustomStyles();
             const enabled = customStyles.control({}, { isDisabled: false, isFocused: false });
             expect(enabled.background).toBe("#fff");
             expect(enabled.borderColor).toBe("#565c65");

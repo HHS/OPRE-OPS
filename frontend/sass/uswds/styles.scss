@@ -357,6 +357,19 @@ fieldset[disabled] .usa-label,
     border-color: var(--feedback-disabled-dark);
 }
 
+// Keep USWDS's high-contrast disabled colour, which the rule above would otherwise override
+@media (forced-colors: active) {
+    .usa-input:disabled,
+    .usa-textarea:disabled,
+    .usa-textarea:disabled:hover,
+    .usa-textarea:disabled:focus,
+    .usa-textarea:disabled:active {
+        color: GrayText;
+        -webkit-text-fill-color: GrayText;
+        border-color: GrayText;
+    }
+}
+
 // #main-content is a programmatic focus target (skip link, "Return to top"); keep the ring for keyboard focus only
 #main-content:focus:not(:focus-visible) {
     outline: none;
