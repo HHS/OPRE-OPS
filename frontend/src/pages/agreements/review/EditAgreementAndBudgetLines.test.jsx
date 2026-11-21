@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it, vi, beforeEach } from "vitest";
@@ -40,8 +40,8 @@ const mockAgreement = {
 };
 
 let mockAgreementResult = { data: mockAgreement, error: null, isLoading: false };
-const mockServicesComponentsResult = { data: [], error: null, isLoading: false };
-const mockGrantNumbersResult = { data: [], error: null, isLoading: false };
+let mockServicesComponentsResult = { data: [], error: null, isLoading: false };
+let mockGrantNumbersResult = { data: [], error: null, isLoading: false };
 
 // Spy + result for the new single-mutation save path. Tests can override
 // `nextBundleResult` to either resolve with a body or reject with an error.
@@ -187,18 +187,21 @@ vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
     return { default: MockCreateBLIsAndSCs };
 });
 
+// Stand-in for the RTK Query slice, so a test can mark a request as pending.
+const idleOpsApi = { queries: {}, mutations: {} };
+const opsApiReducer = (state = idleOpsApi, action) => (action.type === "test/setOpsApi" ? action.payload : state);
+
 const buildStore = () =>
     configureStore({
-        reducer: { auth: authSlice, alert: alertSlice },
+        reducer: { auth: authSlice, alert: alertSlice, opsApi: opsApiReducer },
         preloadedState: {
             auth: { activeUser: { id: 1, roles: [] } },
             alert: { isActive: false, type: "", heading: "", message: "" }
         }
     });
 
-const renderPage = (initialEntry = "/agreements/review/42/edit") => {
-    const store = buildStore();
-    const utils = render(
+const renderPage = (initialEntry = "/agreements/review/42/edit", store = buildStore()) => {
+    const page = () => (
         <Provider store={store}>
             <MemoryRouter initialEntries={[initialEntry]}>
                 <Routes>
@@ -210,7 +213,10 @@ const renderPage = (initialEntry = "/agreements/review/42/edit") => {
             </MemoryRouter>
         </Provider>
     );
-    return { ...utils, store };
+    const utils = render(page());
+    // Re-render the same tree, e.g. after changing a mocked query result.
+    const rerenderPage = () => utils.rerender(page());
+    return { ...utils, store, rerenderPage };
 };
 
 describe("EditAgreementAndBudgetLines", () => {
@@ -233,6 +239,62 @@ describe("EditAgreementAndBudgetLines", () => {
             budget_line_items: { create: [], update: [], delete: [] }
         };
         mockAgreementResult = { data: mockAgreement, error: null, isLoading: false };
+        mockServicesComponentsResult = { data: [], error: null, isLoading: false };
+        mockGrantNumbersResult = { data: [], error: null, isLoading: false };
+    });
+
+    // The editor seeds its draft once on mount. Re-entering this page with cached data refetches it
+    // (refetchOnMountOrArgChange) with isLoading false, so mounting the editor then would freeze the cached
+    // draft, and saving would write it back over the refetched values.
+    describe("waiting for fresh data before mounting the editor", () => {
+        it.each([
+            ["the agreement", () => (mockAgreementResult = { ...mockAgreementResult, isFetching: true })],
+            [
+                "the services components",
+                () => (mockServicesComponentsResult = { ...mockServicesComponentsResult, isFetching: true })
+            ],
+            ["the grant numbers", () => (mockGrantNumbersResult = { ...mockGrantNumbersResult, isFetching: true })]
+        ])("waits while %s refetch", (_label, startRefetch) => {
+            startRefetch();
+            const { rerenderPage } = renderPage();
+
+            expect(screen.queryByTestId("edit-agreement-provider")).not.toBeInTheDocument();
+            expect(screen.getByRole("heading", { name: "Loading..." })).toBeInTheDocument();
+
+            mockAgreementResult = { ...mockAgreementResult, isFetching: false };
+            mockServicesComponentsResult = { ...mockServicesComponentsResult, isFetching: false };
+            mockGrantNumbersResult = { ...mockGrantNumbersResult, isFetching: false };
+            rerenderPage();
+
+            expect(screen.getByTestId("edit-agreement-provider")).toBeInTheDocument();
+        });
+
+        // RTK Query holds a refetch while any other request in the slice is in flight.
+        it("waits while any other API request is pending", () => {
+            const store = buildStore();
+            store.dispatch({
+                type: "test/setOpsApi",
+                payload: { queries: { "getNotificationsByUserId(1)": { status: "pending" } }, mutations: {} }
+            });
+            renderPage(undefined, store);
+
+            expect(screen.queryByTestId("edit-agreement-provider")).not.toBeInTheDocument();
+
+            act(() => store.dispatch({ type: "test/setOpsApi", payload: idleOpsApi }));
+
+            expect(screen.getByTestId("edit-agreement-provider")).toBeInTheDocument();
+        });
+
+        // Saving starts refetches while the save is still running; unmounting the editor would drop it.
+        it("keeps the editor mounted when a refetch starts", () => {
+            const { rerenderPage } = renderPage();
+            expect(screen.getByTestId("edit-agreement-provider")).toBeInTheDocument();
+
+            mockAgreementResult = { ...mockAgreementResult, isFetching: true };
+            rerenderPage();
+
+            expect(screen.getByTestId("edit-agreement-provider")).toBeInTheDocument();
+        });
     });
 
     it("renders both edit sections with the correct props", () => {
