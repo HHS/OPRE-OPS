@@ -4,9 +4,9 @@ click==8.5.1 \
     --hash=sha256:8bb5376d2006950386f8c6427613334a2acadc5f559cb80e638d00b4df957e37 \
     --hash=sha256:9bbfada76703fd1d784b83eea012e3e8c6a001a876543ef104fa56aaaeb072b4
     # via x-wr-timezone
-icalendar==7.3.0 \
-    --hash=sha256:7bd001c8e648205e1bde5c6a5b77096598e8d0893dcf57755c6c597635620132 \
-    --hash=sha256:8355acfe17be81b368f0b1e3740817cea9b56ea889931f8f1a87c62f2d28db0b
+icalendar==7.3.2 \
+    --hash=sha256:f15380927aed4318860e001c03b543c48578c73aec46e2d384c5d0802082b808 \
+    --hash=sha256:f95ce4ff8f41d8ad9ca253a676ef40c672abd3774458d197c215055a0d805cc4
     # via
     #   -r requirements.in
     #   recurring-ical-events
