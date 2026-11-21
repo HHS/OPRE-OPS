@@ -7,6 +7,8 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 import { useChangeRequestTotal } from "../../../hooks/useChangeRequests.hooks";
 import tabStyles from "./AgreementTabs.module.css";
 
+const KNOWN_FILTERS = ["my-agreements", "change-requests"];
+
 /**
  * A header section of the agreements page that contains the filters.
  * @returns {JSX.Element} - The procurement shop select element.
@@ -42,15 +44,15 @@ const AgreementTabs = () => {
               ]
             : [])
     ];
-    const currentFilter = new URLSearchParams(search).get("filter") ?? "";
+    // AgreementsList shows All Agreements for any filter it doesn't recognize, so mark that tab too.
+    const requestedFilter = new URLSearchParams(search).get("filter");
+    const currentFilter = KNOWN_FILTERS.includes(requestedFilter) ? requestedFilter : "";
+
     /**
      * @param {string} queryString - The query string of the tab.
      */
     const isSelected = (queryString) => (new URLSearchParams(queryString).get("filter") ?? "") === currentFilter;
 
-    /**
-     * @param {string} queryString - The query string of the tab.
-     */
     const getClassName = (queryString) =>
         `font-sans-2xs text-bold ${isSelected(queryString) ? styles.listItemSelected : styles.listItemNotSelected}`;
 

@@ -130,7 +130,8 @@ describe("AgreementTabs", () => {
         ["?filter=my-agreements", "My Agreements"],
         ["?filter=change-requests", "For Review"],
         ["?sort=name", "All Agreements"],
-        ["?filter=my-agreements&sort=name", "My Agreements"]
+        ["?filter=my-agreements&sort=name", "My Agreements"],
+        ["?filter=unknown", "All Agreements"]
     ])("marks only the tab for search %j as the current page", (search, currentLabel) => {
         useLocation.mockReturnValue({ search });
 
