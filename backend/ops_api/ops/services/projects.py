@@ -559,7 +559,7 @@ class ProjectsService(OpsService[Project]):
                 if (bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT) and bli.fiscal_year is not None:
                     if bli.can and bli.can.portfolio_id in portfolio_ids:
                         if fiscal_years is None or bli.fiscal_year in fiscal_years:
-                            total += (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+                            total += (bli.net_amount or Decimal("0")) + (bli.fees or Decimal("0"))
         return total
 
     def get_list(self, data: dict[str, Any] | None = None) -> tuple[Sequence[Project], dict[str, Any]]:

@@ -16,10 +16,18 @@ class ModificationEditType(Enum):
     # An administrative change, e.g. a COR change (OPS-3153). Applied and recorded on save, with
     # no change request; the row tracks that the contract still needs a modification for it.
     ADMIN_CHANGE = auto()
+    # A request to de-obligate funds from an Obligated budget line (OPS-6488). Unlike the other
+    # types, nothing is applied when this is saved: the real BudgetLineItem.amount is never
+    # touched, and the request only takes effect once a Division Director approves it (OPS-6489).
+    DE_OBLIGATION = auto()
 
 
 # The field an ADMIN_CHANGE row records for a COR change (OPS-3153).
 PROJECT_OFFICER_EDIT_FIELD = "project_officer_id"
+
+# The field a DE_OBLIGATION row records (OPS-6488): old_value is the original obligated amount,
+# new_value is the requested de-obligated amount (the delta, not the resulting net amount).
+DE_OBLIGATION_AMOUNT_FIELD = "requested_de_obligation_amount"
 
 
 class ContractModificationEdit(BaseModel):
@@ -34,6 +42,12 @@ class ContractModificationEdit(BaseModel):
     with no change request and no approval. The change is applied in OPS right away; like a
     MODIFIED_LOE row, the row tracks that the contract still needs a modification (#3269). There
     is one per agreement, showing the net change from the COR on the contract to the current COR.
+
+    A DE_OBLIGATION row (OPS-6488) is written when the user saves a de-obligation request on an
+    Obligated budget line. Unlike the other types, saving it does not apply anything: the real
+    ``BudgetLineItem.amount`` is never touched, only the companion
+    ``BudgetLineItem.requested_de_obligation_amount`` the Agreement's totals net against. The row
+    stays pending like the others until a modification takes it; approving it is OPS-6489's job.
 
     Either way the row stays pending (``agreement_mod_id IS NULL``) until a modification takes it.
 
@@ -101,7 +115,8 @@ Index(
 
 # At most one pending direct edit per (budget line, field): guards a double-click/retry on a
 # direct-apply edit (OPS-3268) from inserting two pending rows for the same field, one of which
-# would otherwise be silently orphaned (see record_direct_edit).
+# would otherwise be silently orphaned (see record_direct_edit). Also covers a pending
+# de-obligation request (OPS-6488, field=DE_OBLIGATION_AMOUNT_FIELD): at most one per budget line.
 Index(
     "ix_contract_modification_edit_one_pending_bli_field",
     ContractModificationEdit.__table__.c.budget_line_item_id,

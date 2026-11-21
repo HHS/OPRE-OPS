@@ -23,6 +23,8 @@ import "./BudgetLinesTable.scss";
  * @param {Array<number>} [props.budgetLineIdsInReview] - an array of budget line IDs that are in review.
  * @param {Boolean} [props.isGrant] - A flag to indicate grant budget lines, which omit the Fee and Total columns (grants have no procurement shop).
  * @param {Boolean} [props.showClinColumn] - A flag to show the CLIN column (awarded contract agreements only).
+ * @param {Boolean} [props.tracksContractModifications] - Whether edits on this agreement require a contract modification (OPS-3072); gates the de-obligation affordance on Obligated lines (OPS-6488).
+ * @param {Function} [props.handleDeObligateBudgetLine] - Starts a de-obligation on an Obligated line (OPS-6488). - optional
  * @returns {React.ReactElement} - The rendered table component.
  */
 const BudgetLinesTable = ({
@@ -35,7 +37,9 @@ const BudgetLinesTable = ({
     budgetLineIdsInReview = [],
     isEditable = false,
     isGrant = false,
-    showClinColumn = false
+    showClinColumn = false,
+    tracksContractModifications = false,
+    handleDeObligateBudgetLine = () => {}
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -82,6 +86,8 @@ const BudgetLinesTable = ({
                     isEditable={isEditable}
                     isGrant={isGrant}
                     showClinColumn={showClinColumn}
+                    tracksContractModifications={tracksContractModifications}
+                    handleDeObligateBudgetLine={handleDeObligateBudgetLine}
                 />
             ))}
         </Table>

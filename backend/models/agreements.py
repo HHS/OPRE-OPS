@@ -298,14 +298,15 @@ class Agreement(BaseModel):
 
     @property
     def agreement_subtotal(self) -> Decimal:
-        """Sum of amounts for non-DRAFT (or OBE) budget line items."""
+        """Sum of amounts for non-DRAFT (or OBE) budget line items, net of any pending,
+        unapproved de-obligation request (OPS-6488; see BudgetLineItem.net_amount)."""
         from models.budget_line_items import BudgetLineItemStatus
 
         if not self.budget_line_items:
             return Decimal("0")
         return sum(
             (
-                (bli.amount or Decimal("0"))
+                (bli.net_amount or Decimal("0"))
                 for bli in self.budget_line_items
                 if bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT
             ),
@@ -335,14 +336,15 @@ class Agreement(BaseModel):
 
     @property
     def lifetime_obligated(self) -> Decimal:
-        """Sum of (amount + fees) for all OBLIGATED budget line items."""
+        """Sum of (net amount + fees) for all OBLIGATED budget line items, net of any pending,
+        unapproved de-obligation request (OPS-6488; see BudgetLineItem.net_amount)."""
         from models.budget_line_items import BudgetLineItemStatus
 
         if not self.budget_line_items:
             return Decimal("0")
         return sum(
             (
-                (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+                (bli.net_amount or Decimal("0")) + (bli.fees or Decimal("0"))
                 for bli in self.budget_line_items
                 if bli.status == BudgetLineItemStatus.OBLIGATED
             ),
@@ -350,14 +352,15 @@ class Agreement(BaseModel):
         )
 
     def fy_obligated(self, fiscal_year: int) -> Decimal:
-        """Sum of (amount + fees) for OBLIGATED BLIs in the given fiscal year."""
+        """Sum of (net amount + fees) for OBLIGATED BLIs in the given fiscal year, net of any
+        pending, unapproved de-obligation request (OPS-6488)."""
         from models.budget_line_items import BudgetLineItemStatus
 
         if not self.budget_line_items:
             return Decimal("0")
         return sum(
             (
-                (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+                (bli.net_amount or Decimal("0")) + (bli.fees or Decimal("0"))
                 for bli in self.budget_line_items
                 if bli.status == BudgetLineItemStatus.OBLIGATED and bli.fiscal_year == fiscal_year
             ),
@@ -366,7 +369,8 @@ class Agreement(BaseModel):
 
     @property
     def spending_by_fiscal_year(self) -> dict[int, Decimal]:
-        """Sum of (amount + fees) per fiscal year for non-DRAFT (or OBE) BLIs with a fiscal_year assigned.
+        """Sum of (net amount + fees) per fiscal year for non-DRAFT (or OBE) BLIs with a
+        fiscal_year assigned, net of any pending, unapproved de-obligation request (OPS-6488).
 
         Executes a single aggregation query (GROUP BY fiscal_year) rather than
         iterating BLIs in Python, so the cost is independent of how many BLIs
@@ -381,7 +385,10 @@ class Agreement(BaseModel):
             return {}
 
         fiscal_year = BudgetLineItem.fiscal_year
-        total_expr = func.sum(func.coalesce(BudgetLineItem.amount, 0) + func.coalesce(BudgetLineItem.fees, 0))
+        net_amount_expr = func.coalesce(BudgetLineItem.amount, 0) - func.coalesce(
+            BudgetLineItem.requested_de_obligation_amount, 0
+        )
+        total_expr = func.sum(net_amount_expr + func.coalesce(BudgetLineItem.fees, 0))
 
         stmt = (
             select(fiscal_year.label("fy"), total_expr.label("total"))

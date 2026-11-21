@@ -14,6 +14,14 @@ describe("renderChangeValues", () => {
         expect(newValue).toBe("CAN 2");
     });
 
+    it("renders a de-obligation as the original obligated amount going to the net amount (OPS-6488)", () => {
+        const { oldValue, newValue } = renderChangeValues("requested_de_obligation_amount", {
+            requested_de_obligation_amount: { old: 500000, new: 100000 }
+        });
+        expect(oldValue).toBe("$500,000.00");
+        expect(newValue).toBe("$400,000.00");
+    });
+
     it("renders a deletion change with the amount as From and 'Deleted' as To", () => {
         const { oldValue, newValue } = renderChangeValues("delete", { delete: { old: 500000, new: "Deleted" } });
         expect(oldValue).toBe("$500,000.00");

@@ -34,10 +34,18 @@ def test_agreement_total_no_budget_lines():
 
 def test_agreement_total_with_draft_budget_lines_only():
     bli1 = MagicMock(
-        status=BudgetLineItemStatus.DRAFT, amount=Decimal("50000.00"), fees=Decimal("2500.00"), is_obe=False
+        status=BudgetLineItemStatus.DRAFT,
+        amount=Decimal("50000.00"),
+        net_amount=Decimal("50000.00"),
+        fees=Decimal("2500.00"),
+        is_obe=False,
     )
     bli2 = MagicMock(
-        status=BudgetLineItemStatus.DRAFT, amount=Decimal("75000.00"), fees=Decimal("3750.00"), is_obe=False
+        status=BudgetLineItemStatus.DRAFT,
+        amount=Decimal("75000.00"),
+        net_amount=Decimal("75000.00"),
+        fees=Decimal("3750.00"),
+        is_obe=False,
     )
 
     agreement = _make_agreement_mock_with_total([bli1, bli2])
@@ -49,16 +57,32 @@ def test_agreement_total_with_draft_budget_lines_only():
 
 def test_agreement_total_with_multiple_budget_lines():
     bli1 = MagicMock(
-        status=BudgetLineItemStatus.PLANNED, amount=Decimal("100000.00"), fees=Decimal("5000.00"), is_obe=False
+        status=BudgetLineItemStatus.PLANNED,
+        amount=Decimal("100000.00"),
+        net_amount=Decimal("100000.00"),
+        fees=Decimal("5000.00"),
+        is_obe=False,
     )
     bli2 = MagicMock(
-        status=BudgetLineItemStatus.IN_EXECUTION, amount=Decimal("200000.00"), fees=Decimal("10000.00"), is_obe=False
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        amount=Decimal("200000.00"),
+        net_amount=Decimal("200000.00"),
+        fees=Decimal("10000.00"),
+        is_obe=False,
     )
     bli3 = MagicMock(
-        status=BudgetLineItemStatus.DRAFT, amount=Decimal("50000.00"), fees=Decimal("2500.00"), is_obe=False
+        status=BudgetLineItemStatus.DRAFT,
+        amount=Decimal("50000.00"),
+        net_amount=Decimal("50000.00"),
+        fees=Decimal("2500.00"),
+        is_obe=False,
     )
     bli4 = MagicMock(
-        status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("150000.00"), fees=Decimal("7500.00"), is_obe=False
+        status=BudgetLineItemStatus.OBLIGATED,
+        amount=Decimal("150000.00"),
+        net_amount=Decimal("150000.00"),
+        fees=Decimal("7500.00"),
+        is_obe=False,
     )
 
     agreement = _make_agreement_mock_with_total([bli1, bli2, bli3, bli4])
@@ -75,10 +99,18 @@ def test_agreement_total_with_multiple_budget_lines():
 
 def test_agreement_total_with_procurement_shop_fees():
     bli1 = MagicMock(
-        status=BudgetLineItemStatus.PLANNED, amount=Decimal("100000.00"), fees=Decimal("5000.00"), is_obe=False
+        status=BudgetLineItemStatus.PLANNED,
+        amount=Decimal("100000.00"),
+        net_amount=Decimal("100000.00"),
+        fees=Decimal("5000.00"),
+        is_obe=False,
     )
     bli2 = MagicMock(
-        status=BudgetLineItemStatus.IN_EXECUTION, amount=Decimal("200000.00"), fees=Decimal("10000.00"), is_obe=False
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        amount=Decimal("200000.00"),
+        net_amount=Decimal("200000.00"),
+        fees=Decimal("10000.00"),
+        is_obe=False,
     )
 
     agreement = _make_agreement_mock_with_total([bli1, bli2])
@@ -90,9 +122,19 @@ def test_agreement_total_with_procurement_shop_fees():
 
 
 def test_agreement_total_with_zero_amount_budget_lines():
-    bli1 = MagicMock(status=BudgetLineItemStatus.PLANNED, amount=Decimal("0.00"), fees=Decimal("0.00"), is_obe=False)
+    bli1 = MagicMock(
+        status=BudgetLineItemStatus.PLANNED,
+        amount=Decimal("0.00"),
+        net_amount=Decimal("0.00"),
+        fees=Decimal("0.00"),
+        is_obe=False,
+    )
     bli2 = MagicMock(
-        status=BudgetLineItemStatus.IN_EXECUTION, amount=Decimal("0.00"), fees=Decimal("0.00"), is_obe=False
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        amount=Decimal("0.00"),
+        net_amount=Decimal("0.00"),
+        fees=Decimal("0.00"),
+        is_obe=False,
     )
 
     agreement = _make_agreement_mock_with_total([bli1, bli2])
@@ -104,10 +146,18 @@ def test_agreement_total_with_zero_amount_budget_lines():
 
 def test_agreement_total_with_decimal_precision():
     bli1 = MagicMock(
-        status=BudgetLineItemStatus.PLANNED, amount=Decimal("100000.50"), fees=Decimal("5000.25"), is_obe=False
+        status=BudgetLineItemStatus.PLANNED,
+        amount=Decimal("100000.50"),
+        net_amount=Decimal("100000.50"),
+        fees=Decimal("5000.25"),
+        is_obe=False,
     )
     bli2 = MagicMock(
-        status=BudgetLineItemStatus.IN_EXECUTION, amount=Decimal("200000.75"), fees=Decimal("10000.33"), is_obe=False
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        amount=Decimal("200000.75"),
+        net_amount=Decimal("200000.75"),
+        fees=Decimal("10000.33"),
+        is_obe=False,
     )
 
     agreement = _make_agreement_mock_with_total([bli1, bli2])
@@ -120,13 +170,25 @@ def test_agreement_total_with_decimal_precision():
 
 def test_agreement_total_with_mixed_statuses_and_fees():
     bli1 = MagicMock(
-        status=BudgetLineItemStatus.PLANNED, amount=Decimal("100000.00"), fees=Decimal("3500.00"), is_obe=False
+        status=BudgetLineItemStatus.PLANNED,
+        amount=Decimal("100000.00"),
+        net_amount=Decimal("100000.00"),
+        fees=Decimal("3500.00"),
+        is_obe=False,
     )
     bli2 = MagicMock(
-        status=BudgetLineItemStatus.DRAFT, amount=Decimal("50000.00"), fees=Decimal("1750.00"), is_obe=False
+        status=BudgetLineItemStatus.DRAFT,
+        amount=Decimal("50000.00"),
+        net_amount=Decimal("50000.00"),
+        fees=Decimal("1750.00"),
+        is_obe=False,
     )
     bli3 = MagicMock(
-        status=BudgetLineItemStatus.IN_EXECUTION, amount=Decimal("200000.00"), fees=Decimal("7000.00"), is_obe=False
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        amount=Decimal("200000.00"),
+        net_amount=Decimal("200000.00"),
+        fees=Decimal("7000.00"),
+        is_obe=False,
     )
 
     agreement = _make_agreement_mock_with_total([bli1, bli2, bli3])
@@ -138,12 +200,34 @@ def test_agreement_total_with_mixed_statuses_and_fees():
 
 
 def test_agreement_total_sort_with_none_amount():
-    bli_1 = MagicMock(status=BudgetLineItemStatus.PLANNED, amount=Decimal("100.00"), fees=Decimal("5.00"), is_obe=False)
-    bli_2 = MagicMock(status=BudgetLineItemStatus.IN_EXECUTION, amount=None, fees=Decimal("0.00"), is_obe=False)
-    bli_3 = MagicMock(
-        status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("300.00"), fees=Decimal("15.00"), is_obe=False
+    bli_1 = MagicMock(
+        status=BudgetLineItemStatus.PLANNED,
+        amount=Decimal("100.00"),
+        net_amount=Decimal("100.00"),
+        fees=Decimal("5.00"),
+        is_obe=False,
     )
-    bli_4 = MagicMock(status=BudgetLineItemStatus.DRAFT, amount=Decimal("400.00"), fees=Decimal("20.00"), is_obe=False)
+    bli_2 = MagicMock(
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        amount=None,
+        net_amount=Decimal("0"),
+        fees=Decimal("0.00"),
+        is_obe=False,
+    )
+    bli_3 = MagicMock(
+        status=BudgetLineItemStatus.OBLIGATED,
+        amount=Decimal("300.00"),
+        net_amount=Decimal("300.00"),
+        fees=Decimal("15.00"),
+        is_obe=False,
+    )
+    bli_4 = MagicMock(
+        status=BudgetLineItemStatus.DRAFT,
+        amount=Decimal("400.00"),
+        net_amount=Decimal("400.00"),
+        fees=Decimal("20.00"),
+        is_obe=False,
+    )
 
     agreement = _make_agreement_mock_with_total([bli_1, bli_2, bli_3, bli_4])
 
@@ -187,10 +271,22 @@ def test_next_budget_line_sort_with_fee_and_none_amount():
 
 
 def test_agreement_total_sort_with_multiple_none_amounts():
-    bli_1 = MagicMock(status=BudgetLineItemStatus.PLANNED, amount=None, fees=Decimal("0.00"), is_obe=False)
-    bli_2 = MagicMock(status=BudgetLineItemStatus.IN_EXECUTION, amount=None, fees=Decimal("0.00"), is_obe=False)
+    bli_1 = MagicMock(
+        status=BudgetLineItemStatus.PLANNED, amount=None, net_amount=Decimal("0"), fees=Decimal("0.00"), is_obe=False
+    )
+    bli_2 = MagicMock(
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        amount=None,
+        net_amount=Decimal("0"),
+        fees=Decimal("0.00"),
+        is_obe=False,
+    )
     bli_3 = MagicMock(
-        status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("300.00"), fees=Decimal("15.00"), is_obe=False
+        status=BudgetLineItemStatus.OBLIGATED,
+        amount=Decimal("300.00"),
+        net_amount=Decimal("300.00"),
+        fees=Decimal("15.00"),
+        is_obe=False,
     )
 
     agreement = _make_agreement_mock_with_total([bli_1, bli_2, bli_3])
@@ -202,8 +298,16 @@ def test_agreement_total_sort_with_multiple_none_amounts():
 
 
 def test_agreement_total_sort_with_all_none_amounts():
-    bli_1 = MagicMock(status=BudgetLineItemStatus.PLANNED, amount=None, fees=Decimal("0.00"), is_obe=False)
-    bli_2 = MagicMock(status=BudgetLineItemStatus.IN_EXECUTION, amount=None, fees=Decimal("0.00"), is_obe=False)
+    bli_1 = MagicMock(
+        status=BudgetLineItemStatus.PLANNED, amount=None, net_amount=Decimal("0"), fees=Decimal("0.00"), is_obe=False
+    )
+    bli_2 = MagicMock(
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        amount=None,
+        net_amount=Decimal("0"),
+        fees=Decimal("0.00"),
+        is_obe=False,
+    )
 
     agreement = _make_agreement_mock_with_total([bli_1, bli_2])
 
@@ -293,9 +397,24 @@ def _make_agreement_mock_with_lifetime_obligated(budget_line_items):
 
 def test_sort_agreements_fy_obligated_all_fys_sorts_by_lifetime_obligated():
     """When fiscal_years=[] (All FYs), FY_OBLIGATED sort uses lifetime_obligated, not current FY."""
-    mid_obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("300000.00"), fees=Decimal("0"))
-    low_obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("50000.00"), fees=Decimal("0"))
-    high_obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("800000.00"), fees=Decimal("0"))
+    mid_obligated = MagicMock(
+        status=BudgetLineItemStatus.OBLIGATED,
+        amount=Decimal("300000.00"),
+        net_amount=Decimal("300000.00"),
+        fees=Decimal("0"),
+    )
+    low_obligated = MagicMock(
+        status=BudgetLineItemStatus.OBLIGATED,
+        amount=Decimal("50000.00"),
+        net_amount=Decimal("50000.00"),
+        fees=Decimal("0"),
+    )
+    high_obligated = MagicMock(
+        status=BudgetLineItemStatus.OBLIGATED,
+        amount=Decimal("800000.00"),
+        net_amount=Decimal("800000.00"),
+        fees=Decimal("0"),
+    )
 
     a1 = _make_agreement_mock_with_lifetime_obligated([mid_obligated])  # lifetime = 300,000
     a2 = _make_agreement_mock_with_lifetime_obligated([low_obligated])  # lifetime = 50,000

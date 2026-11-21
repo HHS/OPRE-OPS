@@ -19,6 +19,7 @@ const updateServicesComponentMock = vi.fn();
 const addGrantNumberMock = vi.fn();
 const updateGrantNumberMock = vi.fn();
 const deleteGrantNumberMock = vi.fn();
+const submitDeObligationMock = vi.fn();
 const useGetVersionQueryMock = vi.fn();
 const useGetServicesComponentsListQueryMock = vi.fn(() => ({ data: [] }));
 
@@ -66,6 +67,7 @@ vi.mock("../../../api/opsAPI", () => ({
     useAddGrantNumberMutation: () => [addGrantNumberMock],
     useUpdateGrantNumberMutation: () => [updateGrantNumberMock],
     useDeleteGrantNumberMutation: () => [deleteGrantNumberMock],
+    useSubmitDeObligationMutation: () => [submitDeObligationMock],
     useGetVersionQuery: (...args) => useGetVersionQueryMock(...args),
     useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args)
 }));
@@ -244,6 +246,139 @@ describe("useCreateBLIsAndSCs", () => {
             )
         );
     };
+
+    // OPS-6488: an Obligated line on a tracked, Awarded agreement can only be edited to de-obligate.
+    describe("de-obligating an Obligated budget line", () => {
+        const obligatedLine = { id: 701, status: "OBLIGATED", amount: 500000, created_on: "2024-01-01" };
+
+        beforeEach(() => {
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", skip_cr_for_draft_planned: false, enable_modified_loe_edits: true },
+                isSuccess: true
+            });
+        });
+
+        const startDeObligation = (result) => {
+            act(() => {
+                result.current.handleDeObligateBudgetLine(obligatedLine.id);
+            });
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.actionButtonText).toBe("Yes, De-obligate Funding");
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+        };
+
+        const stageDeObligation = (result, amount) => {
+            act(() => {
+                result.current.setEnteredAmount(amount);
+            });
+            act(() => {
+                result.current.handleEditBLI({ preventDefault: vi.fn() });
+            });
+        };
+
+        it("opens the form in de-obligation mode after the user confirms", () => {
+            const { result } = renderSubject({
+                budgetLines: [obligatedLine],
+                selectedAgreement: { agreement_type: "CONTRACT", is_awarded: true }
+            });
+
+            startDeObligation(result);
+
+            expect(result.current.isEditing).toBe(true);
+            expect(result.current.isDeObligating).toBe(true);
+            expect(result.current.budgetLineBeingEdited).toBe(obligatedLine.id);
+            expect(result.current.enteredAmount).toBeNull();
+        });
+
+        it("stages the de-obligation without touching the obligated amount", () => {
+            const { result } = renderSubject({
+                budgetLines: [obligatedLine],
+                selectedAgreement: { agreement_type: "CONTRACT", is_awarded: true }
+            });
+            startDeObligation(result);
+
+            stageDeObligation(result, 100000);
+
+            const staged = result.current.tempBudgetLines.find((bli) => bli.id === obligatedLine.id);
+            expect(staged).toMatchObject({
+                amount: 500000,
+                requested_de_obligation_amount: 100000,
+                deObligationChanged: true
+            });
+            expect(result.current.hasUnsavedChanges).toBe(true);
+            expect(result.current.isDeObligating).toBe(false);
+            expect(result.current.requiresContractModification).toBe(true);
+        });
+
+        it("does not stage an amount above the obligated amount", () => {
+            const { result } = renderSubject({
+                budgetLines: [obligatedLine],
+                selectedAgreement: { agreement_type: "CONTRACT", is_awarded: true }
+            });
+            startDeObligation(result);
+
+            stageDeObligation(result, 600000);
+
+            const line = result.current.tempBudgetLines.find((bli) => bli.id === obligatedLine.id);
+            expect(line.deObligationChanged).toBeUndefined();
+            expect(result.current.isDeObligating).toBe(true);
+        });
+
+        it("sends a staged de-obligation through its own endpoint on save, not the budget line update", async () => {
+            submitDeObligationMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+            updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+            const { result } = renderSubject({
+                budgetLines: [obligatedLine],
+                servicesComponents: [],
+                selectedAgreement: { agreement_type: "CONTRACT", is_awarded: true }
+            });
+            startDeObligation(result);
+            stageDeObligation(result, 100000);
+
+            await act(async () => {
+                await result.current.handleSave(false);
+            });
+
+            expect(submitDeObligationMock).toHaveBeenCalledWith({
+                id: obligatedLine.id,
+                requestedAmount: 100000,
+                lineDescription: undefined
+            });
+            expect(updateBudgetLineItemMock).not.toHaveBeenCalled();
+        });
+
+        // Figma leaves Description editable on an Obligated line (OPS-6488).
+        it("sends an edited description with the de-obligation", async () => {
+            submitDeObligationMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+            const { result } = renderSubject({
+                budgetLines: [{ ...obligatedLine, line_description: "Old" }],
+                servicesComponents: [],
+                selectedAgreement: { agreement_type: "CONTRACT", is_awarded: true }
+            });
+            startDeObligation(result);
+            expect(result.current.enteredDescription).toBe("Old");
+            act(() => {
+                result.current.setEnteredDescription("New description");
+            });
+            stageDeObligation(result, 100000);
+
+            expect(result.current.tempBudgetLines.find((bli) => bli.id === obligatedLine.id).line_description).toBe(
+                "New description"
+            );
+
+            await act(async () => {
+                await result.current.handleSave(false);
+            });
+
+            expect(submitDeObligationMock).toHaveBeenCalledWith({
+                id: obligatedLine.id,
+                requestedAmount: 100000,
+                lineDescription: "New description"
+            });
+        });
+    });
 
     it("flags not-yet-developed agreement types", () => {
         const { result } = renderSubject();
