@@ -302,4 +302,69 @@ describe("Select Component", () => {
             expect(screen.getByText("Option C")).toBeInTheDocument();
         });
     });
+
+    describe("hint", () => {
+        it.each([false, true])("describes the select with its hint (disabled: %s)", (isDisabled) => {
+            render(
+                <Select
+                    {...defaultProps}
+                    hint="Pick the closest match."
+                    isDisabled={isDisabled}
+                />
+            );
+
+            expect(screen.getByRole("combobox")).toHaveAccessibleDescription("Pick the closest match.");
+        });
+
+        it("drops the hint, and its description, while an error is shown", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    hint="Pick the closest match."
+                    messages={["This is required information"]}
+                />
+            );
+
+            expect(screen.getByRole("combobox")).not.toHaveAttribute("aria-describedby");
+        });
+    });
+
+    describe("disabled width", () => {
+        it("keeps its fixed width by default", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    isDisabled={true}
+                />
+            );
+
+            expect(screen.getByRole("combobox")).toHaveClass("width-mobile-lg");
+        });
+
+        it("can fill its container instead, like the enabled select", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    isDisabled={true}
+                    disabledWidthClassName=""
+                />
+            );
+
+            expect(screen.getByRole("combobox")).not.toHaveClass("width-mobile-lg");
+            expect(screen.getByRole("combobox")).toHaveClass("usa-select");
+        });
+    });
+
+    it("caps a disabled field's tooltip width so a long message wraps", () => {
+        render(
+            <Select
+                {...defaultProps}
+                isDisabled={true}
+                tooltipMsg="This can't be changed after the agreement is awarded."
+                tooltipMaxWidth="mobile"
+            />
+        );
+
+        expect(screen.getByRole("tooltip", { hidden: true })).toHaveClass("width-mobile", "text-wrap");
+    });
 });

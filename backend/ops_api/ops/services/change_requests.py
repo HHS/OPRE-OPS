@@ -27,7 +27,10 @@ from models.change_requests import (
     ServicesComponentChangeRequest,
 )
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
-from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
+from ops_api.ops.services.contract_modification_edits import (
+    BLI_IN_REVIEW_MODIFICATION_MESSAGE,
+    ContractModificationEditService,
+)
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
@@ -226,6 +229,22 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         return False
 
+    def _validate_budget_line_approval(self, change_request: ChangeRequest) -> None:
+        """Checks run before a budget line change request is marked approved, so a rejected
+        approval leaves it pending."""
+        # Approving would change a budget line (and its pending edit) that is in a contract
+        # modification the Division Director is reviewing (OPS-3268).
+        if ContractModificationEditService(self.db_session).budget_line_in_review_modification(
+            change_request.budget_line_item_id
+        ):
+            raise ValidationError({"status": [BLI_IN_REVIEW_MODIFICATION_MESSAGE]})
+        # A Planned->Executing request submitted before the agreement was awarded can't be
+        # approved once it is: executing on an Awarded agreement requires a Contract Modification.
+        if change_request.has_status_change:
+            validate_no_execution_status_change_on_awarded(
+                change_request.budget_line_item, change_request.requested_change_data["status"]
+            )
+
     def _handle_review_action(
         self, change_request: ChangeRequest, action: str, reviewer_notes: str | None
     ) -> dict[str, Any]:
@@ -242,17 +261,11 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         ):
             raise ValidationError({"change_request": "This change request has already been reviewed."})
 
-        # A Planned->Executing request submitted before the agreement was awarded can't be
-        # approved once it is: executing on an Awarded agreement requires a Contract Modification.
-        # Checked before the change request is marked reviewed so a rejected approval leaves it pending.
         if (
             action == "APPROVE"
             and change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
-            and change_request.has_status_change
         ):
-            validate_no_execution_status_change_on_awarded(
-                change_request.budget_line_item, change_request.requested_change_data["status"]
-            )
+            self._validate_budget_line_approval(change_request)
 
         if change_request.status == ChangeRequestStatus.REJECTED:
             return {
@@ -619,10 +632,15 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                 self.db_session.flush()
         return True
 
-    def lock_services_component(self, services_component_id: int) -> None:
-        """Lock the SC row until commit, so concurrent requests don't both see "no request in review"."""
-        self.db_session.execute(
-            select(ServicesComponent.id).where(ServicesComponent.id == services_component_id).with_for_update()
+    def lock_services_component(self, services_component_id: int) -> bool:
+        """Lock the SC row until commit, so concurrent requests don't both see "no request in review".
+        Returns whether the row still exists once the lock is held: a concurrent request that
+        deleted it first commits before this one wakes."""
+        return (
+            self.db_session.scalar(
+                select(ServicesComponent.id).where(ServicesComponent.id == services_component_id).with_for_update()
+            )
+            is not None
         )
 
     def _in_review_services_component_create_change_request(

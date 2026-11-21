@@ -8,6 +8,8 @@ import TextArea from "../../UI/Form/TextArea";
 import { NON_SEVERABLE_OPTIONS, SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "../ServicesComponents.constants";
 import ServicesComponentSelect from "../ServicesComponentSelect";
 
+const NUMBER_LOCKED_MESSAGE = "Services components cannot be edited on awarded agreements";
+
 /**
  * @typedef {Object} Formdata
  * @property {number} number
@@ -32,6 +34,8 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes in the form.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {any} [props.scFormSuite] - Vest suite used to display field-level validation errors.
+ * @param {React.RefObject<HTMLButtonElement>} [props.addButtonRef] - Ref to the "Add Services Component" button, where focus returns after editing or deleting an SC.
+ * @param {boolean} [props.locksServicesComponentNumbers] - Whether a saved SC's number and Optional flag are locked (Awarded agreement, OPS-3268).
  * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
  * @example
@@ -49,12 +53,31 @@ function ServicesComponentForm({
     isReviewMode = false,
     hasUnsavedChanges,
     workflow,
-    scFormSuite
+    scFormSuite,
+    locksServicesComponentNumbers = false,
+    addButtonRef
 }) {
     const [scSelectTouched, setScSelectTouched] = React.useState(false);
     React.useEffect(() => {
         setScSelectTouched(false);
     }, [formKey]);
+    // Clicking an SC's Edit (formKey changes, mode "edit") loads it here: move focus into the form
+    // so keyboard and screen-reader users land on what they're editing, not back on the list
+    // (OPS-3268). preventScroll leaves the scroll to the list item's scrollToCenter.
+    const formRef = React.useRef(/** @type {HTMLFormElement | null} */ (null));
+    const isEditingExisting = formData?.mode === "edit";
+    React.useEffect(() => {
+        if (!isEditingExisting || !formRef.current) return;
+        // The first field that takes focus: USWDS date pickers keep a hidden original input that
+        // matches the selector but can't.
+        const fields = formRef.current.querySelectorAll(
+            'select:not([disabled]), input:not([disabled]):not([type="hidden"]), textarea:not([disabled])'
+        );
+        for (const field of fields) {
+            field.focus({ preventScroll: true });
+            if (document.activeElement === field) return;
+        }
+    }, [formKey, isEditingExisting]);
     const [, forceUpdate] = React.useReducer((n) => n + 1, 0);
     React.useEffect(() => {
         if (!scFormSuite) return;
@@ -65,6 +88,9 @@ function ServicesComponentForm({
     }, [formData.number, scFormSuite]);
 
     const suiteErrors = scFormSuite?.get();
+    // On an Awarded agreement the contract refers to a saved SC by its number, so it (and the
+    // Optional flag) can't change; its period of performance and description still can (OPS-3268).
+    const isNumberLocked = locksServicesComponentNumbers && formData?.mode === "edit" && "created_on" in formData;
 
     if (!serviceTypeReq) {
         return (
@@ -96,6 +122,7 @@ function ServicesComponentForm({
 
     return (
         <form
+            ref={formRef}
             onSubmit={handleSubmit}
             id="services-component-form"
             className={isReviewMode ? "margin-top-8" : undefined}
@@ -118,12 +145,23 @@ function ServicesComponentForm({
                                         optional: false
                                     });
                                 }}
-                                value={formData?.number || ""}
+                                // A disabled Select shows its value as-is, so show the SC's label.
+                                value={
+                                    isNumberLocked
+                                        ? (options.find((option) => option.value === formData.number)?.label ??
+                                          formData.number)
+                                        : formData?.number || ""
+                                }
                                 options={optionsWithSelected}
                                 isRequired={true}
                                 messages={
                                     scSelectTouched ? (suiteErrors?.getErrors("servicesComponentSelect") ?? []) : []
                                 }
+                                isDisabled={isNumberLocked}
+                                // Like the app's other locked fields: the reason is a tooltip, capped
+                                // so it wraps instead of running across the form.
+                                tooltipMsg={isNumberLocked ? NUMBER_LOCKED_MESSAGE : ""}
+                                tooltipMaxWidth="mobile-lg"
                             />
                         </div>
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
@@ -142,7 +180,10 @@ function ServicesComponentForm({
                                         });
                                     }}
                                     disabled={
-                                        formData?.number === 0 || formData?.number === 1 || formData?.number === ""
+                                        isNumberLocked ||
+                                        formData?.number === 0 ||
+                                        formData?.number === 1 ||
+                                        formData?.number === ""
                                     }
                                 />
                                 <label
@@ -202,6 +243,7 @@ function ServicesComponentForm({
                         </>
                     ) : (
                         <button
+                            ref={addButtonRef}
                             className="usa-button usa-button--outline margin-right-0"
                             data-cy="add-services-component-btn"
                         >
