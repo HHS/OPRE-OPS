@@ -61,6 +61,9 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {Object} state - The Redux state.
  * @returns {boolean}
  */
+// After this long on the loader, tell the user how to get out if a request has hung.
+const EDITOR_SLOW_LOAD_MS = 10000;
+
 const selectIsAnyOpsApiRequestPending = (state) =>
     Object.values(state.opsApi?.queries ?? {}).some((query) => query?.status === "pending") ||
     Object.values(state.opsApi?.mutations ?? {}).some((mutation) => mutation?.status === "pending");
@@ -173,6 +176,18 @@ const AgreementBudgetLines = ({
     if ((!showEditWizard || editorDataLoadFailed) && isEditorOpen) {
         setIsEditorOpen(false);
     }
+    // A hung request (no request timeout is set) would otherwise leave the user on the loader with no
+    // explanation, and the header with Cancel is hidden in edit mode.
+    const isWaitingForEditor = showEditWizard && !editorDataLoadFailed && !isEditorOpen;
+    const [isEditorLoadSlow, setIsEditorLoadSlow] = React.useState(false);
+    if (!isWaitingForEditor && isEditorLoadSlow) {
+        setIsEditorLoadSlow(false);
+    }
+    React.useEffect(() => {
+        if (!isWaitingForEditor) return;
+        const timer = setTimeout(() => setIsEditorLoadSlow(true), EDITOR_SLOW_LOAD_MS);
+        return () => clearTimeout(timer);
+    }, [isWaitingForEditor]);
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -381,7 +396,20 @@ const AgreementBudgetLines = ({
                 </>
             )}
 
-            {showEditWizard && !editorDataLoadFailed && !isEditorOpen && <BudgetLinesTableLoading />}
+            {isWaitingForEditor && (
+                <>
+                    <div role="status">
+                        {isEditorLoadSlow && (
+                            <SimpleAlert
+                                type="info"
+                                heading="Still loading"
+                                message="The latest budget lines are still loading. If this doesn't finish, refresh the page or choose another tab."
+                            />
+                        )}
+                    </div>
+                    <BudgetLinesTableLoading />
+                </>
+            )}
 
             {showEditWizard && !editorDataLoadFailed && isEditorOpen && (
                 <EditAgreementProvider

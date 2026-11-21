@@ -1320,6 +1320,57 @@ describe("AgreementBudgetLines", () => {
                 expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
             });
 
+            test("waits while an API mutation is pending before mounting the edit wizard", () => {
+                act(() =>
+                    superUserStore.dispatch({
+                        type: "test/setOpsApi",
+                        payload: { queries: {}, mutations: { "mutation-1": { status: "pending" } } }
+                    })
+                );
+                const { rerender } = render(ui(staleAgreement));
+
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                rerender(ui(freshAgreement));
+                act(() => superUserStore.dispatch({ type: "test/setOpsApi", payload: idleOpsApi }));
+
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
+            });
+
+            // If a request hangs, the editor keeps waiting; tell the user how to get out of it.
+            test("tells the user how to recover when the editor's data takes too long", () => {
+                vi.useFakeTimers();
+                try {
+                    act(() =>
+                        superUserStore.dispatch({
+                            type: "test/setOpsApi",
+                            payload: {
+                                queries: { "getNotificationsByUserId(1)": { status: "pending" } },
+                                mutations: {}
+                            }
+                        })
+                    );
+                    render(ui(staleAgreement));
+                    // The live region is there from the start, so screen readers announce the note when it appears.
+                    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+
+                    act(() => vi.advanceTimersByTime(9999));
+                    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+
+                    act(() => vi.advanceTimersByTime(1));
+                    expect(screen.getByRole("status")).toHaveTextContent(/still loading/i);
+                    expect(screen.getByRole("status")).toHaveTextContent(/refresh the page/i);
+                    expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                    act(() => superUserStore.dispatch({ type: "test/setOpsApi", payload: idleOpsApi }));
+
+                    expect(screen.getByTestId("edit-wizard")).toBeInTheDocument();
+                    expect(screen.queryByText(/still loading/i)).not.toBeInTheDocument();
+                } finally {
+                    vi.useRealTimers();
+                }
+            });
+
             test("waits for the refetch again after a load error clears while in edit mode", () => {
                 const { rerender } = render(ui(staleAgreement));
                 expect(screen.getByTestId("edit-wizard")).toBeInTheDocument();

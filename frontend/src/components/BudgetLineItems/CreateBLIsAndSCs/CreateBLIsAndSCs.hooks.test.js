@@ -755,6 +755,44 @@ describe("useCreateBLIsAndSCs", () => {
                 expect(deleteServicesComponentMock).toHaveBeenCalledWith(21);
             });
 
+            // A rejected delete must not end the save (and leave edit mode) while a sibling delete is
+            // still in flight: the page would then read the API as idle while RTK still holds that
+            // delete's cache invalidation, and reopening the editor could seed it with stale data.
+            it("waits for every delete in a group to finish before reporting a failed delete", async () => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [],
+                    deleted_services_components_ids: [21, 22]
+                });
+                let finishSecondDelete;
+                deleteServicesComponentMock.mockImplementation((id) => ({
+                    unwrap: () =>
+                        id === 21
+                            ? Promise.reject(Object.freeze({ status: 400, data: { message: "blocked" } }))
+                            : new Promise((resolve) => (finishSecondDelete = resolve))
+                }));
+                const { result } = renderAwarded();
+
+                let save;
+                await act(async () => {
+                    save = result.current.handleSave(false);
+                    // Let the save run up to the pending delete.
+                    await new Promise((resolve) => setTimeout(resolve, 0));
+                });
+                expect(finishSecondDelete).toBeTypeOf("function");
+                expect(deleteServicesComponentMock).toHaveBeenCalledWith(21);
+                expect(deleteServicesComponentMock).toHaveBeenCalledWith(22);
+                expect(setIsEditModeMock).not.toHaveBeenCalled();
+                expect(setAlertMock).not.toHaveBeenCalled();
+
+                await act(async () => {
+                    finishSecondDelete({});
+                    await save;
+                });
+                expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
+                expect(setIsEditModeMock).toHaveBeenCalledWith(false);
+            });
+
             // Regression: deleting an SC with a non-Draft BL (OPS-3268) clears that BL's SC link
             // locally (editor reducer). That link clearing alone must not be sent as a BLI update:
             // the backend already nulls it via the FK as part of the SC delete, and for an

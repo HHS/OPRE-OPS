@@ -85,6 +85,23 @@ const persistPartitionedEntities = async (items, addMutation, updateMutation) =>
 };
 
 /**
+ * Waits for every promise to settle, then rejects with the first failure, if any. Unlike Promise.all,
+ * a failure doesn't end the save while sibling requests are still running: leaving edit mode then
+ * would let the budget-lines page read the API as idle while RTK Query still holds those requests'
+ * cache invalidations, and reopening the editor could seed it with stale data.
+ * @param {Promise<any>[]} promises
+ * @returns {Promise<any[]>} The fulfilled values, in order.
+ */
+const settleAllOrThrow = async (promises) => {
+    const results = await Promise.allSettled(promises);
+    const rejected = results.find((result) => result.status === "rejected");
+    if (rejected) {
+        throw rejected.reason;
+    }
+    return results.map((result) => result.value);
+};
+
+/**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
  * @param {Function} setIsEditMode - Function to set the edit mode.
@@ -390,9 +407,9 @@ const useCreateBLIsAndSCs = (
         try {
             // BLIs first so a grant number / SC with a SET NULL FK isn't deleted out from under a BLI still
             // referencing it. Each group starts only after the previous one finishes.
-            await Promise.all(deletedBudgetLines.map((id) => deleteBudgetLineItem(id).unwrap()));
-            await Promise.all(deletedServicesComponentsIds.map((id) => deleteServicesComponent(id).unwrap()));
-            await Promise.all((deletedGrantNumbersIds ?? []).map((id) => deleteGrantNumber(id).unwrap()));
+            await settleAllOrThrow(deletedBudgetLines.map((id) => deleteBudgetLineItem(id).unwrap()));
+            await settleAllOrThrow(deletedServicesComponentsIds.map((id) => deleteServicesComponent(id).unwrap()));
+            await settleAllOrThrow((deletedGrantNumbersIds ?? []).map((id) => deleteGrantNumber(id).unwrap()));
         } catch (error) {
             console.error("Error deleting budget lines:", error);
             // e.g. an SC delete blocked on an Awarded agreement (OPS-6440) returns its reason in errors
