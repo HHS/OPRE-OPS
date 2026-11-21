@@ -22,6 +22,10 @@ export const selectIsAnyOpsApiRequestPending = (state) =>
  * invalidation also holds a refetch while any other request in the slice is in flight, so the gate waits until
  * nothing in the slice is pending: at that point every held refetch has run.
  *
+ * The gate also stays closed until the page's mount effects have run. RTK Query starts a
+ * refetchOnMountOrArgChange refetch from an effect, so on the first render a warm cache still reads as idle and
+ * fulfilled. After the effects run, that refetch (or one started by a parent's query) is pending.
+ *
  * Once open, the editor stays open until editing stops or a load fails: saving from the editor starts refetches
  * while the save is still running, and unmounting would drop that save. After a failure, a retry has to finish
  * before the editor reopens.
@@ -34,8 +38,11 @@ export const selectIsAnyOpsApiRequestPending = (state) =>
  */
 export const useEditorSeedGate = ({ isEditing, isDataFetching, hasLoadFailed }) => {
     const isAnyApiRequestPending = useSelector(selectIsAnyOpsApiRequestPending);
+    const [haveMountEffectsRun, setHaveMountEffectsRun] = React.useState(false);
+    React.useEffect(() => setHaveMountEffectsRun(true), []);
     const [isEditorOpen, setIsEditorOpen] = React.useState(false);
-    const canOpenEditor = isEditing && !hasLoadFailed && !isDataFetching && !isAnyApiRequestPending;
+    const canOpenEditor =
+        haveMountEffectsRun && isEditing && !hasLoadFailed && !isDataFetching && !isAnyApiRequestPending;
     if (canOpenEditor && !isEditorOpen) {
         setIsEditorOpen(true);
     }
