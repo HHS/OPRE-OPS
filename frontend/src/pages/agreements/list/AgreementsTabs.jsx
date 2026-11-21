@@ -58,6 +58,7 @@ const AgreementTabs = () => {
                     <Link
                         to={queryString}
                         className={getClassName(queryString)}
+                        aria-current={search === queryString ? "page" : undefined}
                         preventScrollReset
                     >
                         {path.label}

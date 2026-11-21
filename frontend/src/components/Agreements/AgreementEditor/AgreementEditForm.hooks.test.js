@@ -1490,3 +1490,24 @@ describe("useAgreementEditForm - COR change on an Awarded agreement (OPS-3153)",
         expect(updaters.alternate_project_officer_id).not.toHaveBeenCalled();
     });
 });
+
+describe("useAgreementEditForm reports unsaved changes to its parent", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useLocationMock.mockReturnValue({ pathname: "/agreements/create" });
+        useSelectorMock.mockReturnValue(false);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+        useEditAgreementMock.mockReturnValue(makeEditState());
+    });
+
+    it.each([true, false])("passes hasAgreementChanged=%s to setHasAgreementChanged", async (hasChanged) => {
+        hasStateChangedMock.mockReturnValue(hasChanged);
+        const setHasAgreementChanged = vi.fn();
+
+        renderUseAgreementEditForm({ setHasAgreementChanged });
+
+        await waitFor(() => expect(setHasAgreementChanged).toHaveBeenLastCalledWith(hasChanged));
+    });
+});
