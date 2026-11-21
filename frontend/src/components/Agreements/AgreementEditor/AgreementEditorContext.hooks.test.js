@@ -1,8 +1,13 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, render, renderHook } from "@testing-library/react";
 import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { EditAgreementProvider } from "./AgreementEditorContext";
-import { defaultState, editAgreementReducer, useEditAgreement } from "./AgreementEditorContext.hooks";
+import {
+    defaultState,
+    editAgreementReducer,
+    useEditAgreement,
+    useEditAgreementDispatch
+} from "./AgreementEditorContext.hooks";
 
 describe("editAgreementReducer - RESEED_GRANT_NUMBERS", () => {
     it("reseeds grant_numbers and clears deleted_grant_numbers_ids in the same dispatch", () => {
@@ -280,6 +285,169 @@ describe("EditAgreementProvider - officer reseed effects", () => {
 
         // Should remain the reducer default ({}), not be written by the effect
         expect(result.current.selected_project_officer?.id).toBeUndefined();
+    });
+});
+
+describe("EditAgreementProvider - per-instance initial state", () => {
+    const agreementA = {
+        id: 1,
+        name: "Agreement A",
+        agreement_type: "CONTRACT",
+        team_members: [],
+        budget_line_items: []
+    };
+    const agreementB = {
+        id: 2,
+        name: "Agreement B",
+        agreement_type: "CONTRACT",
+        team_members: [],
+        budget_line_items: []
+    };
+
+    it("does not leak a previous provider's officer into the next provider", () => {
+        const officer = { id: 10, full_name: "Jane Smith" };
+        const { result: firstResult, unmount: unmountFirst } = renderHook(() => useEditAgreement(), {
+            wrapper: ({ children }) => (
+                <EditAgreementProvider
+                    agreement={agreementA}
+                    projectOfficer={officer}
+                    alternateProjectOfficer={officer}
+                >
+                    {children}
+                </EditAgreementProvider>
+            )
+        });
+        expect(firstResult.current.selected_project_officer).toEqual(officer);
+        unmountFirst();
+
+        // e.g. AgreementBudgetLines mounts the provider without officers
+        const { result: secondResult } = renderHook(() => useEditAgreement(), {
+            wrapper: ({ children }) => (
+                <EditAgreementProvider
+                    agreement={agreementB}
+                    projectOfficer={""}
+                    alternateProjectOfficer={""}
+                >
+                    {children}
+                </EditAgreementProvider>
+            )
+        });
+        expect(secondResult.current.selected_project_officer).toEqual({});
+        expect(secondResult.current.selected_alternate_project_officer).toEqual({});
+    });
+
+    it("keeps simultaneously mounted providers independent", () => {
+        const seen = {};
+        const Probe = ({ name }) => {
+            seen[name] = useEditAgreement();
+            return null;
+        };
+        render(
+            <>
+                <EditAgreementProvider agreement={agreementA}>
+                    <Probe name="a" />
+                </EditAgreementProvider>
+                <EditAgreementProvider agreement={agreementB}>
+                    <Probe name="b" />
+                </EditAgreementProvider>
+            </>
+        );
+        expect(seen.a.agreement.id).toBe(1);
+        expect(seen.b.agreement.id).toBe(2);
+        expect(seen.a).not.toBe(seen.b);
+    });
+
+    it("seeds the draft once at mount; later prop changes don't rewrite it before a dispatch", () => {
+        const bli = { id: 100, services_component_id: 5 };
+        const sc = { id: 5, number: 3 };
+        let setProps;
+        const Wrapper = ({ children }) => {
+            const [props, setP] = useState({ servicesComponents: [], budgetLines: [bli] });
+            setProps = setP;
+            return (
+                <EditAgreementProvider
+                    agreement={agreementA}
+                    {...props}
+                >
+                    {children}
+                </EditAgreementProvider>
+            );
+        };
+        const { result } = renderHook(() => useEditAgreement(), { wrapper: Wrapper });
+        expect(result.current.budget_line_items[0].services_component_number).toBe(0);
+
+        act(() => setProps({ servicesComponents: [sc], budgetLines: [bli] }));
+
+        // Reseeding is the reseed-key effects' job, not a side effect of re-rendering.
+        expect(result.current.services_components).toEqual([]);
+        expect(result.current.budget_line_items[0].services_component_number).toBe(0);
+    });
+
+    it("seeds the draft from the agreement: strips nested fields and decorates grant budget lines", () => {
+        const grantAgreement = {
+            id: 3,
+            name: "Grant Agreement",
+            agreement_type: "GRANT",
+            team_members: [],
+            project: { id: 7, title: "Project X" },
+            product_service_code: { id: 8, name: "PSC" },
+            procurement_shop: { id: 9, abbr: "PSC-SHOP" },
+            status: "DRAFT",
+            budget_line_items: []
+        };
+        const { result } = renderHook(() => useEditAgreement(), {
+            wrapper: ({ children }) => (
+                <EditAgreementProvider
+                    agreement={grantAgreement}
+                    grantNumbers={[{ id: 70, number: 2 }]}
+                    budgetLines={[{ id: 1, grant_number_id: 70 }]}
+                >
+                    {children}
+                </EditAgreementProvider>
+            )
+        });
+
+        const state = result.current;
+        expect(state.agreement).toMatchObject({ id: 3, agreement_type: "GRANT" });
+        expect(state.agreement).not.toHaveProperty("project");
+        expect(state.agreement).not.toHaveProperty("product_service_code");
+        expect(state.agreement).not.toHaveProperty("status");
+        expect(state.selected_project).toEqual(grantAgreement.project);
+        expect(state.selected_product_service_code).toEqual(grantAgreement.product_service_code);
+        expect(state.selected_procurement_shop).toEqual(grantAgreement.procurement_shop);
+        expect(state.grant_numbers).toEqual([{ id: 70, number: 2 }]);
+        expect(state.budget_line_items[0]).toMatchObject({ id: 1, grant_number_id: 70, grant_number_number: 2 });
+        // The agreement prop (RTK Query cache data) is left untouched.
+        expect(grantAgreement).toHaveProperty("project");
+        expect(grantAgreement).toHaveProperty("status", "DRAFT");
+    });
+
+    it("starts the create flow from defaults after an edit provider unmounts, without touching defaultState", () => {
+        const snapshot = structuredClone(defaultState);
+        const officer = { id: 10, full_name: "Jane Smith" };
+        const { unmount: unmountEdit } = renderHook(() => useEditAgreement(), {
+            wrapper: ({ children }) => (
+                <EditAgreementProvider
+                    agreement={agreementA}
+                    projectOfficer={officer}
+                    budgetLines={[{ id: 100 }]}
+                >
+                    {children}
+                </EditAgreementProvider>
+            )
+        });
+        unmountEdit();
+
+        // CreateAgreement mounts the provider with no agreement.
+        const { result } = renderHook(() => ({ state: useEditAgreement(), dispatch: useEditAgreementDispatch() }), {
+            wrapper: ({ children }) => <EditAgreementProvider budgetLines={[]}>{children}</EditAgreementProvider>
+        });
+        expect(result.current.state).toEqual(defaultState);
+
+        act(() => result.current.dispatch({ type: "ADD_TEAM_MEMBER", payload: { id: 5 } }));
+
+        expect(result.current.state.agreement.team_members).toEqual([{ id: 5 }]);
+        expect(defaultState).toEqual(snapshot);
     });
 });
 

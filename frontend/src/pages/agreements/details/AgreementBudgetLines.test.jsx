@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import { Router } from "react-router-dom";
@@ -42,11 +42,15 @@ vi.mock("../../../components/BudgetLineItems/BudgetLinesTable", () => ({
 // check the provider's state without the real wizard's hook chain.
 vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", () => ({
     default: function EditWizardStub() {
-        const { services_components: servicesComponents = [], grant_numbers: grantNumbers = [] } =
-            useEditAgreement() || {};
+        const {
+            services_components: servicesComponents = [],
+            grant_numbers: grantNumbers = [],
+            budget_line_items: budgetLineItems = []
+        } = useEditAgreement() || {};
         return (
             <div data-testid="edit-wizard">
-                scs:{servicesComponents.length} grants:{grantNumbers.length}
+                scs:{servicesComponents.length} grants:{grantNumbers.length} amounts:
+                {budgetLineItems.map((bli) => bli.amount).join(",")}
             </div>
         );
     }
@@ -1114,8 +1118,13 @@ describe("AgreementBudgetLines", () => {
         });
     });
     describe("edit wizard seeding", () => {
+        // Stand-in for the RTK Query slice, so a test can mark an unrelated request as pending.
+        const idleOpsApi = { queries: {}, mutations: {} };
+        const opsApiReducer = (state = idleOpsApi, action) =>
+            action.type === "test/setOpsApi" ? action.payload : state;
         const superUserStore = configureStore({
             reducer: {
+                opsApi: opsApiReducer,
                 auth: () => ({
                     activeUser: {
                         id: 1,
@@ -1128,7 +1137,11 @@ describe("AgreementBudgetLines", () => {
             }
         });
 
-        const ui = (agreement) => (
+        beforeEach(() => {
+            superUserStore.dispatch({ type: "test/setOpsApi", payload: idleOpsApi });
+        });
+
+        const ui = (agreement, props = {}) => (
             <Provider store={superUserStore}>
                 <Router
                     location={history.location}
@@ -1141,6 +1154,7 @@ describe("AgreementBudgetLines", () => {
                         isAgreementAwarded={false}
                         isEditMode={true}
                         setIsEditMode={vi.fn()}
+                        {...props}
                     />
                 </Router>
             </Provider>
@@ -1195,6 +1209,153 @@ describe("AgreementBudgetLines", () => {
 
             expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
             expect(screen.getByRole("alert")).toHaveTextContent(/grant numbers could not be loaded/i);
+        });
+
+        // After a save, the mutations only invalidate the cache, so view mode briefly shows the
+        // pre-save agreement while it refetches (isLoading stays false). The editor seeds once on
+        // mount, so opening it then would freeze the stale budget lines, and the next save would
+        // PATCH the old values back over the ones just saved.
+        describe("while the editor's data is refetching", () => {
+            const staleAgreement = { ...mockAgreement, budget_line_items: [{ id: 11, amount: 100 }] };
+            const freshAgreement = { ...mockAgreement, budget_line_items: [{ id: 11, amount: 200 }] };
+
+            test("waits for the agreement refetch before mounting the edit wizard", () => {
+                const { rerender } = render(ui(staleAgreement, { isAgreementFetching: true }));
+
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                rerender(ui(freshAgreement, { isAgreementFetching: false }));
+
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
+            });
+
+            test("waits for a services components refetch before mounting the edit wizard", () => {
+                useGetServicesComponentsListQueryMock.mockReturnValue({
+                    data: [{ id: 101, number: 1, agreement_id: 1 }],
+                    isLoading: false,
+                    isFetching: true
+                });
+                const { rerender } = render(ui(mockAgreement));
+
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                useGetServicesComponentsListQueryMock.mockReturnValue({
+                    data: [
+                        { id: 101, number: 1, agreement_id: 1 },
+                        { id: 102, number: 2, agreement_id: 1 }
+                    ],
+                    isLoading: false,
+                    isFetching: false
+                });
+                rerender(ui(mockAgreement));
+
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("scs:2");
+            });
+
+            test("waits for a grant numbers refetch before mounting the edit wizard", () => {
+                const grantAgreement = { ...mockAgreement, agreement_type: "GRANT" };
+                useGetGrantNumbersListQueryMock.mockReturnValue({
+                    data: [{ id: 7, number: 1, agreement_id: 1 }],
+                    isLoading: false,
+                    isFetching: true
+                });
+                const { rerender } = render(ui(grantAgreement));
+
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                useGetGrantNumbersListQueryMock.mockReturnValue({
+                    data: [
+                        { id: 7, number: 1, agreement_id: 1 },
+                        { id: 8, number: 2, agreement_id: 1 }
+                    ],
+                    isLoading: false,
+                    isFetching: false
+                });
+                rerender(ui(grantAgreement));
+
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("grants:2");
+            });
+
+            // Saving from the open editor triggers refetches while the save is still running;
+            // unmounting the editor then would drop the save mid-flight.
+            test("keeps an open edit wizard mounted when a refetch starts", () => {
+                const { rerender } = render(ui(freshAgreement));
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
+
+                rerender(ui(freshAgreement, { isAgreementFetching: true }));
+
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
+            });
+
+            // RTK Query (invalidationBehavior "delayed") holds a save's tag invalidation while any other
+            // request in the slice is in flight, so the agreement refetch may not have started yet even
+            // though none of the editor's own queries is fetching.
+            test("waits while any other API request is pending before mounting the edit wizard", () => {
+                act(() =>
+                    superUserStore.dispatch({
+                        type: "test/setOpsApi",
+                        payload: {
+                            queries: { "getAgreementContractModificationsById(1)": { status: "pending" } },
+                            mutations: {}
+                        }
+                    })
+                );
+                const { rerender } = render(ui(staleAgreement));
+
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                // When that request settles, RTK flushes the held invalidation and starts the agreement
+                // refetch in the same dispatch, so the slice never looks idle while the data is stale.
+                act(() =>
+                    superUserStore.dispatch({
+                        type: "test/setOpsApi",
+                        payload: { queries: { "getAgreementById(1)": { status: "pending" } }, mutations: {} }
+                    })
+                );
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                rerender(ui(freshAgreement));
+                act(() => superUserStore.dispatch({ type: "test/setOpsApi", payload: idleOpsApi }));
+
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
+            });
+
+            test("waits for the refetch again after a load error clears while in edit mode", () => {
+                const { rerender } = render(ui(staleAgreement));
+                expect(screen.getByTestId("edit-wizard")).toBeInTheDocument();
+
+                useGetServicesComponentsListQueryMock.mockReturnValue({ data: [], isLoading: false, isError: true });
+                rerender(ui(staleAgreement));
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                useGetServicesComponentsListQueryMock.mockReturnValue({ data: [], isLoading: false, isFetching: true });
+                rerender(ui(staleAgreement, { isAgreementFetching: true }));
+
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                useGetServicesComponentsListQueryMock.mockReturnValue({
+                    data: [],
+                    isLoading: false,
+                    isFetching: false
+                });
+                rerender(ui(freshAgreement));
+
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
+            });
+
+            test("waits again after edit mode is left and re-entered during a refetch", () => {
+                const { rerender } = render(ui(staleAgreement));
+                expect(screen.getByTestId("edit-wizard")).toBeInTheDocument();
+
+                rerender(ui(staleAgreement, { isEditMode: false, isAgreementFetching: true }));
+                rerender(ui(staleAgreement, { isEditMode: true, isAgreementFetching: true }));
+
+                expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+                rerender(ui(freshAgreement, { isEditMode: true, isAgreementFetching: false }));
+
+                expect(screen.getByTestId("edit-wizard")).toHaveTextContent("amounts:200");
+            });
         });
     });
 });

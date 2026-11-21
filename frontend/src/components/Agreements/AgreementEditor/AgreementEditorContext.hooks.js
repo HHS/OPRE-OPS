@@ -46,7 +46,7 @@ export const defaultState = {
     budget_line_items: [],
     deleted_budget_line_items_ids: []
 };
-export let initialState = { ...defaultState };
+export const initialState = { ...defaultState };
 
 const clearBliServiceComponentLink = (bli) => ({
     ...bli,

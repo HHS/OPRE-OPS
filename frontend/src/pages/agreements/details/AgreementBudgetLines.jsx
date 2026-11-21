@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { useAncestryForChildren, useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { buildTrailState, LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
@@ -56,6 +57,15 @@ import { PacmanLoader } from "react-spinners";
 import icons from "../../../uswds/img/sprite.svg";
 
 /**
+ * Whether any query or mutation in the opsApi slice is in flight.
+ * @param {Object} state - The Redux state.
+ * @returns {boolean}
+ */
+const selectIsAnyOpsApiRequestPending = (state) =>
+    Object.values(state.opsApi?.queries ?? {}).some((query) => query?.status === "pending") ||
+    Object.values(state.opsApi?.mutations ?? {}).some((mutation) => mutation?.status === "pending");
+
+/**
  * Renders Agreement budget lines view
  * @component
  * @param {Object} props - The component props.
@@ -66,6 +76,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
  * @param {boolean} [props.isPostPreAwardLocked] - if the agreement is permanently locked after full pre-award approval
+ * @param {boolean} [props.isAgreementFetching] - Whether the agreement query is (re)fetching, e.g. right after a save.
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -77,7 +88,8 @@ const AgreementBudgetLines = ({
     isAgreementAwarded,
     isPreAwardInReview = false,
     isAwardInReview = false,
-    isPostPreAwardLocked = false
+    isPostPreAwardLocked = false,
+    isAgreementFetching = false
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useTrailNavigate();
@@ -94,11 +106,13 @@ const AgreementBudgetLines = ({
     const {
         data: servicesComponents,
         isLoading: isServicesComponentsLoading,
+        isFetching: isServicesComponentsFetching,
         isError: isServicesComponentsError
     } = useGetServicesComponentsListQuery(agreement?.id);
     const {
         data: grantNumbers,
         isLoading: isGrantNumbersLoading,
+        isFetching: isGrantNumbersFetching,
         isError: isGrantNumbersError
     } = useGetGrantNumbersListQuery(agreement?.id, {
         skip: !agreement?.id
@@ -139,6 +153,26 @@ const AgreementBudgetLines = ({
     // or SC) against them and nulls any it can't find. Opening it after a failed load would unlink
     // every existing budget line on save, so keep it closed and show an error instead.
     const editorDataLoadFailed = isServicesComponentsError || isGrantNumbersError;
+    // A save only invalidates the cache, so right after one this page still shows the pre-save
+    // agreement and lists while they refetch (isLoading stays false). The editor seeds once on mount,
+    // so opening it then would freeze the stale budget lines, and the next save would write the old
+    // values back. Wait for any refetch before opening it, then keep it open: saving from the editor
+    // starts refetches while the save is still running, and unmounting would drop that save.
+    // RTK Query's default "delayed" invalidation holds a save's tag invalidation while any other request in
+    // the slice is in flight, so a refetch of the editor's data may not have started yet. Waiting for the
+    // whole slice to settle mirrors that rule: once nothing is pending, every held refetch has run.
+    const isAnyApiRequestPending = useSelector(selectIsAnyOpsApiRequestPending);
+    const isEditorDataFetching =
+        isAgreementFetching || isServicesComponentsFetching || isGrantNumbersFetching || isAnyApiRequestPending;
+    const [isEditorOpen, setIsEditorOpen] = React.useState(false);
+    const canOpenEditor = showEditWizard && !editorDataLoadFailed && !isEditorDataLoading && !isEditorDataFetching;
+    if (canOpenEditor && !isEditorOpen) {
+        setIsEditorOpen(true);
+    }
+    // Also close it after a failed load, so a retry has to finish before the editor reopens.
+    if ((!showEditWizard || editorDataLoadFailed) && isEditorOpen) {
+        setIsEditorOpen(false);
+    }
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -347,9 +381,9 @@ const AgreementBudgetLines = ({
                 </>
             )}
 
-            {showEditWizard && !editorDataLoadFailed && isEditorDataLoading && <BudgetLinesTableLoading />}
+            {showEditWizard && !editorDataLoadFailed && !isEditorOpen && <BudgetLinesTableLoading />}
 
-            {showEditWizard && !editorDataLoadFailed && !isEditorDataLoading && (
+            {showEditWizard && !editorDataLoadFailed && isEditorOpen && (
                 <EditAgreementProvider
                     agreement={agreement}
                     projectOfficer={""}
