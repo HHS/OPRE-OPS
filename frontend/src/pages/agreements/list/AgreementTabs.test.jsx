@@ -128,7 +128,9 @@ describe("AgreementTabs", () => {
     test.each([
         ["", "All Agreements"],
         ["?filter=my-agreements", "My Agreements"],
-        ["?filter=change-requests", "For Review"]
+        ["?filter=change-requests", "For Review"],
+        ["?sort=name", "All Agreements"],
+        ["?filter=my-agreements&sort=name", "My Agreements"]
     ])("marks only the tab for search %j as the current page", (search, currentLabel) => {
         useLocation.mockReturnValue({ search });
 

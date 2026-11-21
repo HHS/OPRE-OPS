@@ -42,11 +42,17 @@ const AgreementTabs = () => {
               ]
             : [])
     ];
+    const currentFilter = new URLSearchParams(search).get("filter") ?? "";
+    /**
+     * @param {string} queryString - The query string of the tab.
+     */
+    const isSelected = (queryString) => (new URLSearchParams(queryString).get("filter") ?? "") === currentFilter;
+
     /**
      * @param {string} queryString - The query string of the tab.
      */
     const getClassName = (queryString) =>
-        `font-sans-2xs text-bold ${search === queryString ? styles.listItemSelected : styles.listItemNotSelected}`;
+        `font-sans-2xs text-bold ${isSelected(queryString) ? styles.listItemSelected : styles.listItemNotSelected}`;
 
     const renderLinks = () =>
         paths.map((path) => {
@@ -58,7 +64,7 @@ const AgreementTabs = () => {
                     <Link
                         to={queryString}
                         className={getClassName(queryString)}
-                        aria-current={search === queryString ? "page" : undefined}
+                        aria-current={isSelected(queryString) ? "page" : undefined}
                         preventScrollReset
                     >
                         {path.label}
