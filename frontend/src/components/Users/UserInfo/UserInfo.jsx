@@ -5,7 +5,7 @@ import constants from "../../../constants.js";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import ComboBox from "../../UI/Form/ComboBox/index.js";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal.jsx";
-import { USER_STATUS } from "./UserInfo.constants.js";
+import { USER_STATUS, USER_STATUS_LABELS } from "./UserInfo.constants.js";
 import { useNavigate } from "react-router-dom";
 
 const READ_ONLY_ROLE = "READ_ONLY";
@@ -281,7 +281,7 @@ const UserInfo = ({ user, isEditable }) => {
                         <div className="grid-row display-flex flex-align-center">
                             <div className="grid-col-4">Status:</div>
                             <div className="grid-col-8">
-                                {!isEditable && <span>{selectedStatus?.name}</span>}
+                                {!isEditable && <span>{USER_STATUS_LABELS[selectedStatus?.name]}</span>}
                                 {isEditable && (
                                     <div data-testid="status-combobox">
                                         <ComboBox
@@ -290,7 +290,7 @@ const UserInfo = ({ user, isEditable }) => {
                                             selectedData={selectedStatus}
                                             setSelectedData={handleStatusChange}
                                             defaultString="-- Select Status --"
-                                            optionText={(status) => status.name}
+                                            optionText={(status) => USER_STATUS_LABELS[status.name]}
                                             isMulti={false}
                                         />
                                     </div>
