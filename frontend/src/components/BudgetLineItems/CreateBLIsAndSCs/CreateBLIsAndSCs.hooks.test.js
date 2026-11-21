@@ -21,6 +21,7 @@ const updateGrantNumberMock = vi.fn();
 const deleteGrantNumberMock = vi.fn();
 const submitDeObligationMock = vi.fn();
 const useGetVersionQueryMock = vi.fn();
+const useGetServicesComponentsListQueryMock = vi.fn(() => ({ data: [] }));
 
 const goBackMock = vi.fn();
 const setIsEditModeMock = vi.fn();
@@ -67,7 +68,8 @@ vi.mock("../../../api/opsAPI", () => ({
     useUpdateGrantNumberMutation: () => [updateGrantNumberMock],
     useDeleteGrantNumberMutation: () => [deleteGrantNumberMock],
     useSubmitDeObligationMutation: () => [submitDeObligationMock],
-    useGetVersionQuery: (...args) => useGetVersionQueryMock(...args)
+    useGetVersionQuery: (...args) => useGetVersionQueryMock(...args),
+    useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args)
 }));
 
 vi.mock("../../../helpers/agreement.helpers", () => ({
@@ -862,6 +864,37 @@ describe("useCreateBLIsAndSCs", () => {
                 expect(setAlertMock).toHaveBeenCalledWith({ type: "error", heading: "Error", message: reason });
             });
 
+            it.each([
+                [
+                    "shows the backend's reason, with no error-page redirect, when an SC update is rejected",
+                    { status: 400, data: { errors: { services_component: ["Locked: in a modification in review."] } } },
+                    { type: "error", heading: "Error", message: "Locked: in a modification in review." }
+                ],
+                [
+                    "still sends an unexplained failure to the error page",
+                    { status: 500, data: {} },
+                    {
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred while saving. Please try again.",
+                        redirectUrl: "/error"
+                    }
+                ]
+            ])("%s (OPS-3268)", async (_label, rejection, expectedAlert) => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [{ id: 11, number: 1, created_on: "2026-01-01", has_changed: true }]
+                });
+                updateServicesComponentMock.mockReturnValue({ unwrap: () => Promise.reject(Object.freeze(rejection)) });
+                const { result } = renderAwarded();
+
+                await act(async () => {
+                    await result.current.handleSave(false);
+                });
+
+                expect(setAlertMock).toHaveBeenLastCalledWith(expectedAlert);
+            });
+
             it("deletes services components only after the budget line deletes finish", async () => {
                 useEditAgreementMock.mockReturnValue({
                     ...editAgreementMockData,
@@ -968,6 +1001,57 @@ describe("useCreateBLIsAndSCs", () => {
                 const { result } = renderSubject({ selectedAgreement: awardedContract });
 
                 expect(result.current.requiresContractModification).toBe(false);
+            });
+
+            describe("period-of-performance edits (OPS-3268)", () => {
+                const saved = savedSc({ period_start: "2043-01-01", period_end: "2043-12-31" });
+                // An id, so the saved-SCs query isn't skipped.
+                const awardedWithId = { ...awardedContract, id: 42 };
+
+                beforeEach(() => {
+                    useGetServicesComponentsListQueryMock.mockReturnValue({ data: [saved] });
+                });
+
+                it("flags a saved SC whose period of performance changed", () => {
+                    useEditAgreementMock.mockReturnValue({
+                        ...editAgreementMockData,
+                        services_components: [{ ...saved, period_end: "2044-01-31", has_changed: true }],
+                        budget_line_items: []
+                    });
+                    const { result } = renderSubject({ selectedAgreement: awardedWithId });
+
+                    expect(result.current.requiresContractModification).toBe(true);
+                    expect(result.current.locksServicesComponentNumbers).toBe(true);
+                    expect(useGetServicesComponentsListQueryMock).toHaveBeenCalledWith(42, { skip: false });
+                });
+
+                it("does not flag a period changed and put back, or a description-only edit", () => {
+                    useEditAgreementMock.mockReturnValue({
+                        ...editAgreementMockData,
+                        services_components: [{ ...saved, description: "new", has_changed: true }],
+                        budget_line_items: []
+                    });
+                    const { result } = renderSubject({ selectedAgreement: awardedWithId });
+
+                    expect(result.current.requiresContractModification).toBe(false);
+                });
+
+                it("does not flag it, or lock the SC number, for a superuser", () => {
+                    useSelectorMock.mockImplementation((selector) =>
+                        selector({
+                            auth: { activeUser: { id: 1, is_superuser: true, roles: [{ name: "SYSTEM_OWNER" }] } }
+                        })
+                    );
+                    useEditAgreementMock.mockReturnValue({
+                        ...editAgreementMockData,
+                        services_components: [{ ...saved, period_end: "2044-01-31", has_changed: true }],
+                        budget_line_items: []
+                    });
+                    const { result } = renderSubject({ selectedAgreement: awardedWithId });
+
+                    expect(result.current.requiresContractModification).toBe(false);
+                    expect(result.current.locksServicesComponentNumbers).toBe(false);
+                });
             });
 
             it("does not flag SC changes on an agreement that isn't Awarded", () => {

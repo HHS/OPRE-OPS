@@ -4,6 +4,48 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactMarkdown from "react-markdown";
 import MarkdownLink from "../Markdown/MarkdownLink";
 
+const FOCUSABLE_SELECTOR =
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Where keyboard focus can go when the alert closes: its close button unmounts, so focus would
+ * otherwise drop to <body> (WCAG 2.4.3). The focusable elements after the alert, in order, then
+ * the page's main content.
+ * @param {HTMLElement | null} alertElement
+ * @returns {HTMLElement[]}
+ */
+const getFocusCandidatesAfterClose = (alertElement) => {
+    const following = alertElement
+        ? Array.from(document.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
+              (element) =>
+                  !alertElement.contains(element) &&
+                  Boolean(alertElement.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING)
+          )
+        : [];
+    return [...following, document.getElementById("main-content")].filter((element) => element instanceof HTMLElement);
+};
+
+/**
+ * True when focus has nowhere to be: the close button that had it is gone. A user who has already
+ * moved on to another control keeps their place.
+ * @returns {boolean}
+ */
+const isFocusLost = () => !document.activeElement || document.activeElement === document.body;
+
+/**
+ * Move focus only if it was lost, to the first candidate that actually takes it (a hidden or inert element matches the
+ * selector but can't).
+ * @param {HTMLElement[]} candidates
+ */
+const restoreFocus = (candidates) => {
+    if (!isFocusLost()) return;
+    for (const candidate of candidates) {
+        // Keep the page where it is: only the focus moves.
+        candidate.focus({ preventScroll: true });
+        if (document.activeElement === candidate) return;
+    }
+};
+
 /**
     @typedef {Object} SimpleAlertProps
     @property {React.ReactNode} [children] - The child elements to render inside the alert. - optional
@@ -28,13 +70,30 @@ const SimpleAlert = ({
     type,
     isClosable = false,
     isAlertVisible = true,
-    setIsAlertVisible = () => {},
+    setIsAlertVisible,
     headingLevel = 4
 }) => {
     // Validate heading level (1-6)
     const parsedLevel = typeof headingLevel === "number" ? headingLevel : parseInt(headingLevel);
     const level = isNaN(parsedLevel) ? 4 : Math.max(1, Math.min(6, parsedLevel));
     const headingTag = `h${level}`;
+    const alertRef = React.useRef(null);
+    // Where focus goes once the alert has actually closed. Set on close, and used only if the alert
+    // then hides or unmounts while focus is lost. A caller with no setter keeps the alert on screen,
+    // so nothing is saved and focus stays on the close button.
+    const pendingFocusRef = React.useRef(/** @type {HTMLElement[] | null} */ (null));
+    React.useEffect(() => {
+        if (!isAlertVisible && pendingFocusRef.current) {
+            restoreFocus(pendingFocusRef.current);
+            pendingFocusRef.current = null;
+        }
+    }, [isAlertVisible]);
+    React.useEffect(
+        () => () => {
+            if (pendingFocusRef.current) restoreFocus(pendingFocusRef.current);
+        },
+        []
+    );
 
     let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-2 margin-bottom-2";
 
@@ -70,6 +129,7 @@ const SimpleAlert = ({
     return isAlertVisible ? (
         <div
             className={classNames}
+            ref={alertRef}
             role={handleRole()}
             data-cy="alert"
             data-testid="alert"
@@ -102,6 +162,8 @@ const SimpleAlert = ({
                         data-position="top"
                         data-cy="close-alert"
                         onClick={() => {
+                            if (!setIsAlertVisible) return;
+                            pendingFocusRef.current = getFocusCandidatesAfterClose(alertRef.current);
                             setIsAlertVisible(false);
                         }}
                     >

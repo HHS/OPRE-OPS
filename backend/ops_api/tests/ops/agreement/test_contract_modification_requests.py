@@ -1090,3 +1090,42 @@ def test_an_unselected_line_with_no_pending_edit_stays_editable(
     assert meta["isEditable"] is True
     assert meta["isDeletable"] is True
     assert meta["lockedMessage"] is None
+
+
+def test_budget_line_list_and_batch_meta_also_lock_a_line_in_an_in_review_modification(
+    awarded_with_edit, basic_user_auth_client, app_ctx
+):
+    """The /budget-lines list and the batch endpoint build _meta through their own helper
+    (``_list_item_meta``), so they need the lock too; otherwise the list shows edit/delete icons
+    the API then rejects."""
+    agreement, bli, executable = awarded_with_edit
+    assert _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).status_code == 201
+
+    listed = basic_user_auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"agreement_id": agreement.id, "limit": 50, "offset": 0},
+    )
+    batch = basic_user_auth_client.post(url_for("api.budget-line-items-batch"), json={"ids": [bli.id, executable.id]})
+
+    for response in (listed, batch):
+        assert response.status_code == 200, response.json
+        metas = {row["id"]: row["_meta"] for row in response.json}
+        for bli_id in (bli.id, executable.id):
+            assert metas[bli_id]["isEditable"] is False
+            assert metas[bli_id]["isDeletable"] is False
+            assert metas[bli_id]["lockedMessage"] == BLI_IN_REVIEW_MODIFICATION_MESSAGE
+
+
+def test_superuser_delete_on_a_line_in_an_in_review_modification_is_blocked(
+    awarded_with_edit, basic_user_auth_client, power_user_auth_client, loaded_db, app_ctx
+):
+    """Same as the PATCH path, which already blocks superusers."""
+    agreement, _, executable = awarded_with_edit
+    assert _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).status_code == 201
+
+    response = power_user_auth_client.delete(url_for("api.budget-line-items-item", id=executable.id))
+
+    assert response.status_code == 400, response.json
+    assert response.json["errors"]["status"] == [BLI_IN_REVIEW_MODIFICATION_MESSAGE]
+    loaded_db.expire_all()
+    assert loaded_db.get(ContractBudgetLineItem, executable.id) is not None

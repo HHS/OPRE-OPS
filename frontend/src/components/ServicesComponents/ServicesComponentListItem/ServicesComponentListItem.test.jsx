@@ -1,6 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { getServicesComponentChangeMessages, getServicesComponentLockedMessage } from "../ServicesComponents.helpers";
+import {
+    getServicesComponentChangeMessages,
+    getServicesComponentLockedMessage,
+    SERVICES_COMPONENT_IN_REVIEW_MODIFICATION_MESSAGE
+} from "../ServicesComponents.helpers";
 import ServicesComponentListItem from "./ServicesComponentListItem";
 
 const TITLE = "This services component has pending edits that will require a contract modification:";
@@ -21,6 +25,12 @@ describe("getServicesComponentLockedMessage (OPS-6440)", () => {
         const sc = { in_review: true, change_requests_in_review: [changeRequest([])] };
 
         expect(getServicesComponentLockedMessage(sc)).toBe(`${TITLE}\n • Adding: SC2`);
+    });
+
+    it("says why while its edits are in a contract modification in review (OPS-3268)", () => {
+        expect(getServicesComponentLockedMessage({ in_review: false, in_review_modification: true })).toBe(
+            SERVICES_COMPONENT_IN_REVIEW_MODIFICATION_MESSAGE
+        );
     });
 
     it("is empty when nothing is in review", () => {
@@ -44,7 +54,8 @@ describe("ServicesComponentListItem", () => {
             />
         );
 
-    // The icons only render on hover; mouseover on the title enters the item.
+    // The icons show on hover (they're always rendered, see the keyboard tests below); mouseover on
+    // the title enters the item.
     const hoverItem = () => fireEvent.mouseOver(screen.getByText("Services Component 2"));
 
     it("disables edit and delete with the pending-change tooltip while a change is in review", () => {
@@ -53,10 +64,14 @@ describe("ServicesComponentListItem", () => {
         hoverItem();
 
         const [editButton, deleteButton] = screen.getAllByRole("button");
-        expect(editButton).toBeDisabled();
-        expect(deleteButton).toBeDisabled();
-        expect(editButton).toHaveAttribute("aria-label", lockedMessage);
-        expect(deleteButton).toHaveAttribute("aria-label", lockedMessage);
+        expect(editButton).toHaveAttribute("aria-disabled", "true");
+        expect(deleteButton).toHaveAttribute("aria-disabled", "true");
+        expect(editButton).toHaveAccessibleName("Edit Services Component 2");
+        expect(deleteButton).toHaveAccessibleName("Delete Services Component 2");
+        // Accessible descriptions collapse whitespace.
+        const description = lockedMessage.replace(/\s+/g, " ");
+        expect(editButton).toHaveAccessibleDescription(description);
+        expect(deleteButton).toHaveAccessibleDescription(description);
         expect(screen.queryByText("In Review")).not.toBeInTheDocument();
     });
 
@@ -65,8 +80,9 @@ describe("ServicesComponentListItem", () => {
         hoverItem();
 
         const [, deleteButton] = screen.getAllByRole("button");
-        expect(deleteButton).toBeDisabled();
-        expect(deleteButton).toHaveAttribute("aria-label", "All agreements must start with an SC1 or Base Period");
+        expect(deleteButton).toHaveAttribute("aria-disabled", "true");
+        expect(deleteButton).toHaveAccessibleName("Delete Services Component 2");
+        expect(deleteButton).toHaveAccessibleDescription("All agreements must start with an SC1 or Base Period");
     });
 
     it("keeps edit and delete enabled when nothing is in review", () => {
@@ -74,8 +90,42 @@ describe("ServicesComponentListItem", () => {
         hoverItem();
 
         const [editButton, deleteButton] = screen.getAllByRole("button");
-        expect(editButton).toBeEnabled();
-        expect(deleteButton).toBeEnabled();
+        expect(editButton).toHaveAttribute("aria-disabled", "false");
+        expect(deleteButton).toHaveAttribute("aria-disabled", "false");
+    });
+
+    it("keeps a locked item's edit and delete focusable (so the reason is reachable) but inert", async () => {
+        const user = (await import("@testing-library/user-event")).default.setup();
+        const setFormDataById = vi.fn();
+        const handleDelete = vi.fn();
+        renderItem({ lockedMessage: "Locked for review", setFormDataById, handleDelete });
+
+        await user.tab();
+        expect(screen.getByRole("button", { name: "Edit Services Component 2" })).toHaveFocus();
+        await user.keyboard("{Enter}");
+        await user.tab();
+        await user.keyboard("{Enter}");
+
+        expect(setFormDataById).not.toHaveBeenCalled();
+        expect(handleDelete).not.toHaveBeenCalled();
+    });
+
+    it("lets keyboard users reach edit and delete: they're in the tab order and show on focus (WCAG 2.1.1)", async () => {
+        const user = (await import("@testing-library/user-event")).default.setup();
+        renderItem();
+        const actions = screen.getByTestId("services-component-item-actions");
+        expect(actions).toHaveStyle({ opacity: "0" });
+
+        await user.tab();
+        expect(screen.getByRole("button", { name: "Edit Services Component 2" })).toHaveFocus();
+        expect(actions).toHaveStyle({ opacity: "1" });
+
+        await user.tab();
+        expect(screen.getByRole("button", { name: "Delete Services Component 2" })).toHaveFocus();
+        expect(actions).toHaveStyle({ opacity: "1" });
+
+        await user.tab();
+        expect(actions).toHaveStyle({ opacity: "0" });
     });
 });
 

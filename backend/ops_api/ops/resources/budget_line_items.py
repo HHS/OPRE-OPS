@@ -29,10 +29,12 @@ from ops_api.ops.schemas.budget_line_items import (
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.services.budget_line_items import (
     BudgetLineItemService,
+    _lock_for_in_review_modification,
     batch_load_change_requests_in_review,
     get_change_requests_for_bli,
     get_is_editable_meta_data,
 )
+from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.budget_line_items_helpers import (
@@ -200,6 +202,10 @@ class BudgetLineItemsListAPI(BaseListAPI):
         offset = data.get("offset", None)[0]
 
         bli_dict = {bli.id: bli for bli in budget_line_items}
+        # One query for the page: lines in a contract modification in review are locked (OPS-3268).
+        in_review_modification_ids = ContractModificationEditService(
+            current_app.db_session
+        ).budget_line_ids_in_review_modification(list(bli_dict))
         bli_ids = list(bli_dict.keys())
         agreement_ids = [bli.agreement_id for bli in budget_line_items]
         change_requests_data = batch_load_change_requests_in_review(current_app.db_session, bli_ids, agreement_ids)
@@ -240,6 +246,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 is_budget_team,
                 is_super,
                 user_agreement_associations,
+                in_review_modification_ids,
             )
 
         logger.debug("Serialization complete")
@@ -265,6 +272,7 @@ def _list_item_meta(
     is_budget_team: bool,
     is_super: bool,
     user_agreement_associations: dict,
+    in_review_modification_ids: set[int] = frozenset(),
 ) -> dict:
     """Build _meta for a single BLI in the list response (pagination + isEditable/isDeletable)."""
     meta = meta_schema.dump(data_for_meta)
@@ -283,6 +291,8 @@ def _list_item_meta(
         meta["isEditable"] = compute_bli_editable(budget_line_item, in_review, is_super)
         meta["isDeletable"] = compute_bli_is_deletable(budget_line_item, in_review, is_super)
         meta["lockedMessage"] = get_bli_locked_message(budget_line_item, in_review, is_super)
+        if serialized_bli.get("id") in in_review_modification_ids:
+            _lock_for_in_review_modification(meta)
     else:
         meta["isEditable"] = False
         meta["isDeletable"] = False
@@ -318,6 +328,10 @@ class BudgetLineItemsBatchAPI(BaseListAPI):
         budget_line_items = service.get_batch(data["ids"])
 
         bli_dict = {bli.id: bli for bli in budget_line_items}
+        # One query for the page: lines in a contract modification in review are locked (OPS-3268).
+        in_review_modification_ids = ContractModificationEditService(
+            current_app.db_session
+        ).budget_line_ids_in_review_modification(list(bli_dict))
         bli_ids = list(bli_dict.keys())
         agreement_ids = [bli.agreement_id for bli in budget_line_items]
         change_requests_data = batch_load_change_requests_in_review(current_app.db_session, bli_ids, agreement_ids)
@@ -346,6 +360,7 @@ class BudgetLineItemsBatchAPI(BaseListAPI):
                 is_budget_team,
                 is_super,
                 user_agreement_associations,
+                in_review_modification_ids,
             )
 
         return make_response_with_headers(serialized_blis)

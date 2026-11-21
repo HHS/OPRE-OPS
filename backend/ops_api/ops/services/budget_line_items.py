@@ -216,12 +216,14 @@ class BudgetLineItemService:
             )
 
         is_super = is_super_user(current_user, current_app)
+        # A line in a contract modification in review is locked for every user, superusers too,
+        # the same as the PATCH path (update_with_change_request_ids).
+        self._validate_not_in_review_modification(bli)
         if self.is_immediate_delete(bli):
             is_awarded_tracked_delete = (
                 not is_super and bli.status != BudgetLineItemStatus.DRAFT and tracks_contract_modifications(bli)
             )
             if is_awarded_tracked_delete:
-                self._validate_not_in_review_modification(bli)
                 if not compute_bli_editable(bli, bli.in_review, is_super):
                     raise ValidationError(
                         {"status": "Budget Line Item is not in a deletable state."},

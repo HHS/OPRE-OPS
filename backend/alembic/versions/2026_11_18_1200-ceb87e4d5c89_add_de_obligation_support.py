@@ -7,7 +7,7 @@ against while the request is pending review. The real BudgetLineItem.amount is n
 by this; that's OPS-6489's job.
 
 Revision ID: ceb87e4d5c89
-Revises: 3581b3cbad42
+Revises: 9c2e7a4d1b38
 Create Date: 2026-11-18 12:00:00.000000+00:00
 
 """
@@ -21,7 +21,7 @@ from alembic_postgresql_enum.sql_commands.indexes import TableIndex
 
 # revision identifiers, used by Alembic.
 revision: str = "ceb87e4d5c89"
-down_revision: Union[str, None] = "3581b3cbad42"
+down_revision: Union[str, None] = "9c2e7a4d1b38"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

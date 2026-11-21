@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields
+from sqlalchemy.orm import object_session
 
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 
@@ -29,6 +30,19 @@ class ServicesComponentSchema(Schema):
     change_requests_in_review = fields.Nested(
         GenericChangeRequestResponseSchema, many=True, dump_only=True, dump_default=None, allow_none=True
     )
+    # True while the SC's own edits (e.g. its period of performance) are in a contract modification
+    # that is in review (OPS-3268): the API rejects changing or deleting it until it's reviewed.
+    in_review_modification = fields.Method("_in_review_modification", dump_only=True)
+
+    @staticmethod
+    def _in_review_modification(services_component) -> bool:
+        session = object_session(services_component)
+        if session is None or services_component.id is None:
+            return False
+        # Imported here: the service module imports schemas indirectly.
+        from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
+
+        return ContractModificationEditService(session).services_component_in_review_modification(services_component.id)
 
 
 class ServicesComponentItemResponse(ServicesComponentSchema):

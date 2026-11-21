@@ -52,10 +52,24 @@ def tracks_cor_changes(agreement: Agreement) -> bool:
     return agreement.agreement_type in _SUPPORTED_AGREEMENT_TYPES and agreement_tracks_contract_modifications(agreement)
 
 
+SC_IN_REVIEW_MODIFICATION_MESSAGE = (
+    "This Services Component has edits in a contract modification that is in review, so it can't be "
+    "changed until the modification is approved or declined."
+)
+
+# Services Component fields whose direct edits on an Awarded agreement are tracked as Modified LOE
+# edits (OPS-3268): its period of performance, one card per field (PoP-Start / PoP-End).
+SERVICES_COMPONENT_TRACKED_FIELDS = ("period_start", "period_end")
+
 BLI_IN_REVIEW_MODIFICATION_MESSAGE = (
     "This budget line is in a contract modification that is in review, so it can't be changed "
     "until the modification is approved or declined."
 )
+
+
+def _iso_or_none(value):
+    """A date as the ISO string stored in old_value/new_value (JSON); other values unchanged."""
+    return value.isoformat() if hasattr(value, "isoformat") else value
 
 
 class ContractModificationEditService:
@@ -89,16 +103,45 @@ class ContractModificationEditService:
         # Component request carries "services_component_create".
         field = next(iter(change_request.requested_change_data))
         diff = (change_request.requested_change_diff or {}).get(field, {})
+        budget_line_item_id = getattr(change_request, "budget_line_item_id", None)
+        old_value, new_value = diff.get("old"), diff.get("new")
+
+        if budget_line_item_id is not None:
+            pending = self._pending_for_budget_line(budget_line_item_id, None if field == "delete" else field)
+            if pending and field != "delete":
+                # Merge into the line's pending edit to the same field (at most one, per
+                # ix_contract_modification_edit_one_pending_bli_field), the same as
+                # record_direct_edit: its From is the awarded value. Updated in place rather than
+                # replaced, so nothing needs flushing here: the session isn't autoflushed, and an
+                # early flush would write the approval before the before_commit audit hooks
+                # (created_by/updated_by, OpsDBHistory) see it.
+                (edit,) = pending
+                if edit.old_value == new_value:
+                    self.db_session.delete(edit)
+                    return None
+                edit.new_value = new_value
+                edit.change_request_id = change_request.id
+                edit.requested_by_id = change_request.created_by
+                edit.requested_on = change_request.created_on
+                edit.approved_by_id = change_request.reviewed_by_id
+                edit.approved_on = change_request.reviewed_on
+                return edit
+            if pending:
+                # A delete replaces the line's other pending edits; its From is the awarded amount.
+                # The "delete" row has its own index key, so no flush is needed before inserting it.
+                old_value = next((edit.old_value for edit in pending if edit.field == "amount"), old_value)
+                for edit in pending:
+                    self.db_session.delete(edit)
 
         edit = ContractModificationEdit(
             agreement_id=change_request.agreement_id,
             modification_type=ModificationEditType.MODIFIED_LOE,
             change_request_id=change_request.id,
-            budget_line_item_id=getattr(change_request, "budget_line_item_id", None),
+            budget_line_item_id=budget_line_item_id,
             services_component_id=getattr(change_request, "services_component_id", None),
             field=field,
-            old_value=diff.get("old"),
-            new_value=diff.get("new"),
+            old_value=old_value,
+            new_value=new_value,
             requested_by_id=change_request.created_by,
             requested_on=change_request.created_on,
             approved_by_id=change_request.reviewed_by_id,
@@ -243,13 +286,82 @@ class ContractModificationEditService:
             user_id,
         )
 
+    def record_services_component_edit(
+        self, services_component: ServicesComponent, field: str, old_value, new_value, user_id: int
+    ) -> None:
+        """Record a Services Component period-of-performance edit applied directly on an Awarded
+        agreement (OPS-3268). Dates are stored as ISO strings.
+
+        Merges with the SC's pending edit to the same field and drops the edit when it nets to
+        nothing, the same as ``record_direct_edit``. An SC added after the award (still carrying
+        its pending "Add SC" edit) was never on the contract, so nothing is recorded. Flushes (but
+        does not commit) so a concurrent duplicate save fails fast on
+        ``ix_contract_modification_edit_one_pending_sc_field``.
+        """
+        if self._pending_services_component_additions(services_component.id):
+            return
+        old_value, new_value = _iso_or_none(old_value), _iso_or_none(new_value)
+        pending = self._pending_for_services_component(services_component.id, field)
+        if pending:
+            old_value = pending[0].old_value
+            for edit in pending:
+                self.db_session.delete(edit)
+            # Flush the delete(s) first so the INSERT below doesn't trip the unique index.
+            self.db_session.flush()
+        if old_value == new_value:
+            return
+        self._add_direct_edit(
+            services_component.agreement_id,
+            None,
+            services_component.id,
+            field,
+            old_value,
+            new_value,
+            user_id,
+            services_component_display_name=services_component.display_name,
+        )
+        try:
+            self.db_session.flush()
+        except IntegrityError:
+            # ix_contract_modification_edit_one_pending_sc_field: a concurrent save on the same
+            # field won. The caller rolls back the session.
+            raise ValidationError(
+                {field: ["Another change to this field was saved at the same time. Refresh and try again."]}
+            ) from None
+
+    def has_pending_services_component_edit(self, services_component_id: int, field: str) -> bool:
+        """Whether the SC has a pending (not yet in a modification) edit to ``field``."""
+        return bool(self._pending_for_services_component(services_component_id, field))
+
+    def services_component_in_review_modification(self, services_component_id: int) -> bool:
+        """Whether any of the SC's edits are in a contract modification request that is in review.
+        They are what the Division Director is reviewing, so the SC can't be changed until the
+        request is approved or declined."""
+        if not current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False):
+            return False
+        return (
+            self.db_session.scalar(
+                select(ContractModificationRequest.id)
+                .join(ContractModificationRequest.edits)
+                .where(
+                    ContractModificationEdit.services_component_id == services_component_id,
+                    ContractModificationEdit.budget_line_item_id.is_(None),
+                    ContractModificationRequest.status == ContractModificationRequestStatus.IN_REVIEW,
+                )
+                .limit(1)
+            )
+            is not None
+        )
+
     def record_services_component_delete(self, services_component: ServicesComponent, user_id: int) -> None:
         """Record a Services Component deleted directly on an Awarded agreement. Call before the
         delete. If the SC still has a pending "Add SC" edit, it was added after the award and never
         made it onto the contract, so the add is discarded and nothing is recorded (net zero, like
-        a budget line made Planned only after the award). Does not commit."""
+        a budget line made Planned only after the award). The SC's pending period-of-performance
+        edits are replaced by the delete. Does not commit."""
         if self.discard_pending_services_component_addition(services_component.id):
             return
+        self.discard_pending_services_component_edits(services_component.id)
         self._add_direct_edit(
             services_component.agreement_id,
             None,
@@ -270,9 +382,11 @@ class ContractModificationEditService:
         new_value,
         user_id: int,
         modification_type: ModificationEditType = ModificationEditType.MODIFIED_LOE,
+        services_component_display_name: Optional[str] = None,
     ) -> None:
         self.db_session.add(
             ContractModificationEdit(
+                services_component_display_name=services_component_display_name,
                 agreement_id=agreement_id,
                 modification_type=modification_type,
                 budget_line_item_id=budget_line_item_id,
@@ -293,6 +407,21 @@ class ContractModificationEditService:
         query = select(ContractModificationEdit).where(
             ContractModificationEdit.budget_line_item_id == budget_line_item_id,
             ContractModificationEdit.services_component_id.is_(None),
+            ContractModificationEdit.agreement_mod_id.is_(None),
+        )
+        if field is not None:
+            query = query.where(ContractModificationEdit.field == field)
+        return list(
+            self.db_session.scalars(
+                query.order_by(ContractModificationEdit.requested_on, ContractModificationEdit.id)
+            ).all()
+        )
+
+    def _pending_for_services_component(self, services_component_id: int, field: Optional[str] = None):
+        """The SC's own pending edits (optionally to one field), oldest first."""
+        query = select(ContractModificationEdit).where(
+            ContractModificationEdit.services_component_id == services_component_id,
+            ContractModificationEdit.budget_line_item_id.is_(None),
             ContractModificationEdit.agreement_mod_id.is_(None),
         )
         if field is not None:
@@ -402,13 +531,7 @@ class ContractModificationEditService:
         change what the Division Director is reviewing, so the delete is rejected instead.
         Does not commit. Returns whether a pending "Add SC" edit was found and discarded.
         """
-        edits = self.db_session.scalars(
-            select(ContractModificationEdit).where(
-                ContractModificationEdit.services_component_id == services_component_id,
-                ContractModificationEdit.field == ServicesComponentChangeRequest.create_field_name,
-                ContractModificationEdit.agreement_mod_id.is_(None),
-            )
-        ).all()
+        edits = self._pending_services_component_additions(services_component_id)
         if not edits:
             return False
         in_review_request_id = self.db_session.scalar(
@@ -424,7 +547,28 @@ class ContractModificationEditService:
             raise ValidationError({"services_component": [SC_ADDITION_IN_MODIFICATION_MESSAGE]})
         for edit in edits:
             self.db_session.delete(edit)
+        # Its period-of-performance edits (if any) go with it: the SC was never on the contract.
+        self.discard_pending_services_component_edits(services_component_id)
         return True
+
+    def discard_pending_services_component_edits(self, services_component_id: int) -> None:
+        """Remove the SC's pending period-of-performance edits, e.g. when it is deleted: they'd
+        otherwise go into the next modification for an SC that no longer exists. Does not commit."""
+        for edit in self._pending_for_services_component(services_component_id):
+            if edit.field in SERVICES_COMPONENT_TRACKED_FIELDS:
+                self.db_session.delete(edit)
+
+    def _pending_services_component_additions(self, services_component_id: int) -> list[ContractModificationEdit]:
+        """The SC's pending "Add SC" edits: set when it was added after the award."""
+        return list(
+            self.db_session.scalars(
+                select(ContractModificationEdit).where(
+                    ContractModificationEdit.services_component_id == services_component_id,
+                    ContractModificationEdit.field == ServicesComponentChangeRequest.create_field_name,
+                    ContractModificationEdit.agreement_mod_id.is_(None),
+                )
+            ).all()
+        )
 
     def record_project_officer_change(
         self,

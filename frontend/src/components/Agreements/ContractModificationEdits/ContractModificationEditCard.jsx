@@ -16,11 +16,12 @@ import styles from "./ContractModificationEditCard.module.scss";
  * @property {number | null} budget_line_item_id
  * @property {number | null} [services_component_id] - Set for a Services Component addition
  * @property {number | string | null} [amount] - The budget line's total, shown for an execute card
- * @property {string} field - The edited field ("amount", "can_id", "date_needed", "delete", "services_component_create", or "project_officer_id" for a COR change)
+ * @property {string} field - The edited field ("amount", "can_id", "date_needed", "delete", "services_component_create", a Services Component's "period_start" / "period_end", or "project_officer_id" for a COR change)
  * @property {*} old_value
  * @property {*} new_value
  * @property {string | null} [old_display_name] - The "From" user's name for a COR change
  * @property {string | null} [new_display_name] - The "To" user's name for a COR change
+ * @property {string | null} [services_component_display_name] - The SC's name for its period-of-performance edits
  * @property {{id: number, full_name: string, display_name?: string} | null} requested_by
  * @property {string | null} requested_on
  * @property {boolean} [in_review] - Part of the contract modification that is in review
@@ -33,6 +34,10 @@ const SERVICES_COMPONENT_CHANGE_LABELS = {
     services_component_create: "Add SC",
     delete: "Delete SC"
 };
+
+// A Services Component's period-of-performance edit (OPS-3268): one card per date, with the SC and
+// From/To dates, per the design.
+const SERVICES_COMPONENT_PERIOD_FIELDS = ["period_start", "period_end"];
 
 /**
  * One edit on an Awarded agreement that requires a contract modification.
@@ -49,13 +54,19 @@ const ContractModificationEditCard = ({ edit }) => {
     const { oldValue, newValue } = renderChangeValues(edit.field, changeTo, oldCan, newCan);
     const servicesComponentChange =
         edit.services_component_id != null ? SERVICES_COMPONENT_CHANGE_LABELS[edit.field] : undefined;
+    const isServicesComponentPeriodEdit =
+        edit.services_component_id != null && SERVICES_COMPONENT_PERIOD_FIELDS.includes(edit.field);
     // The SC's display name, frozen on the row: the new SC for an addition, the deleted one otherwise.
     const servicesComponentName = edit.field === "services_component_create" ? edit.new_value : edit.old_value;
     // A COR change (OPS-3153) is agreement-level: no budget line, and From/To are user names.
     const isAgreementLevel = edit.field === "project_officer_id";
     // A budget line selected to execute (Planned -> Executing, Start Modification) isn't a
     // tracked edit -- it's the approval action itself -- so it carries no modification_type.
-    const isExecuteSelection = edit.modification_type == null && !isAgreementLevel && !servicesComponentChange;
+    const isExecuteSelection =
+        edit.modification_type == null &&
+        !isAgreementLevel &&
+        !servicesComponentChange &&
+        !isServicesComponentPeriodEdit;
 
     return (
         <div
@@ -102,6 +113,29 @@ const ContractModificationEditCard = ({ edit }) => {
                     <TermTag
                         label="To"
                         value={edit.new_display_name ?? "TBD"}
+                        className="margin-0"
+                    />
+                </>
+            ) : isServicesComponentPeriodEdit ? (
+                <>
+                    <TermTag
+                        label="SC"
+                        value={edit.services_component_display_name ?? "TBD"}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Change To"
+                        value={convertCodeForDisplay("changeToTypes", edit.field)}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="From"
+                        value={edit.old_value ? formatDateToMonthDayYear(edit.old_value) : "TBD"}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="To"
+                        value={edit.new_value ? formatDateToMonthDayYear(edit.new_value) : "TBD"}
                         className="margin-0"
                     />
                 </>

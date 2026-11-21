@@ -18624,8 +18624,8 @@
     },
     {
       // Current-FY PLANNED BLIs on CONTRACT #523 (OPS-3268), appended at the end of this array so
-      // they get fresh auto-assigned ids and don't shift any existing budget line's id -- so
-      // Start Modification's "Select Budget Lines" checkboxes have current-FY lines to actually
+      // no other contract budget line's id shifts (budget lines loaded after this array, e.g.
+      // direct obligation and grant lines, do shift by 4) -- so Start Modification's "Select Budget Lines" checkboxes have current-FY lines to actually
       // select. LI 4 above is PLANNED but dated FY2044, so it's permanently disabled ("Only
       // current FY Budget Lines can be changed..."). Two lines on SC1 exercise multi-select and
       // "select all in this Services Component"; a third on SC2 gives that a separate group, and

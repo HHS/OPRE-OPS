@@ -46,6 +46,8 @@ function AllServicesComponentSelect({ messages, className, value, onChange, isDi
             defaultOption=""
             options={selectOptions}
             isDisabled={isDisabled}
+            // No tooltip here, so fill the form column instead of the fixed disabled width.
+            disabledWidthClassName=""
         />
     );
 }

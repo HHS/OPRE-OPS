@@ -73,6 +73,9 @@ class ContractModificationEdit(BaseModel):
     budget_line_item_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     # Set for Services Component add rows (OPS-6440). No FK, so the row survives the SC's deletion.
     services_component_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    # A Services Component period-of-performance edit's SC name (OPS-3268), snapshotted because
+    # its From/To are dates and the card outlives the SC. Null for other rows.
+    services_component_display_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     field: Mapped[str] = mapped_column(String, nullable=False)
     old_value: Mapped[Optional[Any]] = mapped_column(JSONB, nullable=True)
@@ -120,4 +123,17 @@ Index(
     ContractModificationEdit.__table__.c.field,
     unique=True,
     postgresql_where=text("agreement_mod_id IS NULL AND budget_line_item_id IS NOT NULL"),
+)
+
+# At most one pending direct edit per (Services Component, field), e.g. its period of performance
+# (OPS-3268): the same double-click/retry guard as above. budget_line_item_id IS NULL keeps it to
+# the SC's own rows; "services_component_create"/"delete" are one per SC anyway.
+Index(
+    "ix_contract_modification_edit_one_pending_sc_field",
+    ContractModificationEdit.__table__.c.services_component_id,
+    ContractModificationEdit.__table__.c.field,
+    unique=True,
+    postgresql_where=text(
+        "agreement_mod_id IS NULL AND services_component_id IS NOT NULL AND budget_line_item_id IS NULL"
+    ),
 )

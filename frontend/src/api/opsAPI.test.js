@@ -1629,3 +1629,38 @@ describe("opsAPI - searchAgreements cache lifetime", () => {
         expect(cached()).toBe("uninitialized");
     });
 });
+
+describe("opsAPI - submitting a contract modification refreshes the Services Components (OPS-3268)", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("refetches the SC list, so the new in_review_modification lock shows", async () => {
+        let inReviewModification = false;
+        let listRequests = 0;
+        server.use(
+            http.get("*/api/v1/services-components/", () => {
+                listRequests += 1;
+                return HttpResponse.json([{ id: 1, number: 1, in_review_modification: inReviewModification }]);
+            }),
+            http.post("*/api/v1/agreements/7/contract-modifications/", () => {
+                inReviewModification = true;
+                return HttpResponse.json({ id: 3 }, { status: 201 });
+            })
+        );
+        const { store } = setupApiStore(opsApi);
+        const subscription = store.dispatch(opsApi.endpoints.getServicesComponentsList.initiate(7));
+        await subscription;
+
+        await store.dispatch(
+            opsApi.endpoints.submitContractModification.initiate({
+                agreementId: 7,
+                budgetLineItemIds: [],
+                requestorNotes: ""
+            })
+        );
+        await vi.waitFor(() => expect(listRequests).toBe(2));
+
+        const refreshed = opsApi.endpoints.getServicesComponentsList.select(7)(store.getState());
+        expect(refreshed.data[0].in_review_modification).toBe(true);
+        subscription.unsubscribe();
+    });
+});

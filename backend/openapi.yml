@@ -7659,13 +7659,16 @@ components:
         services_component_id:
           type: integer
           nullable: true
-          description: Set for services component add rows. Kept after the services component is deleted.
+          description: >-
+            Set for services component rows (add, delete, period_start / period_end). Kept after
+            the services component is deleted.
           example: null
         field:
           type: string
           description: >-
             The edited field, i.e. "Change To" (amount, can_id, date_needed, status, delete,
-            services_component_create; project_officer_id for a COR change).
+            services_component_create, a services component's period_start / period_end (ISO
+            dates); project_officer_id for a COR change).
           example: amount
         old_value:
           nullable: true
@@ -7684,6 +7687,13 @@ components:
           type: string
           nullable: true
           description: The "To" user's name for a project_officer_id edit; null for other fields.
+          example: null
+        services_component_display_name:
+          type: string
+          nullable: true
+          description: >-
+            The services component's name for its period_start / period_end edits (their From/To
+            are dates); null for other fields.
           example: null
         requested_by:
           type: object
@@ -9032,6 +9042,14 @@ components:
           description: The services component's add change requests in review, or null.
           items:
             $ref: "#/components/schemas/GenericChangeRequest"
+        in_review_modification:
+          type: boolean
+          readOnly: true
+          example: false
+          description: >-
+            True while the services component's own edits (e.g. its period of performance) are in
+            a contract modification that is in review. Until the modification is approved or
+            declined, its period of performance can't be changed and it can't be deleted.
     ServicesComponentRequest:
       type: object
       properties:
