@@ -1,5 +1,6 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
+import { useEditorSeedGate } from "../../../hooks/useEditorSeedGate.hooks";
 import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
@@ -19,6 +20,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
  * @param {boolean} [props.isPostPreAwardLocked] - if the agreement is permanently locked after full pre-award approval
+ * @param {boolean} [props.isAgreementFetching] - Whether the agreement query is (re)fetching, e.g. right after a save.
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
@@ -33,7 +35,8 @@ const AgreementDetails = ({
     hasAgreementChanged = false,
     isPreAwardInReview = false,
     isAwardInReview = false,
-    isPostPreAwardLocked = false
+    isPostPreAwardLocked = false,
+    isAgreementFetching = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
     const canEditByRole = useCanEditByRole();
@@ -72,6 +75,13 @@ const AgreementDetails = ({
     // `isEditMode` comes from the `?mode=edit` URL param with no permission check, so every piece of
     // edit chrome (heading, "Editing..." indicator, form) must follow this, not the raw flag.
     const showEditMode = isEditMode && isEditable;
+    // The editor seeds once on mount and its save PATCHes the whole draft, so wait for any agreement refetch
+    // (and any held refetch) before mounting it; see useEditorSeedGate.
+    const { isEditorOpen } = useEditorSeedGate({
+        isEditing: showEditMode,
+        isDataFetching: isAgreementFetching,
+        hasLoadFailed: false
+    });
 
     return (
         <article>
@@ -90,7 +100,8 @@ const AgreementDetails = ({
                 showEditButton={canEditByRole}
             />
 
-            {showEditMode ? (
+            {showEditMode && !isEditorOpen && <p role="status">Loading the latest agreement details...</p>}
+            {showEditMode && isEditorOpen && (
                 <AgreementDetailsEdit
                     agreement={agreement}
                     setHasAgreementChanged={setHasAgreementChanged}
@@ -99,7 +110,8 @@ const AgreementDetails = ({
                     isEditMode={isEditMode}
                     setIsEditMode={setIsEditMode}
                 />
-            ) : (
+            )}
+            {!showEditMode && (
                 <AgreementDetailsView
                     agreement={agreement}
                     projectOfficer={projectOfficer}

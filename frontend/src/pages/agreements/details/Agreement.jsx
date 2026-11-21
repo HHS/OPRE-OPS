@@ -387,6 +387,7 @@ const Agreement = () => {
                                 isPreAwardInReview={isPreAwardInReview}
                                 isAwardInReview={isAwardInReview}
                                 isPostPreAwardLocked={isAgreementPostPreAwardLocked}
+                                isAgreementFetching={isFetchingAgreement}
                             />
                         }
                     />

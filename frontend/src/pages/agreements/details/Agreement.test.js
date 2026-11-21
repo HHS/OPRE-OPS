@@ -28,6 +28,7 @@ vi.mock("./AgreementDetails", () => ({
         <div
             data-testid="agreement-details-mock"
             data-post-pre-award-locked={String(props.isPostPreAwardLocked)}
+            data-agreement-fetching={String(props.isAgreementFetching)}
         />
     )
 }));
@@ -722,6 +723,13 @@ describe("Agreement page — pre-award lock flag per tab (OPS-6512)", () => {
 
     // The budget-lines editor seeds once on mount, so it must know when the agreement is refetching
     // (e.g. right after a save) to avoid seeding stale budget lines.
+    it.each([true, false])("passes the agreement query's isFetching=%s to Agreement Details", async (isFetching) => {
+        await renderAgreementAt(makeAgreement({ roleBlindLocked: false, roleAwareLocked: false }), "", { isFetching });
+
+        const detailsMock = await screen.findByTestId("agreement-details-mock");
+        expect(detailsMock.dataset.agreementFetching).toBe(String(isFetching));
+    });
+
     it.each([true, false])("passes the agreement query's isFetching=%s to SCs & Budget Lines", async (isFetching) => {
         await renderAgreementAt(makeAgreement({ roleBlindLocked: false, roleAwareLocked: false }), "/budget-lines", {
             isFetching
