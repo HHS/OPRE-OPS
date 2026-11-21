@@ -328,6 +328,16 @@ def test_consecutive_edits_on_the_same_field_merge_into_one_row(
     # Updated in place, so the audit hooks see it (no delete + re-insert).
     assert edit.id == first_id
     assert edit.updated_by == BASIC_USER_ID
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "ContractModificationEdit",
+            OpsDBHistory.row_key == str(edit.id),
+            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+        )
+    ).all()
+    assert [h.changes["new_value"] for h in history] == [{"old": 500000.0, "new": 100000.0}]
 
     response = _get_pending(basic_user_auth_client, agreement.id)
     assert response.status_code == 200, response.json
@@ -902,31 +912,13 @@ def test_a_concurrent_duplicate_edit_on_approval_returns_a_friendly_400(
     monkeypatch,
 ):
     """A save that races the approval onto the same field trips the unique index at commit; that
-    is a 400 saying so, not a 500."""
-    from sqlalchemy.exc import IntegrityError
-
-    from ops_api.ops.services.change_requests import ChangeRequestService
-
+    is a 400 saying so, not a 500, and the request stays in review."""
     agreement, bli = make_agreement(test_can, awarded=False)
     cr_id = _legacy_amount_change_request_after_award(basic_user_auth_client, loaded_db, agreement, bli)
 
-    # Fail only the review's own commit: other commits in the request (auth, events) run as usual.
-    real_commit, real_review = loaded_db.commit, ChangeRequestService._handle_review_action
-    reviewed = {"done": False}
-
-    def _review_then_mark(self, *args, **kwargs):
-        result = real_review(self, *args, **kwargs)
-        reviewed["done"] = True
-        return result
-
-    def _commit(*args, **kwargs):
-        if reviewed["done"]:
-            reviewed["done"] = False
-            raise IntegrityError("INSERT", {}, Exception("ix_contract_modification_edit_one_pending_bli_field"))
-        return real_commit(*args, **kwargs)
-
-    monkeypatch.setattr(ChangeRequestService, "_handle_review_action", _review_then_mark)
-    monkeypatch.setattr(loaded_db, "commit", _commit)
+    # The approval reads the pending edits before the racing save's edit is committed, so it sees
+    # none and inserts its own: the real index rejects the second pending "amount" row.
+    monkeypatch.setattr(ContractModificationEditService, "_pending_for_budget_line", lambda self, *a, **k: [])
     response = division_director_auth_client.patch(
         url_for("api.change-requests-item", id=cr_id), json={"action": "APPROVE"}
     )
@@ -934,3 +926,7 @@ def test_a_concurrent_duplicate_edit_on_approval_returns_a_friendly_400(
 
     assert response.status_code == 400, response.json
     assert "saved at the same time" in response.json["errors"]["change_request"][0]
+    loaded_db.expire_all()
+    assert loaded_db.get(BudgetLineItemChangeRequest, cr_id).status == ChangeRequestStatus.IN_REVIEW
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert (edit.change_request_id, edit.new_value) == (None, 500000.0)

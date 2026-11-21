@@ -817,6 +817,39 @@ def test_superuser_period_edit_keeps_an_existing_pending_card_current(
     assert [e.requested_by_id for e in edits] == [POWER_USER_ID] * len(expected)
 
 
+def test_period_edit_locks_the_sc_before_reading_its_pending_edits(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    """Two saves to the same SC run one after the other. Without the lock, a save could merge into
+    a pending edit a concurrent save had just removed, and fail with a 500."""
+    from sqlalchemy import event
+
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-01-31"}).status_code == 200
+
+    statements = []
+
+    def _capture(conn, cursor, statement, *args):
+        statements.append(" ".join(statement.split()))
+
+    engine = loaded_db.get_bind()
+    event.listen(engine, "before_cursor_execute", _capture)
+    try:
+        response = _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-06-30"})
+    finally:
+        event.remove(engine, "before_cursor_execute", _capture)
+
+    assert response.status_code == 200, response.json
+    sc_lock = next(
+        i for i, sql in enumerate(statements) if "FROM services_component WHERE" in sql and sql.endswith("FOR UPDATE")
+    )
+    pending_read = next(i for i, sql in enumerate(statements) if "FROM contract_modification_edit WHERE" in sql)
+    assert sc_lock < pending_read
+    assert [(e.old_value, e.new_value) for e in _edits(loaded_db, awarded_agreement.id)] == [
+        ("2043-12-31", "2044-06-30")
+    ]
+
+
 def test_superuser_period_edit_still_records_nothing_without_a_pending_card(
     modified_loe_enabled, power_user_auth_client, loaded_db, awarded_agreement, app_ctx
 ):

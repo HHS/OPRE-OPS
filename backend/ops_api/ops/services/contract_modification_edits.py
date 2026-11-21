@@ -111,9 +111,8 @@ class ContractModificationEditService:
             pending = self._pending_for_budget_line(budget_line_item_id, None if field == "delete" else field)
             if pending and field != "delete":
                 # Merge into the line's pending edit to the same field, the same as
-                # record_direct_edit. Nothing is flushed here: the session isn't autoflushed, and
-                # an early flush would write the approval before the before_commit audit hooks
-                # (created_by/updated_by, OpsDBHistory) see it.
+                # record_direct_edit. Nothing is flushed here (the session isn't autoflushed), so
+                # the before_commit audit hooks still see the change (updated_by, OpsDBHistory).
                 edit = pending[0]
                 self._merge_into_pending(pending, new_value, None)
                 if edit in self.db_session.deleted:  # The change netted to nothing.
@@ -155,10 +154,10 @@ class ContractModificationEditService:
         awarded value as From and the latest value as To, and drops the edit when the change nets
         to nothing (so a modification never carries an edit the list doesn't show). ``old_value``
         and ``new_value`` must be in the format change requests snapshot
-        (``PATCHRequestBodySchema(only=[field]).dump``). Flushes (but does not commit) so a
-        concurrent duplicate save (double-click/retry) fails fast on
+        (``PATCHRequestBodySchema(only=[field]).dump``). A new edit is flushed (not committed) so
+        a concurrent duplicate save (double-click/retry) fails fast on
         ``ix_contract_modification_edit_one_pending_bli_field`` instead of silently orphaning a
-        pending row.
+        pending row; a merge isn't flushed.
         """
         if self._merge_into_pending(self._pending_for_budget_line(budget_line_item.id, field), new_value, user_id):
             return
@@ -285,9 +284,9 @@ class ContractModificationEditService:
 
         Merges with the SC's pending edit to the same field and drops the edit when it nets to
         nothing, the same as ``record_direct_edit``. An SC added after the award (still carrying
-        its pending "Add SC" edit) was never on the contract, so nothing is recorded. Flushes (but
-        does not commit) so a concurrent duplicate save fails fast on
-        ``ix_contract_modification_edit_one_pending_sc_field``.
+        its pending "Add SC" edit) was never on the contract, so nothing is recorded. A new edit is
+        flushed (not committed) so a concurrent duplicate save fails fast on
+        ``ix_contract_modification_edit_one_pending_sc_field``; a merge isn't flushed.
         """
         if self._pending_services_component_additions(services_component.id):
             return
@@ -364,9 +363,12 @@ class ContractModificationEditService:
         place to the new To (its From stays the awarded value), or remove it when the change nets
         to nothing. Returns whether there was one to merge into.
 
-        Updated in place rather than deleted and re-inserted: that needed a flush between the two
-        (or the INSERT trips the one-pending-per-field index), and a flush before commit means the
-        before_commit audit hooks never see the rows (no DELETED/UPDATED history, no updated_by).
+        Updated in place rather than deleted and re-inserted, which needed a flush between the two
+        (or the INSERT trips the one-pending-per-field index). ``updated_by`` is set here, so it's
+        right on every path. The UPDATED OpsDBHistory row comes from the before_commit hook, so it
+        is written only when nothing flushes the row first: a direct PATCH or an approval, not the
+        edit bundle, whose services flush after each change. The row's ``*_version`` history
+        records the change on every path.
         """
         if not pending:
             return False

@@ -156,7 +156,12 @@ class ServicesComponentService:
         if not self._sc_associated_with_agreement(obj_id):
             raise AuthorizationError("User not authorized to update Services Component with this Agreement")
 
-        services_component = self.db_session.get(ServicesComponent, obj_id)
+        # Locked and re-read, so two saves to the same SC run one after the other: each then reads
+        # the pending period edits (and the SC's current dates) after the other has committed. A
+        # save that merged into a pending edit the other had just removed would otherwise fail.
+        services_component = self.db_session.get(
+            ServicesComponent, obj_id, with_for_update=True, populate_existing=True
+        )
         if not services_component:
             raise ResourceNotFoundError("ServicesComponent", obj_id)
 
