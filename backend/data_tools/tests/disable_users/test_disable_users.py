@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
+from sqlalchemy import select
 
 from data_tools.src.disable_users.disable_users import (
     disable_user,
@@ -11,7 +12,7 @@ from data_tools.src.disable_users.disable_users import (
     send_inactivity_warnings,
     update_disabled_users_status,
 )
-from models import Division, OpsEventStatus, OpsEventType, User, UserSession, UserStatus
+from models import Division, OpsEvent, OpsEventStatus, OpsEventType, User, UserSession, UserStatus
 
 system_admin_id = 111
 
@@ -24,30 +25,54 @@ def mock_session():
     return session
 
 
-def test_deactivate_user(mock_session):
-    user_id = 1
+def _user_session(user_id, is_active):
+    return UserSession(
+        user_id=user_id,
+        is_active=is_active,
+        ip_address="127.0.0.1",
+        access_token="access",  # pragma: allowlist secret  # noqa: S106
+        refresh_token="refresh",  # pragma: allowlist secret  # noqa: S106
+        last_active_at=datetime.now() - timedelta(days=61),
+    )
 
-    mock_session.execute.return_value = [(1,), (2,)]
 
-    disable_user(mock_session, user_id, system_admin_id)
+def test_deactivate_user(loaded_db):
+    admin = User(email="disable.admin@example.gov", status=UserStatus.ACTIVE)
+    user = User(email="to.disable@example.gov", status=UserStatus.ACTIVE)
+    other_user = User(email="bystander@example.gov", status=UserStatus.ACTIVE)
+    loaded_db.add_all([admin, user, other_user])
+    loaded_db.flush()
+    user_sessions = [_user_session(user.id, True), _user_session(user.id, True)]
+    other_session = _user_session(other_user.id, True)
+    loaded_db.add_all([*user_sessions, other_session])
+    loaded_db.flush()
 
-    assert mock_session.merge.call_count == 3
-    assert mock_session.add.call_count == 1
+    disable_user(loaded_db, user.id, admin.id)
+    loaded_db.flush()
+    loaded_db.expire_all()
 
-    user_call = mock_session.merge.call_args_list[0]
-    assert user_call[0][0].id == user_id
-    assert user_call[0][0].status == UserStatus.INACTIVE
-    assert user_call[0][0].updated_by == system_admin_id
+    saved_user = loaded_db.get(User, user.id)
+    assert saved_user.status == UserStatus.INACTIVE
+    assert saved_user.updated_by == admin.id
+    for user_session in user_sessions:
+        saved_session = loaded_db.get(UserSession, user_session.id)
+        assert saved_session.is_active is False
+        assert saved_session.updated_by == admin.id
 
-    user_session_call_1 = mock_session.merge.call_args_list[1]
-    assert user_session_call_1[0][0].id == user_id
-    assert user_session_call_1[0][0].is_active is False
-    assert user_session_call_1[0][0].updated_by == system_admin_id
+    assert loaded_db.get(User, other_user.id).status == UserStatus.ACTIVE
+    assert loaded_db.get(UserSession, other_session.id).is_active is True
 
-    ops_events_call = mock_session.add.call_args_list[0]
-    assert ops_events_call[0][0].event_type == OpsEventType.UPDATE_USER
-    assert ops_events_call[0][0].event_status == OpsEventStatus.SUCCESS
-    assert ops_events_call[0][0].created_by == system_admin_id
+    events = (
+        loaded_db.execute(
+            select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_USER, OpsEvent.created_by == admin.id)
+        )
+        .scalars()
+        .all()
+    )
+    assert len(events) == 1
+    assert events[0].event_status == OpsEventStatus.SUCCESS
+    assert events[0].event_details["user_id"] == user.id
+    assert events[0].event_details["status"] == UserStatus.INACTIVE.name
 
 
 @patch("data_tools.src.disable_users.disable_users.logger")
