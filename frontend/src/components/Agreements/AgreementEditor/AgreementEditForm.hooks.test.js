@@ -1492,8 +1492,10 @@ describe("useAgreementEditForm - COR change on an Awarded agreement (OPS-3153)",
 });
 
 describe("useAgreementEditForm reports unsaved changes to its parent", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
+        const { default: useHasStateChanged } = await vi.importActual("../../../hooks/useHasStateChanged.hooks");
+        hasStateChangedMock.mockImplementation(useHasStateChanged);
         useLocationMock.mockReturnValue({ pathname: "/agreements/create" });
         useSelectorMock.mockReturnValue(false);
         useEditAgreementDispatchMock.mockReturnValue(vi.fn());
@@ -1502,12 +1504,25 @@ describe("useAgreementEditForm reports unsaved changes to its parent", () => {
         useEditAgreementMock.mockReturnValue(makeEditState());
     });
 
-    it.each([true, false])("passes hasAgreementChanged=%s to setHasAgreementChanged", async (hasChanged) => {
-        hasStateChangedMock.mockReturnValue(hasChanged);
+    it("reports no changes on load, then reports the change once the agreement is edited", async () => {
         const setHasAgreementChanged = vi.fn();
+        const { rerender } = renderUseAgreementEditForm({ setHasAgreementChanged });
+        await waitFor(() => expect(setHasAgreementChanged).toHaveBeenLastCalledWith(false));
 
-        renderUseAgreementEditForm({ setHasAgreementChanged });
+        useEditAgreementMock.mockReturnValue(makeEditState({ name: "Edited agreement name" }));
+        rerender();
 
-        await waitFor(() => expect(setHasAgreementChanged).toHaveBeenLastCalledWith(hasChanged));
+        await waitFor(() => expect(setHasAgreementChanged).toHaveBeenLastCalledWith(true));
+    });
+
+    it("does not report a procurement shop selection as an agreement change", async () => {
+        const setHasAgreementChanged = vi.fn();
+        const { rerender } = renderUseAgreementEditForm({ setHasAgreementChanged });
+        await waitFor(() => expect(setHasAgreementChanged).toHaveBeenCalled());
+
+        useEditAgreementMock.mockReturnValue({ ...makeEditState(), selected_procurement_shop: { id: 2 } });
+        rerender();
+
+        expect(setHasAgreementChanged).not.toHaveBeenCalledWith(true);
     });
 });

@@ -35,7 +35,7 @@ describe("SummaryCardsSection", () => {
         expect(screen.getByRole("heading", { name: `${expectedPrefix} Budget Lines By Status` })).toBeInTheDocument();
     });
 
-    it("shows the total and each status amount", () => {
+    it("shows the total and pairs each status with its own amount", () => {
         render(
             <SummaryCardsSection
                 {...amounts}
@@ -44,11 +44,14 @@ describe("SummaryCardsSection", () => {
         );
 
         expect(screen.getByText("$ 10,000")).toBeInTheDocument();
-        ["Draft", "Planned", "Executing", "Obligated"].forEach((label) => {
-            expect(screen.getByText(label)).toBeInTheDocument();
-        });
-        ["$1,000.00", "$2,000.00", "$3,000.00", "$4,000.00"].forEach((amount) => {
-            expect(screen.getByText(amount)).toBeInTheDocument();
+        // Each legend row renders its label then its amount, so document order pairs them.
+        const labels = screen.getAllByText(/^(Draft|Planned|Executing|Obligated)$/).map((el) => el.textContent);
+        const values = screen.getAllByText(/^\$\d{1,3}(,\d{3})*\.\d{2}$/).map((el) => el.textContent);
+        expect(Object.fromEntries(labels.map((label, i) => [label, values[i]]))).toEqual({
+            Draft: "$1,000.00",
+            Planned: "$2,000.00",
+            Executing: "$3,000.00",
+            Obligated: "$4,000.00"
         });
         expect(screen.getByTestId("donut-chart")).toBeInTheDocument();
     });
