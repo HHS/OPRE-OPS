@@ -125,10 +125,15 @@ describe("AgreementTabs", () => {
         expect(screen.getByText("For Review")).toBeInTheDocument();
     });
 
-    test("applies correct class based on location", () => {
-        useLocation.mockReturnValueOnce({
-            search: "?filter=my-agreements"
-        });
+    test.each([
+        ["", "All Agreements"],
+        ["?filter=my-agreements", "My Agreements"],
+        ["?filter=change-requests", "For Review"],
+        ["?sort=name", "All Agreements"],
+        ["?filter=my-agreements&sort=name", "My Agreements"],
+        ["?filter=unknown", "All Agreements"]
+    ])("marks only the tab for search %j as the current page", (search, currentLabel) => {
+        useLocation.mockReturnValue({ search });
 
         render(
             <Provider store={store}>
@@ -138,9 +143,28 @@ describe("AgreementTabs", () => {
             </Provider>
         );
 
-        expect(screen.getByText("My Agreements").className).toMatch(/ .*listItemSelected.*/);
-        expect(screen.getByText("All Agreements").className).toMatch(/ .*listItemNotSelected.*/);
-        expect(screen.getByText("For Review").className).toMatch(/ .*listItemNotSelected.*/);
+        const labels = ["All Agreements", "My Agreements", "For Review"];
+        const currentByLabel = labels.map((label) => [
+            label,
+            screen.getByRole("link", { name: label }).getAttribute("aria-current")
+        ]);
+        expect(currentByLabel).toEqual(labels.map((label) => [label, label === currentLabel ? "page" : null]));
+    });
+
+    test("marks no tab when a user without the For Review tab opens the change-requests list", () => {
+        useSelector.mockReturnValue([{ id: 2, name: "VIEWER_EDITOR" }]);
+        useLocation.mockReturnValue({ search: "?filter=change-requests" });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementTabs />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        const current = screen.getAllByRole("link").map((link) => link.getAttribute("aria-current"));
+        expect(current).toEqual([null, null]);
     });
 
     test("displays notification circle with correct number", () => {

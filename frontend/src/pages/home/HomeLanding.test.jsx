@@ -1,4 +1,5 @@
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test-utils";
 import { __resetVisitSessionCache } from "../../helpers/visitSessionCache.helpers";
@@ -27,10 +28,22 @@ describe("HomeLanding", () => {
         expect(screen.getByText("OPS Benefits")).toBeInTheDocument();
     });
 
-    it("marks the What's New tab as selected by default", () => {
+    it("marks the What's New tab as the current page by default", () => {
         renderWithProviders(<HomeLanding />);
 
-        expect(screen.getByText("What's New").className).toContain("listItemSelected");
+        expect(screen.getByRole("button", { name: "What's New" })).toHaveAttribute("aria-current", "page");
+        expect(screen.getByRole("button", { name: "OPS at a Glance" })).not.toHaveAttribute("aria-current");
+        expect(screen.getByRole("button", { name: "OPS Benefits" })).not.toHaveAttribute("aria-current");
+    });
+
+    it("moves the current-page marker to the tab the user selects", async () => {
+        const user = userEvent.setup();
+        renderWithProviders(<HomeLanding />);
+
+        await user.click(screen.getByRole("button", { name: "OPS at a Glance" }));
+
+        expect(screen.getByRole("button", { name: "OPS at a Glance" })).toHaveAttribute("aria-current", "page");
+        expect(screen.getByRole("button", { name: "What's New" })).not.toHaveAttribute("aria-current");
     });
 
     it("renders the welcome message as the page's single h1", () => {
