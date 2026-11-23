@@ -1149,7 +1149,9 @@
       number: 1,
       optional: false,
       description: "Research and Analysis",
-      period_start: "2044-06-13T14:00:00",
+      // Starts at FY 2027 so CONTRACT #523's current-FY Planned lines (LI 5-7, dated 2027-03-01)
+      // fall inside the agreement's services-component window and can be edited (OPS-6513).
+      period_start: "2026-10-01T14:00:00",
       period_end: "2045-06-13T14:00:00",
       agreement_id: 523,
     },
