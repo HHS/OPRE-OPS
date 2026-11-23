@@ -321,7 +321,11 @@ def test_consecutive_edits_on_the_same_field_merge_into_one_row(
             url_for("api.budget-line-items-item", id=bli.id), json={"amount": amount}
         )
         assert response.status_code == 200, response.json
-        first_id = first_id or _edits(loaded_db, agreement.id)[0].id
+        if first_id is None:
+            (new_edit,) = _edits(loaded_db, agreement.id)
+            # Stamped on insert: the row is flushed before the commit-time created_by/updated_by hook.
+            assert (new_edit.created_by, new_edit.updated_by) == (BASIC_USER_ID, BASIC_USER_ID)
+            first_id = new_edit.id
 
     (edit,) = _edits(loaded_db, agreement.id)
     assert (edit.old_value, edit.new_value) == (600000.0, 100000.0)
@@ -349,8 +353,9 @@ def test_consecutive_edits_on_the_same_field_merge_into_one_row(
 def test_a_merge_followed_by_a_new_edit_in_one_save_keeps_the_merge_history(
     modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
 ):
-    """The new date_needed edit's flush sends the merged amount edit's UPDATE before the
-    before_commit history hook runs, so the merge's OpsDBHistory row is recorded at that flush."""
+    """Each edit is flushed when it's recorded, before the before_commit history hook runs, so the
+    amount merge records its OpsDBHistory row at its own flush (and the date_needed edit's flush
+    doesn't hide it)."""
     from models import OpsDBHistory, OpsDBHistoryType
 
     agreement, bli = make_agreement(test_can)

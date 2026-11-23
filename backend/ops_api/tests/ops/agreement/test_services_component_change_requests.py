@@ -724,7 +724,10 @@ def test_period_edits_merge_and_net_to_nothing(
     assert first.status_code == 200
     # The response is the saved SC, not just the fields sent.
     assert (first.json["number"], first.json["display_name"]) == (2, "SC2")
-    first_id = _edits(loaded_db, awarded_agreement.id)[0].id
+    (new_edit,) = _edits(loaded_db, awarded_agreement.id)
+    # Stamped on insert: the row is flushed before the commit-time created_by/updated_by hook.
+    assert (new_edit.created_by, new_edit.updated_by) == (BASIC_USER_ID, BASIC_USER_ID)
+    first_id = new_edit.id
     assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-06-30"}).status_code == 200
     (edit,) = _edits(loaded_db, awarded_agreement.id)
     assert (edit.old_value, edit.new_value) == ("2043-12-31", "2044-06-30")
@@ -738,9 +741,9 @@ def test_period_edits_merge_and_net_to_nothing(
 def test_a_save_that_merges_one_period_edit_and_adds_another_keeps_the_merge_history(
     modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
 ):
-    """period_start merges in place, then the new period_end edit is flushed (for the unique
-    index). That flush sends the merged row's UPDATE too, before the before_commit history hook
-    runs, so the merge's OpsDBHistory row has to be recorded at the flush."""
+    """period_start merges in place and period_end adds a new edit, each flushed when it's recorded
+    (before the before_commit history hook runs), so the merge's OpsDBHistory row is recorded at
+    its flush."""
     from models import OpsDBHistory, OpsDBHistoryType
 
     sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
