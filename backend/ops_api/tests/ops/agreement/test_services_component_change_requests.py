@@ -735,6 +735,36 @@ def test_period_edits_merge_and_net_to_nothing(
     assert _edits(loaded_db, awarded_agreement.id) == []
 
 
+def test_a_save_that_merges_one_period_edit_and_adds_another_keeps_the_merge_history(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    """period_start merges in place, then the new period_end edit is flushed (for the unique
+    index). That flush sends the merged row's UPDATE too, before the before_commit history hook
+    runs, so the merge's OpsDBHistory row has to be recorded at the flush."""
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_start": "2043-02-01"}).status_code == 200
+    (start_edit,) = _edits(loaded_db, awarded_agreement.id)
+
+    response = _patch_sc(basic_user_auth_client, sc2_id, {"period_start": "2043-03-01", "period_end": "2044-01-31"})
+
+    assert response.status_code == 200, response.json
+    edits = {e.field: (e.id, e.old_value, e.new_value) for e in _edits(loaded_db, awarded_agreement.id)}
+    assert edits["period_start"] == (start_edit.id, "2043-01-01", "2043-03-01")
+    assert edits["period_end"][1:] == ("2043-12-31", "2044-01-31")
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "ContractModificationEdit",
+            OpsDBHistory.row_key == str(start_edit.id),
+            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+        )
+    ).all()
+    assert [(h.changes["new_value"], h.created_by) for h in history] == [
+        ({"old": "2043-02-01", "new": "2043-03-01"}, BASIC_USER_ID)
+    ]
+
+
 def test_unchanged_period_in_a_full_form_save_records_nothing(
     modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
 ):

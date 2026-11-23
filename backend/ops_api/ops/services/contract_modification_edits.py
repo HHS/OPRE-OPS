@@ -28,10 +28,12 @@ from models import (
     ContractModificationRequest,
     ContractModificationRequestStatus,
     ModificationEditType,
+    OpsDBHistoryType,
     ServicesComponent,
     ServicesComponentChangeRequest,
     User,
 )
+from models.utils import add_obj_to_db_history
 from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.budget_line_items_helpers import agreement_tracks_contract_modifications
@@ -166,6 +168,7 @@ class ContractModificationEditService:
         self._add_direct_edit(
             budget_line_item.agreement_id, budget_line_item.id, None, field, old_value, new_value, user_id
         )
+        self._record_unflushed_merge_history(user_id)
         try:
             self.db_session.flush()
         except IntegrityError:
@@ -306,6 +309,7 @@ class ContractModificationEditService:
             user_id,
             services_component_display_name=services_component.display_name,
         )
+        self._record_unflushed_merge_history(user_id)
         try:
             self.db_session.flush()
         except IntegrityError:
@@ -365,10 +369,14 @@ class ContractModificationEditService:
 
         Updated in place rather than deleted and re-inserted, which needed a flush between the two
         (or the INSERT trips the one-pending-per-field index). ``updated_by`` is set here, so it's
-        right on every path. The UPDATED OpsDBHistory row comes from the before_commit hook, so it
-        is written only when nothing flushes the row first: a direct PATCH or an approval, not the
-        edit bundle, whose services flush after each change. The row's ``*_version`` history
-        records the change on every path.
+        right on every path. A direct edit (``user_id`` given) is no longer the one that was
+        requested or approved, so it drops the edit's change request and approval.
+
+        The merge isn't flushed, so the before_commit hook writes its OpsDBHistory row. When the
+        same save then adds a new edit (an SC save changing both period dates, say), that edit's
+        flush sends this one too, so ``_record_unflushed_merge_history`` writes the row first. The
+        edit bundle's services flush after each change, so a merge there gets no OpsDBHistory row;
+        the row's ``*_version`` history records the change on every path.
         """
         if not pending:
             return False
@@ -385,7 +393,25 @@ class ContractModificationEditService:
             # before it's flushed, and a SQL expression can't be serialized.
             edit.requested_on = datetime.now()
             edit.updated_by = user_id
+            edit.change_request_id = None
+            edit.approved_by_id = None
+            edit.approved_on = None
         return True
+
+    def _record_unflushed_merge_history(self, user_id: int) -> None:
+        """Write the OpsDBHistory rows of merges (``_merge_into_pending``) the next flush sends.
+
+        The before_commit hook records only rows still dirty or deleted at commit, so it would miss
+        them. Call just before a flush.
+        """
+        session = self.db_session
+        user = session.get(User, user_id)
+        for rows, event_type in (
+            (session.dirty, OpsDBHistoryType.UPDATED),
+            (session.deleted, OpsDBHistoryType.DELETED),
+        ):
+            merged = [row for row in rows if isinstance(row, ContractModificationEdit)]
+            session.add_all(add_obj_to_db_history(merged, event_type, user))
 
     def _add_direct_edit(
         self,

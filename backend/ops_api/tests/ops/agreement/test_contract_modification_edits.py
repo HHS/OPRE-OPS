@@ -346,6 +346,36 @@ def test_consecutive_edits_on_the_same_field_merge_into_one_row(
     assert record["id"] == edit.id
 
 
+def test_a_merge_followed_by_a_new_edit_in_one_save_keeps_the_merge_history(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
+):
+    """The new date_needed edit's flush sends the merged amount edit's UPDATE before the
+    before_commit history hook runs, so the merge's OpsDBHistory row is recorded at that flush."""
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    agreement, bli = make_agreement(test_can)
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 500000.00)
+    (amount_edit,) = _edits(loaded_db, agreement.id)
+
+    service = ContractModificationEditService(loaded_db)
+    service.record_direct_edit(bli, "amount", 500000.0, 300000.0, BASIC_USER_ID)
+    service.record_direct_edit(bli, "date_needed", "2043-01-01", "2044-01-01", BASIC_USER_ID)
+    loaded_db.commit()
+
+    edits = {e.field: (e.old_value, e.new_value) for e in _edits(loaded_db, agreement.id)}
+    assert edits == {"amount": (600000.0, 300000.0), "date_needed": ("2043-01-01", "2044-01-01")}
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "ContractModificationEdit",
+            OpsDBHistory.row_key == str(amount_edit.id),
+            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+        )
+    ).all()
+    assert [(h.changes["new_value"], h.created_by) for h in history] == [
+        ({"old": 500000.0, "new": 300000.0}, BASIC_USER_ID)
+    ]
+
+
 def test_an_edit_that_nets_to_no_change_drops_the_pending_edit(
     modified_loe_enabled,
     basic_user_auth_client,
@@ -872,6 +902,32 @@ def test_approving_a_change_request_merges_with_a_pending_edit_and_keeps_audit_f
 
     assert _updated_by_director("BudgetLineItemChangeRequest", cr_id)
     assert _updated_by_director("ContractModificationEdit", edit.id)
+
+
+def test_a_direct_edit_merged_into_an_approved_edit_drops_the_approval(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """The Division Director approved the old To, not the new one, so a later direct save that
+    merges into the approved edit leaves it with no approval."""
+    agreement, bli = make_agreement(test_can, awarded=False)
+    cr_id = _legacy_amount_change_request_after_award(basic_user_auth_client, loaded_db, agreement, bli)
+    _review(division_director_auth_client, cr_id)
+    (approved,) = _edits(loaded_db, agreement.id)
+    assert approved.change_request_id == cr_id
+    assert approved.approved_by_id is not None and approved.approved_on is not None
+
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 400000.00)
+
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert (edit.id, edit.old_value, edit.new_value) == (approved.id, 600000.0, 400000.0)
+    assert edit.requested_by_id == BASIC_USER_ID
+    assert (edit.change_request_id, edit.approved_by_id, edit.approved_on) == (None, None, None)
 
 
 def test_approving_a_change_request_on_a_line_in_an_in_review_modification_is_rejected(
