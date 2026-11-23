@@ -79,6 +79,27 @@ describe("ProjectTypeSummaryCard", () => {
         expect(screen.getByText("30%")).toBeInTheDocument();
     });
 
+    it("renders a Technical Assistance legend row and chart slice alongside the other types", () => {
+        const threeTypeSummary = {
+            amounts_by_type: {
+                RESEARCH: { amount: 7000000 },
+                ADMINISTRATIVE: { amount: 2000000 },
+                TECHNICAL_ASSISTANCE: { amount: 1000000 }
+            }
+        };
+        render(
+            <ProjectTypeSummaryCard
+                title="FY 2025 Projects by Type"
+                summary={threeTypeSummary}
+            />
+        );
+        expect(screen.getByText("Technical Assistance")).toBeInTheDocument();
+        expect(screen.getByTestId("donut-chart")).toHaveAttribute(
+            "data-chart-values",
+            JSON.stringify([7000000, 2000000, 1000000])
+        );
+    });
+
     it("shows '<1%' for tiny non-zero peer and '99%' for the dominant type (Figma: no >99%)", () => {
         render(
             <ProjectTypeSummaryCard
