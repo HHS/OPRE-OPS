@@ -1360,6 +1360,7 @@ describe("AgreementBudgetLines", () => {
                     act(() => vi.advanceTimersByTime(1));
                     expect(screen.getByRole("status")).toHaveTextContent(/still loading/i);
                     expect(screen.getByRole("status")).toHaveTextContent(/refresh the page/i);
+                    expect(screen.getByRole("heading", { level: 3, name: "Still loading" })).toBeInTheDocument();
                     expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
 
                     act(() => superUserStore.dispatch({ type: "test/setOpsApi", payload: idleOpsApi }));

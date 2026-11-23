@@ -27,6 +27,7 @@ import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
 import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { useEditorSeedGate } from "../../../hooks/useEditorSeedGate.hooks";
+import EditorLoadingStatus from "../../../components/Agreements/AgreementEditor/EditorLoadingStatus";
 
 /**
  * Single-page edit screen used by the review flow. Stacks Agreement Details, Acquisition Details,
@@ -145,7 +146,8 @@ const EditAgreementAndBudgetLines = () => {
 
     // The editor seeds once on mount. These queries refetch on every visit, so with cached data they report
     // isLoading false while still fetching; wait for them (and any held refetch) before mounting it.
-    const { isEditorOpen } = useEditorSeedGate({
+    const hasLoadFailed = !!(errorAgreement || errorServicesComponent || errorGrantNumbers);
+    const { isEditorOpen, isWaitingForEditor, isEditorLoadSlow } = useEditorSeedGate({
         isEditing: isValidId,
         isDataFetching:
             isLoadingAgreement ||
@@ -154,7 +156,7 @@ const EditAgreementAndBudgetLines = () => {
             isFetchingAgreement ||
             isFetchingServicesComponents ||
             isFetchingGrantNumbers,
-        hasLoadFailed: !!(errorAgreement || errorServicesComponent || errorGrantNumbers)
+        hasLoadFailed
     });
 
     const [updateEditBundle] = useUpdateAgreementEditBundleMutation();
@@ -325,23 +327,29 @@ const EditAgreementAndBudgetLines = () => {
     };
 
     useEffect(() => {
-        if (!isValidId || errorAgreement || errorServicesComponent || errorGrantNumbers) {
+        if (!isValidId || hasLoadFailed) {
             navigate("/error");
         }
-    }, [isValidId, errorAgreement, errorServicesComponent, errorGrantNumbers, navigate]);
+    }, [isValidId, hasLoadFailed, navigate]);
 
-    if (isValidId && !isEditorOpen && !(errorAgreement || errorServicesComponent || errorGrantNumbers)) {
+    if (isValidId && !isEditorOpen && !hasLoadFailed) {
         return (
             <App
                 breadCrumbName="Edit Agreement and Budget Lines"
                 breadCrumbParent={agreementCrumb(agreement)}
             >
                 <h1>Loading...</h1>
+                <EditorLoadingStatus
+                    isWaiting={isWaitingForEditor}
+                    isSlow={isEditorLoadSlow}
+                    headingLevel={2}
+                    slowMessage="The agreement and its budget lines are still loading. If this doesn't finish, refresh the page."
+                />
             </App>
         );
     }
 
-    if (!isValidId || errorAgreement || errorServicesComponent || errorGrantNumbers) {
+    if (!isValidId || hasLoadFailed) {
         return null;
     }
 

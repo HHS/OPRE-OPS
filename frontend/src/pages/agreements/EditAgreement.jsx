@@ -11,6 +11,7 @@ import {
 } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 import { useEditorSeedGate } from "../../hooks/useEditorSeedGate.hooks";
+import EditorLoadingStatus from "../../components/Agreements/AgreementEditor/EditorLoadingStatus";
 
 const EditAgreement = () => {
     const navigate = useNavigate();
@@ -53,7 +54,7 @@ const EditAgreement = () => {
     // The editor seeds once on mount. These queries refetch on every visit, so with cached data they report
     // isLoading false while still fetching; wait for them (and any held refetch) before mounting it.
     const hasLoadFailed = !!(errorAgreement || errorServicesComponent || errorGrantNumbers);
-    const { isEditorOpen } = useEditorSeedGate({
+    const { isEditorOpen, isWaitingForEditor, isEditorLoadSlow } = useEditorSeedGate({
         isEditing: true,
         isDataFetching:
             isLoadingAgreement ||
@@ -89,9 +90,19 @@ const EditAgreement = () => {
     }, [agreement]);
 
     if (!isEditorOpen && !hasLoadFailed) {
-        return <div>Loading...</div>;
+        return (
+            <>
+                <div>Loading...</div>
+                <EditorLoadingStatus
+                    isWaiting={isWaitingForEditor}
+                    isSlow={isEditorLoadSlow}
+                    headingLevel={2}
+                    slowMessage="The agreement is still loading. If this doesn't finish, refresh the page."
+                />
+            </>
+        );
     }
-    if (errorAgreement || errorServicesComponent || errorGrantNumbers) {
+    if (hasLoadFailed) {
         navigate("/error");
         return;
     }

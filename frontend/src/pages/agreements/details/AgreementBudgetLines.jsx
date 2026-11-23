@@ -51,6 +51,7 @@ import { anyBudgetLinesByStatus } from "../review/ReviewAgreement.helpers";
 import { AgreementType } from "../agreements.constants";
 import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
 import { useEditorSeedGate } from "../../../hooks/useEditorSeedGate.hooks";
+import EditorLoadingStatus from "../../../components/Agreements/AgreementEditor/EditorLoadingStatus";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import { PacmanLoader } from "react-spinners";
@@ -362,15 +363,11 @@ const AgreementBudgetLines = ({
 
             {isWaitingForEditor && (
                 <>
-                    <div role="status">
-                        {isEditorLoadSlow && (
-                            <SimpleAlert
-                                type="info"
-                                heading="Still loading"
-                                message="The latest budget lines are still loading. If this doesn't finish, refresh the page or choose another tab."
-                            />
-                        )}
-                    </div>
+                    <EditorLoadingStatus
+                        isWaiting={isWaitingForEditor}
+                        isSlow={isEditorLoadSlow}
+                        slowMessage="The latest budget lines are still loading. If this doesn't finish, refresh the page or choose another tab."
+                    />
                     <BudgetLinesTableLoading />
                 </>
             )}

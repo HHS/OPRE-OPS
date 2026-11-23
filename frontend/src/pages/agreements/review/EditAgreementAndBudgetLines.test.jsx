@@ -285,6 +285,23 @@ describe("EditAgreementAndBudgetLines", () => {
             expect(screen.getByTestId("edit-agreement-provider")).toBeInTheDocument();
         });
 
+        // If a request hangs, the page keeps waiting; tell the user how to get out of it.
+        it("tells the user how to recover when the data takes too long", () => {
+            vi.useFakeTimers();
+            try {
+                mockAgreementResult = { ...mockAgreementResult, isFetching: true };
+                renderPage();
+                expect(screen.getByRole("status")).toBeEmptyDOMElement();
+
+                act(() => vi.advanceTimersByTime(10000));
+
+                expect(screen.getByRole("status")).toHaveTextContent(/still loading/i);
+                expect(screen.getByRole("status")).toHaveTextContent(/refresh the page/i);
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+
         // Saving starts refetches while the save is still running; unmounting the editor would drop it.
         it("keeps the editor mounted when a refetch starts", () => {
             const { rerenderPage } = renderPage();

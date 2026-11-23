@@ -2,14 +2,16 @@ import * as React from "react";
 import { useSelector } from "react-redux";
 
 // After this long waiting, a page can tell the user how to get out if a request has hung.
-export const EDITOR_SLOW_LOAD_MS = 10000;
+const EDITOR_SLOW_LOAD_MS = 10000;
 
 /**
  * Whether any query or mutation in the opsApi slice is in flight.
+ * Reads the "opsApi" reducerPath (src/api/opsAPI.js) by name rather than importing opsApi, so page tests that
+ * mock the API module don't have to provide it.
  * @param {Object} state - The Redux state.
  * @returns {boolean}
  */
-export const selectIsAnyOpsApiRequestPending = (state) =>
+const selectIsAnyOpsApiRequestPending = (state) =>
     Object.values(state.opsApi?.queries ?? {}).some((query) => query?.status === "pending") ||
     Object.values(state.opsApi?.mutations ?? {}).some((mutation) => mutation?.status === "pending");
 

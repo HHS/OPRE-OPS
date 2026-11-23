@@ -1,6 +1,7 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
 import { useEditorSeedGate } from "../../../hooks/useEditorSeedGate.hooks";
+import EditorLoadingStatus from "../../../components/Agreements/AgreementEditor/EditorLoadingStatus";
 import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
@@ -77,7 +78,7 @@ const AgreementDetails = ({
     const showEditMode = isEditMode && isEditable;
     // The editor seeds once on mount and its save PATCHes the whole draft, so wait for any agreement refetch
     // (and any held refetch) before mounting it; see useEditorSeedGate.
-    const { isEditorOpen } = useEditorSeedGate({
+    const { isEditorOpen, isWaitingForEditor, isEditorLoadSlow } = useEditorSeedGate({
         isEditing: showEditMode,
         isDataFetching: isAgreementFetching,
         hasLoadFailed: false
@@ -100,7 +101,13 @@ const AgreementDetails = ({
                 showEditButton={canEditByRole}
             />
 
-            {showEditMode && !isEditorOpen && <p role="status">Loading the latest agreement details...</p>}
+            {/* Always on the page, so entering edit mode puts the loading text into an existing live region. */}
+            <EditorLoadingStatus
+                isWaiting={isWaitingForEditor}
+                isSlow={isEditorLoadSlow}
+                waitingText="Loading the latest agreement details..."
+                slowMessage="The latest agreement details are still loading. If this doesn't finish, refresh the page or choose another tab."
+            />
             {showEditMode && isEditorOpen && (
                 <AgreementDetailsEdit
                     agreement={agreement}

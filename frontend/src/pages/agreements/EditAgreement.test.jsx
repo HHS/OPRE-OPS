@@ -17,6 +17,12 @@ vi.mock("../../api/opsAPI", () => ({
     useGetGrantNumbersListQuery: () => mockGrantNumbersResult
 }));
 
+const navigateMock = vi.fn();
+vi.mock("react-router-dom", async (importOriginal) => ({
+    ...(await importOriginal()),
+    useNavigate: () => navigateMock
+}));
+
 vi.mock("../../api/getUser", () => ({ getUser: vi.fn().mockResolvedValue({}) }));
 
 vi.mock("../../App", () => ({ default: ({ children }) => <div>{children}</div> }));
@@ -52,6 +58,7 @@ const renderPage = (store = buildStore()) => {
 
 describe("EditAgreement", () => {
     beforeEach(() => {
+        navigateMock.mockReset();
         mockAgreementResult = { data: mockAgreement, error: undefined, isLoading: false, isFetching: false };
         mockServicesComponentsResult = { data: [], error: undefined, isLoading: false, isFetching: false };
         mockGrantNumbersResult = { data: [], error: undefined, isLoading: false, isFetching: false };
@@ -118,6 +125,25 @@ describe("EditAgreement", () => {
         mockAgreementResult = { data: undefined, error: { status: 500 }, isLoading: false, isFetching: false };
         renderPage();
 
+        expect(navigateMock).toHaveBeenCalledWith("/error");
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
         expect(screen.queryByTestId("edit-agreement-provider")).not.toBeInTheDocument();
+    });
+
+    // If a request hangs, the page keeps waiting; tell the user how to get out of it.
+    it("tells the user how to recover when the agreement takes too long", () => {
+        vi.useFakeTimers();
+        try {
+            mockAgreementResult = { ...mockAgreementResult, isFetching: true };
+            renderPage();
+            expect(screen.getByRole("status")).toBeEmptyDOMElement();
+
+            act(() => vi.advanceTimersByTime(10000));
+
+            expect(screen.getByRole("status")).toHaveTextContent(/still loading/i);
+            expect(screen.getByRole("status")).toHaveTextContent(/refresh the page/i);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });

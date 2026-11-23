@@ -99,6 +99,35 @@ describe("AgreementDetails edit gate", () => {
         render(ui(cachedAgreement, { isEditMode: false, isAgreementFetching: true }));
 
         expect(screen.getByTestId("agreement-details-view")).toBeInTheDocument();
-        expect(screen.queryByRole("status")).not.toBeInTheDocument();
+        expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    });
+
+    // Screen readers reliably announce text added to a live region that's already on the page, so the region
+    // must exist before the loading text is put in it.
+    it("puts the loading text into a live region that was already on the page", () => {
+        const { rerender } = render(ui(cachedAgreement, { isEditMode: false }));
+        const region = screen.getByRole("status");
+        expect(region).toBeEmptyDOMElement();
+
+        rerender(ui(cachedAgreement, { isAgreementFetching: true }));
+
+        expect(screen.getByRole("status")).toBe(region);
+        expect(region).toHaveTextContent("Loading the latest agreement details...");
+    });
+
+    it("tells the user how to recover when the agreement takes too long", () => {
+        vi.useFakeTimers();
+        try {
+            render(ui(cachedAgreement, { isAgreementFetching: true }));
+            expect(screen.getByRole("status")).not.toHaveTextContent(/still loading/i);
+
+            act(() => vi.advanceTimersByTime(10000));
+
+            expect(screen.getByRole("status")).toHaveTextContent(/still loading/i);
+            expect(screen.getByRole("status")).toHaveTextContent(/refresh the page/i);
+            expect(screen.getByRole("heading", { level: 3, name: "Still loading" })).toBeInTheDocument();
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });
