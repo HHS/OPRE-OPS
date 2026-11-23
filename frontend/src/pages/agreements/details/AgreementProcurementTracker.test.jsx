@@ -51,7 +51,10 @@ vi.mock("../../../components/DebugCode", () => ({
 // Mock StepIndicator component
 vi.mock("../../../components/UI/StepIndicator", () => ({
     default: ({ steps, currentStep }) => (
-        <div data-testid="step-indicator">
+        <div
+            data-testid="step-indicator"
+            data-steps={steps.join("|")}
+        >
             Step {currentStep} of {steps.length}
         </div>
     )
@@ -185,9 +188,10 @@ vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerSte
 }));
 
 vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepSix", () => ({
-    default: ({ stepStatus, isDisabled, onDirtyChange }) => (
+    default: ({ stepStatus, isDisabled, onDirtyChange, budgetLineItems }) => (
         <div
             data-testid="procurement-step-six"
+            data-budget-line-ids={(budgetLineItems ?? []).map((bli) => bli.id).join(",")}
             data-step-status={stepStatus}
             data-is-disabled={isDisabled}
             data-has-dirty-change={onDirtyChange !== undefined ? "true" : "false"}
@@ -1780,6 +1784,95 @@ describe("AgreementProcurementTracker", () => {
             // Restore default for other tests
             mockBlockerReturn.showBlockerModal = false;
             mockBlockerReturn.blockerModalProps = {};
+        });
+    });
+
+    describe("As-Is contract mod tracker (OPS-6513)", () => {
+        const step = (id, stepNumber, stepType, status) => ({
+            id,
+            step_number: stepNumber,
+            step_type: stepType,
+            status
+        });
+        const asIsSteps = (activeStepNumber) => [
+            step(101, 1, "ACQUISITION_PLANNING", activeStepNumber === 1 ? "ACTIVE" : "COMPLETED"),
+            step(102, 2, "PRE_SOLICITATION", "SKIPPED"),
+            step(103, 3, "SOLICITATION", "SKIPPED"),
+            step(104, 4, "EVALUATION", "SKIPPED"),
+            step(105, 5, "PRE_AWARD", activeStepNumber === 5 ? "ACTIVE" : "PENDING"),
+            step(106, 6, "AWARD", activeStepNumber === 6 ? "ACTIVE" : "PENDING")
+        ];
+        const initialAwardTracker = {
+            id: 1,
+            agreement_id: 13,
+            status: "COMPLETED",
+            award_type: "NEW_AWARD",
+            agreement_mod_id: null,
+            budget_line_item_ids: [1],
+            active_step_number: 6,
+            created_on: "2024-01-01T00:00:00.000Z",
+            steps: [step(1, 6, "AWARD", "COMPLETED")]
+        };
+        const modTracker = (activeStepNumber) => ({
+            id: 2,
+            agreement_id: 13,
+            status: "ACTIVE",
+            award_type: "MODIFICATION",
+            agreement_mod_id: 7,
+            mod_type: "AS_IS",
+            budget_line_item_ids: [2],
+            active_step_number: activeStepNumber,
+            created_on: "2026-11-02T00:00:00.000Z",
+            steps: asIsSteps(activeStepNumber)
+        });
+        const agreementWithMod = {
+            ...mockAgreement,
+            budget_line_items: [
+                { id: 1, status: "OBLIGATED" },
+                { id: 2, status: "IN_EXECUTION" }
+            ]
+        };
+        const renderModTracker = (activeStepNumber) => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                // The older initial award tracker is listed second, as the API returns newest first.
+                data: { data: [modTracker(activeStepNumber), initialAwardTracker] },
+                isLoading: false,
+                isError: false
+            });
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithMod} />);
+        };
+
+        it("shows only the three required steps in the step indicator, by name", () => {
+            renderModTracker(1);
+
+            const indicator = screen.getByTestId("step-indicator");
+            expect(indicator).toHaveAttribute("data-steps", "Acquisition Planning|Pre-Award|Award");
+            expect(indicator).toHaveTextContent("Step 1 of 3");
+        });
+
+        it("renders one accordion per required step, numbered 1-3 of 3", () => {
+            renderModTracker(1);
+
+            const headings = screen.getAllByTestId("accordion-heading").map((heading) => heading.textContent);
+            expect(headings).toHaveLength(3);
+            expect(headings[0]).toMatch(/1\s*of 3/);
+            expect(headings[1]).toMatch(/2\s*of 3/);
+            expect(headings[2]).toMatch(/3\s*of 3/);
+            expect(screen.queryByTestId("step-builder-heading-102")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("step-builder-heading-104")).not.toBeInTheDocument();
+        });
+
+        it("marks Pre-Award as the second shown step once step 1 is complete", () => {
+            renderModTracker(5);
+
+            expect(screen.getByTestId("step-indicator")).toHaveTextContent("Step 2 of 3");
+        });
+
+        it("defaults to the latest mod's tracker and gives step 6 only that mod's budget lines", () => {
+            renderModTracker(6);
+
+            expect(screen.getByTestId("step-indicator")).toHaveTextContent("Step 3 of 3");
+            expect(screen.getByTestId("procurement-step-six")).toHaveAttribute("data-budget-line-ids", "2");
         });
     });
 });

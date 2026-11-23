@@ -62,11 +62,13 @@ export const MODIFICATION_NUMBER_OPTIONS = Object.freeze([
  *
  * @param {any} step6 - The step 6 object from the active procurement tracker, if loaded.
  * @param {any} agreement - The agreement, if loaded.
+ * @param {string} [defaultModificationNumber] - Modification # to start on when none is stored:
+ *   "Base" for the initial award; the next P number (or "") for a contract mod (OPS-6513).
  * @returns {AwardFieldValues}
  */
-export const getSeededAwardFields = (step6, agreement) => ({
+export const getSeededAwardFields = (step6, agreement, defaultModificationNumber = DEFAULT_MODIFICATION_NUMBER) => ({
     agreementTitle: step6?.agreement_title || agreement?.name || "",
-    modificationNumber: step6?.modification_number || DEFAULT_MODIFICATION_NUMBER,
+    modificationNumber: step6?.modification_number || defaultModificationNumber,
     purchaseOrderNumber: step6?.purchase_order_number || "",
     taskOrderNumber: step6?.task_order_number || ""
 });

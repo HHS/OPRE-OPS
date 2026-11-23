@@ -2067,6 +2067,27 @@ describe("ProcurementTrackerStepFive", () => {
             expect(button).toBeDisabled();
         });
 
+        it("names the step before Pre-Award on an As-Is mod's three-step tracker (OPS-6513)", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={{ id: 5, approval_requested: false }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[]}
+                    previousStepNumber={1}
+                />
+            );
+
+            expect(screen.getByTestId("tooltip")).toHaveAttribute(
+                "data-label",
+                "Complete Step 1 before requesting Pre-Award Approval"
+            );
+        });
+
         it("shows tooltip when approval already requested", () => {
             render(
                 <ProcurementTrackerStepFive

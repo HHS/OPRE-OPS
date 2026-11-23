@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { getCurrentProcurementTracker, getTrackerBudgetLines } from "../../../helpers/procurementTracker.helpers";
 import {
     useGetAgreementByIdQuery,
     useGetGrantNumbersListQuery,
@@ -45,11 +46,20 @@ export default function usePreAwardApprovalData(agreementId) {
     // Get all budget lines for display (pre-award happens before IN_EXECUTION status)
     const allBudgetLines = useMemo(() => agreement?.budget_line_items ?? [], [agreement?.budget_line_items]);
 
-    // Get executing budget lines for total calculation
+    // The tracker the Procurement Tracker tab shows: the latest contract mod's once there is one
+    // (OPS-6513). Inactive trackers are ignored; COMPLETED ones are kept so award approval data
+    // remains visible after step 6 is completed.
+    const trackers = procurementTrackersData?.data || [];
+    const activeTracker = getCurrentProcurementTracker(trackers);
+
+    // Get executing budget lines for total calculation: a contract mod's requisition covers only
+    // the lines that mod executed.
     const executingBudgetLines = useMemo(
         () =>
-            agreement?.budget_line_items?.filter(/** @param {any} bli */ (bli) => bli.status === "IN_EXECUTION") ?? [],
-        [agreement?.budget_line_items]
+            getTrackerBudgetLines(activeTracker, agreement?.budget_line_items).filter(
+                /** @param {any} bli */ (bli) => bli.status === "IN_EXECUTION"
+            ),
+        [activeTracker, agreement?.budget_line_items]
     );
 
     // Calculate total of executing budget lines only
@@ -73,12 +83,6 @@ export default function usePreAwardApprovalData(agreementId) {
         ? groupByGrantNumber(decorateForGrant(executingBudgetLines), grantNumbers ?? [])
         : groupByServicesComponent(executingBudgetLines, servicesComponents || []);
 
-    // Get active tracker and steps — include COMPLETED trackers so award approval data
-    // remains visible after step 6 is completed (tracker moves to COMPLETED at that point)
-    const trackers = procurementTrackersData?.data || [];
-    const activeTracker =
-        trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE") ||
-        trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "COMPLETED");
     const step4 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 4);
     const step5 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 5);
     const step6 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 6);

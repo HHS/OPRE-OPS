@@ -36,6 +36,18 @@ describe("StepBuilderAccordion", () => {
         expect(screen.getByTestId("step-builder-heading-3")).toHaveTextContent(/3\s+of\s+6\s+Solicitation/);
     });
 
+    it("shows displayStepNumber instead of the step's own number when given (OPS-6513)", () => {
+        render(
+            <StepBuilderAccordion
+                step={{ ...baseStep, id: 5, step_number: 5, step_type: "PRE_AWARD" }}
+                totalSteps={3}
+                displayStepNumber={2}
+            />
+        );
+
+        expect(screen.getByTestId("step-builder-heading-5")).toHaveTextContent(/2\s+of\s+3\s+Pre Award/);
+    });
+
     it("maps COMPLETED status to completed heading class", () => {
         render(
             <StepBuilderAccordion

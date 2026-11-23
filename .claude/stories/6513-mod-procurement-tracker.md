@@ -120,10 +120,18 @@ Backend steps 1–4 are implemented on this branch, with tests (`backend/ops_api
 
 - **Seed data:** CONTRACT #523 has an approved As-Is mod (`agreement_mod` id 1). It comes with MODIFICATION action 117, an Executing budget line "LI 9" linked to it, and tracker 18, whose steps 2–4 are SKIPPED. `agreement_mod` is now in the data_tools `ALLOWED_TABLES`. No `contract_modification_request` row is seeded, because that table isn't loadable.
 
+- **Locks (2026-11-23):** a contract mod's tracker locks only the budget lines linked to its procurement action. The initial award's tracker still locks the whole agreement (`backend/ops_api/ops/utils/budget_line_items_helpers.py`).
+- **Frontend (2026-11-23):** shared helpers are in `frontend/src/helpers/procurementTracker.helpers.js`.
+  - The Procurement Tracker tab opens on the newest tracker.
+  - An As-Is mod's tracker shows only its three required steps: Acquisition Planning, Pre-Award and Award, numbered 1–3 of 3, in both the step indicator and the accordions (UX direction from the product owner).
+  - Steps 5 and 6, and the pre-award requisition total, use only the mod's budget lines.
+  - A mod's step 6 Modification # starts on the next P number. If every number is used, it starts blank with a "- Select -" option.
+  - The award and pre-award approval pages use the same tracker as the tab.
+  - The agreement-level Pre-Award banner ignores mod trackers.
+
 Still to do:
-- **Backend step 5 (locks):** scope a mod tracker's locks to its own budget lines (see Decisions). The approval pages also need to target a specific tracker instead of the first ACTIVE one.
 - **OpenAPI:** run `/sync-openapi` for the new tracker response fields.
-- **Frontend.**
+- **Frontend:** a tracker selector dropdown (future work); an e2e journey once this lands.
 
 ## Decisions
 - **Which mods get a tracker:** every approved mod. An **As-Is** mod is one whose only change moves BLIs from Planned to Executing, which is what `mod_type()` already returns as AS_IS when there are no edits. It gets steps 1, 5 and 6. Every other combination gets all 6 steps, including Admin-only mods such as a COR change, and Modified LOE mods, with or without executed BLIs.

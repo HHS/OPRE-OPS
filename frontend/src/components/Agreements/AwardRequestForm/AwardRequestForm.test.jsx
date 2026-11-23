@@ -295,6 +295,19 @@ describe("AwardRequestForm", () => {
             expect(screen.getByLabelText("Task Order #")).toBeInTheDocument();
         });
 
+        it("shows a Select placeholder only while a contract mod has no Modification # yet (OPS-6513)", () => {
+            renderForm({ modificationNumber: "" });
+            const select = screen.getByLabelText("Modification #");
+            expect(select).toHaveValue("");
+            expect(screen.getByRole("option", { name: "- Select -" })).toBeInTheDocument();
+        });
+
+        it("has no Select placeholder once a Modification # is chosen", () => {
+            renderForm({ modificationNumber: "P00002" });
+            expect(screen.getByLabelText("Modification #")).toHaveValue("P00002");
+            expect(screen.queryByRole("option", { name: "- Select -" })).not.toBeInTheDocument();
+        });
+
         it("calls onModificationNumberChange when a modification option is selected", () => {
             const onModificationNumberChange = vi.fn();
             renderForm({ onModificationNumberChange });

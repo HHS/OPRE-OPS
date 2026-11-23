@@ -12,6 +12,15 @@ import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam, useCanEditByRole } from "../../../hooks/user.hooks";
 import useUnsavedChangesBlocker from "../../../hooks/useUnsavedChangesBlocker.hooks";
 import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
+import { PROCUREMENT_TRACKER_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
+import {
+    PROCUREMENT_STEP_LABELS,
+    PROCUREMENT_STEP_ORDER,
+    getCurrentProcurementTracker,
+    getRequiredStepTypes,
+    getRequiredSteps,
+    getTrackerBudgetLines
+} from "../../../helpers/procurementTracker.helpers";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -88,13 +97,15 @@ const AgreementProcurementTracker = ({ agreement }) => {
         return allUsers.filter((user) => agreement.authorized_user_ids.includes(user.id));
     }, [allUsers, agreement?.authorized_user_ids]);
 
-    // Extract tracker data
+    // Extract tracker data: the most recent tracker, which is the latest contract mod's once there
+    // is one (OPS-6513).
     const trackers = data?.data || [];
-    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
-    const completedTracker = trackers.find((tracker) => tracker.status === "COMPLETED");
-    const displayTracker = activeTracker || completedTracker;
-    const hasActiveTracker = !!activeTracker;
-    const hasCompletedTracker = !!completedTracker;
+    const displayTracker = getCurrentProcurementTracker(trackers);
+    const hasActiveTracker = displayTracker?.status === PROCUREMENT_TRACKER_STATUS.ACTIVE;
+    const hasCompletedTracker = displayTracker?.status === PROCUREMENT_TRACKER_STATUS.COMPLETED;
+    const activeTracker = hasActiveTracker ? displayTracker : undefined;
+    // Steps 5 and 6 work with the budget lines this cycle covers: a contract mod's own lines.
+    const trackerBudgetLines = getTrackerBudgetLines(displayTracker, agreement?.budget_line_items);
 
     // When the tracker transitions from active to completed, no step is the active step
     // any more, so nothing will report onDirtyChange(false). Reset explicitly to prevent
@@ -125,25 +136,6 @@ const AgreementProcurementTracker = ({ agreement }) => {
         return <div>Error loading procurement tracker data</div>;
     }
 
-    // Determine current step based on tracker state:
-    // - Active tracker: use active_step_number (defaults to 1 if not set)
-    // - Completed tracker: show step 6 (final step)
-    // - No tracker: default to step 1
-    const currentStep = hasActiveTracker ? activeTracker.active_step_number || 1 : hasCompletedTracker ? 6 : 1;
-
-    // Accordion behavior: open the current step
-    const accordionOpenStep = currentStep;
-
-    // Step indicator: show progress based on tracker state
-    // - Active tracker: highlight current step
-    // - Completed tracker: show all steps complete (step 6)
-    // - No tracker: no active segment (0)
-    const indicatorCurrentStep = hasActiveTracker ? currentStep : hasCompletedTracker ? 6 : 0;
-
-    const sortedSteps = [...(displayTracker?.steps || [])].sort(
-        (a, b) => (a?.step_number ?? Number.MAX_SAFE_INTEGER) - (b?.step_number ?? Number.MAX_SAFE_INTEGER)
-    );
-
     // Create default steps structure when there's no tracker at all
     const defaultSteps = WIZARD_STEPS.map((stepName, index) => ({
         id: `default-step-${index + 1}`,
@@ -152,8 +144,39 @@ const AgreementProcurementTracker = ({ agreement }) => {
         status: "PENDING"
     }));
 
-    // Use displayTracker steps when available (ACTIVE or COMPLETED), otherwise default
-    const stepsToRender = displayTracker ? sortedSteps : defaultSteps;
+    // Only the steps this cycle needs are shown: an As-Is contract mod skips steps 2-4 (OPS-6513),
+    // so its indicator and accordions list Acquisition Planning, Pre-Award and Award as steps 1-3
+    // of 3. Every other tracker shows all six.
+    const requiredStepTypes = getRequiredStepTypes(displayTracker);
+    const stepsToRender = displayTracker ? getRequiredSteps(displayTracker) : defaultSteps;
+    const stepNames = requiredStepTypes.map((stepType) => PROCUREMENT_STEP_LABELS[stepType]);
+    const finalStepNumber = PROCUREMENT_STEP_ORDER.indexOf(requiredStepTypes[requiredStepTypes.length - 1]) + 1;
+    /** A step's position among the shown steps (1-based), which is the number users see. */
+    const displayNumberOf = (stepNumber) =>
+        requiredStepTypes.indexOf(PROCUREMENT_STEP_ORDER[stepNumber - 1]) + 1 || stepNumber;
+
+    // Determine current step (a real step number) based on tracker state:
+    // - Active tracker: use active_step_number (defaults to 1 if not set)
+    // - Completed tracker: show the final step
+    // - No tracker: default to step 1
+    const currentStep = hasActiveTracker
+        ? activeTracker.active_step_number || 1
+        : hasCompletedTracker
+          ? finalStepNumber
+          : 1;
+
+    // Accordion behavior: open the current step
+    const accordionOpenStep = currentStep;
+
+    // Step indicator (counts shown steps): show progress based on tracker state
+    // - Active tracker: highlight current step
+    // - Completed tracker: show all steps complete
+    // - No tracker: no active segment (0)
+    const indicatorCurrentStep = hasActiveTracker
+        ? displayNumberOf(currentStep)
+        : hasCompletedTracker
+          ? requiredStepTypes.length
+          : 0;
 
     return (
         <>
@@ -176,7 +199,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 Follow the steps below to complete the procurement process for Budget Lines in Executing Status.
             </p>
             <StepIndicator
-                steps={WIZARD_STEPS}
+                steps={stepNames}
                 currentStep={indicatorCurrentStep}
             />
             {stepsToRender.map((step) => {
@@ -186,7 +209,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
                     <StepBuilderAccordion
                         ref={isCompletedStep ? completedStepRef : null}
                         step={step}
-                        totalSteps={WIZARD_STEPS.length}
+                        totalSteps={requiredStepTypes.length}
+                        displayStepNumber={displayNumberOf(step.step_number)}
                         activeStepNumber={hasActiveTracker ? currentStep : undefined}
                         isReadOnly={!hasActiveTracker || isProcurementTeamOnly}
                         // Keep the completed step and active step open after form submission, all others closed
@@ -288,7 +312,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isActiveStep={isActiveStep}
                                 agreementId={agreement?.id}
                                 agreementName={agreement?.name}
-                                budgetLineItems={agreement?.budget_line_items}
+                                budgetLineItems={trackerBudgetLines}
+                                previousStepNumber={displayNumberOf(step.step_number) - 1}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
                                 onDirtyChange={setIsActiveStepDirty}
@@ -315,7 +340,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isActiveStep={isActiveStep}
                                 agreementId={agreement?.id}
                                 agreementName={agreement?.name}
-                                budgetLineItems={agreement?.budget_line_items}
+                                budgetLineItems={trackerBudgetLines}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
                                 onDirtyChange={setIsActiveStepDirty}

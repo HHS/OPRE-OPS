@@ -22,6 +22,12 @@ describe("MODIFICATION_NUMBER_OPTIONS", () => {
 });
 
 describe("getSeededAwardFields", () => {
+    it("starts on the given default Modification # when none is stored (a contract mod, OPS-6513)", () => {
+        expect(getSeededAwardFields(undefined, { name: "Title" }, "P00002").modificationNumber).toBe("P00002");
+        expect(getSeededAwardFields({ modification_number: "" }, { name: "Title" }, "").modificationNumber).toBe("");
+        expect(getSeededAwardFields({ modification_number: "P00004" }, {}, "P00002").modificationNumber).toBe("P00004");
+    });
+
     it("prefers step 6 values over the agreement name", () => {
         const seeded = getSeededAwardFields(
             {

@@ -109,5 +109,13 @@ export type ProcurementTracker = {
     procurement_action?: number | null;
     tracker_type: ProcurementTrackerType;
     active_step_number?: number | null;
+    created_on?: string | null;
+    /** The procurement cycle this tracker belongs to (OPS-6513): "NEW_AWARD", or "MODIFICATION" for a contract mod. */
+    award_type?: string | null;
+    agreement_mod_id?: number | null;
+    mod_type?: string | null;
+    mod_number?: string | null;
+    /** Budget lines linked to this tracker's procurement action. */
+    budget_line_item_ids?: number[];
     steps: ProcurementTrackerResponseStep[];
 };

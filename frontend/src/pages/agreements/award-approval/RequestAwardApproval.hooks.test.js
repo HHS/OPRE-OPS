@@ -28,7 +28,8 @@ vi.mock("../../../helpers/budgetLines.helpers", () => ({
 }));
 
 vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants", () => ({
-    PROCUREMENT_STEP_STATUS: { COMPLETE: "COMPLETE" }
+    PROCUREMENT_STEP_STATUS: { COMPLETE: "COMPLETE", SKIPPED: "SKIPPED" },
+    PROCUREMENT_TRACKER_STATUS: { ACTIVE: "ACTIVE", INACTIVE: "INACTIVE", COMPLETED: "COMPLETED" }
 }));
 
 vi.mock("./RequestAwardApproval.suite", () => {
@@ -279,7 +280,7 @@ describe("useRequestAwardApproval — reseeding after a declined request (OPS-58
      * Render the hook with a step 6 that already holds a previous submission's values,
      * as it does when the Budget Team declines and the COR returns to resubmit.
      */
-    const setupWithStep6 = (step6Overrides) => {
+    const setupWithStep6 = (step6Overrides, trackersOverride) => {
         const store = setupStore();
         const wrapper = ({ children }) => (
             <Provider store={store}>
@@ -289,7 +290,9 @@ describe("useRequestAwardApproval — reseeding after a declined request (OPS-58
 
         useGetAgreementByIdQuery.mockReturnValue({ data: buildAgreement(), isLoading: false });
         useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
-            data: { data: [{ status: "ACTIVE", steps: [{ step_number: 6, id: 60, ...step6Overrides }] }] },
+            data: {
+                data: trackersOverride ?? [{ status: "ACTIVE", steps: [{ step_number: 6, id: 60, ...step6Overrides }] }]
+            },
             isLoading: false
         });
         useUpdateProcurementTrackerStepMutation.mockReturnValue([vi.fn(), {}]);
@@ -299,6 +302,37 @@ describe("useRequestAwardApproval — reseeding after a declined request (OPS-58
 
         return renderHook(() => useRequestAwardApproval(1), { wrapper });
     };
+
+    it("starts a contract mod's award on the next Modification #, never Base (OPS-6513)", async () => {
+        const initialAward = {
+            id: 1,
+            status: "COMPLETED",
+            award_type: "NEW_AWARD",
+            created_on: "2025-01-01T00:00:00",
+            steps: [{ step_number: 6, id: 10, modification_number: "Base" }]
+        };
+        const earlierMod = {
+            id: 2,
+            status: "COMPLETED",
+            award_type: "MODIFICATION",
+            agreement_mod_id: 5,
+            created_on: "2026-01-01T00:00:00",
+            steps: [{ step_number: 6, id: 20, modification_number: "P00001" }]
+        };
+        const currentMod = {
+            id: 3,
+            status: "ACTIVE",
+            award_type: "MODIFICATION",
+            agreement_mod_id: 6,
+            created_on: "2026-11-02T00:00:00",
+            steps: [{ step_number: 6, id: 30, modification_number: null }]
+        };
+
+        const { result } = setupWithStep6(undefined, [currentMod, earlierMod, initialAward]);
+
+        await waitFor(() => expect(result.current.agreementTitle).toBe("Test Agreement"));
+        expect(result.current.modificationNumber).toBe("P00002");
+    });
 
     beforeEach(() => {
         vi.clearAllMocks();
