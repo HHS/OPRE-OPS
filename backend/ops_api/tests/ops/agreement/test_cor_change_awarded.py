@@ -1134,6 +1134,9 @@ def test_failed_approval_leaves_the_card_unattached(
         ([ModificationEditType.ADMIN_CHANGE], ModType.ADMIN),
         ([ModificationEditType.MODIFIED_LOE], ModType.MODIFIED_LOE),
         ([ModificationEditType.ADMIN_CHANGE, ModificationEditType.MODIFIED_LOE], ModType.MODIFIED_LOE),
+        # Approval leaves de-obligations pending (OPS-6488), so they don't set the mod type.
+        ([ModificationEditType.DE_OBLIGATION], ModType.AS_IS),
+        ([ModificationEditType.ADMIN_CHANGE, ModificationEditType.DE_OBLIGATION], ModType.ADMIN),
     ],
 )
 def test_mod_type_follows_the_bundled_edits(edit_types, expected):

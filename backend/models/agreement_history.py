@@ -442,6 +442,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
             history_event = create_procurement_tracker_step_update_history_event(event, event_user, session)
             if history_event:
                 history_events.append(history_event)
+        case OpsEventType.SUBMIT_DE_OBLIGATION:
+            history_events.append(_de_obligation_history_event(event, event_user))
         case OpsEventType.START_CONTRACT_MODIFICATION:
             edit_count = len(event.event_details.get("contract_modification_edit_ids", []))
             bli_count = len(event.event_details.get("budget_line_item_ids", []))
@@ -1318,6 +1320,33 @@ def create_bli_update_history_events(
                 )
             )
     return history_events
+
+
+def _de_obligation_history_event(event: OpsEvent, event_user: User) -> AgreementHistory:
+    """History entry for a submitted or removed de-obligation request (OPS-6488)."""
+    bli_id = event.event_details["budget_line_item_id"]
+    requested = event.event_details.get("requested_de_obligation_amount")
+    if requested:
+        original = "{:,.2f}".format(float(event.event_details["original_obligated_amount"]))
+        history_title = "De-obligation Requested"
+        history_message = (
+            f"{event_user.full_name} requested to de-obligate ${'{:,.2f}'.format(float(requested))} "
+            f"from BL {bli_id}. The original obligated amount is ${original}."
+        )
+    else:
+        history_title = "De-obligation Removed"
+        history_message = f"{event_user.full_name} removed the pending de-obligation from BL {bli_id}."
+    return AgreementHistory(
+        agreement_id=event.event_details["agreement_id"],
+        agreement_id_record=event.event_details["agreement_id"],
+        budget_line_id=bli_id,
+        budget_line_id_record=bli_id,
+        ops_event_id=event.id,
+        history_title=history_title,
+        history_message=history_message,
+        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        history_type=AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED,
+    )
 
 
 def create_services_component_history_event(

@@ -61,6 +61,15 @@ export const getBudgetLineCreatedDate = (budgetLine) => {
 };
 
 /**
+ * A budget line's amount net of any pending de-obligation (OPS-6488). Derived from `amount` rather
+ * than the API's `net_amount`, which goes stale when the editor changes `amount` locally.
+ * @param {BudgetLine} budgetLine
+ * @returns {number}
+ */
+export const getNetAmount = (budgetLine) =>
+    (budgetLine?.amount ?? 0) - (budgetLine?.requested_de_obligation_amount ?? 0);
+
+/**
  * Returns the total amount of a budget line.
  * @param {BudgetLine[]} budgetLines - The budget line to get the total amount from.
  * @returns {number} The total amount of the budget line.

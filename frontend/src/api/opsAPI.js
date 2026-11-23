@@ -710,6 +710,21 @@ export const opsApi = createApi({
             // The submitted edits lock their Services Components (in_review_modification, OPS-3268).
             invalidatesTags: ["ContractModifications", "BudgetLineItems", "ServicesComponents", "Notifications"]
         }),
+        submitDeObligation: builder.mutation({
+            query: ({ id, requestedAmount, lineDescription }) => ({
+                url: `/budget-line-items/${id}/de-obligation/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: {
+                    requested_amount: requestedAmount || null,
+                    // Omitted when not given, so the description is left as it is.
+                    ...(lineDescription !== undefined && { line_description: lineDescription || null })
+                }
+            }),
+            // Nets the Agreement's totals immediately (OPS-6488), so Agreements must refetch too,
+            // not just the budget line and its pending mod card.
+            invalidatesTags: ["ContractModifications", "BudgetLineItems", "Agreements", "AgreementHistory"]
+        }),
         reviewContractModification: builder.mutation({
             query: ({ requestId, action, reviewerNotes }) => ({
                 url: `/contract-modification-requests/${requestId}/`,
@@ -1523,6 +1538,7 @@ export const {
     useGetAgreementContractModificationEditsByIdQuery,
     useGetAgreementContractModificationsByIdQuery,
     useSubmitContractModificationMutation,
+    useSubmitDeObligationMutation,
     useReviewContractModificationMutation,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,

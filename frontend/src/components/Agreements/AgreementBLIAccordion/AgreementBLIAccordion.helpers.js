@@ -1,5 +1,10 @@
 import { getProcurementShopFees } from "../../../helpers/agreement.helpers";
-import { budgetLinesTotal, getBudgetByStatus, getNonDRAFTBudgetLines } from "../../../helpers/budgetLines.helpers";
+import {
+    budgetLinesTotal,
+    getBudgetByStatus,
+    getNetAmount,
+    getNonDRAFTBudgetLines
+} from "../../../helpers/budgetLines.helpers";
 import { draftBudgetLineStatuses } from "../../../helpers/utils";
 
 /**
@@ -17,6 +22,7 @@ export const getAgreementTotalCardValues = (agreement, selectedBudgetLineItems =
     const selectedDRAFTBudgetLines = getBudgetByStatus(selectedBudgetLineItems, draftBudgetLineStatuses);
     const budgetLines = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
     const fees = getProcurementShopFees(agreement, budgetLines, afterApproval);
-    const subtotal = budgetLinesTotal(budgetLines);
+    // Net of pending de-obligations, like the Budget Lines tab; fees stay on the obligated amount (OPS-6488).
+    const subtotal = budgetLinesTotal(budgetLines.map((bli) => ({ ...bli, amount: getNetAmount(bli) })));
     return { budgetLines, subtotal, fees, total: subtotal + fees };
 };

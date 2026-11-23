@@ -19,6 +19,7 @@ from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemListResponseSchema,
     BudgetLineItemResponseSchema,
     BudgetLineItemsBatchRequestSchema,
+    DeObligationRequestSchema,
     MetaSchema,
     PATCHRequestBodySchema,
     POSTRequestBodySchema,
@@ -130,6 +131,48 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         return make_response_with_headers(
             {"message": "BudgetLineItem deletion submitted for approval", "id": id}, status_code
         )
+
+
+class BudgetLineItemDeObligationAPI(BaseItemAPI):
+    """Submit (or clear) a de-obligation request on an Obligated budget line (OPS-6488)."""
+
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
+        self._request_schema = DeObligationRequestSchema()
+        self._response_schema = BudgetLineItemResponseSchema()
+
+    @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
+    def post(self, id: int) -> Response:
+        """
+        POST /budget-line-items/<int:id>/de-obligation/
+
+        Body: ``{"requested_amount": "100000.00"}``. A `requested_amount` of 0 or omitted
+        clears a pending de-obligation instead of submitting one. Never touches `amount` --
+        only the pending `requested_de_obligation_amount` the Agreement's totals net against.
+        Approving the resulting modification isn't supported yet (OPS-6489).
+
+        Raises:
+            ResourceNotFoundError: The budget line doesn't exist (404).
+            AuthorizationError: The user is not associated with the agreement (403).
+            ValidationError: The agreement isn't Awarded, the line isn't Obligated, the line is
+                already in a modification that's in review, the amount is out of range, or
+                contract modifications are disabled (400).
+        """
+        with OpsEventHandler(OpsEventType.SUBMIT_DE_OBLIGATION) as meta:
+            data = self._request_schema.load(request.json or {})
+            service = BudgetLineItemService(current_app.db_session)
+            # Pass line_description only when sent, so an omitted one keeps the current description.
+            description = {"line_description": data["line_description"]} if "line_description" in data else {}
+            bli = service.submit_de_obligation(id, data["requested_amount"], **description)
+            meta.metadata.update(
+                {
+                    "budget_line_item_id": id,
+                    "agreement_id": bli.agreement_id,
+                    "requested_de_obligation_amount": data["requested_amount"],
+                    "original_obligated_amount": float(bli.amount or 0),
+                }
+            )
+            return make_response_with_headers(self._response_schema.dump(bli), 200)
 
 
 class BudgetLineItemsListAPI(BaseListAPI):

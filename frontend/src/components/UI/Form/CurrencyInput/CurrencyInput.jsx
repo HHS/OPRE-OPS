@@ -17,6 +17,7 @@ import CurrencyInputField from "react-currency-input-field";
  * @param {string} [props.placeholder] - The placeholder text to display in the input
  * @param {boolean} [props.isRequiredNoShow] - Flag for required field without showing asterisk (optional, not passed to DOM)
  * @param {string} [props.dataCy] - Cypress data-cy attribute (optional)
+ * @param {string} [props.hint] - Hint text shown under the label (optional)
  * @returns {JSX.Element} - The rendered component.
  */
 const CurrencyInput = ({
@@ -31,6 +32,7 @@ const CurrencyInput = ({
     placeholder = "",
     isRequiredNoShow, // eslint-disable-line no-unused-vars -- Extracted to prevent passing to DOM
     dataCy,
+    hint,
     ...rest
 }) => {
     // displayValue holds the raw typed string (e.g. "5.") so a trailing
@@ -68,6 +70,14 @@ const CurrencyInput = ({
             >
                 {label}
             </label>
+            {hint && (
+                <span
+                    className="usa-hint"
+                    id={`${name}-hint`}
+                >
+                    {hint}
+                </span>
+            )}
             {messages.length > 0 && (
                 <span
                     className="usa-error-message"
@@ -89,6 +99,7 @@ const CurrencyInput = ({
                 prefix="$"
                 placeholder={placeholder}
                 data-cy={dataCy}
+                aria-describedby={hint ? `${name}-hint` : undefined}
                 onValueChange={(rawValue, _name, values) => {
                     const f = values?.float;
                     const floatValue = typeof f === "number" ? f : NaN;

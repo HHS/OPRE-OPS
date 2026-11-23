@@ -9,9 +9,13 @@ from ops_api.ops.services.agreements import agreement_total_sort
 
 
 def test_agreement_subtotal_sums_non_draft_amounts():
-    bli1 = MagicMock(amount=Decimal("100"), status=BudgetLineItemStatus.PLANNED, is_obe=False)
-    bli2 = MagicMock(amount=Decimal("200"), status=BudgetLineItemStatus.OBLIGATED, is_obe=False)
-    bli3 = MagicMock(amount=Decimal("50"), status=BudgetLineItemStatus.DRAFT, is_obe=False)
+    bli1 = MagicMock(
+        amount=Decimal("100"), net_amount=Decimal("100"), status=BudgetLineItemStatus.PLANNED, is_obe=False
+    )
+    bli2 = MagicMock(
+        amount=Decimal("200"), net_amount=Decimal("200"), status=BudgetLineItemStatus.OBLIGATED, is_obe=False
+    )
+    bli3 = MagicMock(amount=Decimal("50"), net_amount=Decimal("50"), status=BudgetLineItemStatus.DRAFT, is_obe=False)
 
     agreement = MagicMock()
     agreement.budget_line_items = [bli1, bli2, bli3]
@@ -21,9 +25,26 @@ def test_agreement_subtotal_sums_non_draft_amounts():
     assert result == Decimal("300")
 
 
+def test_agreement_subtotal_nets_pending_de_obligation():
+    """OPS-6488: a pending, unapproved de-obligation nets out of the agreement subtotal."""
+    bli1 = MagicMock(
+        amount=Decimal("500"), net_amount=Decimal("400"), status=BudgetLineItemStatus.OBLIGATED, is_obe=False
+    )
+    bli2 = MagicMock(
+        amount=Decimal("200"), net_amount=Decimal("200"), status=BudgetLineItemStatus.PLANNED, is_obe=False
+    )
+
+    agreement = MagicMock()
+    agreement.budget_line_items = [bli1, bli2]
+
+    result = Agreement.agreement_subtotal.fget(agreement)
+
+    assert result == Decimal("600")
+
+
 def test_agreement_subtotal_includes_obe_draft():
-    bli1 = MagicMock(amount=Decimal("100"), status=BudgetLineItemStatus.DRAFT, is_obe=True)
-    bli2 = MagicMock(amount=Decimal("50"), status=BudgetLineItemStatus.DRAFT, is_obe=False)
+    bli1 = MagicMock(amount=Decimal("100"), net_amount=Decimal("100"), status=BudgetLineItemStatus.DRAFT, is_obe=True)
+    bli2 = MagicMock(amount=Decimal("50"), net_amount=Decimal("50"), status=BudgetLineItemStatus.DRAFT, is_obe=False)
 
     agreement = MagicMock()
     agreement.budget_line_items = [bli1, bli2]
@@ -43,8 +64,10 @@ def test_agreement_subtotal_returns_zero_for_empty():
 
 
 def test_agreement_subtotal_handles_none_amounts():
-    bli1 = MagicMock(amount=None, status=BudgetLineItemStatus.PLANNED, is_obe=False)
-    bli2 = MagicMock(amount=Decimal("200"), status=BudgetLineItemStatus.PLANNED, is_obe=False)
+    bli1 = MagicMock(amount=None, net_amount=Decimal("0"), status=BudgetLineItemStatus.PLANNED, is_obe=False)
+    bli2 = MagicMock(
+        amount=Decimal("200"), net_amount=Decimal("200"), status=BudgetLineItemStatus.PLANNED, is_obe=False
+    )
 
     agreement = MagicMock()
     agreement.budget_line_items = [bli1, bli2]
@@ -107,8 +130,20 @@ def test_total_agreement_fees_handles_none_fees():
 
 
 def test_agreement_total_equals_subtotal_plus_fees():
-    bli1 = MagicMock(amount=Decimal("100"), fees=Decimal("10"), status=BudgetLineItemStatus.PLANNED, is_obe=False)
-    bli2 = MagicMock(amount=Decimal("200"), fees=Decimal("20"), status=BudgetLineItemStatus.OBLIGATED, is_obe=False)
+    bli1 = MagicMock(
+        amount=Decimal("100"),
+        net_amount=Decimal("100"),
+        fees=Decimal("10"),
+        status=BudgetLineItemStatus.PLANNED,
+        is_obe=False,
+    )
+    bli2 = MagicMock(
+        amount=Decimal("200"),
+        net_amount=Decimal("200"),
+        fees=Decimal("20"),
+        status=BudgetLineItemStatus.OBLIGATED,
+        is_obe=False,
+    )
 
     agreement = MagicMock()
     agreement.budget_line_items = [bli1, bli2]
@@ -138,9 +173,15 @@ def test_agreement_total_returns_zero_for_empty():
 
 
 def test_lifetime_obligated_sums_obligated_only():
-    bli1 = MagicMock(amount=Decimal("100"), fees=Decimal("10"), status=BudgetLineItemStatus.OBLIGATED)
-    bli2 = MagicMock(amount=Decimal("200"), fees=Decimal("20"), status=BudgetLineItemStatus.PLANNED)
-    bli3 = MagicMock(amount=Decimal("300"), fees=Decimal("30"), status=BudgetLineItemStatus.OBLIGATED)
+    bli1 = MagicMock(
+        amount=Decimal("100"), net_amount=Decimal("100"), fees=Decimal("10"), status=BudgetLineItemStatus.OBLIGATED
+    )
+    bli2 = MagicMock(
+        amount=Decimal("200"), net_amount=Decimal("200"), fees=Decimal("20"), status=BudgetLineItemStatus.PLANNED
+    )
+    bli3 = MagicMock(
+        amount=Decimal("300"), net_amount=Decimal("300"), fees=Decimal("30"), status=BudgetLineItemStatus.OBLIGATED
+    )
 
     agreement = MagicMock()
     agreement.budget_line_items = [bli1, bli2, bli3]
@@ -148,6 +189,20 @@ def test_lifetime_obligated_sums_obligated_only():
     result = Agreement.lifetime_obligated.fget(agreement)
 
     assert result == Decimal("440")
+
+
+def test_lifetime_obligated_nets_pending_de_obligation():
+    """OPS-6488: a pending, unapproved de-obligation nets out of lifetime_obligated."""
+    bli1 = MagicMock(
+        amount=Decimal("500"), net_amount=Decimal("400"), fees=Decimal("0"), status=BudgetLineItemStatus.OBLIGATED
+    )
+
+    agreement = MagicMock()
+    agreement.budget_line_items = [bli1]
+
+    result = Agreement.lifetime_obligated.fget(agreement)
+
+    assert result == Decimal("400")
 
 
 def test_lifetime_obligated_returns_zero_when_none_obligated():
@@ -172,8 +227,8 @@ def test_lifetime_obligated_returns_zero_for_empty():
 
 
 def test_lifetime_obligated_handles_none_amounts():
-    bli1 = MagicMock(amount=None, fees=Decimal("10"), status=BudgetLineItemStatus.OBLIGATED)
-    bli2 = MagicMock(amount=Decimal("200"), fees=None, status=BudgetLineItemStatus.OBLIGATED)
+    bli1 = MagicMock(amount=None, net_amount=Decimal("0"), fees=Decimal("10"), status=BudgetLineItemStatus.OBLIGATED)
+    bli2 = MagicMock(amount=Decimal("200"), net_amount=Decimal("200"), fees=None, status=BudgetLineItemStatus.OBLIGATED)
 
     agreement = MagicMock()
     agreement.budget_line_items = [bli1, bli2]

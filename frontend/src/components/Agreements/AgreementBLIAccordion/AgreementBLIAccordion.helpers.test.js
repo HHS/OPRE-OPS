@@ -38,3 +38,23 @@ describe("getAgreementTotalCardValues", () => {
         expect(total).toBe(3000);
     });
 });
+
+// OPS-6488: matches the Budget Lines tab, which nets pending de-obligations; fees stay on the
+// obligated amount.
+describe("getAgreementTotalCardValues with a pending de-obligation", () => {
+    it("nets the pending de-obligation from the subtotal and total", () => {
+        const withDeObligation = {
+            ...agreement,
+            budget_line_items: [
+                { id: 1, status: "PLANNED", amount: 1000 },
+                { id: 3, status: "OBLIGATED", amount: 2000, requested_de_obligation_amount: 500 }
+            ]
+        };
+
+        const { subtotal, fees, total } = getAgreementTotalCardValues(withDeObligation, [], false);
+
+        expect(subtotal).toBe(2500);
+        expect(fees).toBe(150);
+        expect(total).toBe(2650);
+    });
+});
