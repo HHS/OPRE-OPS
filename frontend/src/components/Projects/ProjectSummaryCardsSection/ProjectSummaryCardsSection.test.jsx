@@ -57,7 +57,7 @@ describe("ProjectSummaryCardsSection", () => {
 
         expect(screen.getByText("15")).toBeInTheDocument();
         expect(screen.getByText("13 Research")).toBeInTheDocument();
-        expect(screen.getByText("2 Admin & Support")).toBeInTheDocument();
+        expect(screen.getByText("2 Administrative")).toBeInTheDocument();
         expect(screen.getByText("$7,000,000.00")).toBeInTheDocument();
         expect(screen.getByText("$3,000,000.00")).toBeInTheDocument();
     });
