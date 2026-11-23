@@ -28,8 +28,10 @@ from models.procurement_tracker import (
     ProcurementTrackerStatus,
     ProcurementTrackerStepType,
 )
+from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.services.agreement_award_history import AgreementAwardHistoryService
 from ops_api.ops.services.procurement_tracker_steps import ProcurementTrackerStepService
+from ops_api.ops.utils.budget_line_items_helpers import PreAwardLock, compute_bli_editable, get_pre_award_lock
 from ops_api.ops.validation.context import ValidationContext
 from ops_api.ops.validation.rules.procurement_tracker_step import Step4CompletionRequiredForApprovalRequestRule
 from tests.ops.agreement.test_contract_modification_edits import (  # noqa: F401 (fixtures)
@@ -289,3 +291,58 @@ def test_seeded_as_is_mod_on_agreement_523_has_its_own_tracker(basic_user_auth_c
     ]
     (bli_id,) = latest["budget_line_item_ids"]
     assert loaded_db.get(ContractBudgetLineItem, bli_id).status == BudgetLineItemStatus.IN_EXECUTION
+
+
+def test_parallel_mod_trackers_lock_only_their_own_budget_lines(
+    modified_loe_enabled,  # noqa: F811
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,  # noqa: F811
+):
+    """Two approved mods run in parallel. Once mod A's Pre-Award is fully approved, only mod A's
+    budget line is locked: mod B's line and agreement-level edits are not (team decision)."""
+    agreement, seeded_bli = make_agreement(test_can)
+    # Executing lines need a services component and a future Need By date (still current FY) to be edited.
+    line = {
+        "services_component_id": seeded_bli.services_component_id,
+        "date_needed": datetime.date(get_current_fiscal_year(), 9, 1),
+    }
+    bli_a = _add_bli(loaded_db, agreement, test_can, **line)
+    bli_b = _add_bli(loaded_db, agreement, test_can, **line)
+    for bli in (bli_a, bli_b):
+        request_id = _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[bli.id]).json["id"]
+        assert _review_mod(division_director_auth_client, request_id).status_code == 200
+
+    loaded_db.expire_all()
+    actions = loaded_db.scalars(
+        select(ProcurementAction)
+        .where(ProcurementAction.agreement_id == agreement.id, ProcurementAction.award_type == AwardType.MODIFICATION)
+        .order_by(ProcurementAction.id)
+    ).all()
+    assert len(actions) == 2
+    tracker_a = _tracker_for(loaded_db, actions[0])
+    assert _tracker_for(loaded_db, actions[1]).status == ProcurementTrackerStatus.ACTIVE  # neither blocks the other
+    pre_award = tracker_a.get_step(ProcurementTrackerStepType.PRE_AWARD)
+    pre_award.pre_award_approval_requested = True
+    pre_award.pre_award_approval_status = "APPROVED"
+    pre_award.pre_award_requisition_approved_by = BASIC_USER_ID
+    loaded_db.commit()
+    loaded_db.expire_all()
+
+    bli_a = loaded_db.get(ContractBudgetLineItem, bli_a.id)
+    bli_b = loaded_db.get(ContractBudgetLineItem, bli_b.id)
+    assert compute_bli_editable(bli_a, in_review=False, is_super=False) is False
+    assert get_pre_award_lock(bli_a.agreement, bli_a) == PreAwardLock.POST_APPROVAL
+    assert compute_bli_editable(bli_b, in_review=False, is_super=False) is True
+    assert get_pre_award_lock(bli_b.agreement, bli_b) is None
+    assert get_pre_award_lock(bli_a.agreement) is None
+
+    # The write path agrees: mod A's line is rejected with the lock message, mod B's isn't.
+    response_a = basic_user_auth_client.patch(f"/api/v1/budget-line-items/{bli_a.id}", json={"amount": 120000.0})
+    assert response_a.status_code == 400, response_a.json
+    assert "after Pre-Award Approval" in str(response_a.json)
+    response_b = basic_user_auth_client.patch(f"/api/v1/budget-line-items/{bli_b.id}", json={"amount": 120000.0})
+    assert "Pre-Award" not in str(response_b.json), response_b.json
+    assert response_b.status_code in (200, 202), response_b.json

@@ -121,7 +121,7 @@ Backend steps 1–4 are implemented on this branch, with tests (`backend/ops_api
 - **Seed data:** CONTRACT #523 has an approved As-Is mod (`agreement_mod` id 1). It comes with MODIFICATION action 117, an Executing budget line "LI 9" linked to it, and tracker 18, whose steps 2–4 are SKIPPED. `agreement_mod` is now in the data_tools `ALLOWED_TABLES`. No `contract_modification_request` row is seeded, because that table isn't loadable.
 
 Still to do:
-- **Backend step 5 (locks):** blocked on Open Question 1.
+- **Backend step 5 (locks):** scope a mod tracker's locks to its own budget lines (see Decisions). The approval pages also need to target a specific tracker instead of the first ACTIVE one.
 - **OpenAPI:** run `/sync-openapi` for the new tracker response fields.
 - **Frontend.**
 
@@ -134,13 +134,16 @@ Still to do:
 - **Dashboard:** mod trackers count in the Procurement Dashboard's per-step agreement counts.
 - **De-obligate:** not merged yet but coming soon. Key step-shape logic off "is As-Is" vs. everything else, so a new mod type gets all 6 steps automatically.
 - **Step 6 Modification # default for a mod:** never "Base". Start on the next P0000N, one after the highest number already used on the agreement's awarded mods. Leave it blank when that can't be worked out. Today the frontend `getSeededAwardFields` (`frontend/src/components/Agreements/AwardRequestForm/awardForm.helpers.js:69`) falls back to `DEFAULT_MODIFICATION_NUMBER`, so it needs the tracker's award type or mod info.
+- **Parallel trackers (team answer, 2026-11-23):** approving a new mod never blocks or closes another tracker. Each mod's tracker runs independently and can stay ACTIVE alongside the others.
+- **Lock scope:** a mod's tracker locks only the budget lines that mod executed, both after Pre-Award approval and while its award approval is pending. The initial award's tracker still locks the whole agreement, as today. This changes `is_post_pre_award_locked` and `is_award_approval_requested` (`backend/ops_api/ops/utils/budget_line_items_helpers.py`) from agreement-level to per-budget-line checks for mod trackers.
+- **Tab default:** everyone opens on the newest tracker for now (prototype/MVP). There is no per-user default; the future dropdown lets anyone switch trackers.
+- **Step wording:** mods reuse the current step copy for now (prototype phase).
 - **History entry trigger:** the Budget Team's award approval on step 6, the same as the initial award. The tracker does not need to be COMPLETED.
 
 ## Open Questions
-1. **For the team:** "What happens to an unfinished/active procurement tracer if a new modification is approved?" The options are to block until the prior tracker completes, to allow parallel ACTIVE trackers, or to close the prior one. This decides how backend step 5 and the frontend's "first ACTIVE" call sites must change.
-2. **Step copy for mods.** The paste-ready version is below.
+None. Both team questions were answered on 2026-11-23 (see Decisions).
 
-### Team question: Procurement Tracker step wording for contract mods
+### Reference: the step-wording question as sent to the team
 
 > For contract mods, each approved mod will get its own Procurement Tracker. As-Is mods use steps 1, 5 and 6, and every other mod uses all 6 steps. The current step instructions are written for a new award going out for solicitation. A mod is on an awarded contract that already has a vendor, so some of this wording may not fit. Should mods reuse this copy, or do they need mod-specific wording? Wording in question:
 >
