@@ -268,6 +268,41 @@ def test_bundle_deletes_planned_bli_on_awarded_agreement_records_history(
     assert "Budget Line Deleted" in _history_titles(loaded_db, awarded_bundle_contract.id)
 
 
+def test_bundle_updates_bli_on_awarded_agreement_records_history(
+    modified_loe_enabled, auth_client, awarded_bundle_contract, loaded_db
+):
+    bli = awarded_bundle_contract.budget_line_items[0]
+    # Draft, so the update skips the non-Draft required-fields check this fixture doesn't satisfy.
+    bli.status = BudgetLineItemStatus.DRAFT
+    loaded_db.commit()
+
+    response = auth_client.patch(
+        _bundle_url(awarded_bundle_contract.id),
+        json={"budget_line_items": {"update": [{"id": bli.id, "line_description": "Renamed in bundle"}]}},
+    )
+    assert response.status_code == 200, response.json
+
+    assert "Change to Line Description" in _history_titles(loaded_db, awarded_bundle_contract.id)
+
+
+def test_bundle_deletes_sc_on_awarded_agreement_records_history(
+    modified_loe_enabled, auth_client, awarded_bundle_contract, loaded_db
+):
+    sc = ServicesComponent(agreement_id=awarded_bundle_contract.id, number=1, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+    sc_id = sc.id
+
+    response = auth_client.patch(
+        _bundle_url(awarded_bundle_contract.id),
+        json={"services_components": {"delete": [sc_id]}},
+    )
+    assert response.status_code == 200, response.json
+    assert loaded_db.get(ServicesComponent, sc_id) is None
+
+    assert "Services Component Deleted" in _history_titles(loaded_db, awarded_bundle_contract.id)
+
+
 def test_bundle_deletes_planned_bli_routes_to_change_request(budget_team_auth_client, bundle_contract, loaded_db):
     """A non-DRAFT delete in the bundle creates a deletion change request instead of raising.
 

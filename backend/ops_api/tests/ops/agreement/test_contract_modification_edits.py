@@ -27,6 +27,7 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequestStatus,
+    ChangeRequestType,
     ContractAgreement,
     ContractBudgetLineItem,
     ContractModificationEdit,
@@ -39,7 +40,10 @@ from models import (
     ServicesComponent,
     User,
 )
-from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
+from ops_api.ops.services.contract_modification_edits import (
+    BLI_IN_REVIEW_MODIFICATION_MESSAGE,
+    ContractModificationEditService,
+)
 from ops_api.ops.services.ops_service import ValidationError
 
 SYSTEM_OWNER_USER_ID = 503
@@ -741,3 +745,153 @@ def test_latest_per_budget_line_field_keys_services_components_separately():
     latest = ContractModificationEditService._latest_per_budget_line_field([sc2_add, sc3_add, amount])
 
     assert latest == [sc2_add, sc3_add, amount]
+
+
+# ---=== An approved change request merges with a pending direct edit (OPS-3268) ===---
+
+
+def _approved_change_request(agreement, bli, field, old, new):
+    """A legacy change request approved after the award, as change_requests.py passes it."""
+    return SimpleNamespace(
+        id=None,
+        change_request_type=ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+        status=ChangeRequestStatus.APPROVED,
+        requires_contract_modification=True,
+        requested_change_data={field: new},
+        requested_change_diff={field: {"old": old, "new": new}},
+        agreement_id=agreement.id,
+        budget_line_item_id=bli.id,
+        created_by=SYSTEM_OWNER_USER_ID,
+        created_on=datetime.datetime.now(),
+        reviewed_by_id=SYSTEM_OWNER_USER_ID,
+        reviewed_on=datetime.datetime.now(),
+    )
+
+
+@pytest.mark.parametrize(
+    "field, old, new, expected",
+    [
+        pytest.param("amount", 500000.0, 700000.0, ("amount", 600000.0, 700000.0), id="same field merges"),
+        pytest.param("amount", 500000.0, 600000.0, None, id="nets to nothing"),
+        pytest.param("delete", 500000.0, "Deleted", ("delete", 600000.0, "Deleted"), id="delete replaces"),
+    ],
+)
+def test_approved_change_request_merges_with_a_pending_direct_edit(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+    field,
+    old,
+    new,
+    expected,
+):
+    """Inserting without merging tripped ix_contract_modification_edit_one_pending_bli_field (a
+    500) when the line already had a pending direct edit to the same field."""
+    agreement, bli = make_agreement(test_can)
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 500000.00)
+
+    ContractModificationEditService(loaded_db).create_from_approved_change_request(
+        _approved_change_request(agreement, bli, field, old, new)
+    )
+    loaded_db.commit()
+
+    edits = [(e.field, e.old_value, e.new_value) for e in _edits(loaded_db, agreement.id)]
+    assert edits == ([expected] if expected else [])
+
+
+def _legacy_amount_change_request_after_award(basic_client, loaded_db, agreement, bli):
+    """A change request opened before the award but flagged as requiring a contract modification,
+    the way an in-flight request from before PR 6536 looks, plus a pending direct edit to the
+    same field (inserted as legacy data: a direct edit can't be made while a request is open)."""
+    response = basic_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 700000.00})
+    assert response.status_code == 202, response.json
+    (cr,) = _change_requests(loaded_db, bli.id)
+    cr.requested_change_info = {**(cr.requested_change_info or {}), "requires_contract_modification": True}
+    loaded_db.commit()
+    _award(loaded_db, agreement)
+    loaded_db.add(
+        ContractModificationEdit(
+            agreement_id=agreement.id,
+            modification_type=ModificationEditType.MODIFIED_LOE,
+            budget_line_item_id=bli.id,
+            field="amount",
+            old_value=600000.0,
+            new_value=500000.0,
+            requested_by_id=BASIC_USER_ID,
+            created_by=BASIC_USER_ID,
+        )
+    )
+    loaded_db.commit()
+    return cr.id
+
+
+def test_approving_a_change_request_merges_with_a_pending_edit_and_keeps_audit_fields(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """The approval and the merged edit are written at commit, so the before_commit hooks stamp
+    updated_by and record history: an early flush would write them before the hooks see them."""
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    agreement, bli = make_agreement(test_can, awarded=False)
+    cr_id = _legacy_amount_change_request_after_award(basic_user_auth_client, loaded_db, agreement, bli)
+    director = loaded_db.scalars(select(User).where(User.email == "dave.director@email.com")).one()
+
+    _review(division_director_auth_client, cr_id)
+
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert (edit.field, edit.old_value, edit.new_value) == ("amount", 600000.0, 700000.0)
+    assert edit.change_request_id == cr_id
+    assert edit.updated_by == director.id
+    cr = loaded_db.get(BudgetLineItemChangeRequest, cr_id)
+    assert cr.status == ChangeRequestStatus.APPROVED
+    assert cr.updated_by == director.id
+
+    def _updated_by_director(class_name, row_id):
+        # Filtered to the director: the setup commits wrote UPDATED rows for these too.
+        return loaded_db.scalars(
+            select(OpsDBHistory).where(
+                OpsDBHistory.class_name == class_name,
+                OpsDBHistory.row_key == str(row_id),
+                OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+                OpsDBHistory.created_by == director.id,
+            )
+        ).all()
+
+    assert _updated_by_director("BudgetLineItemChangeRequest", cr_id)
+    assert _updated_by_director("ContractModificationEdit", edit.id)
+
+
+def test_approving_a_change_request_on_a_line_in_an_in_review_modification_is_rejected(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """Merging would change the pending edit the Division Director is reviewing in the
+    modification."""
+    agreement, bli = make_agreement(test_can, awarded=False)
+    cr_id = _legacy_amount_change_request_after_award(basic_user_auth_client, loaded_db, agreement, bli)
+    submit = basic_user_auth_client.post(url_for("api.agreements-contract-modifications", id=agreement.id), json={})
+    assert submit.status_code == 201, submit.json
+
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=cr_id), json={"action": "APPROVE"}
+    )
+
+    assert response.status_code == 400, response.json
+    assert response.json["errors"]["status"] == [BLI_IN_REVIEW_MODIFICATION_MESSAGE]
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert edit.new_value == 500000.0
+    assert loaded_db.get(BudgetLineItemChangeRequest, cr_id).status == ChangeRequestStatus.IN_REVIEW

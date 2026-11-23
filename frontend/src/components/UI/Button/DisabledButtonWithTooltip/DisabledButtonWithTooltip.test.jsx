@@ -86,4 +86,30 @@ describe("DisabledButtonWithTooltip", () => {
         const buttons = screen.getAllByRole("button", { name: "Upload file: Certificate of Funding" });
         expect(buttons.map((el) => el.tagName).sort()).toEqual(["BUTTON", "DIV"]);
     });
+
+    it("puts aria-current on the focusable wrapper only when ariaCurrent is given", () => {
+        const { rerender } = render(
+            <DisabledButtonWithTooltip
+                label="tooltip"
+                ariaCurrent="page"
+            >
+                Documents
+            </DisabledButtonWithTooltip>
+        );
+        const current = () =>
+            screen
+                .getAllByRole("button", { name: "Documents" })
+                .map((el) => [el.tagName, el.getAttribute("aria-current")])
+                .sort();
+        expect(current()).toEqual([
+            ["BUTTON", null],
+            ["DIV", "page"]
+        ]);
+
+        rerender(<DisabledButtonWithTooltip label="tooltip">Documents</DisabledButtonWithTooltip>);
+        expect(current()).toEqual([
+            ["BUTTON", null],
+            ["DIV", null]
+        ]);
+    });
 });

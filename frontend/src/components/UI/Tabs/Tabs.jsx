@@ -70,6 +70,7 @@ const Tabs = ({ paths, rightContent }) => {
                 type="button"
                 data-value={path.pathName}
                 className={tabSelected ? selected : notSelected}
+                aria-current={tabSelected ? "page" : undefined}
                 key={path.pathName}
                 onClick={handleClick}
                 data-cy={`details-tab-${path.label}`}

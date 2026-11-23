@@ -718,3 +718,61 @@ describe("Agreement page — pre-award lock flag per tab (OPS-6512)", () => {
         expect(budgetLinesMock.dataset.postPreAwardLocked).toBe("true");
     });
 });
+
+describe("Agreement page — agreement-wide Contract Modification In Review alert (OPS-3268)", () => {
+    const awardedContract = {
+        id: 45,
+        name: "Awarded Contract",
+        display_name: "Awarded Contract",
+        agreement_type: "CONTRACT",
+        project: { title: "Some Project" },
+        budget_line_items: [],
+        is_awarded: true,
+        change_requests_in_review: []
+    };
+
+    const renderWithRequests = async (contractModificationRequests) => {
+        const opsAPI = await import("../../../api/opsAPI");
+        opsAPI.useGetAgreementByIdQuery.mockReturnValue({
+            data: awardedContract,
+            error: undefined,
+            isLoading: false,
+            isSuccess: true
+        });
+        opsAPI.useGetNotificationsByUserIdAndAgreementIdQuery.mockReturnValue({ data: [] });
+        opsAPI.useGetProcurementShopByIdQuery.mockReturnValue({ data: undefined });
+        opsAPI.useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({ data: { data: [] } });
+        opsAPI.useGetAgreementContractModificationsByIdQuery.mockReturnValue({ data: contractModificationRequests });
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={[`/agreements/${awardedContract.id}`]}>
+                    <Routes>
+                        <Route
+                            path="/agreements/:id/*"
+                            element={<Agreement />}
+                        />
+                    </Routes>
+                </MemoryRouter>
+            </Provider>
+        );
+        await screen.findByRole("heading", { level: 1 });
+    };
+
+    it("shows the alert while a request is in review", async () => {
+        await renderWithRequests([{ id: 1, status: "IN_REVIEW", can_review: false }]);
+
+        expect(screen.getByText("Contract Modification In Review")).toBeInTheDocument();
+    });
+
+    it("doesn't show it to a reviewer, who gets the review card instead", async () => {
+        await renderWithRequests([{ id: 1, status: "IN_REVIEW", can_review: true }]);
+
+        expect(screen.queryByText("Contract Modification In Review")).not.toBeInTheDocument();
+    });
+
+    it("doesn't show it when no request is in review", async () => {
+        await renderWithRequests([{ id: 1, status: "APPROVED", can_review: false }]);
+
+        expect(screen.queryByText("Contract Modification In Review")).not.toBeInTheDocument();
+    });
+});

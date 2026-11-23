@@ -111,6 +111,30 @@ describe("CanComboBox", () => {
         expect(selectElement.disabled).toBe(true);
     });
 
+    // The label sits outside a disabled fieldset, so it needs its own disabled class.
+    it("greys the label only when disabled", () => {
+        const { rerender } = render(
+            <MemoryRouter>
+                <Provider store={store}>
+                    <CanComboBox
+                        {...defaultProps}
+                        isDisabled={true}
+                    />
+                </Provider>
+            </MemoryRouter>
+        );
+        expect(screen.getByText("can", { selector: "label" })).toHaveClass("usa-label--disabled");
+
+        rerender(
+            <MemoryRouter>
+                <Provider store={store}>
+                    <CanComboBox {...defaultProps} />
+                </Provider>
+            </MemoryRouter>
+        );
+        expect(screen.getByText("can", { selector: "label" })).not.toHaveClass("usa-label--disabled");
+    });
+
     it("should enable the ComboBox when isDisabled is not provided (default behavior)", () => {
         render(
             <MemoryRouter>

@@ -70,6 +70,9 @@ from ops_api.ops.utils.budget_line_items_helpers import (
 )
 from ops_api.ops.utils.users import is_budget_team, is_super_user
 
+# submit_de_obligation's default: no line_description sent, so keep the current one (OPS-6488).
+_KEEP_DESCRIPTION = object()
+
 
 @dataclass
 class BudgetLineItemFilters:
@@ -213,12 +216,14 @@ class BudgetLineItemService:
             )
 
         is_super = is_super_user(current_user, current_app)
+        # A line in a contract modification in review is locked for every user, superusers too,
+        # the same as the PATCH path (update_with_change_request_ids).
+        self._validate_not_in_review_modification(bli)
         if self.is_immediate_delete(bli):
             is_awarded_tracked_delete = (
                 not is_super and bli.status != BudgetLineItemStatus.DRAFT and tracks_contract_modifications(bli)
             )
             if is_awarded_tracked_delete:
-                self._validate_not_in_review_modification(bli)
                 if not compute_bli_editable(bli, bli.in_review, is_super):
                     raise ValidationError(
                         {"status": "Budget Line Item is not in a deletable state."},
@@ -1032,6 +1037,72 @@ class BudgetLineItemService:
         else:
             self.db_session.flush()
 
+    def submit_de_obligation(
+        self,
+        id: int,
+        requested_amount: Optional[float],
+        commit: bool = True,
+        line_description: Optional[str] | object = _KEEP_DESCRIPTION,
+    ) -> BudgetLineItem:
+        """Submit (or clear) a de-obligation request on an Obligated budget line (OPS-6488).
+
+        Separate from the generic ``update``/direct-edit path on purpose: Obligated isn't in
+        ``EDITABLE_STATUSES``, and this never writes ``amount`` -- only the pending
+        ``requested_de_obligation_amount`` and its tracking ``ContractModificationEdit`` row (see
+        ``ContractModificationEditService.record_de_obligation_request``). ``requested_amount``
+        of 0 or None clears a pending de-obligation instead of submitting one. ``line_description``
+        is the only other field the de-obligation form edits; unlike the amount it applies right
+        away, and leaving it out keeps the current description.
+
+        Raises:
+            ResourceNotFoundError: The budget line doesn't exist (404).
+            AuthorizationError: The user is not associated with the agreement (403).
+            ValidationError: The agreement isn't Awarded, the line isn't Obligated, the line is
+                already in a modification that's in review, or the amount is out of range (400).
+        """
+        budget_line_item = self._get_budget_line_item(id)
+        agreement = budget_line_item.agreement
+        user = get_current_user()
+        # Decimal, not float, from here on: this is money, and it's compared against and stored
+        # alongside budget_line_item.amount (Numeric).
+        requested_amount = None if not requested_amount else Decimal(str(requested_amount))
+
+        if not (is_super_user(current_user, current_app) or check_user_association(agreement, user)):
+            raise AuthorizationError(
+                f"User is not associated with the agreement {agreement.id if agreement else None}",
+                "BudgetLineItem",
+            )
+        if not agreement or not agreement.is_awarded:
+            raise ValidationError({"agreement_id": "Only an Awarded agreement can submit a de-obligation."})
+        if budget_line_item.status != BudgetLineItemStatus.OBLIGATED:
+            raise ValidationError({"status": "Only an Obligated budget line can be de-obligated."})
+        self._validate_not_in_review_modification(budget_line_item)
+        if requested_amount and not (0 < requested_amount <= (budget_line_item.amount or Decimal("0"))):
+            raise ValidationError(
+                {
+                    "requested_de_obligation_amount": (
+                        "The de-obligated amount must be greater than $0 and no more than the "
+                        "budget line's obligated amount."
+                    )
+                }
+            )
+
+        edit_service = ContractModificationEditService(self.db_session)
+        # Checked last among validations, like ContractModificationRequestService.submit(): the
+        # flag only gates starting a new de-obligation, never clearing one already pending (a
+        # `requested_amount` of 0/None), and must run before any mutation below.
+        if requested_amount and not tracks_contract_modifications(budget_line_item):
+            raise ValidationError({"agreement_id": "Contract modifications are not enabled."})
+        edit_service.record_de_obligation_request(budget_line_item, requested_amount, user.id)
+        if line_description is not _KEEP_DESCRIPTION:
+            budget_line_item.line_description = line_description
+
+        if commit:
+            self.db_session.commit()
+        else:
+            self.db_session.flush()
+        return budget_line_item
+
     def _validate_not_in_review_modification(self, budget_line_item: BudgetLineItem) -> None:
         if tracks_contract_modifications(budget_line_item) and ContractModificationEditService(
             self.db_session
@@ -1717,6 +1788,8 @@ def get_is_editable_meta_data(serialized_bli):
             _lock_for_in_review_modification(data_for_meta)
 
     meta = meta_schema.dump(data_for_meta)
+    # The shared agreement MetaSchema has no inReviewModification field, so carry it over (OPS-6488).
+    meta["inReviewModification"] = data_for_meta.get("inReviewModification", False)
 
     return meta
 
@@ -1777,6 +1850,9 @@ def _lock_for_in_review_modification(meta: dict) -> None:
     meta["isEditable"] = False
     meta["isDeletable"] = False
     meta["lockedMessage"] = BLI_IN_REVIEW_MODIFICATION_MESSAGE
+    # isEditable is always false for Obligated lines, so the de-obligation control (OPS-6488)
+    # needs this to know the line is locked.
+    meta["inReviewModification"] = True
 
 
 def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreement_ids: list[int]) -> dict:

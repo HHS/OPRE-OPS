@@ -218,6 +218,17 @@ class ContractModificationRequestService:
         request.status = ContractModificationRequestStatus.DECLINED
 
     def _approve(self, request: ContractModificationRequest, user: User) -> None:
+        # Applying an approved de-obligation is OPS-6489. Until then, approve everything else in
+        # the request and leave de-obligation edits pending, so a de-obligation doesn't block
+        # unrelated work on the agreement; a request with nothing else in it can't be approved.
+        approvable_edits = [
+            edit for edit in request.edits if edit.modification_type != ModificationEditType.DE_OBLIGATION
+        ]
+        if len(approvable_edits) < len(request.edits) and not approvable_edits and not request.budget_line_items:
+            raise ValidationError(
+                {"action": "De-obligation requests can't be approved yet; that's tracked separately (OPS-6489)."}
+            )
+
         # Re-run the submit-time checks before writing anything: a budget line may have been
         # executed, edited into review, or moved out of the current FY since the request was sent.
         self._get_executable_budget_lines(
@@ -238,7 +249,7 @@ class ContractModificationRequestService:
         self.db_session.flush()
 
         self._edit_service.attach_pending_edits_to_mod(
-            request.agreement_id, agreement_mod.id, [edit.id for edit in request.edits]
+            request.agreement_id, agreement_mod.id, [edit.id for edit in approvable_edits]
         )
         # Set directly: the BLI update and change request paths reject Executing on an Awarded
         # agreement (validate_no_execution_status_change_on_awarded), because this approval is
@@ -367,9 +378,11 @@ class ContractModificationRequestService:
 
 def mod_type(request: ContractModificationRequest) -> ModType:
     """As-is for pure budget-line execution (#1008), Admin when only Admin Changes such as a COR
-    change ride along (#3269), and Modified LOE when any Modified LOE edit does (#3072)."""
-    if not request.edits:
+    change ride along (#3269), and Modified LOE when any Modified LOE edit does (#3072).
+    De-obligation edits don't count: approval leaves them pending until OPS-6489 (OPS-6488)."""
+    edits = [edit for edit in request.edits if edit.modification_type != ModificationEditType.DE_OBLIGATION]
+    if not edits:
         return ModType.AS_IS
-    if all(edit.modification_type == ModificationEditType.ADMIN_CHANGE for edit in request.edits):
+    if all(edit.modification_type == ModificationEditType.ADMIN_CHANGE for edit in edits):
         return ModType.ADMIN
     return ModType.MODIFIED_LOE

@@ -185,7 +185,8 @@ def db_service(request, worker_id, tmp_path_factory) -> Generator[Engine, None, 
         database for full isolation.
     """
     docker_ip = "127.0.0.1"
-    admin_url = f"postgresql://postgres:local_password@{docker_ip}:5432/postgres"  # pragma: allowlist secret
+    db_port = os.environ.get("DB_PORT", "5432")
+    admin_url = f"postgresql://postgres:local_password@{docker_ip}:{db_port}/postgres"  # pragma: allowlist secret
 
     if worker_id == "master":
         # Sequential mode — delegate to pytest-docker fixtures
@@ -194,7 +195,7 @@ def db_service(request, worker_id, tmp_path_factory) -> Generator[Engine, None, 
         docker_services.wait_until_responsive(timeout=300.0, pause=1.0, check=lambda: is_loaded(admin_engine))
 
         engine = create_engine(
-            f"postgresql://ops:ops@{docker_ip}:5432/postgres",  # pragma: allowlist secret
+            f"postgresql://ops:ops@{docker_ip}:{db_port}/postgres",  # pragma: allowlist secret
             echo=True,
         )
         yield engine
@@ -251,7 +252,7 @@ def db_service(request, worker_id, tmp_path_factory) -> Generator[Engine, None, 
             conn.execute(text(f"CREATE DATABASE {db_name} TEMPLATE {template_db}"))
             conn.execute(text(f"GRANT ALL PRIVILEGES ON DATABASE {db_name} TO ops"))
 
-    worker_url = f"postgresql://ops:ops@{docker_ip}:5432/{db_name}"  # pragma: allowlist secret
+    worker_url = f"postgresql://ops:ops@{docker_ip}:{db_port}/{db_name}"  # pragma: allowlist secret
     engine = create_engine(worker_url, echo=False)
 
     yield engine

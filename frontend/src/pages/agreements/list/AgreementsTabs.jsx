@@ -6,6 +6,9 @@ import TabsSection from "../../../components/UI/TabsSection";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { useChangeRequestTotal } from "../../../hooks/useChangeRequests.hooks";
 import tabStyles from "./AgreementTabs.module.css";
+import { AGREEMENT_LIST_FILTERS } from "./utils";
+
+const KNOWN_FILTERS = Object.values(AGREEMENT_LIST_FILTERS);
 
 /**
  * A header section of the agreements page that contains the filters.
@@ -30,23 +33,29 @@ const AgreementTabs = () => {
             label: "All Agreements"
         },
         {
-            name: "?filter=my-agreements",
+            name: `?filter=${AGREEMENT_LIST_FILTERS.MY_AGREEMENTS}`,
             label: "My Agreements"
         },
         ...(displayReviewTab
             ? [
                   {
-                      name: "?filter=change-requests",
+                      name: `?filter=${AGREEMENT_LIST_FILTERS.CHANGE_REQUESTS}`,
                       label: "For Review"
                   }
               ]
             : [])
     ];
+    // AgreementsList shows All Agreements for any filter it doesn't recognize, so mark that tab too.
+    const requestedFilter = new URLSearchParams(search).get("filter");
+    const currentFilter = KNOWN_FILTERS.includes(requestedFilter) ? requestedFilter : "";
+
     /**
      * @param {string} queryString - The query string of the tab.
      */
+    const isSelected = (queryString) => (new URLSearchParams(queryString).get("filter") ?? "") === currentFilter;
+
     const getClassName = (queryString) =>
-        `font-sans-2xs text-bold ${search === queryString ? styles.listItemSelected : styles.listItemNotSelected}`;
+        `font-sans-2xs text-bold ${isSelected(queryString) ? styles.listItemSelected : styles.listItemNotSelected}`;
 
     const renderLinks = () =>
         paths.map((path) => {
@@ -58,6 +67,7 @@ const AgreementTabs = () => {
                     <Link
                         to={queryString}
                         className={getClassName(queryString)}
+                        aria-current={isSelected(queryString) ? "page" : undefined}
                         preventScrollReset
                     >
                         {path.label}

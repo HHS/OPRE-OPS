@@ -1,6 +1,5 @@
-from unittest.mock import Mock
-
 import pytest
+from sqlalchemy import func, select
 
 from models import ChangeRequestNotification, Notification, NotificationType
 from ops_api.ops.services.notifications import NotificationService
@@ -8,109 +7,88 @@ from ops_api.ops.services.ops_service import ResourceNotFoundError
 
 
 @pytest.fixture
-def mock_db_session():
-    return Mock()
+def service(loaded_db):
+    return NotificationService(loaded_db)
 
 
-def test_create_notification_default_type(mock_db_session):
-    service = NotificationService(mock_db_session)
-    data = {
-        "title": "Test notification",
-        "message": "This is a test",
-        "is_read": False,
-        "notification_type": NotificationType.NOTIFICATION,
-    }
-
-    notification = service.create(data)
-
-    # Should create a base Notification instance
-    assert isinstance(notification, Notification)
-    assert notification.title == "Test notification"
-    mock_db_session.add.assert_called_once_with(notification)
-    mock_db_session.commit.assert_called_once()
+def _reload(session, notification_id):
+    session.expire_all()
+    return session.get(Notification, notification_id)
 
 
-def test_create_notification_change_request_type(mock_db_session):
-    service = NotificationService(mock_db_session)
-    data = {"notification_type": NotificationType.CHANGE_REQUEST_NOTIFICATION}
+@pytest.mark.parametrize(
+    "notification_type, expected_cls",
+    [
+        (NotificationType.NOTIFICATION, Notification),
+        (NotificationType.CHANGE_REQUEST_NOTIFICATION, ChangeRequestNotification),
+    ],
+)
+def test_create_persists_notification_of_requested_type(
+    service, loaded_db, test_admin_user, notification_type, expected_cls
+):
+    notification = service.create(
+        {
+            "title": "Test notification",
+            "message": "This is a test",
+            "notification_type": notification_type,
+            "recipient_id": test_admin_user.id,
+        }
+    )
 
-    notification = service.create(data)
+    saved = _reload(loaded_db, notification.id)
+    assert type(saved) is expected_cls
+    assert saved.notification_type == notification_type
+    assert saved.title == "Test notification"
+    assert saved.message == "This is a test"
+    assert saved.recipient_id == test_admin_user.id
+    assert saved.is_read is False
 
-    # Should create a ChangeRequestNotification instance
-    assert isinstance(notification, ChangeRequestNotification)
-    mock_db_session.add.assert_called_once_with(notification)
-    mock_db_session.commit.assert_called_once()
+
+def test_create_without_commit_still_assigns_id(service, loaded_db):
+    notification = service.create({"title": "Deferred"}, commit=False)
+
+    assert notification.id is not None
+    assert _reload(loaded_db, notification.id).title == "Deferred"
 
 
-def test_update_notification_success(mock_db_session):
-    existing_notification = Mock(spec=Notification)
-    existing_notification.title = "old title"
-    mock_db_session.get.return_value = existing_notification
+def test_update_persists_known_fields_and_ignores_unknown(service, loaded_db):
+    notification = service.create({"title": "old title", "is_read": False})
 
-    service = NotificationService(mock_db_session)
-    updated_fields = {"title": "new title", "non_existent_field": "ignored"}
+    _, status = service.update(notification.id, {"title": "new title", "is_read": True, "non_existent_field": "x"})
 
-    notification, status = service.update(1, updated_fields)
-
-    assert notification == existing_notification
-    assert notification.title == "new title"
+    saved = _reload(loaded_db, notification.id)
     assert status == 200
-    mock_db_session.commit.assert_called_once()
+    assert saved.title == "new title"
+    assert saved.is_read is True
+    assert not hasattr(saved, "non_existent_field")
 
 
-def test_update_notification_not_found(mock_db_session):
-    mock_db_session.get.return_value = None
-    service = NotificationService(mock_db_session)
-    with pytest.raises(ResourceNotFoundError):
-        service.update(1, {"some_field": "value"})
+def test_delete_removes_notification(service, loaded_db):
+    notification = service.create({"title": "to delete"})
+
+    service.delete(notification.id)
+
+    assert _reload(loaded_db, notification.id) is None
 
 
-def test_delete_notification_success(mock_db_session):
-    notification_to_delete = Mock(spec=Notification)
-    mock_db_session.get.return_value = notification_to_delete
+def test_get_returns_persisted_notification(service):
+    notification = service.create({"title": "fetch me"})
 
-    service = NotificationService(mock_db_session)
-    service.delete(1)
-
-    mock_db_session.delete.assert_called_once_with(notification_to_delete)
-    mock_db_session.commit.assert_called_once()
+    assert service.get(notification.id).title == "fetch me"
 
 
-def test_delete_notification_not_found(mock_db_session):
-    mock_db_session.get.return_value = None
-    service = NotificationService(mock_db_session)
-    with pytest.raises(ResourceNotFoundError):
-        service.delete(1)
+def test_get_list_includes_created_notifications(service, loaded_db):
+    first = service.create({"title": "first"})
+    second = service.create({"title": "second"})
 
-
-def test_get_notification_success(mock_db_session):
-    notification = Mock(spec=Notification)
-    mock_db_session.get.return_value = notification
-
-    service = NotificationService(mock_db_session)
-    result = service.get(1)
-
-    assert result == notification
-
-
-def test_get_notification_not_found(mock_db_session):
-    mock_db_session.get.return_value = None
-    service = NotificationService(mock_db_session)
-    with pytest.raises(ResourceNotFoundError):
-        service.get(1)
-
-
-def test_get_list_notifications(mock_db_session):
-    notification1 = Mock(spec=Notification)
-    notification2 = Mock(spec=Notification)
-    query_mock = Mock()
-    query_mock.all.return_value = [notification1, notification2]
-    mock_db_session.query.return_value = query_mock
-
-    service = NotificationService(mock_db_session)
     results, pagination = service.get_list()
 
-    assert results == [notification1, notification2]
+    assert {first.id, second.id} <= {n.id for n in results}
+    assert len(results) == loaded_db.scalar(select(func.count()).select_from(Notification))
     assert pagination is None
-    mock_db_session.query.assert_called_once_with(Notification)
-    query_mock.all.assert_called_once()
+
+
+@pytest.mark.parametrize("method_name, args", [("get", ()), ("delete", ()), ("update", ({"title": "x"},))])
+def test_missing_notification_raises_not_found(service, method_name, args):
+    with pytest.raises(ResourceNotFoundError):
+        getattr(service, method_name)(0, *args)

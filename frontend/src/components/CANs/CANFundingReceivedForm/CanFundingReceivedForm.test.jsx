@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import CANFundingReceivedForm from "./CanFundingReceivedForm";
 
@@ -33,12 +34,22 @@ describe("CANFundingReceivedForm", () => {
         expect(screen.getByRole("button", { name: /Add Funding Received/i })).toBeInTheDocument();
     });
 
-    it("calls setNotes when typing in notes field", async () => {
-        render(<CANFundingReceivedForm {...defaultProps} />);
+    it("shows what the user types in the notes field", async () => {
+        const StatefulForm = () => {
+            const [notes, setNotes] = useState("");
+            return (
+                <CANFundingReceivedForm
+                    {...defaultProps}
+                    notes={notes}
+                    setNotes={setNotes}
+                />
+            );
+        };
+        render(<StatefulForm />);
         const textarea = screen.getByLabelText(/Notes \(optional\)/i);
 
         await user.type(textarea, "Test note");
-        expect(defaultProps.setNotes).toHaveBeenCalledTimes(9);
+        expect(textarea).toHaveValue("Test note");
     });
 
     it("calls setReceivedFundingAmount when typing amount", async () => {

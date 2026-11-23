@@ -1,3 +1,4 @@
+import React from "react";
 import ConfirmationModal from "../UI/Modals/ConfirmationModal";
 import ServicesComponentForm from "./ServicesComponentForm";
 import useServicesComponents from "./ServicesComponents.hooks";
@@ -16,6 +17,7 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {import('vest').Suite<any, any>} [props.scFormSuite] - Vest validation suite for the SC form.
  * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.nonDraftBudgetLines] - Non-draft BLIs used by the SC form suite for PoP validation.
+ * @param {boolean} [props.locksServicesComponentNumbers] - Whether a saved SC's number and Optional flag are locked (Awarded agreement, OPS-3268).
  * @returns {React.ReactElement}
  *
  * @example
@@ -31,7 +33,8 @@ const ServicesComponents = ({
     setHasUnsavedChanges,
     hasUnsavedChanges,
     scFormSuite,
-    nonDraftBudgetLines = []
+    nonDraftBudgetLines = [],
+    locksServicesComponentNumbers = false
 }) => {
     const {
         formData,
@@ -54,6 +57,20 @@ const ServicesComponents = ({
         scFormSuite,
         nonDraftBudgetLines
     );
+
+    // Leaving edit mode (Update or Cancel) swaps the focused button for "Add Services Component",
+    // and a confirmed delete removes the item that had focus, so keyboard focus would drop to
+    // <body> (WCAG 2.4.3). When that happens, put it on the Add button instead.
+    const addButtonRef = React.useRef(/** @type {HTMLButtonElement | null} */ (null));
+    const previous = React.useRef({ mode: formData.mode, showModal });
+    React.useEffect(() => {
+        const leftEditMode = previous.current.mode === "edit" && formData.mode !== "edit";
+        const closedModal = previous.current.showModal && !showModal;
+        previous.current = { mode: formData.mode, showModal };
+        if (!leftEditMode && !closedModal) return;
+        const focusLost = !document.activeElement || document.activeElement === document.body;
+        if (focusLost) addButtonRef.current?.focus();
+    }, [formData.mode, showModal]);
 
     return (
         <>
@@ -80,6 +97,8 @@ const ServicesComponents = ({
                 hasUnsavedChanges={hasUnsavedChanges}
                 workflow={workflow}
                 scFormSuite={scFormSuite}
+                locksServicesComponentNumbers={locksServicesComponentNumbers}
+                addButtonRef={addButtonRef}
             />
 
             <ServicesComponentsList

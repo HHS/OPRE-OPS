@@ -83,6 +83,7 @@ const DetailsTabs = ({
                 type="button"
                 data-value={pathName}
                 className={`${tabSelected ? selected : notSelected} ${path.disabled ? styles.btnDisabled : ""}`}
+                aria-current={tabSelected ? "page" : undefined}
                 key={pathName}
                 onClick={() => {
                     navigate(pathName);
@@ -105,6 +106,7 @@ const DetailsTabs = ({
                     tooltipPosition="bottom"
                     className={`${tabSelected ? selected : notSelected} ${styles.btnDisabled}`}
                     dataCy={`details-tab-${path.label}`}
+                    ariaCurrent={tabSelected ? "page" : undefined}
                 >
                     {path.label}
                 </DisabledButtonWithTooltip>

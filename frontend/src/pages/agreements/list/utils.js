@@ -1,6 +1,11 @@
 import _ from "lodash";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers.js";
 
+export const AGREEMENT_LIST_FILTERS = {
+    MY_AGREEMENTS: "my-agreements",
+    CHANGE_REQUESTS: "change-requests"
+};
+
 const sortAgreements = (agreements) => {
     /*
      * Sort agreements by date_needed.

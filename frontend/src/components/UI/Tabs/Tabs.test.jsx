@@ -55,14 +55,17 @@ describe("Tabs", () => {
         expect(nav).toHaveAttribute("aria-label", "Tab Sections");
     });
 
-    it("applies selected class to active tab", () => {
+    it.each(["/test/path1", "/test/path3"])("marks only the tab for %s as the current page", (pathname) => {
+        mockUseLocation.mockReturnValue({ pathname });
         render(<Tabs paths={mockPaths} />);
 
-        const selectedButton = screen.getByText("Path 1");
-        const notSelectedButton = screen.getByText("Path 2");
-
-        expect(selectedButton.className).toContain("listItemSelected");
-        expect(notSelectedButton.className).toContain("listItemNotSelected");
+        const currentByLabel = mockPaths.map((path) => [
+            path.label,
+            screen.getByRole("button", { name: path.label }).getAttribute("aria-current")
+        ]);
+        expect(currentByLabel).toEqual(
+            mockPaths.map((path) => [path.label, path.pathName === pathname ? "page" : null])
+        );
     });
 
     it("navigates without resetting the page scroll when a tab is clicked", () => {

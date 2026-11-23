@@ -44,6 +44,39 @@ describe("TableRowExpandable", () => {
         expect(screen.getByTestId("fy-cell")).toHaveStyle({ backgroundColor: "var(--base-light-variant)" });
     });
 
+    it("expands and collapses from the keyboard", async () => {
+        const user = userEvent.setup();
+        const TestComponent = () => {
+            const [isExpanded, setIsExpanded] = React.useState(false);
+            return (
+                <table>
+                    <tbody>
+                        <TableRowExpandable
+                            tableRowData={<td>First</td>}
+                            expandedData={<td>Expanded</td>}
+                            isExpanded={isExpanded}
+                            setIsExpanded={setIsExpanded}
+                            setIsRowActive={() => {}}
+                        />
+                    </tbody>
+                </table>
+            );
+        };
+        render(<TestComponent />);
+
+        await user.tab();
+        const toggle = screen.getByRole("button", { name: "Expand row details" });
+        expect(toggle).toHaveFocus();
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+        await user.keyboard("{Enter}");
+        expect(screen.getByText("Expanded")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Collapse row details" })).toHaveAttribute("aria-expanded", "true");
+
+        await user.keyboard(" ");
+        expect(screen.queryByText("Expanded")).not.toBeInTheDocument();
+    });
+
     it("preserves existing inline background colors when collapsed", () => {
         render(
             <table>

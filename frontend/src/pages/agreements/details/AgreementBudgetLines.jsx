@@ -20,6 +20,7 @@ import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndS
 import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledButtonWithTooltip";
+import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import {
     calculateAgreementTotal,
@@ -36,6 +37,7 @@ import {
     findGrantPeriodEnd,
     findGrantPeriodStart,
     findGrantState,
+    getNetAmount,
     groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
@@ -90,10 +92,18 @@ const AgreementBudgetLines = ({
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
     const canEditByRole = useCanEditByRole();
-    const { data: servicesComponents, isLoading: isServicesComponentsLoading } = useGetServicesComponentsListQuery(
-        agreement?.id
-    );
-    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement?.id });
+    const {
+        data: servicesComponents,
+        isLoading: isServicesComponentsLoading,
+        isError: isServicesComponentsError
+    } = useGetServicesComponentsListQuery(agreement?.id);
+    const {
+        data: grantNumbers,
+        isLoading: isGrantNumbersLoading,
+        isError: isGrantNumbersError
+    } = useGetGrantNumbersListQuery(agreement?.id, {
+        skip: !agreement?.id
+    });
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const isContract = agreement?.agreement_type === AgreementType.CONTRACT;
@@ -122,6 +132,14 @@ const AgreementBudgetLines = ({
     const canRequestStatusChange = isAgreementEditable && (!blocksPlannedToExecuting || hasDraftBLI);
     // Guards against reaching the edit wizard via URL param (?mode=edit) when the agreement isn't editable.
     const showEditWizard = isEditMode && isAgreementEditable;
+    // EditAgreementProvider seeds its state from these lists only on mount, so mounting it while
+    // either query is in flight freezes an empty list: existing SCs vanish from the editor and
+    // the next SC the user adds replaces them. Wait for both, like the other editor pages do.
+    const isEditorDataLoading = isServicesComponentsLoading || isGrantNumbersLoading;
+    // The editor is seeded from the same lists, and save resolves each budget line's link (grant number
+    // or SC) against them and nulls any it can't find. Opening it after a failed load would unlink
+    // every existing budget line on save, so keep it closed and show an error instead.
+    const editorDataLoadFailed = isServicesComponentsError || isGrantNumbersError;
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -183,11 +201,16 @@ const AgreementBudgetLines = ({
         totals["Agreement"]["total"] += total;
     });
 
-    // Use backend-calculated fees for displaying current agreement totals
-    const agreementTotal = calculateAgreementTotal(agreement?.budget_line_items ?? [], null, includeDrafts);
+    // Use backend-calculated fees for displaying current agreement totals. Amounts are net of any
+    // pending de-obligation (OPS-6488), matching the backend's agreement subtotal.
+    const netBudgetLines = (agreement?.budget_line_items ?? []).map((bli) => ({
+        ...bli,
+        amount: getNetAmount(bli)
+    }));
+    const agreementTotal = calculateAgreementTotal(netBudgetLines, null, includeDrafts);
     const agreementSubtotal = includeDrafts
-        ? agreement.budget_line_items?.reduce((n, { amount }) => n + amount, 0) || 0
-        : getAgreementSubTotal(agreement);
+        ? netBudgetLines.reduce((n, { amount }) => n + amount, 0) || 0
+        : getAgreementSubTotal({ ...agreement, budget_line_items: netBudgetLines });
     const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
 
     // Use useMemo instead of useEffect + useState to prevent infinite loops
@@ -232,6 +255,13 @@ const AgreementBudgetLines = ({
     }
     return (
         <>
+            {showEditWizard && editorDataLoadFailed && (
+                <SimpleAlert
+                    type="error"
+                    heading="Budget lines can't be edited right now"
+                    message={`The ${isServicesComponentsError ? "services components" : "grant numbers"} could not be loaded. Refresh the page to try again.`}
+                />
+            )}
             {!showEditWizard && (
                 <>
                     <AgreementBudgetLinesHeader
@@ -323,7 +353,9 @@ const AgreementBudgetLines = ({
                 </>
             )}
 
-            {showEditWizard && (
+            {showEditWizard && !editorDataLoadFailed && isEditorDataLoading && <BudgetLinesTableLoading />}
+
+            {showEditWizard && !editorDataLoadFailed && !isEditorDataLoading && (
                 <EditAgreementProvider
                     agreement={agreement}
                     projectOfficer={""}

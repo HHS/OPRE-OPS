@@ -19,6 +19,7 @@ from sqlalchemy import (
     case,
     event,
     extract,
+    func,
     select,
 )
 from sqlalchemy.dialects.postgresql import ENUM
@@ -112,6 +113,12 @@ class BudgetLineItem(BaseModel):
     can: Mapped[Optional[CAN]] = relationship(CAN, back_populates="budget_line_items")
 
     amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
+
+    # The amount of a pending, unapproved de-obligation request on this line (OPS-6488): how much
+    # of `amount` the agreement's totals should net out while the request is pending review. NULL
+    # when there is no pending de-obligation. Never derived from `amount` and never mutates it --
+    # `amount` stays the real obligated amount until OPS-6489 applies an approved de-obligation.
+    requested_de_obligation_amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2), nullable=True)
 
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         ENUM(BudgetLineItemStatus), default=BudgetLineItemStatus.DRAFT
@@ -278,6 +285,23 @@ class BudgetLineItem(BaseModel):
     @total.expression
     def total(cls):
         return cls.amount + cls.fees
+
+    @hybrid_property
+    def net_amount(self):
+        """`amount` net of any pending, unapproved de-obligation request (OPS-6488).
+
+        Used for display (the line's own Amount, and the Agreement's totals) so a pending
+        de-obligation is reflected immediately without mutating the real `amount` column. Fees
+        are deliberately NOT netted here (OPS-6488 doesn't recalculate fees); `fees`/`total` stay
+        keyed to the gross `amount`.
+        """
+        amount = Decimal(self.amount or "0")
+        requested = Decimal(self.requested_de_obligation_amount or "0")
+        return amount - requested
+
+    @net_amount.expression
+    def net_amount(cls):
+        return cls.amount - func.coalesce(cls.requested_de_obligation_amount, 0)
 
     @hybrid_property
     def portfolio_id(self):

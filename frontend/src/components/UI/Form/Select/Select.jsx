@@ -26,7 +26,9 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {boolean} [props.isRequiredNoShow] - A flag to indicate if the input is required but should not show (optional).
  * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
  * @param {string} [props.tooltipMsg] - Tooltip message
+ * @param {"card" | "card-lg" | "mobile" | "mobile-lg" | "tablet"} [props.tooltipMaxWidth] - Caps the disabled tooltip's width so a long message wraps (optional).
  * @param {string} [props.hint] - Hint text displayed between the label and the select field (optional).
+ * @param {string} [props.disabledWidthClassName] - Width class for the select while disabled. Defaults to "width-mobile-lg"; pass "" to fill its container like the enabled select does (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
 const Select = ({
@@ -53,11 +55,15 @@ const Select = ({
     isRequiredNoShow = false,
     isDisabled = false,
     tooltipMsg = "",
-    hint = ""
+    tooltipMaxWidth,
+    hint = "",
+    disabledWidthClassName = "width-mobile-lg"
 }) => {
     function handleChange(e) {
         onChange(name, e.target.value);
     }
+    // Link the hint to the select so screen readers announce it with the field.
+    const hintId = hint && messages.length === 0 ? `${name}-hint` : undefined;
 
     return (
         <fieldset
@@ -97,10 +103,19 @@ const Select = ({
                     <Tooltip
                         label={tooltipMsg}
                         position="right"
+                        maxWidth={tooltipMaxWidth}
+                        // The tooltip wraps the select in inline spans; with no fixed width, let them
+                        // fill the column so the select is as wide as the enabled one.
+                        className={disabledWidthClassName ? undefined : "width-full select-tooltip-fill"}
                     >
                         <select
                             id={name}
-                            className={`width-mobile-lg usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
+                            aria-describedby={hintId}
+                            className={cx(
+                                disabledWidthClassName,
+                                "usa-select margin-top-0",
+                                messages.length && "usa-input--error"
+                            )}
                             name={name}
                             onChange={() => {}}
                             value={value}
@@ -112,6 +127,7 @@ const Select = ({
                 ) : (
                     <select
                         id={name}
+                        aria-describedby={hintId}
                         className={`usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
                         name={name}
                         onChange={handleChange}

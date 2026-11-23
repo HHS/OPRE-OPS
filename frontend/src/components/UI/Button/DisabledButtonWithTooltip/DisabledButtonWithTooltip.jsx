@@ -18,6 +18,8 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {React.CSSProperties} [props.wrapperStyle] - Extra inline styles for the focusable wrapper div.
  * @param {string} [props.ariaLabel] - Accessible name for the wrapper and button, when the visible text alone
  *     doesn't tell several similar buttons apart (e.g. "Upload file: Certificate of Funding").
+ * @param {string} [props.ariaCurrent] - `aria-current` value for the focusable wrapper, e.g. "page" when the
+ *     button is a disabled navigation tab for the page the user is on.
  * @param {React.ReactNode} props.children - Button label content.
  * @returns {React.ReactElement}
  */
@@ -28,6 +30,7 @@ const DisabledButtonWithTooltip = ({
     dataCy,
     wrapperStyle,
     ariaLabel,
+    ariaCurrent,
     children
 }) => (
     <Tooltip
@@ -40,6 +43,7 @@ const DisabledButtonWithTooltip = ({
             role="button"
             aria-disabled="true"
             aria-label={ariaLabel}
+            aria-current={ariaCurrent}
             style={{ ...wrapperStyle, display: "inline-block", cursor: "not-allowed" }}
         >
             <button

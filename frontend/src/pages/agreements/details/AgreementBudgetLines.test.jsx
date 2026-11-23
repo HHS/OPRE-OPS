@@ -10,6 +10,7 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 import userEvent from "@testing-library/user-event";
 import { buildTrailState, getTrailFromState } from "../../../helpers/breadcrumb.helpers";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
+import { useEditAgreement } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 const history = createMemoryHistory();
 const mockFn = TestApplicationContext.helpers().mockFn;
@@ -35,6 +36,20 @@ vi.mock("../../../api/opsAPI", () => ({
 // passes, without pulling in the real table's hook chain (useGetAllCans, procurement shops, users).
 vi.mock("../../../components/BudgetLineItems/BudgetLinesTable", () => ({
     default: (props) => <div data-testid="budget-lines-table">show-clin:{String(!!props.showClinColumn)}</div>
+}));
+
+// Stand-in for the edit wizard that reports what the editor context was seeded with, so tests can
+// check the provider's state without the real wizard's hook chain.
+vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", () => ({
+    default: function EditWizardStub() {
+        const { services_components: servicesComponents = [], grant_numbers: grantNumbers = [] } =
+            useEditAgreement() || {};
+        return (
+            <div data-testid="edit-wizard">
+                scs:{servicesComponents.length} grants:{grantNumbers.length}
+            </div>
+        );
+    }
 }));
 
 vi.mock("../../../helpers/budgetLines.helpers", async (importOriginal) => ({
@@ -90,6 +105,48 @@ describe("AgreementBudgetLines", () => {
         allBudgetLinesInReview: false,
         isAgreementNotaContract: false
     };
+
+    // OPS-6488: the Agreement Total nets out pending de-obligations; the obligated amount is unchanged.
+    test("nets pending de-obligations out of the agreement subtotal and total", () => {
+        const store = configureStore({
+            reducer: { auth: () => ({ activeUser: { id: 1, roles: [{ name: USER_ROLES.VIEWER_EDITOR }] } }) }
+        });
+        const agreement = {
+            ...mockAgreement,
+            budget_line_items: [
+                {
+                    id: 10,
+                    status: "OBLIGATED",
+                    amount: 500000,
+                    net_amount: 400000,
+                    requested_de_obligation_amount: 100000,
+                    fees: 0
+                },
+                { id: 11, status: "PLANNED", amount: 50000, net_amount: 50000, fees: 0 }
+            ]
+        };
+
+        render(
+            <Provider store={store}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementBudgetLines
+                        {...defaultProps}
+                        agreement={agreement}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        // $450,000 subtotal, not the $550,000 gross.
+        expect(screen.getByText("$450,000.00")).toBeInTheDocument();
+        // Agreement Total renders dollars and cents in separate spans.
+        const totalCard = screen.getByTestId("currency-summary-card-total");
+        expect(totalCard).toHaveTextContent("$ 450,000");
+        expect(totalCard).not.toHaveTextContent("550,000");
+    });
 
     test("super user can edit budget lines on GRANT agreements", () => {
         // Create a test store with super user
@@ -1096,6 +1153,90 @@ describe("AgreementBudgetLines", () => {
             expect(handleExport).toHaveBeenCalledTimes(1);
             // enableObe (issue #6542) is handleExport's 10th argument.
             expect(handleExport.mock.calls[0][9]).toBe(true);
+        });
+    });
+    describe("edit wizard seeding", () => {
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+
+        const ui = (agreement) => (
+            <Provider store={superUserStore}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementBudgetLines
+                        {...defaultProps}
+                        agreement={agreement}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                        isEditMode={true}
+                        setIsEditMode={vi.fn()}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        // The editor context seeds from its props only on mount, so mounting it while the
+        // query is in flight would freeze an empty list and drop SCs the agreement already has.
+        test("waits for the services components to load before mounting the edit wizard", () => {
+            useGetServicesComponentsListQueryMock.mockReturnValue({ data: undefined, isLoading: true });
+            const { rerender } = render(ui(mockAgreement));
+
+            expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+            useGetServicesComponentsListQueryMock.mockReturnValue({
+                data: [{ id: 101, number: 1, agreement_id: 1 }],
+                isLoading: false
+            });
+            rerender(ui(mockAgreement));
+
+            expect(screen.getByTestId("edit-wizard")).toHaveTextContent("scs:1");
+        });
+
+        test("waits for the grant numbers to load before mounting the edit wizard", () => {
+            const grantAgreement = { ...mockAgreement, agreement_type: "GRANT" };
+            useGetGrantNumbersListQueryMock.mockReturnValue({ data: undefined, isLoading: true });
+            const { rerender } = render(ui(grantAgreement));
+
+            expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+
+            useGetGrantNumbersListQueryMock.mockReturnValue({
+                data: [{ id: 7, number: 1, agreement_id: 1 }],
+                isLoading: false
+            });
+            rerender(ui(grantAgreement));
+
+            expect(screen.getByTestId("edit-wizard")).toHaveTextContent("grants:1");
+        });
+
+        // Save nulls any budget line link it can't resolve against these lists, so opening the
+        // editor after a failed load would unlink every existing budget line.
+        test("shows an error instead of the edit wizard when the services components fail to load", () => {
+            useGetServicesComponentsListQueryMock.mockReturnValue({ data: undefined, isLoading: false, isError: true });
+            render(ui(mockAgreement));
+
+            expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+            expect(screen.getByRole("alert")).toHaveTextContent(/services components could not be loaded/i);
+        });
+
+        test("shows an error instead of the edit wizard when the grant numbers fail to load", () => {
+            useGetGrantNumbersListQueryMock.mockReturnValue({ data: undefined, isLoading: false, isError: true });
+            render(ui({ ...mockAgreement, agreement_type: "GRANT" }));
+
+            expect(screen.queryByTestId("edit-wizard")).not.toBeInTheDocument();
+            expect(screen.getByRole("alert")).toHaveTextContent(/grant numbers could not be loaded/i);
         });
     });
 });

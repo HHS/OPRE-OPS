@@ -76,6 +76,19 @@ class PUTRequestBodySchema(RequestBodySchema):
     clin_id = fields.Int(allow_none=True, load_default=None)
 
 
+class DeObligationRequestSchema(Schema):
+    """Submit (or clear) a de-obligation request on an Obligated budget line (OPS-6488).
+
+    `requested_amount` is the amount to de-obligate (the delta), not the resulting net amount.
+    Omitted, null, or 0 clears a pending de-obligation instead of submitting one.
+    `line_description`, the one other field editable on an Obligated line, applies right away
+    when present; omitted leaves the description unchanged.
+    """
+
+    requested_amount = fields.Float(allow_none=True, load_default=None)
+    line_description = fields.Str(allow_none=True, validate=Length(max=150))
+
+
 class NestedBudgetLineItemRequestSchema(RequestBodySchema):
     """
     Schema for budget line items nested in agreement creation requests.
@@ -178,6 +191,7 @@ class MetaSchema(Schema):
     isEditable = fields.Bool(dump_default=False, required=True)
     isDeletable = fields.Bool(dump_default=False, load_default=False, required=False)
     lockedMessage = fields.Str(allow_none=True, dump_default=None, load_default=None, required=False)
+    inReviewModification = fields.Bool(dump_default=False, load_default=False, required=False)
 
 
 class QueryParametersSchema(PaginationListSchema):
@@ -326,6 +340,10 @@ class BudgetLineItemResponseSchema(Schema):
     clin = fields.Nested("ops_api.ops.schemas.clins.CLINSchema", load_default=None, dump_default=None, allow_none=True)
     amount = fields.Float(required=True)
     total = fields.Float(required=True)
+    # Pending, unapproved de-obligation request (OPS-6488): null when there is none.
+    # `amount` stays the real/original obligated amount; `net_amount` is `amount` minus this.
+    requested_de_obligation_amount = fields.Float(load_default=None, dump_default=None, allow_none=True)
+    net_amount = fields.Float(required=True)
     line_description = fields.Str(required=True)
     status = fields.Enum(BudgetLineItemStatus, required=True, by_value=True)
     is_obe = fields.Bool(required=True)

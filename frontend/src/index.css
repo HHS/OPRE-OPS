@@ -37,6 +37,14 @@ body {
     white-space: normal;
 }
 
+/* ---------- Disabled Select that fills its column (Select disabledWidthClassName="") ---------- */
+/* USWDS wraps the tooltip trigger in an inline-block .usa-tooltip span, which shrinks the select
+   to its text. Stretch it so the disabled select is as wide as the enabled one. */
+.select-tooltip-fill > .usa-tooltip {
+    display: block;
+    width: 100%;
+}
+
 /* ---------- Right-positioned tooltips need more width ---------- */
 /* Higher specificity selector to override USWDS default without !important */
 span.tooltip-right-wide .usa-tooltip__body.is-set,

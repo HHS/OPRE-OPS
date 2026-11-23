@@ -5250,6 +5250,75 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
+  /budget-line-items/{id}/de-obligation/:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          format: int32
+        description: The ID of the budget line item
+    post:
+      tags:
+        - Budget Line Items
+      operationId: submitDeObligation
+      description: >-
+        Submit (or clear) a de-obligation request on an Obligated budget line (OPS-6488). A
+        `requested_amount` of 0 or omitted clears a pending de-obligation instead of submitting
+        one. Never touches `amount` -- only the pending `requested_de_obligation_amount` the
+        Agreement's totals net against. Approving the resulting modification isn't supported yet
+        (OPS-6489).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requested_amount:
+                  type: number
+                  format: float
+                  nullable: true
+                  description: >-
+                    The amount to de-obligate (the delta), not the resulting net amount. Must be
+                    greater than $0 and no more than the line's obligated amount, or 0/omitted to
+                    clear a pending request.
+                  example: 100000.00
+                line_description:
+                  type: string
+                  nullable: true
+                  maxLength: 150
+                  description: >-
+                    The line's description, the only other field editable on an Obligated line.
+                    Applies right away (it isn't part of the contract modification); omit it to
+                    leave the description unchanged.
+                  example: Research and analysis, reduced scope
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BudgetLineItem"
+                  - type: object
+                    properties:
+                      _meta:
+                        $ref: "#/components/schemas/BudgetLineItemMeta"
+        "400":
+          description: >-
+            Bad Request -- the agreement isn't Awarded, the line isn't Obligated, the line is
+            already in a modification that's in review, the amount is out of range, or contract
+            modifications are disabled
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden -- the user is not associated with the agreement
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
   /notifications/:
     get:
       tags:
@@ -7590,13 +7659,16 @@ components:
         services_component_id:
           type: integer
           nullable: true
-          description: Set for services component add rows. Kept after the services component is deleted.
+          description: >-
+            Set for services component rows (add, delete, period_start / period_end). Kept after
+            the services component is deleted.
           example: null
         field:
           type: string
           description: >-
             The edited field, i.e. "Change To" (amount, can_id, date_needed, status, delete,
-            services_component_create; project_officer_id for a COR change).
+            services_component_create, a services component's period_start / period_end (ISO
+            dates); project_officer_id for a COR change).
           example: amount
         old_value:
           nullable: true
@@ -7615,6 +7687,13 @@ components:
           type: string
           nullable: true
           description: The "To" user's name for a project_officer_id edit; null for other fields.
+          example: null
+        services_component_display_name:
+          type: string
+          nullable: true
+          description: >-
+            The services component's name for its period_start / period_end edits (their From/To
+            are dates); null for other fields.
           example: null
         requested_by:
           type: object
@@ -8327,6 +8406,20 @@ components:
           type: number
           format: float
           description: Total BLI amount including fees (amount + fees)
+        requested_de_obligation_amount:
+          type: number
+          format: float
+          nullable: true
+          description: >-
+            Amount of a pending, unapproved de-obligation request on this line (OPS-6488). Null
+            when there is no pending request. `amount` stays the real/original obligated amount;
+            this is the delta being requested, not the resulting net amount.
+        net_amount:
+          type: number
+          format: float
+          description: >-
+            `amount` minus `requested_de_obligation_amount`; equals `amount` when there is no
+            pending de-obligation request.
         comments:
           type: string
         date_needed:
@@ -8419,6 +8512,20 @@ components:
           type: number
           format: float
           description: Total BLI amount including fees (amount + fees)
+        requested_de_obligation_amount:
+          type: number
+          format: float
+          nullable: true
+          description: >-
+            Amount of a pending, unapproved de-obligation request on this line (OPS-6488). Null
+            when there is no pending request. `amount` stays the real/original obligated amount;
+            this is the delta being requested, not the resulting net amount.
+        net_amount:
+          type: number
+          format: float
+          description: >-
+            `amount` minus `requested_de_obligation_amount`; equals `amount` when there is no
+            pending de-obligation request.
         comments:
           type: string
         date_needed:
@@ -8935,6 +9042,14 @@ components:
           description: The services component's add change requests in review, or null.
           items:
             $ref: "#/components/schemas/GenericChangeRequest"
+        in_review_modification:
+          type: boolean
+          readOnly: true
+          example: false
+          description: >-
+            True while the services component's own edits (e.g. its period of performance) are in
+            a contract modification that is in review. Until the modification is approved or
+            declined, its period of performance can't be changed and it can't be deleted.
     ServicesComponentRequest:
       type: object
       properties:
@@ -10339,6 +10454,12 @@ components:
           description: >-
             Server-computed human-readable reason the budget line item is locked when the frontend
             cannot derive it on its own (e.g. the agreement has reached Pre-Award). Null when editable.
+        inReviewModification:
+          type: boolean
+          default: false
+          description: >-
+            Whether the budget line item is selected for, or has edits attached to, a contract
+            modification request that is in review, so it can't be changed or de-obligated.
         total_count:
           type: integer
           description: Total number of budget line items in the system matching the query

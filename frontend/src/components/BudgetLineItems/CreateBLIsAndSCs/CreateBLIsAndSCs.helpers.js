@@ -1,6 +1,6 @@
 import cryptoRandomString from "crypto-random-string";
 import { cleanAgreementForApi, cleanBudgetLineItemsForApi, formatTeamMember } from "../../../helpers/agreement.helpers";
-import { BLI_STATUS, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, budgetLinesTotal, getNetAmount } from "../../../helpers/budgetLines.helpers";
 import { formatDateForApi, renderField } from "../../../helpers/utils";
 
 /**
@@ -34,11 +34,12 @@ export const feesForCards = (budgetLines) =>
     budgetLines.reduce((totalFees, budgetLine) => totalFees + (budgetLine.fees || 0), 0);
 
 /**
- * Get the sub total for the cards
+ * Get the sub total for the cards, net of any pending de-obligations (OPS-6488)
  * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
  * @returns {number} - The sub total
  */
-export const subTotalForCards = (budgetLines) => budgetLinesTotal(budgetLines);
+export const subTotalForCards = (budgetLines) =>
+    budgetLinesTotal(budgetLines.map((bli) => ({ ...bli, amount: getNetAmount(bli) })));
 
 /**
  * Get the totals for the cards
@@ -83,6 +84,48 @@ export const attachScPeriodToBudgetLines = (tempBudgetLines, servicesComponents)
  */
 export const getServicesComponentAdditionsTrackedForModification = ({ servicesComponents }) =>
     servicesComponents.filter((sc) => (!("created_on" in sc) || sc.awaiting_add_approval) && !sc.in_review);
+
+/**
+ * A saved budget line as it looks once a deleted Services Component's link is cleared, for the
+ * "has this line changed?" check. Deleting an SC clears its link on every budget line locally
+ * (editor reducer's DELETE_SERVICE_COMPONENT), including lines the user never otherwise touched.
+ * That alone isn't an edit to send: the backend's SC -> BLI foreign key nulls the link
+ * (ON DELETE SET NULL) as part of the SC delete itself, and sending it would run the line's
+ * editability checks for no reason, failing the whole save, including the SC delete that was
+ * the actual intent (OPS-3268). A genuine edit elsewhere on the same line still counts.
+ * @param {Object | undefined} budgetLine - The saved budget line.
+ * @param {number[]} deletedServicesComponentsIds
+ * @returns {Object | undefined}
+ */
+export const clearDeletedServicesComponentLink = (budgetLine, deletedServicesComponentsIds) => {
+    if (budgetLine?.services_component_id == null) return budgetLine;
+    if (!deletedServicesComponentsIds.includes(budgetLine.services_component_id)) return budgetLine;
+    return {
+        ...budgetLine,
+        services_component_id: null,
+        services_component_number: undefined,
+        serviceComponentGroupingLabel: undefined
+    };
+};
+
+/**
+ * Saved Services Components whose period of performance is being changed. On an Awarded agreement
+ * each change is tracked as a Modified LOE edit for the next contract modification (OPS-3268).
+ * Compared with the saved SCs, so a change that is put back doesn't count (the backend drops it).
+ * @param {Object} args
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} args.servicesComponents - The SCs being edited.
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} [args.savedServicesComponents] - The SCs as saved.
+ * @returns {Array<import("../../../types/ServicesComponents").ServicesComponents>}
+ */
+export const getServicesComponentsWithPeriodEdits = ({ servicesComponents, savedServicesComponents = [] }) =>
+    servicesComponents.filter((sc) => {
+        const saved = savedServicesComponents.find((savedSc) => savedSc.id === sc.id);
+        return (
+            saved !== undefined &&
+            ((sc.period_start ?? null) !== (saved.period_start ?? null) ||
+                (sc.period_end ?? null) !== (saved.period_end ?? null))
+        );
+    });
 
 /**
  * Derive the effective SC window across all services components (saved and unsaved).

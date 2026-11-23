@@ -167,6 +167,24 @@ def test_approve_award_with_obligated_date_succeeds(budget_team_auth_client, tes
     assert test_pending_award_step.award_approval_status == "APPROVED"
 
 
+def test_approve_award_by_linked_user_outside_budget_team_is_forbidden(
+    basic_user_auth_client, test_pending_award_step, loaded_db
+):
+    """A user linked to the agreement (passing the association check) still can't respond to award approval."""
+    agreement = test_pending_award_step.procurement_tracker.agreement
+    agreement.project_officer_id = 521
+    loaded_db.commit()
+
+    response = basic_user_auth_client.patch(
+        f"/api/v1/procurement-tracker-steps/{test_pending_award_step.id}",
+        json={"approval_status": "APPROVED", "obligated_date": "2024-09-30"},
+    )
+
+    assert response.status_code == 403
+    loaded_db.refresh(test_pending_award_step)
+    assert test_pending_award_step.award_approval_status is None
+
+
 # ---------------------------------------------------------------------------
 # agreement_total snapshot at time of award (OPS-5379)
 #

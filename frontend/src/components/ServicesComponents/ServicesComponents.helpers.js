@@ -39,6 +39,9 @@ export const dateToYearMonthDay = (date) => {
     }
 };
 
+export const SERVICES_COMPONENT_IN_REVIEW_MODIFICATION_MESSAGE =
+    "This Services Component has edits in a contract modification that is in review, so it can't be changed until the modification is approved or declined.";
+
 const SERVICES_COMPONENT_PENDING_TITLE =
     "This services component has pending edits that will require a contract modification:";
 
@@ -79,12 +82,16 @@ export const getServicesComponentChangeMessages = (changeRequests) =>
 
 /**
  * Tooltip for a services component whose addition is in review (OPS-6440), in the same
- * format as a budget line's pending-edits tooltip.
+ * format as a budget line's pending-edits tooltip, or whose edits are in a contract modification
+ * in review (OPS-3268).
  *
  * @param {object} servicesComponent - A services component as returned by the API.
  * @returns {string} The locked-icon tooltip, or "" when nothing is in review.
  */
 export function getServicesComponentLockedMessage(servicesComponent) {
+    // Its own edits are in a contract modification in review: the API rejects changing or deleting
+    // it until the modification is approved or declined (OPS-3268).
+    if (servicesComponent?.in_review_modification) return SERVICES_COMPONENT_IN_REVIEW_MODIFICATION_MESSAGE;
     if (!servicesComponent?.in_review) return "";
     return (servicesComponent.change_requests_in_review ?? [])
         .flatMap(getServicesComponentChangeLines)

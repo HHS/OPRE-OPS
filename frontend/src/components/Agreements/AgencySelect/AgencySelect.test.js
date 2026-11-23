@@ -346,8 +346,10 @@ describe("AgencySelect", () => {
             />
         );
 
-        // Component renders successfully with isDisabled prop
-        expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
+        const group = screen.getByRole("group");
+        expect(group).toBeDisabled();
+        expect(group).toContainElement(screen.getByText("Servicing Agency", { selector: "label" }));
+        expect(group).toContainElement(screen.getByText("Required Information*"));
     });
 
     it("renders with isDisabled prop when set to false", () => {
@@ -365,8 +367,7 @@ describe("AgencySelect", () => {
             />
         );
 
-        // Component renders successfully with isDisabled prop
-        expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
+        expect(screen.getByRole("group")).toBeEnabled();
     });
 
     it("renders with tooltipMsg prop", () => {

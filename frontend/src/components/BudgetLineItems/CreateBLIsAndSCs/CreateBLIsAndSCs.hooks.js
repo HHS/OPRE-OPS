@@ -11,6 +11,8 @@ import {
     useDeleteBudgetLineItemMutation,
     useDeleteGrantNumberMutation,
     useDeleteServicesComponentMutation,
+    useSubmitDeObligationMutation,
+    useGetServicesComponentsListQuery,
     useGetVersionQuery,
     useUpdateBudgetLineItemMutation,
     useUpdateGrantNumberMutation,
@@ -36,6 +38,8 @@ import {
 } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
+import deObligationSuite from "../BudgetLinesForm/deObligationSuite";
+import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import scFormSuite from "../../ServicesComponents/ServicesComponentForm/suite";
 import suite from "./suite";
 import {
@@ -45,7 +49,9 @@ import {
     buildNewAgreementBudgetPayload,
     buildNewBudgetLineItem,
     buildSaveSuccessAlert,
+    clearDeletedServicesComponentLink,
     getServicesComponentAdditionsTrackedForModification,
+    getServicesComponentsWithPeriodEdits,
     computeBudgetLinePageErrors,
     feesForCards,
     getBudgetLinesUrl,
@@ -137,6 +143,8 @@ const useCreateBLIsAndSCs = (
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [groupedBudgetLinesByGrantNumber, setGroupedBudgetLinesByGrantNumber] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
+    // OPS-6488: editing an Obligated line, where the form's amount holds the amount to de-obligate.
+    const [isDeObligating, setIsDeObligating] = React.useState(false);
     const navigate = useTrailNavigate();
     const { setAlert } = useAlert();
     const [addAgreement] = useAddAgreementMutation();
@@ -144,6 +152,7 @@ const useCreateBLIsAndSCs = (
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
+    const [submitDeObligation] = useSubmitDeObligationMutation();
     const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
     const [blockerDisabledForCreateAgreement, setBlockerDisabledForCreateAgreement] = React.useState(false);
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
@@ -199,6 +208,14 @@ const useCreateBLIsAndSCs = (
     const hasServicesComponentAdditionsOrDeletions =
         pendingServicesComponentAdditions.length > 0 ||
         (awardedEditAppliesDirectly && deletedServicesComponentsIds.length > 0);
+    // An SC period-of-performance change is tracked too (OPS-3268). Compared with the saved SCs,
+    // which the hosting page has already fetched (same RTK Query cache entry).
+    const { data: savedServicesComponents } = useGetServicesComponentsListQuery(selectedAgreement?.id, {
+        skip: !awardedEditAppliesDirectly || !selectedAgreement?.id
+    });
+    const hasServicesComponentPeriodEdits =
+        awardedEditAppliesDirectly &&
+        getServicesComponentsWithPeriodEdits({ servicesComponents, savedServicesComponents }).length > 0;
 
     // Budget Team members and superusers write financial changes directly (no change-request
     // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.
@@ -349,27 +366,11 @@ const useCreateBLIsAndSCs = (
             const promises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
                 const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
 
-                let unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
-                // Deleting a Services Component clears its link on every budget line locally
-                // (editor reducer's DELETE_SERVICE_COMPONENT), including ones the user never
-                // otherwise touched. That alone isn't a real edit to send: the backend's SC ->
-                // BLI foreign key already nulls the link (ON DELETE SET NULL) as part of the SC
-                // delete itself, which runs after this -- and for a non-superuser on an Obligated
-                // or Executing line, sending it here would be rejected as "not in an editable
-                // state" and block the whole save, including the SC delete that was the actual
-                // intent (OPS-3268). Compare against the same cleared shape so this field alone
-                // doesn't count as a change; a genuine edit elsewhere on the same line still does.
-                if (
-                    unchangedBudgetLineItem?.services_component_id != null &&
-                    deletedServicesComponentsIds.includes(unchangedBudgetLineItem.services_component_id)
-                ) {
-                    unchangedBudgetLineItem = {
-                        ...unchangedBudgetLineItem,
-                        services_component_id: null,
-                        services_component_number: undefined,
-                        serviceComponentGroupingLabel: undefined
-                    };
-                }
+                // A deleted SC's cleared link alone isn't an edit to send.
+                const unchangedBudgetLineItem = clearDeletedServicesComponentLink(
+                    budgetLines.find((bli) => bli.id === existingBudgetLineItem.id),
+                    deletedServicesComponentsIds
+                );
                 let budgetLineHasChanged =
                     JSON.stringify(existingBudgetLineItem) !== JSON.stringify(unchangedBudgetLineItem); // We have to check every single property to see if there's ANY change
                 if (budgetLineHasChanged) {
@@ -451,9 +452,11 @@ const useCreateBLIsAndSCs = (
         setNeedByDate(null);
         setEnteredDescription(null);
         setBudgetLineBeingEdited(null);
+        setIsDeObligating(false);
         suite.reset();
         budgetFormSuite.reset();
         datePickerSuite.reset();
+        deObligationSuite.reset();
     }, []);
     /**
      * NOTE: 4th useCallback in this file
@@ -651,6 +654,38 @@ const useCreateBLIsAndSCs = (
             return;
         }
 
+        if (isDeObligating) {
+            if (
+                enteredAmount == null ||
+                deObligationSuite.run({ requestedAmount: enteredAmount }, currentBudgetLine.amount ?? 0).hasErrors()
+            ) {
+                return;
+            }
+            // Only the pending de-obligation and the description change -- the real amount is
+            // untouched until a Division Director approves the modification. Sent on Save & Exit via
+            // the de-obligation endpoint, not the generic budget line update (which rejects any edit
+            // to an Obligated line). Figma leaves Description editable here, over the AC's "no other
+            // edits"; see the note on OPS-6488.
+            dispatch({
+                type: "UPDATE_BUDGET_LINE_ITEM",
+                payload: {
+                    ...currentBudgetLine,
+                    requested_de_obligation_amount: enteredAmount,
+                    line_description: enteredDescription,
+                    deObligationChanged: true
+                }
+            });
+            setHasUnsavedChanges(true);
+            setAlert({
+                type: "success",
+                message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click ${continueBtnText} below.`,
+                isCloseable: false,
+                isToastMessage: true
+            });
+            resetForm();
+            return;
+        }
+
         // Match by id (not array position) — tempBudgetLines and the original budgetLines
         // prop can drift out of index-alignment after any add/delete/duplicate, so an
         // index-based lookup here could compare against the wrong BLI's original values.
@@ -675,7 +710,7 @@ const useCreateBLIsAndSCs = (
 
         setAlert({
             type: "success",
-            message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`,
+            message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click ${continueBtnText} below.`,
             isCloseable: false,
             isToastMessage: true
         });
@@ -740,6 +775,30 @@ const useCreateBLIsAndSCs = (
             setIsEditing(true);
             setIsBudgetLineNotDraft(tempBudgetLines[index].status !== BLI_STATUS.DRAFT);
         }
+    };
+    /**
+     * Confirm the user means to de-obligate, then open the form on an Obligated line with the amount
+     * as the only editable field, prefilled with any pending de-obligation (OPS-6488).
+     * @param {number} budgetLineId - The ID of the Obligated budget line
+     * @returns {void}
+     */
+    const handleDeObligateBudgetLine = (budgetLineId) => {
+        setShowModal(true);
+        setModalProps({
+            heading:
+                "Editing an obligated budget line can only be completed for de-obligations. Do you need to de-obligate funding from this budget line?",
+            description:
+                "De-obligating funding will update the total for this budget line and the agreement, but will not immediately impact the CAN balance. All de-obligations require a contract modification in order to process.",
+            actionButtonText: "Yes, De-obligate Funding",
+            secondaryButtonText: "Go back",
+            handleConfirm: () => {
+                const budgetLine = tempBudgetLines.find((bl) => bl.id === budgetLineId);
+                handleSetBudgetLineForEditingById(budgetLineId);
+                setIsDeObligating(true);
+                setEnteredAmount(budgetLine?.requested_de_obligation_amount ?? null);
+                scrollToCenter("budget-line-form");
+            }
+        });
     };
     /**
      * Handle duplicating a budget line
@@ -885,6 +944,22 @@ const useCreateBLIsAndSCs = (
             await Promise.all(creationPromises);
             console.log(`${creationPromises.length} new budget lines created successfully`);
 
+            // De-obligations have their own endpoint; the generic update rejects Obligated lines.
+            await Promise.all(
+                existingBudgetLineItemsWithIds
+                    .filter((bli) => bli.deObligationChanged)
+                    .map((bli) =>
+                        submitDeObligation({
+                            id: bli.id,
+                            requestedAmount: bli.requested_de_obligation_amount,
+                            lineDescription: bli.line_description
+                        }).unwrap()
+                    )
+            );
+            const existingBudgetLineItemsToUpdate = existingBudgetLineItemsWithIds.filter(
+                (bli) => !bli.deObligationChanged
+            );
+
             const isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
                 (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
             );
@@ -895,16 +970,16 @@ const useCreateBLIsAndSCs = (
             const needsGenericFinancialApproval =
                 isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && !awardedEditAppliesDirectly;
             if (needsGenericFinancialApproval && savedViaModal) {
-                await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsWithIds);
+                await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsToUpdate);
             } else if (needsGenericFinancialApproval && approvalConfirmed) {
                 await sendExistingBLIsToApproval(
-                    existingBudgetLineItemsWithIds,
+                    existingBudgetLineItemsToUpdate,
                     getBudgetLinesUrl(selectedAgreement?.id)
                 );
             } else if (needsGenericFinancialApproval) {
-                await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
+                await handleFinancialSnapshotChanges(existingBudgetLineItemsToUpdate);
             } else {
-                await handleRegularUpdates(existingBudgetLineItemsWithIds);
+                await handleRegularUpdates(existingBudgetLineItemsToUpdate);
             }
             await handleDeletions();
 
@@ -920,6 +995,7 @@ const useCreateBLIsAndSCs = (
             tempBudgetLines,
             isGrant,
             addBudgetLineItem,
+            submitDeObligation,
             canEditDirectly,
             awardedEditAppliesDirectly,
             handleFinancialSnapshotChanges,
@@ -965,12 +1041,19 @@ const useCreateBLIsAndSCs = (
                 if (error?.alertShown) {
                     return;
                 }
-                setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred while saving. Please try again.",
-                    redirectUrl: "/error"
-                });
+                // A rejected save (e.g. a Services Component locked by a contract modification in
+                // review, OPS-3268) says why; show that here rather than the generic error page.
+                const backendMessage = extractBackendErrorMessage(error);
+                setAlert(
+                    backendMessage
+                        ? { type: "error", heading: "Error", message: backendMessage }
+                        : {
+                              type: "error",
+                              heading: "Error",
+                              message: "An error occurred while saving. Please try again.",
+                              redirectUrl: "/error"
+                          }
+                );
             } finally {
                 setIsEditMode(false);
                 setHasUnsavedChanges(false);
@@ -1008,9 +1091,14 @@ const useCreateBLIsAndSCs = (
         const bli = budgetLines?.find((b) => b.id === id);
         return bli && bli.status !== BLI_STATUS.DRAFT;
     });
+    const hasStagedDeObligations = tempBudgetLines.some((b) => b.deObligationChanged);
     const requiresContractModification =
         awardedEditAppliesDirectly &&
-        (hasFinancialSnapshotChanges || hasDeletedNonDraftBLIs || hasServicesComponentAdditionsOrDeletions);
+        (hasFinancialSnapshotChanges ||
+            hasDeletedNonDraftBLIs ||
+            hasServicesComponentAdditionsOrDeletions ||
+            hasStagedDeObligations ||
+            hasServicesComponentPeriodEdits);
 
     useCreateBLIsAndSCsSaveBlocker({
         blocker,
@@ -1046,6 +1134,7 @@ const useCreateBLIsAndSCs = (
         handleCancel,
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
+        handleDeObligateBudgetLine,
         handleEditBLI,
         hasUnsavedChanges,
         setHasUnsavedChanges,
@@ -1054,6 +1143,7 @@ const useCreateBLIsAndSCs = (
         handleSave,
         handleSetBudgetLineForEditingById,
         isBudgetLineNotDraft,
+        isDeObligating,
         isEditing,
         modalProps,
         needByDate,
@@ -1080,6 +1170,10 @@ const useCreateBLIsAndSCs = (
         isAgreementNotYetDeveloped,
         requiresFinancialApproval,
         requiresContractModification,
+        tracksContractModifications,
+        // On an Awarded agreement a non-superuser can't change a saved SC's number or Optional
+        // flag (OPS-3268); the backend rejects it too.
+        locksServicesComponentNumbers: awardedEditAppliesDirectly,
         effectiveScStartDate,
         effectiveScEndDate
     };

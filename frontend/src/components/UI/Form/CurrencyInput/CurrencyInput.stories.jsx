@@ -20,6 +20,7 @@ export default {
         value: { control: "text" },
         messages: { control: "object" },
         placeholder: { control: "text" },
+        hint: { control: "text" },
         pending: { control: "boolean" }
     }
 };
@@ -47,6 +48,15 @@ export const WithErrors = {
         label: "Amount",
         value: "",
         messages: ["Amount is required"]
+    }
+};
+
+export const WithHint = {
+    args: {
+        name: "amount",
+        label: "De-obligated Amount",
+        value: "",
+        hint: "Above $0 up to $500,000.00"
     }
 };
 
