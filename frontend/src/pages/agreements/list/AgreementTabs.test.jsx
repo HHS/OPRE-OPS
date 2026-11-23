@@ -151,6 +151,22 @@ describe("AgreementTabs", () => {
         expect(currentByLabel).toEqual(labels.map((label) => [label, label === currentLabel ? "page" : null]));
     });
 
+    test("marks no tab when a user without the For Review tab opens the change-requests list", () => {
+        useSelector.mockReturnValue([{ id: 2, name: "VIEWER_EDITOR" }]);
+        useLocation.mockReturnValue({ search: "?filter=change-requests" });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementTabs />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        const current = screen.getAllByRole("link").map((link) => link.getAttribute("aria-current"));
+        expect(current).toEqual([null, null]);
+    });
+
     test("displays notification circle with correct number", () => {
         render(
             <Provider store={store}>

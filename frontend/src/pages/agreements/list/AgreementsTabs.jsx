@@ -6,8 +6,9 @@ import TabsSection from "../../../components/UI/TabsSection";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { useChangeRequestTotal } from "../../../hooks/useChangeRequests.hooks";
 import tabStyles from "./AgreementTabs.module.css";
+import { AGREEMENT_LIST_FILTERS } from "./utils";
 
-const KNOWN_FILTERS = ["my-agreements", "change-requests"];
+const KNOWN_FILTERS = Object.values(AGREEMENT_LIST_FILTERS);
 
 /**
  * A header section of the agreements page that contains the filters.
@@ -32,13 +33,13 @@ const AgreementTabs = () => {
             label: "All Agreements"
         },
         {
-            name: "?filter=my-agreements",
+            name: `?filter=${AGREEMENT_LIST_FILTERS.MY_AGREEMENTS}`,
             label: "My Agreements"
         },
         ...(displayReviewTab
             ? [
                   {
-                      name: "?filter=change-requests",
+                      name: `?filter=${AGREEMENT_LIST_FILTERS.CHANGE_REQUESTS}`,
                       label: "For Review"
                   }
               ]

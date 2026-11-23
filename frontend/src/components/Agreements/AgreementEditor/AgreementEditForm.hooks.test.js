@@ -1515,7 +1515,7 @@ describe("useAgreementEditForm reports unsaved changes to its parent", () => {
         await waitFor(() => expect(setHasAgreementChanged).toHaveBeenLastCalledWith(true));
     });
 
-    it("does not report a procurement shop selection as an agreement change", async () => {
+    it("tracks only the agreement object, not the separate selected_procurement_shop state", async () => {
         const setHasAgreementChanged = vi.fn();
         const { rerender } = renderUseAgreementEditForm({ setHasAgreementChanged });
         await waitFor(() => expect(setHasAgreementChanged).toHaveBeenCalled());
