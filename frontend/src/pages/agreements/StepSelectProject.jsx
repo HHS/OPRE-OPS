@@ -1,5 +1,5 @@
 import React from "react";
-import { useBlocker, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDeleteAgreementMutation, useGetAllProjectsQuery } from "../../api/opsAPI";
 import {
     useEditAgreement,
@@ -10,6 +10,7 @@ import ProjectSelectWithSummaryCard from "../../components/Projects/ProjectSelec
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import useAlert from "../../hooks/use-alert.hooks";
+import useBlockerWithBypassRef from "../../hooks/useBlockerWithBypassRef.hooks";
 import useHasStateChanged from "../../hooks/useHasStateChanged.hooks";
 import EditModeTitle from "./EditModeTitle";
 
@@ -61,19 +62,7 @@ export const StepSelectProject = ({
     // Wrapped in an object because useHasStateChanged spreads its argument into a plain
     // object snapshot — a bare null/undefined would spread to {} and immediately mismatch.
     const hasProjectChanged = useHasStateChanged({ id: selectedResearchProject?.id ?? null });
-
-    // Bypass ref (not state): a confirmed Cancel can navigate synchronously via Alert's
-    // redirectUrl effect, before a state update would have propagated to the blocker's
-    // registered predicate (react-router only re-registers it inside an effect).
-    const isBypassingRef = React.useRef(false);
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            !isBypassingRef.current && hasProjectChanged && currentLocation.pathname !== nextLocation.pathname
-    );
-    const blockerRef = React.useRef(blocker);
-    React.useEffect(() => {
-        blockerRef.current = blocker;
-    }, [blocker]);
+    const { blocker, blockerRef, isBypassingRef } = useBlockerWithBypassRef(hasProjectChanged);
 
     // Closes the Cancel confirmation (whichever trigger opened it — the Cancel button or
     // the browser-Back guard below) and discards any pending blocked back-navigation so the
