@@ -24,11 +24,11 @@ const testSummary = {
     total_projects: 15,
     projects_by_type: {
         RESEARCH: 13,
-        ADMINISTRATIVE_AND_SUPPORT: 2
+        ADMINISTRATIVE: 2
     },
     amounts_by_type: {
         RESEARCH: { amount: 7000000, percent: 70 },
-        ADMINISTRATIVE_AND_SUPPORT: { amount: 3000000, percent: 30 }
+        ADMINISTRATIVE: { amount: 3000000, percent: 30 }
     }
 };
 

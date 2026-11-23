@@ -19,7 +19,7 @@ const MOCK_PROJECT_1 = {
 const MOCK_PROJECT_2 = {
     id: 11,
     title: "Support Beta",
-    project_type: "ADMINISTRATIVE_AND_SUPPORT",
+    project_type: "ADMINISTRATIVE",
     start_date: null,
     end_date: null,
     fiscal_year_totals: {},

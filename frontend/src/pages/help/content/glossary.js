@@ -120,7 +120,7 @@ export const data = [
         content: `A project is a body of work composed of agreements that share a common topic or theme. Types of projects in OPS include:
 
 - Research Projects - projects that support an OPRE research goal
-- Admin/Support Projects - projects that account for internal costs like rent or website development`
+- Administrative Projects - projects that account for internal costs like rent or website development`
     },
     {
         heading: "Previous FYs Carry-Forward",
@@ -312,7 +312,7 @@ export const data = [
         content: `A project at OPRE that is research-focused, such as an explorative study or research report`
     },
     {
-        heading: "Admin & Support Project",
+        heading: "Administrative Project",
         content: `A project at OPRE that is administrative related such as rent or website development. These projects typically share costs across portfolios.`
     },
     {

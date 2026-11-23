@@ -13,7 +13,8 @@ import { escapeHtml } from "../../helpers/utils";
 
 const DISPLAY_TO_API_TYPE = {
     Research: "RESEARCH",
-    "Admin & Support": "ADMINISTRATIVE_AND_SUPPORT"
+    Administrative: "ADMINISTRATIVE",
+    "Technical Assistance": "TECHNICAL_ASSISTANCE"
 };
 
 const CreateProject = () => {

@@ -20,18 +20,18 @@ const testSummary = {
     total_projects: 15,
     projects_by_type: {
         RESEARCH: 13,
-        ADMINISTRATIVE_AND_SUPPORT: 2
+        ADMINISTRATIVE: 2
     },
     amounts_by_type: {
         RESEARCH: { amount: 7000000, percent: 70 },
-        ADMINISTRATIVE_AND_SUPPORT: { amount: 3000000, percent: 30 }
+        ADMINISTRATIVE: { amount: 3000000, percent: 30 }
     }
 };
 
 const tinySliceSummary = {
     amounts_by_type: {
         RESEARCH: { amount: 3557011799.2, percent: 100 },
-        ADMINISTRATIVE_AND_SUPPORT: { amount: 301500, percent: 0 }
+        ADMINISTRATIVE: { amount: 301500, percent: 0 }
     }
 };
 
@@ -54,7 +54,7 @@ describe("ProjectTypeSummaryCard", () => {
             />
         );
         expect(screen.getByText("Research")).toBeInTheDocument();
-        expect(screen.getByText("Admin & Support")).toBeInTheDocument();
+        expect(screen.getByText("Administrative")).toBeInTheDocument();
     });
 
     it("renders dollar amounts for each type", () => {
@@ -100,7 +100,7 @@ describe("ProjectTypeSummaryCard", () => {
                 summary={{
                     amounts_by_type: {
                         RESEARCH: { amount: 9960 },
-                        ADMINISTRATIVE_AND_SUPPORT: { amount: 40 }
+                        ADMINISTRATIVE: { amount: 40 }
                     }
                 }}
             />
@@ -130,7 +130,7 @@ describe("ProjectTypeSummaryCard", () => {
         const chart = screen.getByTestId("donut-chart");
         const chartValues = JSON.parse(chart.getAttribute("data-chart-values"));
         const researchAmount = tinySliceSummary.amounts_by_type.RESEARCH.amount;
-        const adminAmount = tinySliceSummary.amounts_by_type.ADMINISTRATIVE_AND_SUPPORT.amount;
+        const adminAmount = tinySliceSummary.amounts_by_type.ADMINISTRATIVE.amount;
 
         // Component now passes real values; donut floors internally.
         expect(chartValues[0]).toBe(researchAmount);
@@ -158,7 +158,7 @@ describe("ProjectTypeSummaryCard", () => {
                 summary={{
                     amounts_by_type: {
                         RESEARCH: { amount: 0, percent: 0 },
-                        ADMINISTRATIVE_AND_SUPPORT: { amount: 0, percent: 0 }
+                        ADMINISTRATIVE: { amount: 0, percent: 0 }
                     }
                 }}
             />
@@ -188,7 +188,7 @@ describe("ProjectTypeSummaryCard", () => {
                 summary={{
                     amounts_by_type: {
                         RESEARCH: { amount: 1000000 },
-                        ADMINISTRATIVE_AND_SUPPORT: { amount: 0 }
+                        ADMINISTRATIVE: { amount: 0 }
                     }
                 }}
             />

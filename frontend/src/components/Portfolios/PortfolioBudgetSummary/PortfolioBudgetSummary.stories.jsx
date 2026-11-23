@@ -53,7 +53,7 @@ const sampleCounts = {
         total: 6,
         types: [
             { type: "RESEARCH", count: 4 },
-            { type: "ADMINISTRATIVE_AND_SUPPORT", count: 2 }
+            { type: "ADMINISTRATIVE", count: 2 }
         ]
     },
     agreements: {

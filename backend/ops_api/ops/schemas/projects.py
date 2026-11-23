@@ -53,7 +53,7 @@ class AgreementNameListItem(Schema):
 
 
 class ProjectCreationRequestSchema(Schema):
-    """Combined schema for creating both Research and Administrative/Support projects.
+    """Combined schema for creating Research, Administrative and Technical Assistance projects.
 
     Includes all unique fields from both project types:
     - Common fields: project_type, title, short_title, description, url, team_leaders

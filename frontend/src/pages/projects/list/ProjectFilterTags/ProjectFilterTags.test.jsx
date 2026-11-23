@@ -107,7 +107,7 @@ describe("ProjectFilterTags", () => {
     it("should render project type filter tags", () => {
         const filtersWithTypes = {
             ...mockFilters,
-            projectType: [{ title: "RESEARCH" }, { title: "ADMINISTRATIVE_AND_SUPPORT" }]
+            projectType: [{ title: "RESEARCH" }, { title: "ADMINISTRATIVE" }]
         };
 
         render(
@@ -118,7 +118,7 @@ describe("ProjectFilterTags", () => {
         );
 
         expect(screen.getByText("RESEARCH")).toBeInTheDocument();
-        expect(screen.getByText("ADMINISTRATIVE_AND_SUPPORT")).toBeInTheDocument();
+        expect(screen.getByText("ADMINISTRATIVE")).toBeInTheDocument();
     });
 
     it("should render all filter types together", () => {

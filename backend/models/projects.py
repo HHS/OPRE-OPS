@@ -29,7 +29,8 @@ class ProjectTeamLeaders(BaseModel):
 
 class ProjectType(Enum):
     RESEARCH = 1
-    ADMINISTRATIVE_AND_SUPPORT = 2
+    ADMINISTRATIVE = 2
+    TECHNICAL_ASSISTANCE = 3
 
 
 class ProjectSortCondition(Enum):
@@ -79,10 +80,13 @@ class Project(BaseModel):
     _SQL = {  # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
         "insert_research": text("INSERT INTO research_project (id) VALUES (:id)"),  # nosemgrep
         "insert_admin": text("INSERT INTO administrative_and_support_project (id) VALUES (:id)"),  # nosemgrep
+        "insert_technical_assistance": text("INSERT INTO technical_assistance_project (id) VALUES (:id)"),  # nosemgrep
         "delete_research": text("DELETE FROM research_project WHERE id = :id"),  # nosemgrep
         "delete_admin": text("DELETE FROM administrative_and_support_project WHERE id = :id"),  # nosemgrep
+        "delete_technical_assistance": text("DELETE FROM technical_assistance_project WHERE id = :id"),  # nosemgrep
         "insert_research_ver": text("INSERT INTO research_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"),  # nosemgrep
         "insert_admin_ver": text("INSERT INTO administrative_and_support_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"),  # nosemgrep
+        "insert_technical_assistance_ver": text("INSERT INTO technical_assistance_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"),  # nosemgrep
         "update_parent": text("UPDATE project SET project_type = :new_type WHERE id = :id"),  # nosemgrep
         "new_txn": text("INSERT INTO transaction (issued_at) VALUES (NOW()) RETURNING id"),  # nosemgrep
         "insert_parent_ver": text(  # nosemgrep
@@ -95,7 +99,8 @@ class Project(BaseModel):
     }
     _TYPE_KEYS = {
         ProjectType.RESEARCH: "research",
-        ProjectType.ADMINISTRATIVE_AND_SUPPORT: "admin",
+        ProjectType.ADMINISTRATIVE: "admin",
+        ProjectType.TECHNICAL_ASSISTANCE: "technical_assistance",
     }
 
     def change_type(self, new_type: "ProjectType") -> None:
@@ -393,6 +398,14 @@ class ResearchProject(Project):
 class AdministrativeAndSupportProject(Project):
     __tablename__ = "administrative_and_support_project"
     __mapper_args__ = {
-        "polymorphic_identity": ProjectType.ADMINISTRATIVE_AND_SUPPORT,
+        "polymorphic_identity": ProjectType.ADMINISTRATIVE,
+    }
+    id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
+
+
+class TechnicalAssistanceProject(Project):
+    __tablename__ = "technical_assistance_project"
+    __mapper_args__ = {
+        "polymorphic_identity": ProjectType.TECHNICAL_ASSISTANCE,
     }
     id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)

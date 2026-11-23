@@ -129,7 +129,7 @@ const MOCK_PROJECT_2 = {
     title: "Support Beta",
     short_title: "BETA",
     description: "Beta description",
-    project_type: "ADMINISTRATIVE_AND_SUPPORT",
+    project_type: "ADMINISTRATIVE",
     origination_date: "2020-01-01",
     start_date: null,
     end_date: null,

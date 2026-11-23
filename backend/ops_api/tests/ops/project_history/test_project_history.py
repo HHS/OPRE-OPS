@@ -202,7 +202,7 @@ def test_update_project_type_trigger(loaded_db, app_ctx):
                 "changes": {
                     "project_type": {
                         "old_value": "RESEARCH",
-                        "new_value": "ADMINISTRATIVE_AND_SUPPORT",
+                        "new_value": "ADMINISTRATIVE",
                     },
                 },
             }
@@ -215,7 +215,7 @@ def test_update_project_type_trigger(loaded_db, app_ctx):
     assert len(items) == 1
     assert items[0].history_type == ProjectHistoryType.PROJECT_TYPE_EDITED
     user = loaded_db.get(User, TEST_USER_ID)
-    assert items[0].history_message == f"{user.full_name} changed the Project Type from Research to Admin & Support."
+    assert items[0].history_message == f"{user.full_name} changed the Project Type from Research to Administrative."
 
 
 def test_update_project_team_leader_added_and_removed_trigger(loaded_db, app_ctx):

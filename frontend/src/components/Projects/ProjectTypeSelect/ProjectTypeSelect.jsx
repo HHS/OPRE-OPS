@@ -26,7 +26,8 @@ export const ProjectTypeSelect = ({
 }) => {
     const PROJECT_TYPES = [
         { value: "Research", label: "Research Projects" },
-        { value: "Admin & Support", label: "Admin/Support Projects" }
+        { value: "Administrative", label: "Administrative Projects" },
+        { value: "Technical Assistance", label: "Technical Assistance Projects" }
     ];
 
     return (

@@ -2,7 +2,7 @@ from flask import Response, current_app, request
 from flask_jwt_extended import get_current_user
 from typing_extensions import List
 
-from models import AdministrativeAndSupportProject, Project, ProjectType, ResearchProject
+from models import Project, ProjectType, ResearchProject
 from models.base import BaseModel
 from models.events import OpsEventType
 from models.utils import generate_project_events_update
@@ -34,8 +34,6 @@ def _dump_project_for_history(project: Project) -> dict:
     match project.project_type:
         case ProjectType.RESEARCH:
             schema = ResearchProjectResponse(exclude=["_meta"])
-        case ProjectType.ADMINISTRATIVE_AND_SUPPORT:
-            schema = ProjectResponse(exclude=["_meta"])
         case _:
             schema = ProjectResponse(exclude=["_meta"])
     return schema.dump(project)
@@ -54,9 +52,6 @@ class ProjectItemAPI(BaseItemAPI):
         match project.project_type:
             case ProjectType.RESEARCH:
                 schema = ResearchProjectResponse(exclude=["_meta"])
-            case ProjectType.ADMINISTRATIVE_AND_SUPPORT:
-                # No separate schema for admin project yet but there will be
-                schema = ProjectResponse(exclude=["_meta"])
             case _:
                 schema = ProjectResponse(exclude=["_meta"])
         serialized_project = schema.dump(project)
@@ -103,14 +98,14 @@ class ProjectListAPI(BaseListAPI):
         data = request_schema.load(val)
         projects, metadata = projects_service.get_list(data)
         research_schema = ResearchProjectListResponse()
-        admin_schema = ProjectListResponse()
+        project_schema = ProjectListResponse()
 
         project_response: List[dict] = []
         for project in projects:
             if isinstance(project, ResearchProject):
                 project_response.append(research_schema.dump(project))
-            elif isinstance(project, AdministrativeAndSupportProject):
-                project_response.append(admin_schema.dump(project))
+            else:
+                project_response.append(project_schema.dump(project))
 
         # Return wrapped response with pagination metadata
         response_data = {

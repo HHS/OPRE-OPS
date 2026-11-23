@@ -4,11 +4,13 @@
  */
 
 export const PROJECT_TYPE_RESEARCH = "RESEARCH";
-export const PROJECT_TYPE_ADMIN_SUPPORT = "ADMINISTRATIVE_AND_SUPPORT";
+export const PROJECT_TYPE_ADMINISTRATIVE = "ADMINISTRATIVE";
+export const PROJECT_TYPE_TECHNICAL_ASSISTANCE = "TECHNICAL_ASSISTANCE";
 
 export const PROJECT_TYPE_LABELS = {
     [PROJECT_TYPE_RESEARCH]: "Research",
-    [PROJECT_TYPE_ADMIN_SUPPORT]: "Admin & Support"
+    [PROJECT_TYPE_ADMINISTRATIVE]: "Administrative",
+    [PROJECT_TYPE_TECHNICAL_ASSISTANCE]: "Technical Assistance"
 };
 
 /**
@@ -17,19 +19,26 @@ export const PROJECT_TYPE_LABELS = {
  */
 export const PROJECT_TYPE_COLORS = {
     [PROJECT_TYPE_RESEARCH]: "#A7B9D9",
-    [PROJECT_TYPE_ADMIN_SUPPORT]: "#C2486E"
+    [PROJECT_TYPE_ADMINISTRATIVE]: "#C2486E",
+    [PROJECT_TYPE_TECHNICAL_ASSISTANCE]: "#2F7F6F"
 };
 
 export const PROJECT_TYPE_TEXT_COLORS = {
     [PROJECT_TYPE_RESEARCH]: "black",
-    [PROJECT_TYPE_ADMIN_SUPPORT]: "white"
+    [PROJECT_TYPE_ADMINISTRATIVE]: "white",
+    [PROJECT_TYPE_TECHNICAL_ASSISTANCE]: "white"
 };
 
 /** Named tagStyleActive keys used by Tag.jsx for hover state */
 export const PROJECT_TYPE_TAG_STYLE_ACTIVE = {
     [PROJECT_TYPE_RESEARCH]: "darkOnProjectResearch",
-    [PROJECT_TYPE_ADMIN_SUPPORT]: "whiteOnProjectAdminSupport"
+    [PROJECT_TYPE_ADMINISTRATIVE]: "whiteOnProjectAdminSupport",
+    [PROJECT_TYPE_TECHNICAL_ASSISTANCE]: "whiteOnProjectTechnicalAssistance"
 };
 
 /** Render order for project type tags */
-export const PROJECT_TYPE_ORDER = [PROJECT_TYPE_RESEARCH, PROJECT_TYPE_ADMIN_SUPPORT];
+export const PROJECT_TYPE_ORDER = [
+    PROJECT_TYPE_RESEARCH,
+    PROJECT_TYPE_ADMINISTRATIVE,
+    PROJECT_TYPE_TECHNICAL_ASSISTANCE
+];

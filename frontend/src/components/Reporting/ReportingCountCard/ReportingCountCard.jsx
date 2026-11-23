@@ -18,7 +18,8 @@ const AGREEMENT_TYPE_LABELS = {
 
 const PROJECT_TYPE_LABELS = {
     RESEARCH: "Research",
-    ADMINISTRATIVE_AND_SUPPORT: "Admin & Support"
+    ADMINISTRATIVE: "Administrative",
+    TECHNICAL_ASSISTANCE: "Technical Assistance"
 };
 
 const AGREEMENT_TYPE_COLORS = {

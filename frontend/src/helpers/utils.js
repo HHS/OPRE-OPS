@@ -254,8 +254,9 @@ export const codesToDisplayText = {
         OTHER: "Other"
     },
     project: {
-        ADMINISTRATIVE_AND_SUPPORT: "Admin & Support",
-        RESEARCH: "Research"
+        ADMINISTRATIVE: "Administrative",
+        RESEARCH: "Research",
+        TECHNICAL_ASSISTANCE: "Technical Assistance"
     },
     projectOfficer: {
         AA: "COR",

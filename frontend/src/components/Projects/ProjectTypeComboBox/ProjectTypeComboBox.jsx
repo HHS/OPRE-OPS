@@ -1,5 +1,10 @@
 import ComboBox from "../../UI/Form/ComboBox";
-import { PROJECT_TYPE_RESEARCH, PROJECT_TYPE_ADMIN_SUPPORT, PROJECT_TYPE_LABELS } from "../ProjectTypes.constants";
+import {
+    PROJECT_TYPE_RESEARCH,
+    PROJECT_TYPE_ADMINISTRATIVE,
+    PROJECT_TYPE_TECHNICAL_ASSISTANCE,
+    PROJECT_TYPE_LABELS
+} from "../ProjectTypes.constants";
 
 /**
  * A comboBox for choosing Project Type(s).
@@ -24,8 +29,12 @@ export const ProjectTypeComboBox = ({
             title: PROJECT_TYPE_LABELS[PROJECT_TYPE_RESEARCH]
         },
         {
-            id: PROJECT_TYPE_ADMIN_SUPPORT,
-            title: PROJECT_TYPE_LABELS[PROJECT_TYPE_ADMIN_SUPPORT]
+            id: PROJECT_TYPE_ADMINISTRATIVE,
+            title: PROJECT_TYPE_LABELS[PROJECT_TYPE_ADMINISTRATIVE]
+        },
+        {
+            id: PROJECT_TYPE_TECHNICAL_ASSISTANCE,
+            title: PROJECT_TYPE_LABELS[PROJECT_TYPE_TECHNICAL_ASSISTANCE]
         }
     ];
 

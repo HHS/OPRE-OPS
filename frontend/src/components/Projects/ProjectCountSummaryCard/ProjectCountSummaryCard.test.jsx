@@ -3,14 +3,15 @@ import { describe, it, expect } from "vitest";
 import ProjectCountSummaryCard from "./ProjectCountSummaryCard";
 
 const testSummary = {
-    total_projects: 15,
+    total_projects: 18,
     projects_by_type: {
         RESEARCH: 13,
-        ADMINISTRATIVE_AND_SUPPORT: 2
+        ADMINISTRATIVE: 2,
+        TECHNICAL_ASSISTANCE: 3
     },
     amounts_by_type: {
         RESEARCH: { amount: 3557011799.2, percent: 100 },
-        ADMINISTRATIVE_AND_SUPPORT: { amount: 301500, percent: 0 }
+        ADMINISTRATIVE: { amount: 301500, percent: 0 }
     }
 };
 
@@ -32,7 +33,7 @@ describe("ProjectCountSummaryCard", () => {
                 summary={testSummary}
             />
         );
-        expect(screen.getByText("15")).toBeInTheDocument();
+        expect(screen.getByText("18")).toBeInTheDocument();
     });
 
     it("renders a tag for each project type with count and label", () => {
@@ -43,20 +44,27 @@ describe("ProjectCountSummaryCard", () => {
             />
         );
         expect(screen.getByText("13 Research")).toBeInTheDocument();
-        expect(screen.getByText("2 Admin & Support")).toBeInTheDocument();
+        expect(screen.getByText("2 Administrative")).toBeInTheDocument();
+        expect(screen.getByText("3 Technical Assistance")).toBeInTheDocument();
     });
 
-    it("renders Research tag before Admin & Support tag", () => {
+    it("renders tags in Research, Administrative, Technical Assistance order", () => {
+        // keys deliberately reversed so the order comes from PROJECT_TYPE_ORDER, not object insertion order
         const { container } = render(
             <ProjectCountSummaryCard
                 title="FY 2025 Projects"
-                summary={testSummary}
+                summary={{
+                    ...testSummary,
+                    projects_by_type: { TECHNICAL_ASSISTANCE: 3, ADMINISTRATIVE: 2, RESEARCH: 13 }
+                }}
             />
         );
         const allText = container.textContent;
         const researchIndex = allText.indexOf("13 Research");
-        const adminIndex = allText.indexOf("2 Admin & Support");
+        const adminIndex = allText.indexOf("2 Administrative");
+        const technicalAssistanceIndex = allText.indexOf("3 Technical Assistance");
         expect(researchIndex).toBeLessThan(adminIndex);
+        expect(adminIndex).toBeLessThan(technicalAssistanceIndex);
     });
 
     it("handles null summary gracefully", () => {
@@ -82,6 +90,6 @@ describe("ProjectCountSummaryCard", () => {
             />
         );
         expect(screen.getByText("13 Research")).toBeInTheDocument();
-        expect(screen.queryByText(/Admin & Support/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Administrative/)).not.toBeInTheDocument();
     });
 });

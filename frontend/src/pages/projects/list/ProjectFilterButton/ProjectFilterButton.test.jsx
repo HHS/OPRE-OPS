@@ -82,7 +82,7 @@ vi.mock("../../../../components/Projects/ProjectTypeComboBox", () => ({
                 }}
             >
                 <option value="RESEARCH">RESEARCH</option>
-                <option value="ADMINISTRATIVE_AND_SUPPORT">ADMINISTRATIVE_AND_SUPPORT</option>
+                <option value="ADMINISTRATIVE">ADMINISTRATIVE</option>
             </select>
         </div>
     )
