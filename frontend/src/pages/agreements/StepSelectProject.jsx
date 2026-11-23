@@ -67,12 +67,18 @@ export const StepSelectProject = ({
     // Closes the Cancel confirmation (whichever trigger opened it — the Cancel button or
     // the browser-Back guard below) and discards any pending blocked back-navigation so the
     // user stays on the page instead of leaving a blocked transition dangling.
-    const handleCloseModal = (value) => {
+    // Memoized: ConfirmationModal's focus-trap effect depends (transitively, via
+    // handleKeyDown) on this prop's identity, so a fresh function on every render would tear
+    // down and rebuild that effect while the dialog is open, stealing focus. setShowModal
+    // (a useState setter) and blockerRef (a ref object) are both already stable, so an empty
+    // dependency array is safe.
+    const handleCloseModal = React.useCallback((value) => {
         setShowModal(value);
         if (!value && blockerRef.current.state === "blocked") {
             blockerRef.current.reset();
         }
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleCancel = () => {
         setShowModal(true);
