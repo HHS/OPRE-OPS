@@ -14,7 +14,7 @@ technical assistance projects are converted to administrative projects first, be
 code has no way to represent them. ``project_version`` rows are left untouched.
 
 Revision ID: 5d3f8a1c7e92
-Revises: 9c2e7a4d1b38
+Revises: ceb87e4d5c89
 Create Date: 2026-11-23 12:00:00.000000+00:00
 
 """
@@ -26,7 +26,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "5d3f8a1c7e92"
-down_revision: Union[str, None] = "9c2e7a4d1b38"
+down_revision: Union[str, None] = "ceb87e4d5c89"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

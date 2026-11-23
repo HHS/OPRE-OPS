@@ -115,6 +115,27 @@ describe("ProjectOfficerComboBox", () => {
         expect(screen.getByRole("alert")).toBeInTheDocument();
     });
 
+    it("greys the label only when the COR is locked", () => {
+        const { rerender } = render(
+            <ProjectOfficerComboBox
+                selectedProjectOfficer={mockUsers[0]}
+                setSelectedProjectOfficer={mockSetSelectedProjectOfficer}
+                label="COR"
+                isDisabled
+            />
+        );
+        expect(screen.getByText("COR", { selector: "label" })).toHaveClass("usa-label--disabled");
+
+        rerender(
+            <ProjectOfficerComboBox
+                selectedProjectOfficer={mockUsers[0]}
+                setSelectedProjectOfficer={mockSetSelectedProjectOfficer}
+                label="COR"
+            />
+        );
+        expect(screen.getByText("COR", { selector: "label" })).not.toHaveClass("usa-label--disabled");
+    });
+
     it("shows why the COR is locked and disables the selection (#3269)", () => {
         const message = "The COR change is in a contract modification that is in review.";
         render(

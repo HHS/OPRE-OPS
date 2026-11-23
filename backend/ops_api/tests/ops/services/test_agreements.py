@@ -23,6 +23,8 @@ from models import (
     IaaAgreement,
     ProcurementAction,
     ProcurementActionStatus,
+    ProcurementShop,
+    ProcurementShopFee,
     User,
     UserStatus,
 )
@@ -76,15 +78,48 @@ def test_raise_error_if_bli_status_is_execution_or_higher(service, status):
         service._handle_proc_shop_change(agreement, new_value=2)
 
 
-def test_immediate_change_with_all_draft_and_update_fees(service):
-    blis = [make_bli(BudgetLineItemStatus.DRAFT), make_bli(BudgetLineItemStatus.DRAFT)]
-    agreement = make_agreement(awarding_entity_id=1, blis=blis)
+@pytest.fixture
+def two_procurement_shops(loaded_db):
+    shops = []
+    for name, abbr, fee in [
+        ("Fee Test Shop Old", "FTSO", Decimal("1.0")),
+        ("Fee Test Shop New", "FTSN", Decimal("4.5")),
+    ]:
+        shop = ProcurementShop(name=name, abbr=abbr)
+        shop.procurement_shop_fees.append(ProcurementShopFee(fee=fee))
+        loaded_db.add(shop)
+        shops.append(shop)
+    loaded_db.flush()
+    return shops
 
-    with patch.object(service, "_update_draft_blis_proc_shop_fees"):
-        result = service._handle_proc_shop_change(agreement, new_value=5)
 
-    assert agreement.awarding_entity_id == 5
+def test_immediate_proc_shop_change_with_all_draft_blis_applies_new_shop_fee(
+    service, loaded_db, two_procurement_shops, test_can
+):
+    old_shop, new_shop = two_procurement_shops
+    agreement = ContractAgreement(
+        name="Proc shop fee change test",
+        agreement_type=AgreementType.CONTRACT,
+        awarding_entity_id=old_shop.id,
+    )
+    bli = ContractBudgetLineItem(
+        agreement=agreement,
+        can_id=test_can.id,
+        amount=Decimal("1000"),
+        status=BudgetLineItemStatus.DRAFT,
+    )
+    loaded_db.add_all([agreement, bli])
+    loaded_db.flush()
+    assert bli.procurement_shop_fee_id is None
+    assert bli.fees == Decimal("10")
+
+    result = service._handle_proc_shop_change(agreement, new_value=new_shop.id)
+    loaded_db.flush()
+    loaded_db.expire(agreement)
+
     assert result is None
+    assert agreement.awarding_entity_id == new_shop.id
+    assert bli.fees == Decimal("45")
 
 
 @patch("ops_api.ops.services.agreements.get_current_user")

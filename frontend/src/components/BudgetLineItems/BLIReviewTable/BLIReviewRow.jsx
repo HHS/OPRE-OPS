@@ -1,7 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate, getNetAmount, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 import { useGetVersionQuery } from "../../../api/opsAPI";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
@@ -15,6 +15,7 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
+import PendingDeObligationIcon from "../PendingDeObligationIcon";
 import {
     addErrorClassIfNotFound,
     futureDateErrorClass,
@@ -92,7 +93,8 @@ const BLIReviewRow = ({
     const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
 
     const feeTotal = budgetLine?.fees;
-    const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
+    // Net of any pending de-obligation, like BLIRow; fees stay on the obligated amount (OPS-6488).
+    const budgetLineTotalPlusFees = (budgetLine?.total ?? 0) - (budgetLine?.requested_de_obligation_amount ?? 0);
 
     const toolTipMsg = React.useMemo(() => {
         if (budgetLine?.actionable) return "";
@@ -238,7 +240,7 @@ const BLIReviewRow = ({
         const canNumberClasses = showCellErrors ? canNumberErrorClasses : "";
 
         const amount = budgetLine?.amount ?? null;
-        const amountDisplay = amount != null ? formatCurrency(amount) : NO_DATA;
+        const amountDisplay = amount != null ? formatCurrency(getNetAmount(budgetLine)) : NO_DATA;
         // Use explicit null check — 0 is a valid amount and must not be flagged as missing.
         const amountErrorClasses = rowInReviewMode && amount == null ? "table-item-error" : "";
         const amountClasses = showCellErrors ? amountErrorClasses : "";
@@ -264,7 +266,10 @@ const BLIReviewRow = ({
                 </td>
                 <td>{fiscalYear}</td>
                 <td className={canNumberClasses}>{canNumber}</td>
-                <td className={amountClasses}>{amountDisplay}</td>
+                <td className={amountClasses}>
+                    {amountDisplay}
+                    <PendingDeObligationIcon budgetLine={budgetLine} />
+                </td>
                 <td>{formatCurrency(feeValue)}</td>
                 <td>{formatCurrency(totalWithFees)}</td>
                 <td>

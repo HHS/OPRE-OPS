@@ -39,10 +39,12 @@ describe("ApprovalFlowReviewCard", () => {
         buttonText: "Review Agreement"
     };
 
+    const returnForId = (expectedId, value) => (id) => (id === expectedId ? value : undefined);
+
     beforeEach(() => {
         vi.clearAllMocks();
-        useGetAgreementName.mockReturnValue("Contract #001: Test Agreement");
-        useGetUserFullNameFromId.mockReturnValue("John Doe");
+        useGetAgreementName.mockImplementation(returnForId(defaultProps.agreementId, "Contract #001: Test Agreement"));
+        useGetUserFullNameFromId.mockImplementation(returnForId(defaultProps.requestorId, "John Doe"));
     });
 
     const renderComponent = (props = {}) => {
@@ -210,6 +212,7 @@ describe("ApprovalFlowReviewCard", () => {
 
         it("should build navigation path correctly with different agreementId and path", async () => {
             const user = userEvent.setup();
+            useGetAgreementName.mockImplementation(returnForId(999, "Contract #001: Test Agreement"));
             renderComponent({
                 agreementId: 999,
                 navigationPath: "review-requisition",
@@ -337,28 +340,16 @@ describe("ApprovalFlowReviewCard", () => {
     });
 
     describe("Integration with Hooks", () => {
-        it("should call useGetAgreementName with agreementId", () => {
+        it("should display the name of the agreement it was given", () => {
+            useGetAgreementName.mockImplementation(returnForId(789, "Custom Agreement Name"));
             renderComponent({ agreementId: 789 });
-
-            expect(useGetAgreementName).toHaveBeenCalledWith(789);
-        });
-
-        it("should call useGetUserFullNameFromId with requestorId", () => {
-            renderComponent({ requestorId: 321 });
-
-            expect(useGetUserFullNameFromId).toHaveBeenCalledWith(321);
-        });
-
-        it("should display agreement name from hook", () => {
-            useGetAgreementName.mockReturnValue("Custom Agreement Name");
-            renderComponent();
 
             expect(screen.getByText("Custom Agreement Name")).toBeInTheDocument();
         });
 
-        it("should display user name from hook", () => {
-            useGetUserFullNameFromId.mockReturnValue("Jane Smith");
-            renderComponent();
+        it("should display the name of the requestor it was given", () => {
+            useGetUserFullNameFromId.mockImplementation(returnForId(321, "Jane Smith"));
+            renderComponent({ requestorId: 321 });
 
             expect(screen.getByText("Jane Smith")).toBeInTheDocument();
         });
@@ -366,8 +357,11 @@ describe("ApprovalFlowReviewCard", () => {
 
     describe("Edge Cases", () => {
         it("should handle very long agreement names", () => {
-            useGetAgreementName.mockReturnValue(
-                "This is an extremely long agreement name that should still render properly without breaking the layout"
+            useGetAgreementName.mockImplementation(
+                returnForId(
+                    defaultProps.agreementId,
+                    "This is an extremely long agreement name that should still render properly without breaking the layout"
+                )
             );
             renderComponent();
 

@@ -51,6 +51,14 @@ export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") 
             oldValue = changeTo.services_component_create.old ?? "None";
             newValue = changeTo.services_component_create.new;
             break;
+        case KEY_NAMES.DE_OBLIGATION_AMOUNT: {
+            // De-obligation (OPS-6488): the edit stores the original obligated amount and the amount
+            // being de-obligated; per the design it reads as the amount going from original to net.
+            const { old: original, new: deObligated } = changeTo.requested_de_obligation_amount;
+            oldValue = renderField(keyName, "amount", original);
+            newValue = renderField(keyName, "amount", Number(original) - Number(deObligated));
+            break;
+        }
         default:
             break;
     }

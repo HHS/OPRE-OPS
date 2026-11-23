@@ -1490,3 +1490,39 @@ describe("useAgreementEditForm - COR change on an Awarded agreement (OPS-3153)",
         expect(updaters.alternate_project_officer_id).not.toHaveBeenCalled();
     });
 });
+
+describe("useAgreementEditForm reports unsaved changes to its parent", () => {
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        const { default: useHasStateChanged } = await vi.importActual("../../../hooks/useHasStateChanged.hooks");
+        hasStateChangedMock.mockImplementation(useHasStateChanged);
+        useLocationMock.mockReturnValue({ pathname: "/agreements/create" });
+        useSelectorMock.mockReturnValue(false);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+        useEditAgreementMock.mockReturnValue(makeEditState());
+    });
+
+    it("reports no changes on load, then reports the change once the agreement is edited", async () => {
+        const setHasAgreementChanged = vi.fn();
+        const { rerender } = renderUseAgreementEditForm({ setHasAgreementChanged });
+        await waitFor(() => expect(setHasAgreementChanged).toHaveBeenLastCalledWith(false));
+
+        useEditAgreementMock.mockReturnValue(makeEditState({ name: "Edited agreement name" }));
+        rerender();
+
+        await waitFor(() => expect(setHasAgreementChanged).toHaveBeenLastCalledWith(true));
+    });
+
+    it("tracks only the agreement object, not the separate selected_procurement_shop state", async () => {
+        const setHasAgreementChanged = vi.fn();
+        const { rerender } = renderUseAgreementEditForm({ setHasAgreementChanged });
+        await waitFor(() => expect(setHasAgreementChanged).toHaveBeenCalled());
+
+        useEditAgreementMock.mockReturnValue({ ...makeEditState(), selected_procurement_shop: { id: 2 } });
+        rerender();
+
+        expect(setHasAgreementChanged).not.toHaveBeenCalledWith(true);
+    });
+});

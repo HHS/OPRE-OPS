@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
+from uuid import UUID
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from data_tools.src.cleanup_user_sessions.utils import parse_cutoff_days
-from models import OpsEventStatus, OpsEventType, UserSession
+from models import OpsEventStatus, OpsEventType, User, UserSession
+from models.users import SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_OIDC_ID
 
 
 @pytest.fixture
@@ -25,40 +28,38 @@ def mock_session():
     return MagicMock(spec=Session)
 
 
-@patch("data_tools.src.cleanup_user_sessions.utils.get_or_create_sys_user")
+def _sys_admin_users(session):
+    return session.execute(select(User).where(User.oidc_id == SYSTEM_ADMIN_OIDC_ID)).scalars().all()
+
+
 @patch("data_tools.src.cleanup_user_sessions.utils.setup_triggers")
-def test_get_system_admin_id_existing_user(mock_setup_triggers, mock_get_sys_user, mock_session):
-    # Simulate system admin with id already assigned
-    mock_user = MagicMock()
-    mock_user.id = 999
-    mock_get_sys_user.return_value = mock_user
+def test_get_system_admin_id_existing_user(_mock_setup_triggers, loaded_db):
+    existing = User(email=SYSTEM_ADMIN_EMAIL, oidc_id=UUID(SYSTEM_ADMIN_OIDC_ID))
+    loaded_db.add(existing)
+    loaded_db.flush()
 
     from data_tools.src.cleanup_user_sessions.utils import get_system_admin_id
 
-    system_admin_id = get_system_admin_id(mock_session)
+    system_admin_id = get_system_admin_id(loaded_db)
 
-    assert system_admin_id == 999
-    mock_get_sys_user.assert_called_once_with(mock_session)
-    mock_setup_triggers.assert_called_once_with(mock_session, mock_user)
-    mock_session.commit.assert_called()
+    loaded_db.expire_all()
+    assert system_admin_id == existing.id
+    assert [user.id for user in _sys_admin_users(loaded_db)] == [existing.id]
 
 
-@patch("data_tools.src.cleanup_user_sessions.utils.get_or_create_sys_user")
 @patch("data_tools.src.cleanup_user_sessions.utils.setup_triggers")
-def test_get_system_admin_id_new_user(mock_setup_triggers, mock_get_sys_user, mock_session):
-    # Simulate new system admin with no ID, requiring add + commit
-    mock_user = MagicMock()
-    mock_user.id = None
-    mock_get_sys_user.return_value = mock_user
+def test_get_system_admin_id_new_user(_mock_setup_triggers, loaded_db):
+    assert _sys_admin_users(loaded_db) == []
 
     from data_tools.src.cleanup_user_sessions.utils import get_system_admin_id
 
-    system_admin_id = get_system_admin_id(mock_session)
+    system_admin_id = get_system_admin_id(loaded_db)
 
-    assert system_admin_id is None or isinstance(system_admin_id, int)
-    mock_session.add.assert_called_once_with(mock_user)
-    mock_session.commit.assert_called()
-    mock_setup_triggers.assert_called_once_with(mock_session, mock_user)
+    loaded_db.expire_all()
+    created = _sys_admin_users(loaded_db)
+    assert len(created) == 1
+    assert created[0].id == system_admin_id
+    assert created[0].email == SYSTEM_ADMIN_EMAIL
 
 
 def test_fetch_sessions_to_delete_returns_correct_sessions(mock_session, mock_user_session):

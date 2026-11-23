@@ -68,14 +68,22 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
                     className={removeBorderBottomIfExpanded(isExpanded)}
                     style={changeBgColorIfExpanded(isExpanded)}
                 >
-                    <FontAwesomeIcon
+                    <button
+                        type="button"
                         id={`expand-${trId}`}
                         data-cy="expand-row"
                         data-testid="expand-row"
-                        icon={isExpanded ? faChevronUp : faChevronDown}
-                        className="height-2 width-2 padding-right-1 cursor-pointer"
+                        className="usa-button usa-button--unstyled text-ink"
+                        aria-expanded={isExpanded}
+                        aria-label={isExpanded ? "Collapse row details" : "Expand row details"}
                         onClick={() => setIsExpanded(!isExpanded)}
-                    />
+                    >
+                        <FontAwesomeIcon
+                            icon={isExpanded ? faChevronUp : faChevronDown}
+                            className="height-2 width-2 padding-right-1 cursor-pointer"
+                            aria-hidden="true"
+                        />
+                    </button>
                 </td>
             </tr>
 

@@ -342,14 +342,35 @@ button {
 }
 // change the text color for labels within a fieldset when disabled to feedback-disabled-dark
 // also target usa-hint class to ensure hint text is also changed
+// .usa-label--disabled is for a disabled control whose label sits outside a disabled fieldset
+// (e.g. CanComboBox); textareas get the same outlined look instead of USWDS's grey fill
 fieldset[disabled] .usa-select,
 fieldset[disabled] .usa-hint,
 fieldset[disabled] .usa-label,
-.usa-input:disabled {
+.usa-label.usa-label--disabled,
+.usa-input:disabled,
+.usa-textarea:disabled,
+.usa-textarea:disabled:hover,
+.usa-textarea:disabled:focus,
+.usa-textarea:disabled:active {
     color: var(--feedback-disabled-dark);
     -webkit-text-fill-color: var(--feedback-disabled-dark);
     background-color: transparent;
     border-color: var(--feedback-disabled-dark);
+}
+
+// Keep USWDS's high-contrast disabled colour, which the rule above would otherwise override
+@media (forced-colors: active) {
+    fieldset[disabled] .usa-select,
+    .usa-input:disabled,
+    .usa-textarea:disabled,
+    .usa-textarea:disabled:hover,
+    .usa-textarea:disabled:focus,
+    .usa-textarea:disabled:active {
+        color: GrayText;
+        -webkit-text-fill-color: GrayText;
+        border-color: GrayText;
+    }
 }
 
 // #main-content is a programmatic focus target (skip link, "Return to top"); keep the ring for keyboard focus only

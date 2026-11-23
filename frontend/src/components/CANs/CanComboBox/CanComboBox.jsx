@@ -67,7 +67,11 @@ const CanComboBox = ({
             )}
         >
             <label
-                className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
+                className={cx(
+                    legendClassname,
+                    messages.length && "usa-label--error",
+                    isDisabled && "usa-label--disabled"
+                )}
                 htmlFor="can-combobox-input"
                 id="can-label"
             >

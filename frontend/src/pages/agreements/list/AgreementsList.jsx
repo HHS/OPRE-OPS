@@ -33,6 +33,7 @@ import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
+import { AGREEMENT_LIST_FILTERS } from "./utils";
 
 const AGREEMENTS_DEFINITION =
     "An agreement is a general term to encompass the various types of work (contracts, grants, IAAs, etc.) happening at OPRE";
@@ -61,8 +62,8 @@ const AgreementsList = () => {
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
     const [pageSize] = useState(ITEMS_PER_PAGE);
 
-    const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
-    const changeRequestUrl = searchParams.get("filter") === "change-requests";
+    const myAgreementsUrl = searchParams.get("filter") === AGREEMENT_LIST_FILTERS.MY_AGREEMENTS;
+    const changeRequestUrl = searchParams.get("filter") === AGREEMENT_LIST_FILTERS.CHANGE_REQUESTS;
 
     const { data: agreementFilterOptions, isLoading: isLoadingAgreementFilterOptions } =
         useGetAgreementsFilterOptionsQuery({ onlyMy: myAgreementsUrl });

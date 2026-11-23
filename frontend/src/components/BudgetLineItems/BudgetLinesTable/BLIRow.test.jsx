@@ -40,7 +40,8 @@ const renderComponent = (
     userRoles = [],
     canUserEditBudgetLines = true,
     budgetLineOverrides = {},
-    showClinColumn = false
+    showClinColumn = false,
+    extraProps = {}
 ) => {
     useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
     useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
@@ -78,6 +79,7 @@ const renderComponent = (
                     readOnly={false}
                     duplicateIcon={true}
                     showClinColumn={showClinColumn}
+                    {...extraProps}
                 />
             </Provider>
         </Router>
@@ -513,6 +515,107 @@ describe("BLIRow", () => {
             // BL ID # | CLIN | Obligate By | FY | CAN | Amount | Fee | Total | Status
             const amountCell = cells[5];
             expect(amountCell).toHaveTextContent(/\$1,000,000\.00/);
+        });
+    });
+    // OPS-6488
+    describe("pending de-obligation", () => {
+        const pendingDeObligation = {
+            status: "OBLIGATED",
+            amount: 500_000,
+            fees: 0,
+            requested_de_obligation_amount: 100_000,
+            net_amount: 400_000
+        };
+
+        it("shows the net amount and total, with the pending de-obligation icon", () => {
+            renderComponent([], true, pendingDeObligation);
+
+            const cells = within(screen.getByTestId("budget-line-row-1")).getAllByRole("cell");
+            // BL ID # | Obligate By | FY | CAN | Amount | Fee | Total | Status
+            expect(cells[4]).toHaveTextContent("$400,000.00");
+            expect(cells[6]).toHaveTextContent("$400,000.00");
+            expect(screen.getByTestId("pending-de-obligation-icon")).toBeInTheDocument();
+        });
+
+        it("adds the original amount, modification #, modification date and de-obligated amount to the expanded details", async () => {
+            renderComponent([], true, pendingDeObligation);
+
+            await userEvent.setup().click(screen.getByTestId("expand-row"));
+
+            const expanded = screen.getByTestId("expanded-data");
+            expect(expanded).toHaveTextContent(/Original Obligated Amount\s*\$500,000\.00/);
+            expect(expanded).toHaveTextContent(/Modification #\s*TBD/);
+            expect(expanded).toHaveTextContent(/Modification Date\s*TBD/);
+            expect(expanded).toHaveTextContent(/De-obligated Amount\s*-\$100,000\.00/);
+        });
+
+        // Regression: the API's net_amount goes stale once the editor changes amount locally.
+        it("shows a locally edited amount, not the API's stale net_amount", () => {
+            renderComponent([], true, { status: "PLANNED", amount: 999_999, fees: 0, net_amount: 1_000_000 });
+
+            const cells = within(screen.getByTestId("budget-line-row-1")).getAllByRole("cell");
+            expect(cells[4]).toHaveTextContent("$999,999.00");
+            expect(screen.queryByTestId("pending-de-obligation-icon")).not.toBeInTheDocument();
+        });
+
+        it("leaves the expanded details unchanged when there is no pending de-obligation", async () => {
+            renderComponent([], true, { status: "OBLIGATED" });
+
+            await userEvent.setup().click(screen.getByTestId("expand-row"));
+
+            const expanded = within(screen.getByTestId("expanded-data"));
+            expect(expanded.queryByText("Modification #")).not.toBeInTheDocument();
+            expect(expanded.queryByText("De-obligated Amount")).not.toBeInTheDocument();
+        });
+
+        it("shows the locked icons, not the pencil, while the line is in a modification in review", async () => {
+            renderComponent(
+                [],
+                true,
+                {
+                    status: "OBLIGATED",
+                    _meta: { isEditable: false, inReviewModification: true, lockedMessage: "In review" }
+                },
+                false,
+                { tracksContractModifications: true }
+            );
+
+            await userEvent.setup().hover(screen.getByText("Obligated"));
+
+            expect(screen.queryByTestId("de-obligate-row")).not.toBeInTheDocument();
+            expect(screen.getByTestId("edit-row")).toBeDisabled();
+        });
+
+        it("reaches the de-obligate button by keyboard through the expanded row", async () => {
+            const handleDeObligateBudgetLine = vi.fn();
+            renderComponent([], true, { status: "OBLIGATED" }, false, {
+                tracksContractModifications: true,
+                handleDeObligateBudgetLine
+            });
+            const user = userEvent.setup();
+
+            screen.getByRole("button", { name: "Expand row details" }).focus();
+            await user.keyboard("{Enter}");
+            await user.tab();
+            expect(screen.getByRole("button", { name: "De-obligate funding" })).toHaveFocus();
+            await user.keyboard("{Enter}");
+
+            expect(handleDeObligateBudgetLine).toHaveBeenCalledWith(1);
+        });
+
+        it("starts a de-obligation from an Obligated line on a tracked agreement", async () => {
+            const handleDeObligateBudgetLine = vi.fn();
+            renderComponent([], true, { status: "OBLIGATED" }, false, {
+                tracksContractModifications: true,
+                handleDeObligateBudgetLine
+            });
+            const user = userEvent.setup();
+
+            await user.hover(screen.getByText("Obligated"));
+            await user.click(screen.getByTestId("de-obligate-row"));
+
+            expect(handleDeObligateBudgetLine).toHaveBeenCalledWith(1);
+            expect(screen.queryByTestId("edit-row")).not.toBeInTheDocument();
         });
     });
 });

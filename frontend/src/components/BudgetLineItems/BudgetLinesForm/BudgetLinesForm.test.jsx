@@ -58,9 +58,10 @@ const createMockStore = (userRoles = [], is_superuser = false) => {
 
 // Mock external components to focus on validation logic
 vi.mock("../../CANs/CanComboBox", () => ({
-    default: ({ messages, className }) => (
+    default: ({ messages, className, isDisabled = false }) => (
         <div
             data-testid="can-combobox"
+            data-disabled={String(isDisabled)}
             data-messages={JSON.stringify(messages)}
             className={className}
         >
@@ -70,9 +71,10 @@ vi.mock("../../CANs/CanComboBox", () => ({
 }));
 
 vi.mock("../../ServicesComponents/AllServicesComponentSelect", () => ({
-    default: ({ messages, className }) => (
+    default: ({ messages, className, isDisabled = false }) => (
         <div
             data-testid="services-component-select"
+            data-disabled={String(isDisabled)}
             data-messages={JSON.stringify(messages)}
             className={className}
         >
@@ -94,20 +96,20 @@ vi.mock("../../GrantNumbers/AllGrantNumberSelect", () => ({
 }));
 
 vi.mock("../../UI/Form/CurrencyInput", () => ({
-    default: ({ messages, className }) => (
+    default: ({ messages, className, label, hint }) => (
         <div
             data-testid="currency-input"
             data-messages={JSON.stringify(messages)}
             className={className}
         >
-            Currency Input
+            Currency Input {label} {hint}
         </div>
     )
 }));
 
 vi.mock("../../UI/USWDS/DatePicker", async () => {
     const { useEffect } = await import("react");
-    const DatePickerMock = ({ messages, className }) => {
+    const DatePickerMock = ({ messages, className, isDisabled = false }) => {
         useEffect(() => {
             datePickerMountTracker.mounts += 1;
             return () => {
@@ -117,6 +119,7 @@ vi.mock("../../UI/USWDS/DatePicker", async () => {
         return (
             <div
                 data-testid="date-picker"
+                data-disabled={String(isDisabled)}
                 data-messages={JSON.stringify(messages)}
                 className={className}
             >
@@ -129,7 +132,14 @@ vi.mock("../../UI/USWDS/DatePicker", async () => {
 });
 
 vi.mock("../../UI/Form/TextArea/TextArea", () => ({
-    default: () => <div data-testid="text-area">Text Area</div>
+    default: ({ isDisabled = false }) => (
+        <div
+            data-testid="text-area"
+            data-disabled={String(isDisabled)}
+        >
+            Text Area
+        </div>
+    )
 }));
 
 describe("BudgetLinesForm Validation Integration", () => {
@@ -178,6 +188,50 @@ describe("BudgetLinesForm Validation Integration", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+    });
+
+    // OPS-6488: an Obligated line can only be edited to de-obligate, so the amount is the only field.
+    describe("De-obligation mode", () => {
+        const renderDeObligating = (props = {}) =>
+            render(
+                <Provider store={createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR }], false)}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isDeObligating={true}
+                        deObligationMaxAmount={500000}
+                        enteredAmount={null}
+                        {...props}
+                    />
+                </Provider>
+            );
+
+        it("locks Services Component, Obligate By Date and CAN, leaving the amount and description editable", () => {
+            renderDeObligating();
+
+            expect(screen.getByTestId("services-component-select")).toHaveAttribute("data-disabled", "true");
+            expect(screen.getByTestId("date-picker")).toHaveAttribute("data-disabled", "true");
+            expect(screen.getByTestId("can-combobox")).toHaveAttribute("data-disabled", "true");
+            expect(screen.getByTestId("text-area")).toHaveAttribute("data-disabled", "false");
+            expect(screen.getByTestId("currency-input")).toHaveTextContent("De-obligated Amount");
+            expect(screen.getByTestId("currency-input")).toHaveTextContent("Above $0 up to $500,000.00");
+        });
+
+        it("keeps Update Budget Line disabled until an amount is entered", () => {
+            const { rerender } = renderDeObligating();
+            expect(screen.getByRole("button", { name: "Update Budget Line" })).toBeDisabled();
+
+            rerender(
+                <Provider store={createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR }], false)}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isDeObligating={true}
+                        deObligationMaxAmount={500000}
+                        enteredAmount={100000}
+                    />
+                </Provider>
+            );
+            expect(screen.getByRole("button", { name: "Update Budget Line" })).toBeEnabled();
+        });
     });
 
     describe("Regular User Validation", () => {

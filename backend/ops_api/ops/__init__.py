@@ -248,6 +248,7 @@ def initialize_event_subscriptions():
     MessageBus.subscribe_globally(OpsEventType.UPDATE_GRANT_NUMBER, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.DELETE_GRANT_NUMBER, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.SUBMIT_DE_OBLIGATION, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.START_CONTRACT_MODIFICATION, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.REVIEW_CONTRACT_MODIFICATION, agreement_history_trigger)
 

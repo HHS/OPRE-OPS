@@ -84,9 +84,15 @@ class Project(BaseModel):
         "delete_research": text("DELETE FROM research_project WHERE id = :id"),  # nosemgrep
         "delete_admin": text("DELETE FROM administrative_and_support_project WHERE id = :id"),  # nosemgrep
         "delete_technical_assistance": text("DELETE FROM technical_assistance_project WHERE id = :id"),  # nosemgrep
-        "insert_research_ver": text("INSERT INTO research_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"),  # nosemgrep
-        "insert_admin_ver": text("INSERT INTO administrative_and_support_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"),  # nosemgrep
-        "insert_technical_assistance_ver": text("INSERT INTO technical_assistance_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"),  # nosemgrep
+        "insert_research_ver": text(
+            "INSERT INTO research_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"
+        ),  # nosemgrep
+        "insert_admin_ver": text(
+            "INSERT INTO administrative_and_support_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"
+        ),  # nosemgrep
+        "insert_technical_assistance_ver": text(
+            "INSERT INTO technical_assistance_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"
+        ),  # nosemgrep
         "update_parent": text("UPDATE project SET project_type = :new_type WHERE id = :id"),  # nosemgrep
         "new_txn": text("INSERT INTO transaction (issued_at) VALUES (NOW()) RETURNING id"),  # nosemgrep
         "insert_parent_ver": text(  # nosemgrep
@@ -253,8 +259,9 @@ class Project(BaseModel):
 
                 # Money only counts for OBE items (any status) or non-DRAFT items
                 if bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT:
-                    # Include amount + fees for the BLI
-                    bli_total = (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+                    # Include amount + fees for the BLI, net of any pending de-obligation, to match
+                    # agreement_total above (OPS-6488).
+                    bli_total = (bli.net_amount or Decimal("0")) + (bli.fees or Decimal("0"))
                     total_by_fiscal_year[bli.fiscal_year] += bli_total
                     # Track which agreements have actual spending in a given fiscal year
                     agreements_with_spending_by_fy[bli.fiscal_year].add(agreement.id)
