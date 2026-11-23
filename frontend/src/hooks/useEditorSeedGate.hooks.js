@@ -35,10 +35,10 @@ const selectIsAnyOpsApiRequestPending = (state) =>
  * @param {Object} options
  * @param {boolean} options.isEditing - Whether the page wants the editor open.
  * @param {boolean} options.isDataFetching - Whether any query the editor seeds from is loading or refetching.
- * @param {boolean} options.hasLoadFailed - Whether any query the editor seeds from failed.
+ * @param {boolean} [options.hasLoadFailed=false] - Whether any query the editor seeds from failed.
  * @returns {{isEditorOpen: boolean, isWaitingForEditor: boolean, isEditorLoadSlow: boolean}}
  */
-export const useEditorSeedGate = ({ isEditing, isDataFetching, hasLoadFailed }) => {
+export const useEditorSeedGate = ({ isEditing, isDataFetching, hasLoadFailed = false }) => {
     const isAnyApiRequestPending = useSelector(selectIsAnyOpsApiRequestPending);
     const [haveMountEffectsRun, setHaveMountEffectsRun] = React.useState(false);
     React.useEffect(() => setHaveMountEffectsRun(true), []);

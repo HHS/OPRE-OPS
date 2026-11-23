@@ -142,6 +142,7 @@ describe("EditAgreement", () => {
 
             expect(screen.getByRole("status")).toHaveTextContent(/still loading/i);
             expect(screen.getByRole("status")).toHaveTextContent(/refresh the page/i);
+            expect(screen.getByRole("heading", { level: 2, name: "Still loading" })).toBeInTheDocument();
         } finally {
             vi.useRealTimers();
         }

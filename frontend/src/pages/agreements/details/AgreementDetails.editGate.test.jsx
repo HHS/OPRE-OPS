@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { act, render, screen } from "@testing-library/react";
+import { useLayoutEffect } from "react";
 import { Provider } from "react-redux";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import AgreementDetails from "./AgreementDetails";
@@ -113,6 +114,31 @@ describe("AgreementDetails edit gate", () => {
 
         expect(screen.getByRole("status")).toBe(region);
         expect(region).toHaveTextContent("Loading the latest agreement details...");
+    });
+
+    // The agreements list's Edit link opens /agreements/:id?mode=edit, so Details can mount already in edit mode.
+    // The region still has to be committed empty first, with the text added in a later update.
+    it("commits the live region empty before adding the loading text when it mounts in edit mode", () => {
+        // Records, at the first commit, whether the region exists and whether the text is already in it.
+        const firstCommit = [];
+        const RecordFirstCommit = () => {
+            useLayoutEffect(() => {
+                firstCommit.push({
+                    hasRegion: screen.queryByRole("status") !== null,
+                    hasText: screen.queryByText("Loading the latest agreement details...") !== null
+                });
+            }, []);
+            return null;
+        };
+        render(
+            <>
+                {ui(cachedAgreement, { isAgreementFetching: true })}
+                <RecordFirstCommit />
+            </>
+        );
+
+        expect(firstCommit).toEqual([{ hasRegion: true, hasText: false }]);
+        expect(screen.getByRole("status")).toHaveTextContent("Loading the latest agreement details...");
     });
 
     it("tells the user how to recover when the agreement takes too long", () => {

@@ -80,8 +80,7 @@ const AgreementDetails = ({
     // (and any held refetch) before mounting it; see useEditorSeedGate.
     const { isEditorOpen, isWaitingForEditor, isEditorLoadSlow } = useEditorSeedGate({
         isEditing: showEditMode,
-        isDataFetching: isAgreementFetching,
-        hasLoadFailed: false
+        isDataFetching: isAgreementFetching
     });
 
     return (
