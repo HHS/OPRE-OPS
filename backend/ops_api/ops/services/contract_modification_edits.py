@@ -156,19 +156,18 @@ class ContractModificationEditService:
         awarded value as From and the latest value as To, and drops the edit when the change nets
         to nothing (so a modification never carries an edit the list doesn't show). ``old_value``
         and ``new_value`` must be in the format change requests snapshot
-        (``PATCHRequestBodySchema(only=[field]).dump``). A new edit is flushed (not committed) so
-        a concurrent duplicate save (double-click/retry) fails fast on
+        (``PATCHRequestBodySchema(only=[field]).dump``). Flushes (but does not commit), so a
+        concurrent duplicate save (double-click/retry) fails fast on
         ``ix_contract_modification_edit_one_pending_bli_field`` instead of silently orphaning a
-        pending row; a merge isn't flushed.
+        pending row.
         """
-        if self._merge_into_pending(self._pending_for_budget_line(budget_line_item.id, field), new_value, user_id):
-            return
-        if old_value == new_value:
-            return
-        self._add_direct_edit(
-            budget_line_item.agreement_id, budget_line_item.id, None, field, old_value, new_value, user_id
-        )
-        self._record_unflushed_merge_history(user_id)
+        if not self._merge_into_pending(self._pending_for_budget_line(budget_line_item.id, field), new_value, user_id):
+            if old_value == new_value:
+                return
+            self._add_direct_edit(
+                budget_line_item.agreement_id, budget_line_item.id, None, field, old_value, new_value, user_id
+            )
+        self._record_history_before_flush(user_id)
         try:
             self.db_session.flush()
         except IntegrityError:
@@ -287,29 +286,28 @@ class ContractModificationEditService:
 
         Merges with the SC's pending edit to the same field and drops the edit when it nets to
         nothing, the same as ``record_direct_edit``. An SC added after the award (still carrying
-        its pending "Add SC" edit) was never on the contract, so nothing is recorded. A new edit is
-        flushed (not committed) so a concurrent duplicate save fails fast on
-        ``ix_contract_modification_edit_one_pending_sc_field``; a merge isn't flushed.
+        its pending "Add SC" edit) was never on the contract, so nothing is recorded. Flushes (but
+        does not commit), so a concurrent duplicate save fails fast on
+        ``ix_contract_modification_edit_one_pending_sc_field``.
         """
         if self._pending_services_component_additions(services_component.id):
             return
         old_value, new_value = _iso_or_none(old_value), _iso_or_none(new_value)
         pending = self._pending_for_services_component(services_component.id, field)
-        if self._merge_into_pending(pending, new_value, user_id):
-            return
-        if old_value == new_value:
-            return
-        self._add_direct_edit(
-            services_component.agreement_id,
-            None,
-            services_component.id,
-            field,
-            old_value,
-            new_value,
-            user_id,
-            services_component_display_name=services_component.display_name,
-        )
-        self._record_unflushed_merge_history(user_id)
+        if not self._merge_into_pending(pending, new_value, user_id):
+            if old_value == new_value:
+                return
+            self._add_direct_edit(
+                services_component.agreement_id,
+                None,
+                services_component.id,
+                field,
+                old_value,
+                new_value,
+                user_id,
+                services_component_display_name=services_component.display_name,
+            )
+        self._record_history_before_flush(user_id)
         try:
             self.db_session.flush()
         except IntegrityError:
@@ -368,15 +366,10 @@ class ContractModificationEditService:
         to nothing. Returns whether there was one to merge into.
 
         Updated in place rather than deleted and re-inserted, which needed a flush between the two
-        (or the INSERT trips the one-pending-per-field index). ``updated_by`` is set here, so it's
-        right on every path. A direct edit (``user_id`` given) is no longer the one that was
-        requested or approved, so it drops the edit's change request and approval.
-
-        The merge isn't flushed, so the before_commit hook writes its OpsDBHistory row. When the
-        same save then adds a new edit (an SC save changing both period dates, say), that edit's
-        flush sends this one too, so ``_record_unflushed_merge_history`` writes the row first. The
-        edit bundle's services flush after each change, so a merge there gets no OpsDBHistory row;
-        the row's ``*_version`` history records the change on every path.
+        (or the INSERT trips the one-pending-per-field index). A direct edit (``user_id`` given)
+        sets ``updated_by`` and the requester here, and drops the edit's change request and
+        approval: it's no longer the value that was requested or approved. On the approval path
+        (``user_id`` None) the caller sets those, and the before_commit hook sets ``updated_by``.
         """
         if not pending:
             return False
@@ -398,11 +391,12 @@ class ContractModificationEditService:
             edit.approved_on = None
         return True
 
-    def _record_unflushed_merge_history(self, user_id: int) -> None:
-        """Write the OpsDBHistory rows of merges (``_merge_into_pending``) the next flush sends.
+    def _record_history_before_flush(self, user_id: int) -> None:
+        """Write the OpsDBHistory rows of the merged or removed edits the next flush sends.
 
-        The before_commit hook records only rows still dirty or deleted at commit, so it would miss
-        them. Call just before a flush.
+        The before_commit hook records only rows still dirty or deleted at commit, so it misses a
+        row flushed before then (here, or by the edit bundle's services). New rows are recorded by
+        the after_flush hook. Call just before a flush.
         """
         session = self.db_session
         user = session.get(User, user_id)

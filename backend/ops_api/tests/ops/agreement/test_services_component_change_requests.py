@@ -1041,6 +1041,34 @@ def test_bundle_period_edit_is_tracked_and_number_change_rejected(
     assert (edit.field, edit.old_value, edit.new_value) == ("period_start", "2043-01-01", "2043-02-01")
 
 
+def test_a_bundle_period_edit_merged_into_a_pending_edit_records_its_history(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    """The bundle flushes the SC update before the before_commit history hook runs, so the merge
+    records its OpsDBHistory row when it's flushed."""
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    url = url_for("api.agreements-edit-bundle", id=awarded_agreement.id)
+    for period_start in ("2043-02-01", "2043-03-01"):
+        body = {"services_components": {"update": [{"id": sc2_id, "period_start": period_start}]}}
+        response = basic_user_auth_client.patch(url, json=body)
+        assert response.status_code == 200, response.json
+
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert (edit.old_value, edit.new_value) == ("2043-01-01", "2043-03-01")
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "ContractModificationEdit",
+            OpsDBHistory.row_key == str(edit.id),
+            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+        )
+    ).all()
+    assert [(h.changes["new_value"], h.created_by) for h in history] == [
+        ({"old": "2043-02-01", "new": "2043-03-01"}, BASIC_USER_ID)
+    ]
+
+
 # ---=== Deleting an SC with Executing/Obligated budget lines is blocked (OPS-3268) ===---
 
 

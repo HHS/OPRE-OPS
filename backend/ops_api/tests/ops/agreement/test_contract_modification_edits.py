@@ -376,6 +376,50 @@ def test_a_merge_followed_by_a_new_edit_in_one_save_keeps_the_merge_history(
     ]
 
 
+@pytest.mark.parametrize(
+    "amount, event_type, change",
+    [
+        pytest.param(400000.00, "UPDATED", {"old": 500000.0, "new": 400000.0}, id="merges"),
+        pytest.param(600000.00, "DELETED", None, id="nets to nothing"),
+    ],
+)
+def test_a_bundle_save_that_merges_into_a_pending_edit_records_its_history(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+    amount,
+    event_type,
+    change,
+):
+    """The edit bundle flushes after each change, before the before_commit history hook runs, so a
+    merge records its OpsDBHistory row when it's flushed."""
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    agreement, bli = make_agreement(test_can)
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 500000.00)
+    (amount_edit,) = _edits(loaded_db, agreement.id)
+
+    response = basic_user_auth_client.patch(
+        url_for("api.agreements-edit-bundle", id=agreement.id),
+        json={"budget_line_items": {"update": [{"id": bli.id, "amount": amount}]}},
+    )
+
+    assert response.status_code == 200, response.json
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "ContractModificationEdit",
+            OpsDBHistory.row_key == str(amount_edit.id),
+            OpsDBHistory.event_type.in_([OpsDBHistoryType.UPDATED, OpsDBHistoryType.DELETED]),
+        )
+    ).all()
+    assert [(h.event_type.name, h.changes.get("new_value"), h.created_by) for h in history] == [
+        (event_type, change, BASIC_USER_ID)
+    ]
+
+
 def test_an_edit_that_nets_to_no_change_drops_the_pending_edit(
     modified_loe_enabled,
     basic_user_auth_client,
