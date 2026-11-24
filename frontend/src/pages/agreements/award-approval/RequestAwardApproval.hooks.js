@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import {
     getCurrentProcurementTracker,
     getNextModificationNumber,
+    getTrackerBudgetLines,
     isContractModTracker
 } from "../../../helpers/procurementTracker.helpers";
 import { flushSync } from "react-dom";
@@ -23,7 +24,8 @@ import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import {
     DEFAULT_MODIFICATION_NUMBER,
     getSeededAwardFields,
-    hasAwardFieldChanges
+    hasAwardFieldChanges,
+    hasMissingClins
 } from "../../../components/Agreements/AwardRequestForm/awardForm.helpers";
 import suite from "./RequestAwardApproval.suite";
 
@@ -106,6 +108,13 @@ export default function useRequestAwardApproval(agreementId) {
     // Get all budget lines for display
     // Memoized to prevent reference changes on every render
     const allBudgetLines = useMemo(() => agreement?.budget_line_items ?? [], [agreement?.budget_line_items]);
+
+    // Every line is shown, but only the lines this award covers need a CLIN: a contract mod's own
+    // lines (OPS-6513), or every line for the initial award.
+    const hasMissingCLINs = useMemo(
+        () => hasMissingClins(getTrackerBudgetLines(activeTracker, allBudgetLines), clinAssignments),
+        [activeTracker, allBudgetLines, clinAssignments]
+    );
 
     // Group all budget lines by services component for display
     // Memoized to avoid expensive re-computation on every render
@@ -382,6 +391,7 @@ export default function useRequestAwardApproval(agreementId) {
         MemoizedDatePicker,
         clinAssignments,
         setClinAssignments,
+        hasMissingCLINs,
         showModal,
         setShowModal,
         modalProps

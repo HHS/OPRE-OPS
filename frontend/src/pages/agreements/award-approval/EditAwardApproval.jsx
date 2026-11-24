@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
@@ -66,7 +66,6 @@ export const EditAwardApproval = () => {
         isSubmitting,
         projectOfficerName,
         alternateProjectOfficerName,
-        allBudgetLines,
         servicesComponentLookup,
         groupedBudgetLinesByServicesComponent,
         vendors,
@@ -91,15 +90,11 @@ export const EditAwardApproval = () => {
         MemoizedDatePicker,
         clinAssignments,
         setClinAssignments,
+        hasMissingCLINs,
         showModal,
         setShowModal,
         modalProps
     } = useEditAwardApproval(agreementId);
-
-    // Check if any non-Draft BLIs are missing CLINs
-    const hasMissingCLINs = useMemo(() => {
-        return allBudgetLines.some((bli) => bli.status !== "DRAFT" && !clinAssignments[bli.id] && !bli.clin_id);
-    }, [allBudgetLines, clinAssignments]);
 
     if (isLoading) {
         return <p>Loading...</p>;

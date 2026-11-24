@@ -88,3 +88,18 @@ export const hasAwardFieldChanges = (current, seeded) =>
     current.modificationNumber !== seeded.modificationNumber ||
     current.purchaseOrderNumber.trim() !== seeded.purchaseOrderNumber.trim() ||
     current.taskOrderNumber.trim() !== seeded.taskOrderNumber.trim();
+
+/**
+ * Whether any non-Draft budget line this award covers still has no CLIN, counting CLINs picked on
+ * the form but not saved yet.
+ *
+ * Pass only the lines the award covers (`getTrackerBudgetLines`): a contract mod's award
+ * needs CLINs on its own lines, not on the agreement's earlier Obligated lines or on Planned
+ * lines that belong to no award yet (OPS-6513).
+ *
+ * @param {Array<{ id: number, status: string, clin_id?: number | null }>} budgetLines
+ * @param {Record<number, number>} clinAssignments - Budget line id → CLIN id picked on the form.
+ * @returns {boolean}
+ */
+export const hasMissingClins = (budgetLines, clinAssignments) =>
+    budgetLines.some((bli) => bli.status !== "DRAFT" && !clinAssignments[bli.id] && !bli.clin_id);

@@ -3,6 +3,7 @@ import {
     DEFAULT_MODIFICATION_NUMBER,
     getSeededAwardFields,
     hasAwardFieldChanges,
+    hasMissingClins,
     MODIFICATION_NUMBER_OPTIONS
 } from "./awardForm.helpers";
 
@@ -100,5 +101,27 @@ describe("hasAwardFieldChanges", () => {
         ["taskOrderNumber", "TO-99"]
     ])("is true when %s changes", (field, value) => {
         expect(hasAwardFieldChanges({ ...seeded, [field]: value }, seeded)).toBe(true);
+    });
+});
+
+describe("hasMissingClins", () => {
+    it("is true when a non-Draft line has no saved or picked CLIN", () => {
+        expect(hasMissingClins([{ id: 1, status: "IN_EXECUTION", clin_id: null }], {})).toBe(true);
+    });
+
+    it("counts a CLIN picked on the form but not saved yet", () => {
+        expect(hasMissingClins([{ id: 1, status: "IN_EXECUTION", clin_id: null }], { 1: 5 })).toBe(false);
+    });
+
+    it("counts a CLIN already saved on the line", () => {
+        expect(hasMissingClins([{ id: 1, status: "PLANNED", clin_id: 5 }], {})).toBe(false);
+    });
+
+    it("ignores Draft lines", () => {
+        expect(hasMissingClins([{ id: 1, status: "DRAFT", clin_id: null }], {})).toBe(false);
+    });
+
+    it("is false when there are no lines", () => {
+        expect(hasMissingClins([], {})).toBe(false);
     });
 });
