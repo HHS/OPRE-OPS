@@ -48,7 +48,8 @@ class ProjectHistory(BaseModel):
 
 _PROJECT_TYPE_DISPLAY = {
     ProjectType.RESEARCH.name: "Research",
-    ProjectType.ADMINISTRATIVE_AND_SUPPORT.name: "Admin & Support",
+    ProjectType.ADMINISTRATIVE.name: "Administrative",
+    ProjectType.TECHNICAL_ASSISTANCE.name: "Technical Assistance",
 }
 
 

@@ -38,7 +38,7 @@ describe("handleProjectsExport", () => {
         {
             id: 11,
             title: "Support Beta",
-            project_type: "ADMINISTRATIVE_AND_SUPPORT",
+            project_type: "ADMINISTRATIVE",
             start_date: null,
             end_date: null,
             fiscal_year_totals: {},

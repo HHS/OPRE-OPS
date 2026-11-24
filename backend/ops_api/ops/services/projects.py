@@ -18,6 +18,7 @@ from models import (
     ProjectSortCondition,
     ProjectType,
     ResearchProject,
+    TechnicalAssistanceProject,
     User,
 )
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
@@ -127,10 +128,15 @@ class ProjectsService(OpsService[Project]):
         project_type = data.get("project_type", None)
         if project_type == ProjectType.RESEARCH:
             new_project = ResearchProject(**data)
-        elif project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
-            # remove origination_date if it's present since it's not a field on AdministrativeAndSupportProject
+        elif project_type in (ProjectType.ADMINISTRATIVE, ProjectType.TECHNICAL_ASSISTANCE):
+            # remove origination_date if it's present since it's only a field on ResearchProject
             data.pop("origination_date", None)
-            new_project = AdministrativeAndSupportProject(**data)
+            project_model = (
+                AdministrativeAndSupportProject
+                if project_type == ProjectType.ADMINISTRATIVE
+                else TechnicalAssistanceProject
+            )
+            new_project = project_model(**data)
         else:
             raise ValidationError({"project_type": "Invalid project type."})
 
@@ -196,8 +202,8 @@ class ProjectsService(OpsService[Project]):
             project.change_type(new_type)
             project = self.db_session.get(Project, id)
 
-        # Remove origination_date if updating an admin project (not a valid field for that type)
-        if project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
+        # origination_date is only valid on research projects
+        if project.project_type != ProjectType.RESEARCH:
             updated_fields.pop("origination_date", None)
 
         # Handle team_leaders if provided
@@ -334,10 +340,11 @@ class ProjectsService(OpsService[Project]):
         return stmt
 
     @staticmethod
-    def _get_administrative_and_support_projects_query(filters: ProjectFilters):
-        """Build query for administrative and support projects with filtering.
+    def _get_non_research_projects_query(project_model: type[Project], filters: ProjectFilters):
+        """Build query for a non-research project subclass (administrative, technical assistance) with filtering.
 
         Args:
+            project_model: The Project subclass to query
             filters: ProjectFilters object containing filter parameters
 
         Returns:
@@ -345,16 +352,16 @@ class ProjectsService(OpsService[Project]):
         """
         # Base query with all necessary eager loading
         stmt = (
-            select(AdministrativeAndSupportProject)
-            .distinct(AdministrativeAndSupportProject.id)
+            select(project_model)
+            .distinct(project_model.id)
             .options(
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components),
-                selectinload(AdministrativeAndSupportProject.agreements)
+                selectinload(project_model.agreements).selectinload(Agreement.services_components),
+                selectinload(project_model.agreements)
                 .selectinload(Agreement.budget_line_items)
                 .selectinload(BudgetLineItem.can),
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.special_topics),
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.research_methodologies),
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.team_members),
+                selectinload(project_model.agreements).selectinload(Agreement.special_topics),
+                selectinload(project_model.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(project_model.agreements).selectinload(Agreement.team_members),
             )
         )
 
@@ -371,7 +378,7 @@ class ProjectsService(OpsService[Project]):
                 .select_from(Agreement)
                 .join(BudgetLineItem)
                 .join(CAN)
-                .where(Agreement.project_id == AdministrativeAndSupportProject.id)
+                .where(Agreement.project_id == project_model.id)
                 .where(CAN.portfolio_id.in_(filters.portfolio_id))
                 .exists()
             )
@@ -383,7 +390,7 @@ class ProjectsService(OpsService[Project]):
                 select(1)
                 .select_from(Agreement)
                 .join(BudgetLineItem)
-                .where(Agreement.project_id == AdministrativeAndSupportProject.id)
+                .where(Agreement.project_id == project_model.id)
                 .where(BudgetLineItem.fiscal_year.in_(filters.fiscal_year))
                 .exists()
             )
@@ -393,8 +400,8 @@ class ProjectsService(OpsService[Project]):
         if filters.project_search:
             where_clauses.append(
                 or_(
-                    AdministrativeAndSupportProject.title.in_(filters.project_search),
-                    AdministrativeAndSupportProject.short_title.in_(filters.project_search),
+                    project_model.title.in_(filters.project_search),
+                    project_model.short_title.in_(filters.project_search),
                 )
             )
 
@@ -409,7 +416,7 @@ class ProjectsService(OpsService[Project]):
             agreement_subquery = (
                 select(1)
                 .select_from(Agreement)
-                .where(Agreement.project_id == AdministrativeAndSupportProject.id)
+                .where(Agreement.project_id == project_model.id)
                 .where(Agreement.id.in_(filters.agreement_ids))
                 .exists()
             )
@@ -570,7 +577,7 @@ class ProjectsService(OpsService[Project]):
             data: Dictionary containing filter parameters (all as lists) including limit and offset
 
         Returns:
-            Tuple of (research_projects, administrative_and_support_projects, metadata)
+            Tuple of (projects, metadata)
             where metadata includes count, limit, and offset
         """
         filters = ProjectFilters.parse_filters(data)
@@ -586,12 +593,11 @@ class ProjectsService(OpsService[Project]):
         sort_fiscal_year = sort_fiscal_year_list[0] if sort_fiscal_year_list else None
 
         research_projects = []
-        administrative_and_support_projects = []
+        non_research_projects = []
 
-        # If no project types specified, query both types
+        # If no project types specified, query all types
         # If project types specified, only query the specified types
         should_query_research = not filters.project_type or ProjectType.RESEARCH in filters.project_type
-        should_query_admin = not filters.project_type or ProjectType.ADMINISTRATIVE_AND_SUPPORT in filters.project_type
 
         if should_query_research:
             research_stmt = ProjectsService._get_research_projects_query(filters)
@@ -599,12 +605,16 @@ class ProjectsService(OpsService[Project]):
             logger.debug(f"Compiled SQL for research projects: {value}")
             research_projects = list(self.db_session.scalars(research_stmt).all())
 
-        if should_query_admin:
-            administrative_and_support_stmt = ProjectsService._get_administrative_and_support_projects_query(filters)
-            administrative_and_support_projects = list(self.db_session.scalars(administrative_and_support_stmt).all())
+        for project_type, project_model in (
+            (ProjectType.ADMINISTRATIVE, AdministrativeAndSupportProject),
+            (ProjectType.TECHNICAL_ASSISTANCE, TechnicalAssistanceProject),
+        ):
+            if not filters.project_type or project_type in filters.project_type:
+                stmt = ProjectsService._get_non_research_projects_query(project_model, filters)
+                non_research_projects.extend(self.db_session.scalars(stmt).all())
 
         # Combine results for pagination
-        all_projects = research_projects + administrative_and_support_projects
+        all_projects = research_projects + non_research_projects
 
         # Memoize project_list_metadata to prevent repeat calculations
         metadata_cache = {}

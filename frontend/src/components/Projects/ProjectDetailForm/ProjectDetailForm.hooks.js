@@ -8,7 +8,8 @@ import suite from "./suite.js";
 
 const DISPLAY_TO_API_TYPE = {
     Research: "RESEARCH",
-    "Admin & Support": "ADMINISTRATIVE_AND_SUPPORT"
+    Administrative: "ADMINISTRATIVE",
+    "Technical Assistance": "TECHNICAL_ASSISTANCE"
 };
 
 const API_TO_DISPLAY_TYPE = Object.fromEntries(Object.entries(DISPLAY_TO_API_TYPE).map(([k, v]) => [v, k]));

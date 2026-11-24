@@ -45,7 +45,7 @@ export const handlers = [
                     title: "Operations Support",
                     short_title: "OPS",
                     description: "Administrative and support project.",
-                    project_type: "ADMINISTRATIVE_AND_SUPPORT"
+                    project_type: "ADMINISTRATIVE"
                 }
             ]
         });

@@ -424,10 +424,10 @@ describe("Projects List Page", () => {
         cy.get("button").contains("Filter").click();
 
         cy.get(".project-type-combobox__control").click();
-        cy.get(".project-type-combobox__menu").contains("Admin & Support").click();
+        cy.get(".project-type-combobox__menu").contains("Administrative").click();
 
         // Verify the unapplied value is selected in the dropdown
-        cy.get(".project-type-combobox__control").should("contain", "Admin & Support");
+        cy.get(".project-type-combobox__control").should("contain", "Administrative");
 
         // Close the filter without applying (click outside or press Escape)
         cy.get("#filter-close").click(); // Click outside the filter modal
@@ -440,7 +440,7 @@ describe("Projects List Page", () => {
         cy.get(".portfolios-combobox__control").should("contain", "Child Care Research");
 
         // Verify unapplied filter value (project type) was cleared
-        cy.get(".project-type-combobox__control").should("not.contain", "Admin & Support");
+        cy.get(".project-type-combobox__control").should("not.contain", "Administrative");
 
         // Verify applied filter tags still exist
         getAppliedFilters().within(() => {
@@ -450,7 +450,7 @@ describe("Projects List Page", () => {
 
         // Verify project type was not applied (should not have a tag)
         getAppliedFilters().within(() => {
-            cy.contains("Admin & Support").should("not.exist");
+            cy.contains("Administrative").should("not.exist");
         });
     });
 });

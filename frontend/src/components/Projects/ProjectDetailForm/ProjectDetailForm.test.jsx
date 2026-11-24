@@ -74,10 +74,16 @@ describe("ProjectDetailForm", () => {
         expect(select).toHaveValue("Research");
     });
 
-    test("converts ADMINISTRATIVE_AND_SUPPORT to display format", () => {
-        renderComponent({ projectType: "ADMINISTRATIVE_AND_SUPPORT" });
+    test("converts ADMINISTRATIVE to display format", () => {
+        renderComponent({ projectType: "ADMINISTRATIVE" });
         const select = screen.getByLabelText(/project type/i);
-        expect(select).toHaveValue("Admin & Support");
+        expect(select).toHaveValue("Administrative");
+    });
+
+    test("converts TECHNICAL_ASSISTANCE to display format", () => {
+        renderComponent({ projectType: "TECHNICAL_ASSISTANCE" });
+        const select = screen.getByLabelText(/project type/i);
+        expect(select).toHaveValue("Technical Assistance");
     });
 
     test("validates required title field", async () => {
@@ -188,9 +194,9 @@ describe("ProjectDetailForm", () => {
         const user = userEvent.setup();
         const select = screen.getByLabelText(/project type/i);
 
-        await user.selectOptions(select, "Admin & Support");
+        await user.selectOptions(select, "Administrative");
 
-        expect(select).toHaveValue("Admin & Support");
+        expect(select).toHaveValue("Administrative");
     });
 
     test("renders Required Information hint under Project Type", () => {
@@ -212,20 +218,6 @@ describe("ProjectDetailForm", () => {
             "project_type"
         );
         expect(result.getErrors("project_type")).toContain("Please select a valid project type");
-    });
-
-    test("suite accepts Research and Admin & Support as project_type", () => {
-        const research = suite.run(
-            { title: "t", short_title: "", description: "", project_type: "Research" },
-            "project_type"
-        );
-        expect(research.getErrors("project_type")).toEqual([]);
-
-        const admin = suite.run(
-            { title: "t", short_title: "", description: "", project_type: "Admin & Support" },
-            "project_type"
-        );
-        expect(admin.getErrors("project_type")).toEqual([]);
     });
 
     test("shows placeholder and disables save when projectType is empty", () => {
@@ -261,14 +253,32 @@ describe("ProjectDetailForm", () => {
         const user = userEvent.setup();
         const select = screen.getByLabelText(/project type/i);
 
-        await user.selectOptions(select, "Admin & Support");
+        await user.selectOptions(select, "Administrative");
         await user.click(screen.getByRole("button", { name: /save changes/i }));
 
         await waitFor(() => {
             expect(mockUpdateProject).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: expect.objectContaining({
-                        project_type: "ADMINISTRATIVE_AND_SUPPORT"
+                        project_type: "ADMINISTRATIVE"
+                    })
+                })
+            );
+        });
+    });
+
+    test("submits Technical Assistance as TECHNICAL_ASSISTANCE in API format", async () => {
+        renderComponent();
+        const user = userEvent.setup();
+
+        await user.selectOptions(screen.getByLabelText(/project type/i), "Technical Assistance");
+        await user.click(screen.getByRole("button", { name: /save changes/i }));
+
+        await waitFor(() => {
+            expect(mockUpdateProject).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: expect.objectContaining({
+                        project_type: "TECHNICAL_ASSISTANCE"
                     })
                 })
             );

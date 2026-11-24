@@ -246,9 +246,9 @@ describe("ProjectDetailsView", () => {
         expect(screen.getByTestId("project-history-panel")).toBeInTheDocument();
     });
 
-    it("renders 'Admin & Support' tag for ADMINISTRATIVE_AND_SUPPORT project type", () => {
-        renderComponent({ ...baseProject, project_type: "ADMINISTRATIVE_AND_SUPPORT" });
-        expect(screen.getByText("Admin & Support")).toBeInTheDocument();
+    it("renders 'Administrative' tag for ADMINISTRATIVE project type", () => {
+        renderComponent({ ...baseProject, project_type: "ADMINISTRATIVE" });
+        expect(screen.getByText("Administrative")).toBeInTheDocument();
     });
 
     it("renders TBD for missing scalar values", () => {

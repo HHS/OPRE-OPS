@@ -4,10 +4,11 @@ import ReportingCountCard from "./ReportingCountCard";
 
 const mockCounts = {
     projects: {
-        total: 34,
+        total: 36,
         types: [
             { type: "RESEARCH", count: 24 },
-            { type: "ADMINISTRATIVE_AND_SUPPORT", count: 10 }
+            { type: "ADMINISTRATIVE", count: 10 },
+            { type: "TECHNICAL_ASSISTANCE", count: 2 }
         ]
     },
     agreements: {
@@ -80,7 +81,7 @@ describe("ReportingCountCard", () => {
                 counts={mockCounts}
             />
         );
-        expect(screen.getByText("34")).toBeInTheDocument();
+        expect(screen.getByText("36")).toBeInTheDocument();
         expect(screen.getByText("40")).toBeInTheDocument();
         expect(screen.getByText("17")).toBeInTheDocument();
         expect(screen.getByText("15")).toBeInTheDocument();
@@ -95,7 +96,8 @@ describe("ReportingCountCard", () => {
             />
         );
         expect(screen.getByText("24 Research")).toBeInTheDocument();
-        expect(screen.getByText("10 Admin & Support")).toBeInTheDocument();
+        expect(screen.getByText("10 Administrative")).toBeInTheDocument();
+        expect(screen.getByText("2 Technical Assistance")).toBeInTheDocument();
     });
 
     it("renders agreement type tags", () => {

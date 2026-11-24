@@ -1,6 +1,6 @@
 import { create, test, enforce } from "vest";
 
-const VALID_PROJECT_TYPES = ["Research", "Admin & Support"];
+const VALID_PROJECT_TYPES = ["Research", "Administrative", "Technical Assistance"];
 
 const suite = create((data = {}) => {
     test("title", "This is required information", () => {

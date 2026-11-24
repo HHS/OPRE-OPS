@@ -229,7 +229,7 @@ describe("ComboBox", () => {
             // so this must keep matching even after the searchText override — regression guard for
             // the override accidentally dropping option.value from the searchable text.
             const projectTypeOptions = [
-                { id: "ADMINISTRATIVE_AND_SUPPORT", title: "Admin & Support" },
+                { id: "TECHNICAL_ASSISTANCE", title: "Technical Assistance" },
                 { id: "RESEARCH", title: "Research" }
             ];
             render(
@@ -240,9 +240,10 @@ describe("ComboBox", () => {
                     setSelectedData={mockSetSelectedProject}
                 />
             );
-            fireEvent.change(screen.getByRole("combobox"), { target: { value: "administrative" } });
+            // underscore is deliberate: the label ("Technical Assistance") cannot contain it, so only option.value can match
+            fireEvent.change(screen.getByRole("combobox"), { target: { value: "technical_assistance" } });
 
-            expect(screen.getByText("Admin & Support")).toBeInTheDocument();
+            expect(screen.getByText("Technical Assistance")).toBeInTheDocument();
             expect(screen.queryByText("Research")).not.toBeInTheDocument();
         });
 

@@ -6,7 +6,13 @@ from typing import List, Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from models import AdministrativeAndSupportProject, ProjectType, ResearchProject, User
+from models import AdministrativeAndSupportProject, ProjectType, ResearchProject, TechnicalAssistanceProject, User
+
+PROJECT_MODELS = {
+    ProjectType.RESEARCH: ResearchProject,
+    ProjectType.ADMINISTRATIVE: AdministrativeAndSupportProject,
+    ProjectType.TECHNICAL_ASSISTANCE: TechnicalAssistanceProject,
+}
 
 
 @dataclass
@@ -54,7 +60,7 @@ def validate_data(data: ProjectData) -> bool:
     return all(
         [
             data.PROJECT_TITLE is not None,
-            data.PROJECT_TYPE is not None,
+            data.PROJECT_TYPE in ProjectType.__members__,
         ]
     )
 
@@ -83,24 +89,15 @@ def create_models(data: ProjectData, sys_user: User, session: Session) -> None:
     logger.debug(f"Creating models for {data}")
 
     try:
-        if data.PROJECT_TYPE == "RESEARCH":
-            project = ResearchProject(
-                id=data.SYS_PROJECT_ID,
-                project_type=ProjectType.RESEARCH,
-                title=data.PROJECT_TITLE,
-                short_title=data.PROJECT_SHORT_TITLE,
-                description=data.PROJECT_DESCRIPTION,
-                created_by=sys_user.id,
-            )
-        else:
-            project = AdministrativeAndSupportProject(
-                id=data.SYS_PROJECT_ID,
-                project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT,
-                title=data.PROJECT_TITLE,
-                short_title=data.PROJECT_SHORT_TITLE,
-                description=data.PROJECT_DESCRIPTION,
-                created_by=sys_user.id,
-            )
+        project_type = ProjectType[data.PROJECT_TYPE]
+        project = PROJECT_MODELS[project_type](
+            id=data.SYS_PROJECT_ID,
+            project_type=project_type,
+            title=data.PROJECT_TITLE,
+            short_title=data.PROJECT_SHORT_TITLE,
+            description=data.PROJECT_DESCRIPTION,
+            created_by=sys_user.id,
+        )
         session.merge(project)
 
         if os.getenv("DRY_RUN"):

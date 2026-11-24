@@ -30,7 +30,7 @@ export type ProjectLookupItem = {
 
 export type Project = {
     id: number;
-    project_type: "RESEARCH" | "ADMINISTRATIVE_AND_SUPPORT";
+    project_type: "RESEARCH" | "ADMINISTRATIVE" | "TECHNICAL_ASSISTANCE";
     title: string;
     short_title: string | null;
     description: string | null;

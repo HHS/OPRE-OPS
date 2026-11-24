@@ -26,7 +26,7 @@ def test_create_project_data():
 
     assert create_project_data(test_data[13]).SYS_PROJECT_ID == 14
     assert create_project_data(test_data[13]).PROJECT_TITLE == "Support Project #1"
-    assert create_project_data(test_data[13]).PROJECT_TYPE == "ADMINISTRATIVE_AND_SUPPORT"
+    assert create_project_data(test_data[13]).PROJECT_TYPE == "ADMINISTRATIVE"
     assert create_project_data(test_data[13]).PROJECT_SHORT_TITLE == "SP1"
     assert create_project_data(test_data[13]).PROJECT_DESCRIPTION == ""
 
@@ -65,6 +65,30 @@ def test_no_project_type():
             PROJECT_SHORT_TITLE="",
             PROJECT_DESCRIPTION="",
         )
+
+
+def test_validate_data_rejects_unknown_project_type():
+    # a type outside ProjectType must fail validation rather than be loaded as some default type
+    data = ProjectData(PROJECT_TITLE="Project Title", PROJECT_TYPE="ADMINISTRATIVE_AND_SUPPORT")
+    assert not validate_data(data)
+
+
+@pytest.mark.parametrize(
+    "project_type, model",
+    [
+        ("ADMINISTRATIVE", AdministrativeAndSupportProject),
+        ("TECHNICAL_ASSISTANCE", TechnicalAssistanceProject),
+    ],
+)
+def test_create_models_uses_model_for_project_type(loaded_db, project_type, model):
+    data = ProjectData(SYS_PROJECT_ID=1, PROJECT_TITLE="Typed Project", PROJECT_TYPE=project_type)
+
+    create_models(data, User(email="system.admin@localhost"), loaded_db)
+
+    loaded_db.expunge_all()  # force a fresh polymorphic load rather than the identity-mapped instance
+    project = loaded_db.get(Project, 1)
+    assert type(project) is model
+    assert project.project_type == ProjectType[project_type]
 
 
 def test_create_models(loaded_db):

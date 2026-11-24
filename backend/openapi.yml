@@ -3981,7 +3981,7 @@ paths:
             type: array
             items:
               type: string
-              enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+              enum: [RESEARCH, ADMINISTRATIVE, TECHNICAL_ASSISTANCE]
           style: form
           explode: true
           example: [RESEARCH]
@@ -4089,17 +4089,17 @@ paths:
                         example: 20
                       projects_by_type:
                         type: object
-                        description: Count of projects grouped by project type. Always includes both RESEARCH and ADMINISTRATIVE_AND_SUPPORT keys (0 if none match).
+                        description: Count of projects grouped by project type. Always includes RESEARCH, ADMINISTRATIVE and TECHNICAL_ASSISTANCE keys (0 if none match).
                         additionalProperties:
                           type: integer
                         example:
                           RESEARCH: 15
-                          ADMINISTRATIVE_AND_SUPPORT: 5
+                          ADMINISTRATIVE: 5
                       amounts_by_type:
                         type: object
                         description: >
-                          Total amounts and percentages grouped by project type. Always includes both
-                          RESEARCH and ADMINISTRATIVE_AND_SUPPORT keys (0 if none match). When a specific
+                          Total amounts and percentages grouped by project type. Always includes
+                          RESEARCH, ADMINISTRATIVE and TECHNICAL_ASSISTANCE keys (0 if none match). When a specific
                           fiscal year is selected, contains FY-specific totals. When no fiscal year is
                           selected (FY = All), contains lifetime totals.
                         additionalProperties:
@@ -4120,7 +4120,7 @@ paths:
                           RESEARCH:
                             amount: 7000000.00
                             percent: 70.0
-                          ADMINISTRATIVE_AND_SUPPORT:
+                          ADMINISTRATIVE:
                             amount: 3000000.00
                             percent: 30.0
         "400":
@@ -4131,13 +4131,13 @@ paths:
       tags:
         - Projects
       operationId: createProject
-      summary: Create a new Project (Research or Administrative/Support)
+      summary: Create a new Project (Research, Administrative or Technical Assistance)
       description: |
         Create a new project of any type. The project_type field determines whether
-        a Research Project or Administrative/Support Project is created.
+        a Research, Administrative or Technical Assistance Project is created.
 
         - For Research projects: all fields including origination_date are supported
-        - For Administrative/Support projects: origination_date is ignored if provided
+        - For Administrative and Technical Assistance projects: origination_date is ignored if provided
       parameters:
         - $ref: "#/components/parameters/simulatedError"
       requestBody:
@@ -4163,7 +4163,7 @@ paths:
               admin_project:
                 summary: Administrative Project Example
                 value:
-                  project_type: ADMINISTRATIVE_AND_SUPPORT
+                  project_type: ADMINISTRATIVE
                   title: "IT Infrastructure Support"
                   short_title: "IT-INFRA"
                   description: "Infrastructure support project"
@@ -4192,7 +4192,7 @@ paths:
       tags:
         - Projects
       operationId: getProjectById
-      description: Get a Project by ID (supports both Research and Administrative/Support projects)
+      description: Get a Project by ID (supports Research, Administrative and Technical Assistance projects)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - in: path
@@ -4213,7 +4213,7 @@ paths:
                 oneOf:
                   - $ref: "#/components/schemas/ResearchProject"
                   - $ref: "#/components/schemas/Project"
-                description: Returns ResearchProject schema for research projects, or Project schema for administrative/support projects
+                description: Returns ResearchProject schema for research projects, or Project schema for administrative and technical assistance projects
         "400":
           description: Bad Request
         "401":
@@ -4509,9 +4509,9 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+                      enum: [RESEARCH, ADMINISTRATIVE, TECHNICAL_ASSISTANCE]
                     description: List of project types (sorted alphabetically)
-                    example: ["ADMINISTRATIVE_AND_SUPPORT", "RESEARCH"]
+                    example: ["ADMINISTRATIVE", "RESEARCH"]
                   agreement_names:
                     type: array
                     items:
@@ -7971,7 +7971,7 @@ components:
           example: "2023-04-06T20:33:38.292475Z"
         project_type:
           type: string
-          enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          enum: [RESEARCH, ADMINISTRATIVE, TECHNICAL_ASSISTANCE]
           example: RESEARCH
         start_date:
           type: string
@@ -8026,7 +8026,7 @@ components:
         - title
     ProjectListItem:
       type: object
-      description: Lightweight schema for list endpoint (Administrative/Support projects)
+      description: Lightweight schema for list endpoint (Administrative and Technical Assistance projects)
       properties:
         id:
           type: integer
@@ -8054,8 +8054,8 @@ components:
           example: "2023-04-06T20:33:38.292475Z"
         project_type:
           type: string
-          enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
-          example: ADMINISTRATIVE_AND_SUPPORT
+          enum: [RESEARCH, ADMINISTRATIVE, TECHNICAL_ASSISTANCE]
+          example: ADMINISTRATIVE
         start_date:
           type: string
           format: date
@@ -8213,7 +8213,7 @@ components:
           example: 1
         project_type:
           type: string
-          enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          enum: [RESEARCH, ADMINISTRATIVE, TECHNICAL_ASSISTANCE]
           example: RESEARCH
         _meta:
           type: object
@@ -8886,7 +8886,7 @@ components:
       properties:
         project_type:
           type: string
-          enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          enum: [RESEARCH, ADMINISTRATIVE, TECHNICAL_ASSISTANCE]
           example: RESEARCH
         title:
           type: string
@@ -10282,7 +10282,7 @@ components:
         - name
     Project:
       type: object
-      description: Full schema for Administrative/Support projects (detail endpoint)
+      description: Full schema for Administrative and Technical Assistance projects (detail endpoint)
       properties:
         id:
           type: integer
@@ -10291,8 +10291,9 @@ components:
           type: string
           enum:
             - RESEARCH
-            - ADMINISTRATIVE_AND_SUPPORT
-          example: ADMINISTRATIVE_AND_SUPPORT
+            - ADMINISTRATIVE
+            - TECHNICAL_ASSISTANCE
+          example: ADMINISTRATIVE
         title:
           type: string
           example: Example Project Title

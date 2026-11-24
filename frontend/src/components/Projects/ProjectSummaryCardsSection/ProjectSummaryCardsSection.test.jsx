@@ -14,11 +14,11 @@ const testSummary = {
     total_projects: 15,
     projects_by_type: {
         RESEARCH: 13,
-        ADMINISTRATIVE_AND_SUPPORT: 2
+        ADMINISTRATIVE: 2
     },
     amounts_by_type: {
         RESEARCH: { amount: 7000000, percent: 70 },
-        ADMINISTRATIVE_AND_SUPPORT: { amount: 3000000, percent: 30 }
+        ADMINISTRATIVE: { amount: 3000000, percent: 30 }
     }
 };
 
@@ -57,7 +57,7 @@ describe("ProjectSummaryCardsSection", () => {
 
         expect(screen.getByText("15")).toBeInTheDocument();
         expect(screen.getByText("13 Research")).toBeInTheDocument();
-        expect(screen.getByText("2 Admin & Support")).toBeInTheDocument();
+        expect(screen.getByText("2 Administrative")).toBeInTheDocument();
         expect(screen.getByText("$7,000,000.00")).toBeInTheDocument();
         expect(screen.getByText("$3,000,000.00")).toBeInTheDocument();
     });

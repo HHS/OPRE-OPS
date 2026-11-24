@@ -8,9 +8,7 @@ from models import AdministrativeAndSupportProject, ProjectType
 def test_administrative_and_support_projects_get_all(auth_client, loaded_db):
     count = loaded_db.query(AdministrativeAndSupportProject).count()
 
-    response = auth_client.get(
-        url_for("api.projects-group", project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
-    )
+    response = auth_client.get(url_for("api.projects-group", project_type=[ProjectType.ADMINISTRATIVE.name]))
     assert response.status_code == 200
     assert "data" in response.json
     assert len(response.json["data"]) == count
@@ -41,13 +39,13 @@ def test_administrative_and_support_projects_with_fiscal_year_found(auth_client,
         url_for(
             "api.projects-group",
             fiscal_year=[2044],
-            project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name],
+            project_type=[ProjectType.ADMINISTRATIVE.name],
         )
     )
     assert response.status_code == 200
     # Filter for administrative and support projects
     admin_support_projects = [
-        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE.name
     ]
     assert len(admin_support_projects) == 1
     assert admin_support_projects[0]["title"] == "Support Project #1"
@@ -56,12 +54,12 @@ def test_administrative_and_support_projects_with_fiscal_year_found(auth_client,
 
 def test_administrative_and_support_projects_with_fiscal_year_not_found(auth_client, loaded_db):
     response = auth_client.get(
-        url_for("api.projects-group", fiscal_year=[2000], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
+        url_for("api.projects-group", fiscal_year=[2000], project_type=[ProjectType.ADMINISTRATIVE.name])
     )
     assert response.status_code == 200
     # Filter for administrative and support projects
     admin_support_projects = [
-        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE.name
     ]
     assert len(admin_support_projects) == 0
 
@@ -69,7 +67,7 @@ def test_administrative_and_support_projects_with_fiscal_year_not_found(auth_cli
 def test_administrative_and_support_projects_search(auth_client, loaded_db):
     # Empty string returns no results
     response = auth_client.get(
-        url_for("api.projects-group", project_search=[""], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
+        url_for("api.projects-group", project_search=[""], project_type=[ProjectType.ADMINISTRATIVE.name])
     )
 
     assert response.status_code == 200
@@ -81,7 +79,7 @@ def test_administrative_and_support_projects_search(auth_client, loaded_db):
         url_for(
             "api.projects-group",
             project_search=["SP1", "SP2"],
-            project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name],
+            project_type=[ProjectType.ADMINISTRATIVE.name],
         )
     )
 
@@ -89,30 +87,26 @@ def test_administrative_and_support_projects_search(auth_client, loaded_db):
     assert response.json["count"] == 2
     # Filter for administrative and support projects
     admin_support_projects = [
-        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE.name
     ]
     assert len(admin_support_projects) == 2
 
     # Search by exact short_title "SP2" - should find one project
     response = auth_client.get(
-        url_for(
-            "api.projects-group", project_search=["SP2"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name]
-        )
+        url_for("api.projects-group", project_search=["SP2"], project_type=[ProjectType.ADMINISTRATIVE.name])
     )
 
     assert response.status_code == 200
     assert response.json["count"] == 1
     # Filter for administrative and support projects
     admin_support_projects = [
-        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE.name
     ]
     assert len(admin_support_projects) == 1
 
     # Search with non-existent title returns no results
     response = auth_client.get(
-        url_for(
-            "api.projects-group", project_search=["blah"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name]
-        )
+        url_for("api.projects-group", project_search=["blah"], project_type=[ProjectType.ADMINISTRATIVE.name])
     )
 
     assert response.status_code == 200
@@ -132,7 +126,7 @@ def test_administrative_and_support_projects_auth(client, loaded_db):
 
 def test_post_administrative_and_support_projects(auth_client, loaded_db):
     data = {
-        "project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name,
+        "project_type": ProjectType.ADMINISTRATIVE.name,
         "title": "Administrative Project #1",
         "short_title": "AP1" + uuid.uuid4().hex,
         "description": "blah blah blah",
@@ -154,7 +148,7 @@ def test_post_administrative_and_support_projects(auth_client, loaded_db):
 
 def test_post_administrative_and_support_projects_minimum(auth_client, loaded_db):
     data = {
-        "project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name,
+        "project_type": ProjectType.ADMINISTRATIVE.name,
         "title": "Administrative Project #1",
         "short_title": "AP1" + uuid.uuid4().hex,
     }
@@ -175,7 +169,7 @@ def test_post_administrative_and_support_projects_empty_post(auth_client, loaded
 
 def test_post_administrative_and_support_projects_bad_team_leaders(auth_client, loaded_db):
     data = {
-        "project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name,
+        "project_type": ProjectType.ADMINISTRATIVE.name,
         "title": "Administrative Project #1",
         "short_title": "AP1" + uuid.uuid4().hex,
         "description": "blah blah blah",
@@ -189,7 +183,7 @@ def test_post_administrative_and_support_projects_bad_team_leaders(auth_client, 
 
 def test_post_administrative_and_support_projects_missing_title(auth_client, loaded_db):
     data = {
-        "project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name,
+        "project_type": ProjectType.ADMINISTRATIVE.name,
         "short_title": "AP1" + uuid.uuid4().hex,
         "description": "blah blah blah",
         "url": "https://example.com",
@@ -202,7 +196,7 @@ def test_post_administrative_and_support_projects_missing_title(auth_client, loa
 
 def test_post_administrative_and_support_projects_auth_required(client, loaded_db):
     data = {
-        "project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name,
+        "project_type": ProjectType.ADMINISTRATIVE.name,
         "title": "Administrative Project #1",
         "short_title": "AP1" + uuid.uuid4().hex,
         "description": "blah blah blah",

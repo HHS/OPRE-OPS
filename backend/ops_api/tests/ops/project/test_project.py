@@ -293,11 +293,11 @@ def test_project_type_filter_all_vs_none(auth_client, loaded_db):
     response_no_filter = auth_client.get(url_for("api.projects-group"))
     assert response_no_filter.status_code == 200
 
-    # Get all projects with both types explicitly specified
+    # Get all projects with all types explicitly specified
     response_all_types = auth_client.get(
         url_for(
             "api.projects-group",
-            project_type=[ProjectType.RESEARCH.name, ProjectType.ADMINISTRATIVE_AND_SUPPORT.name],
+            project_type=[t.name for t in ProjectType],
         )
     )
     assert response_all_types.status_code == 200
@@ -323,12 +323,10 @@ def test_project_type_filter_single_type(auth_client, loaded_db):
 
     # Get only admin/support projects
     response_admin = auth_client.get(
-        url_for("api.projects-group", project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name], limit=50)
+        url_for("api.projects-group", project_type=[ProjectType.ADMINISTRATIVE.name], limit=50)
     )
     assert response_admin.status_code == 200
-    admin_projects = [
-        p for p in response_admin.json["data"] if p["project_type"] == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
-    ]
+    admin_projects = [p for p in response_admin.json["data"] if p["project_type"] == ProjectType.ADMINISTRATIVE.name]
     assert len(admin_projects) == len(response_admin.json["data"]), "Should only return admin/support projects"
 
     # Sum of both types should equal total projects
@@ -446,9 +444,9 @@ def test_projects_summary_with_project_type_filter(auth_client, loaded_db):
     summary = response.json["summary"]
     # Both types always present
     assert ProjectType.RESEARCH.name in summary["projects_by_type"]
-    assert ProjectType.ADMINISTRATIVE_AND_SUPPORT.name in summary["projects_by_type"]
+    assert ProjectType.ADMINISTRATIVE.name in summary["projects_by_type"]
     # Filtered-out type should be 0
-    assert summary["projects_by_type"][ProjectType.ADMINISTRATIVE_AND_SUPPORT.name] == 0
+    assert summary["projects_by_type"][ProjectType.ADMINISTRATIVE.name] == 0
     assert summary["total_projects"] == summary["projects_by_type"][ProjectType.RESEARCH.name]
 
 
@@ -1039,25 +1037,25 @@ def test_patch_project_invalid_project_type(budget_team_auth_client, loaded_db, 
 
 
 def test_patch_project_change_type_research_to_admin(budget_team_auth_client, loaded_db, project_with_no_agreements):
-    """Test changing project type from Research to Administrative and Support."""
+    """Test changing project type from Research to Administrative."""
     project_id = project_with_no_agreements.id
     assert project_with_no_agreements.project_type == ProjectType.RESEARCH
 
-    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    data = {"project_type": ProjectType.ADMINISTRATIVE.name}
     response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
     assert response.status_code == 200
 
     loaded_db.expire_all()
     project = loaded_db.get(Project, project_id)
-    assert project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT
+    assert project.project_type == ProjectType.ADMINISTRATIVE
     assert isinstance(project, AdministrativeAndSupportProject)
     assert not hasattr(project, "origination_date")
 
 
 def test_patch_project_change_type_admin_to_research(budget_team_auth_client, loaded_db):
-    """Test changing project type from Administrative and Support to Research."""
+    """Test changing project type from Administrative to Research."""
     admin_project = AdministrativeAndSupportProject(
-        project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT,
+        project_type=ProjectType.ADMINISTRATIVE,
         title="Admin Project For Type Change",
         short_title="APTC",
         description="Test admin project",
@@ -1095,7 +1093,7 @@ def test_patch_project_change_type_with_other_fields(budget_team_auth_client, lo
     """Test changing project type and other fields simultaneously."""
     project_id = project_with_no_agreements.id
     data = {
-        "project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name,
+        "project_type": ProjectType.ADMINISTRATIVE.name,
         "title": "Now An Admin Project",
     }
     response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
@@ -1103,7 +1101,7 @@ def test_patch_project_change_type_with_other_fields(budget_team_auth_client, lo
 
     loaded_db.expire_all()
     project = loaded_db.get(Project, project_id)
-    assert project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT
+    assert project.project_type == ProjectType.ADMINISTRATIVE
     assert project.title == "Now An Admin Project"
 
 
@@ -1128,13 +1126,13 @@ def test_patch_project_change_type_preserves_relationships(budget_team_auth_clie
     loaded_db.add(agreement)
     loaded_db.commit()
 
-    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    data = {"project_type": ProjectType.ADMINISTRATIVE.name}
     response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
     assert response.status_code == 200
 
     loaded_db.expire_all()
     updated = loaded_db.get(Project, project_id)
-    assert updated.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT
+    assert updated.project_type == ProjectType.ADMINISTRATIVE
     assert len(updated.team_leaders) == 1
     assert updated.team_leaders[0].id == 500
     assert len(updated.agreements) == 1
@@ -1153,7 +1151,7 @@ def test_change_type_creates_version_records_research_to_admin(budget_team_auth_
     loaded_db.refresh(project)
     project_id = project.id
 
-    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    data = {"project_type": ProjectType.ADMINISTRATIVE.name}
     response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
     assert response.status_code == 200
 
@@ -1166,7 +1164,7 @@ def test_change_type_creates_version_records_research_to_admin(budget_team_auth_
         {"id": project_id},
     ).fetchall()
     assert len(pv_rows) >= 1
-    assert pv_rows[0][0] == "ADMINISTRATIVE_AND_SUPPORT"
+    assert pv_rows[0][0] == "ADMINISTRATIVE"
     assert pv_rows[0][1] == Project._OP_UPDATE
 
     # Verify research_project_version has a DELETE record
@@ -1194,7 +1192,7 @@ def test_change_type_creates_version_records_research_to_admin(budget_team_auth_
 def test_change_type_creates_version_records_admin_to_research(budget_team_auth_client, loaded_db):
     """Test that changing Admin -> Research creates correct version rows."""
     project = AdministrativeAndSupportProject(
-        project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT,
+        project_type=ProjectType.ADMINISTRATIVE,
         title="Version Test A2R",
         short_title="VTA2R",
         description="Test version tracking for type change",
@@ -1255,7 +1253,7 @@ def test_change_type_version_records_share_transaction(budget_team_auth_client, 
     loaded_db.refresh(project)
     project_id = project.id
 
-    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    data = {"project_type": ProjectType.ADMINISTRATIVE.name}
     response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
     assert response.status_code == 200
 

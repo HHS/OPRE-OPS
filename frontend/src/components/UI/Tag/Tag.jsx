@@ -122,6 +122,9 @@ const Tag = ({
                 case "whiteOnProjectAdminSupport":
                     activeClass += " bg-brand-data-viz-project-admin-support text-white fake-bold";
                     break;
+                case "whiteOnProjectTechnicalAssistance":
+                    activeClass += " bg-brand-data-viz-project-technical-assistance text-white fake-bold";
+                    break;
                 default:
                     break;
             }
