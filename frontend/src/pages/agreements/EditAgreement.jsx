@@ -10,6 +10,8 @@ import {
     useGetServicesComponentsListQuery
 } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
+import { useEditorSeedGate } from "../../hooks/useEditorSeedGate.hooks";
+import EditorLoadingStatus from "../../components/Agreements/AgreementEditor/EditorLoadingStatus";
 
 const EditAgreement = () => {
     const navigate = useNavigate();
@@ -22,7 +24,8 @@ const EditAgreement = () => {
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement
+        isLoading: isLoadingAgreement,
+        isFetching: isFetchingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true,
         skip: !agreementId
@@ -31,6 +34,7 @@ const EditAgreement = () => {
     const {
         data: servicesComponents,
         isLoading: loadingServicesComponent,
+        isFetching: fetchingServicesComponent,
         error: errorServicesComponent
     } = useGetServicesComponentsListQuery(agreementId, {
         refetchOnMountOrArgChange: true,
@@ -40,10 +44,26 @@ const EditAgreement = () => {
     const {
         data: grantNumbers,
         isLoading: loadingGrantNumbers,
+        isFetching: fetchingGrantNumbers,
         error: errorGrantNumbers
     } = useGetGrantNumbersListQuery(agreementId, {
         refetchOnMountOrArgChange: true,
         skip: !agreementId
+    });
+
+    // The editor seeds once on mount. These queries refetch on every visit, so with cached data they report
+    // isLoading false while still fetching; wait for them (and any held refetch) before mounting it.
+    const hasLoadFailed = !!(errorAgreement || errorServicesComponent || errorGrantNumbers);
+    const { isEditorOpen, isWaitingForEditor, isEditorLoadSlow } = useEditorSeedGate({
+        isEditing: true,
+        isDataFetching:
+            isLoadingAgreement ||
+            loadingServicesComponent ||
+            loadingGrantNumbers ||
+            isFetchingAgreement ||
+            fetchingServicesComponent ||
+            fetchingGrantNumbers,
+        hasLoadFailed
     });
 
     useEffect(() => {
@@ -69,10 +89,20 @@ const EditAgreement = () => {
         };
     }, [agreement]);
 
-    if (isLoadingAgreement || loadingServicesComponent || loadingGrantNumbers) {
-        return <div>Loading...</div>;
+    if (!isEditorOpen && !hasLoadFailed) {
+        return (
+            <>
+                <div>Loading...</div>
+                <EditorLoadingStatus
+                    isWaiting={isWaitingForEditor}
+                    isSlow={isEditorLoadSlow}
+                    headingLevel={2}
+                    slowMessage="The agreement is still loading. If this doesn't finish, refresh the page."
+                />
+            </>
+        );
     }
-    if (errorAgreement || errorServicesComponent || errorGrantNumbers) {
+    if (hasLoadFailed) {
         navigate("/error");
         return;
     }

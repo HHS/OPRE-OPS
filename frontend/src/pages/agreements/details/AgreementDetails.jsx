@@ -1,5 +1,7 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
+import { useEditorSeedGate } from "../../../hooks/useEditorSeedGate.hooks";
+import EditorLoadingStatus from "../../../components/Agreements/AgreementEditor/EditorLoadingStatus";
 import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
@@ -19,6 +21,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
  * @param {boolean} [props.isPostPreAwardLocked] - if the agreement is permanently locked after full pre-award approval
+ * @param {boolean} [props.isAgreementFetching] - Whether the agreement query is (re)fetching, e.g. right after a save.
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
@@ -33,7 +36,8 @@ const AgreementDetails = ({
     hasAgreementChanged = false,
     isPreAwardInReview = false,
     isAwardInReview = false,
-    isPostPreAwardLocked = false
+    isPostPreAwardLocked = false,
+    isAgreementFetching = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
     const canEditByRole = useCanEditByRole();
@@ -72,6 +76,12 @@ const AgreementDetails = ({
     // `isEditMode` comes from the `?mode=edit` URL param with no permission check, so every piece of
     // edit chrome (heading, "Editing..." indicator, form) must follow this, not the raw flag.
     const showEditMode = isEditMode && isEditable;
+    // The editor seeds once on mount and its save PATCHes the whole draft, so wait for any agreement refetch
+    // (and any held refetch) before mounting it; see useEditorSeedGate.
+    const { isEditorOpen, isWaitingForEditor, isEditorLoadSlow } = useEditorSeedGate({
+        isEditing: showEditMode,
+        isDataFetching: isAgreementFetching
+    });
 
     return (
         <article>
@@ -90,7 +100,14 @@ const AgreementDetails = ({
                 showEditButton={canEditByRole}
             />
 
-            {showEditMode ? (
+            {/* Always on the page, so entering edit mode puts the loading text into an existing live region. */}
+            <EditorLoadingStatus
+                isWaiting={isWaitingForEditor}
+                isSlow={isEditorLoadSlow}
+                waitingText="Loading the latest agreement details..."
+                slowMessage="The latest agreement details are still loading. If this doesn't finish, refresh the page or choose another tab."
+            />
+            {showEditMode && isEditorOpen && (
                 <AgreementDetailsEdit
                     agreement={agreement}
                     setHasAgreementChanged={setHasAgreementChanged}
@@ -99,7 +116,8 @@ const AgreementDetails = ({
                     isEditMode={isEditMode}
                     setIsEditMode={setIsEditMode}
                 />
-            ) : (
+            )}
+            {!showEditMode && (
                 <AgreementDetailsView
                     agreement={agreement}
                     projectOfficer={projectOfficer}

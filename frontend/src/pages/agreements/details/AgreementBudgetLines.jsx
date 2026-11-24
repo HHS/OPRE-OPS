@@ -51,6 +51,8 @@ import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/
 import { anyBudgetLinesByStatus } from "../review/ReviewAgreement.helpers";
 import { AgreementType } from "../agreements.constants";
 import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
+import { useEditorSeedGate } from "../../../hooks/useEditorSeedGate.hooks";
+import EditorLoadingStatus from "../../../components/Agreements/AgreementEditor/EditorLoadingStatus";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import { PacmanLoader } from "react-spinners";
@@ -67,6 +69,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
  * @param {boolean} [props.isPostPreAwardLocked] - if the agreement is permanently locked after full pre-award approval
+ * @param {boolean} [props.isAgreementFetching] - Whether the agreement query is (re)fetching, e.g. right after a save.
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -78,7 +81,8 @@ const AgreementBudgetLines = ({
     isAgreementAwarded,
     isPreAwardInReview = false,
     isAwardInReview = false,
-    isPostPreAwardLocked = false
+    isPostPreAwardLocked = false,
+    isAgreementFetching = false
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useTrailNavigate();
@@ -95,11 +99,13 @@ const AgreementBudgetLines = ({
     const {
         data: servicesComponents,
         isLoading: isServicesComponentsLoading,
+        isFetching: isServicesComponentsFetching,
         isError: isServicesComponentsError
     } = useGetServicesComponentsListQuery(agreement?.id);
     const {
         data: grantNumbers,
         isLoading: isGrantNumbersLoading,
+        isFetching: isGrantNumbersFetching,
         isError: isGrantNumbersError
     } = useGetGrantNumbersListQuery(agreement?.id, {
         skip: !agreement?.id
@@ -140,6 +146,14 @@ const AgreementBudgetLines = ({
     // or SC) against them and nulls any it can't find. Opening it after a failed load would unlink
     // every existing budget line on save, so keep it closed and show an error instead.
     const editorDataLoadFailed = isServicesComponentsError || isGrantNumbersError;
+    // The editor seeds once on mount, so wait for any refetch of its data before opening it; see useEditorSeedGate.
+    // The header with Cancel is hidden in edit mode, so a slow load shows a note on how to get out.
+    const { isEditorOpen, isWaitingForEditor, isEditorLoadSlow } = useEditorSeedGate({
+        isEditing: showEditWizard,
+        isDataFetching:
+            isEditorDataLoading || isAgreementFetching || isServicesComponentsFetching || isGrantNumbersFetching,
+        hasLoadFailed: editorDataLoadFailed
+    });
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -353,9 +367,18 @@ const AgreementBudgetLines = ({
                 </>
             )}
 
-            {showEditWizard && !editorDataLoadFailed && isEditorDataLoading && <BudgetLinesTableLoading />}
+            {isWaitingForEditor && (
+                <>
+                    <EditorLoadingStatus
+                        isWaiting={isWaitingForEditor}
+                        isSlow={isEditorLoadSlow}
+                        slowMessage="The latest budget lines are still loading. If this doesn't finish, refresh the page or choose another tab."
+                    />
+                    <BudgetLinesTableLoading />
+                </>
+            )}
 
-            {showEditWizard && !editorDataLoadFailed && !isEditorDataLoading && (
+            {showEditWizard && !editorDataLoadFailed && isEditorOpen && (
                 <EditAgreementProvider
                     agreement={agreement}
                     projectOfficer={""}

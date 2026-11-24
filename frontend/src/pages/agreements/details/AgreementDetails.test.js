@@ -42,6 +42,16 @@ vi.mock("react", async () => {
     };
 });
 
+// This file mocks React's useState, which the edit gate's latch relies on, so stand in an always-ready gate
+// here. The gate itself is covered in AgreementDetails.editGate.test.jsx.
+vi.mock("../../../hooks/useEditorSeedGate.hooks", () => ({
+    useEditorSeedGate: ({ isEditing }) => ({
+        isEditorOpen: isEditing,
+        isWaitingForEditor: false,
+        isEditorLoadSlow: false
+    })
+}));
+
 vi.mock("./AgreementDetailsEdit", () => ({
     __esModule: true,
     default: () => <div data-testid="agreement-details-edit" />

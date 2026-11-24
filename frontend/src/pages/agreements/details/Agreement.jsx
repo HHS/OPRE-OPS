@@ -85,11 +85,12 @@ const Agreement = () => {
         }
     }, [location.pathname]);
 
-    /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean, isSuccess: boolean}} */
+    /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean, isFetching: boolean, isSuccess: boolean}} */
     const {
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
+        isFetching: isFetchingAgreement,
         isSuccess
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true,
@@ -386,6 +387,7 @@ const Agreement = () => {
                                 isPreAwardInReview={isPreAwardInReview}
                                 isAwardInReview={isAwardInReview}
                                 isPostPreAwardLocked={isAgreementPostPreAwardLocked}
+                                isAgreementFetching={isFetchingAgreement}
                             />
                         }
                     />
@@ -401,6 +403,7 @@ const Agreement = () => {
                                 isPreAwardInReview={isPreAwardInReview}
                                 isAwardInReview={isAwardInReview}
                                 isPostPreAwardLocked={isPostPreAwardLocked}
+                                isAgreementFetching={isFetchingAgreement}
                             />
                         }
                     />
