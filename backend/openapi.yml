@@ -9048,8 +9048,8 @@ components:
           example: false
           description: >-
             True while the services component's own edits (e.g. its period of performance) are in
-            a contract modification that is in review. Until the modification is approved or
-            declined, its period of performance can't be changed and it can't be deleted.
+            a contract modification that is in review. It can't be changed or deleted until the
+            modification is approved or declined.
     ServicesComponentRequest:
       type: object
       properties:

@@ -707,8 +707,15 @@ export const opsApi = createApi({
                 headers: { "Content-Type": "application/json" },
                 body: { budget_line_item_ids: budgetLineItemIds, requestor_notes: requestorNotes || null }
             }),
-            // The submitted edits lock their Services Components (in_review_modification, OPS-3268).
-            invalidatesTags: ["ContractModifications", "BudgetLineItems", "ServicesComponents", "Notifications"]
+            // The submitted edits lock their budget lines and Services Components (OPS-3268): the
+            // agreement's budget line _meta and the SCs' in_review_modification both change.
+            invalidatesTags: [
+                "ContractModifications",
+                "Agreements",
+                "BudgetLineItems",
+                "ServicesComponents",
+                "Notifications"
+            ]
         }),
         submitDeObligation: builder.mutation({
             query: ({ id, requestedAmount, lineDescription }) => ({
@@ -739,6 +746,7 @@ export const opsApi = createApi({
                 "ContractModifications",
                 "Agreements",
                 "BudgetLineItems",
+                "ServicesComponents",
                 "Notifications",
                 "AgreementHistory"
             ]
