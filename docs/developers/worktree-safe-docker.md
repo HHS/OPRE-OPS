@@ -159,3 +159,5 @@ docker compose -f backend/data_tools/tests/docker-compose.yml config
 2. **Backward compatibility:** For developers who don't set any variables, all defaults match current behavior (ports `5432`/`8080`/`3000`, `http://localhost:8080`). The only behavioral change is needing `--profile setup` to run data seeding.
 
 3. **No `.env` file committed:** Variables are documented rather than provided in a `.env.example` to avoid conflicts with Docker Compose's auto-loading of `.env` and reduce the risk of accidental commits of secrets.
+
+   **Update:** `.claude/hooks/assign-dev-ports.sh` now generates a `.env` automatically when a Claude Code session starts in a linked worktree that has no `.env` yet. It writes only port and Compose project settings (no secrets), the file stays git-ignored, and it never overwrites an existing `.env`, so the conflict this risk describes doesn't arise. The main checkout keeps the default ports.

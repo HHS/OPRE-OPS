@@ -4,6 +4,17 @@ This directory contains reusable scripts that can be invoked by Claude Code or r
 
 ## Available Actions
 
+### Dev environment URLs (`dev-env.sh`)
+
+**Purpose**: Export this checkout's local stack URLs so Cypress and `curl` hit the right ports in a linked worktree
+
+**Usage** (source it, don't run it):
+```bash
+. "$(git rev-parse --show-toplevel)/.claude/actions/dev-env.sh"
+```
+
+Exports `FRONTEND_PORT`, `BACKEND_DOMAIN` and `FRONTEND_URL` from the repo-root `.env` that `.claude/hooks/assign-dev-ports.sh` writes in worktrees, falling back to 3000 and `http://localhost:8080`. Cypress reads `FRONTEND_PORT` and `BACKEND_DOMAIN` from the environment.
+
 ### 1. Monitor CI (`monitor-ci.sh`)
 
 **Purpose**: Monitor a GitHub Actions workflow run until completion
