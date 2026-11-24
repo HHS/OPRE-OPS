@@ -137,12 +137,14 @@ Backend steps 1–4 are implemented on this branch, with tests (`backend/ops_api
     - an approved As-Is mod shows three steps (1–3 of 3), and completing step 1 moves to Pre-Award;
     - a declined mod leaves the tab on the newest tracker.
 
+- **Pre-Award request on an As-Is mod (2026-11-24, found in manual testing):** the Request Pre-Award Approval page had its own frontend check that required step 4 to be COMPLETED. It now also accepts SKIPPED, matching the backend rule. The page's budget line validation now covers only a contract mod's own lines, so unrelated Planned lines on the agreement (e.g. 523's past-dated LI 8) no longer block the mod's request. The initial award still validates every line.
+
 Still to do:
 - **Future:** a tracker selector dropdown, and putting a tracker id in the approval pages' URLs.
 - **Not covered by E2E:** the Award & Modification History entry. It needs the full pre-award, requisition and award approval flow; backend tests cover it (`test_awarding_a_mod_obligates_only_its_budget_lines_and_records_its_number`).
-- **De-obligation mods:** OPS-6488 lets users submit de-obligations, but approving one isn't applied until OPS-6489. Until then, `mod_type()` ignores pending de-obligation edits, so a mod whose other contents are just executed lines is As-Is (3 steps). When OPS-6489 applies de-obligations at approval, `mod_type()` should count them so those mods get all six steps.
 
 ## Decisions
+- **De-obligation + executed lines → As-Is tracker, for now (2026-11-24).** AC 3 says any combination that includes a de-obligation needs all six steps. Today, approving a mod doesn't apply its de-obligation; that's OPS-6489. The de-obligation stays pending, and `mod_type()` (OPS-6488) leaves it out. So a request with executed lines plus a pending de-obligation is approved as As-Is and gets the 3-step tracker, which matches what the mod actually procures. Once OPS-6489 applies de-obligations at approval and `mod_type()` counts them, these mods get all six steps with no change here. Counting pending de-obligations now was rejected: the mod would run steps 2–4 for work it doesn't contain, and the next mod would count the same de-obligation again. *(Add to the PR description.)*
 - **Which mods get a tracker:** every approved mod. An **As-Is** mod is one whose only change moves BLIs from Planned to Executing, which is what `mod_type()` already returns as AS_IS when there are no edits. It gets steps 1, 5 and 6. Every other combination gets all 6 steps, including Admin-only mods such as a COR change, and Modified LOE mods, with or without executed BLIs.
 - **As-Is storage:** keep 6 steps, with steps 2–4 created as SKIPPED.
 - **Mod number:** comes from step 6's Modification # field (`award_modification_number`; options are "Base" and P00001–P00020, kept the same in `AWARD_MODIFICATION_NUMBERS` and `MODIFICATION_NUMBER_OPTIONS`). It is copied to `AgreementMod.number` at award approval. History labels then read "FY 2026 P00001". The "Mod 1" text in the `build_fiscal_year_label` docstring is a placeholder, so update the docstring.

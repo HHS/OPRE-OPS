@@ -447,3 +447,80 @@ describe("useRequestPreAwardApproval — ALLOW_PAST_OBLIGATE_BY_DATES", () => {
         expect(result.current.pageErrors).toEqual({});
     });
 });
+
+describe("useRequestPreAwardApproval — Step 4 prerequisite", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() });
+    });
+
+    it("allows the request once Step 4 (Evaluation) is completed", async () => {
+        const { result } = setup(buildAgreement(), buildTrackerData("COMPLETED"));
+        await waitFor(() => expect(result.current).toBeDefined());
+        expect(result.current.isStep4Completed).toBe(true);
+    });
+
+    it("allows the request when Step 4 is skipped, as on an As-Is contract mod's tracker (OPS-6513)", async () => {
+        const { result } = setup(buildAgreement(), buildTrackerData("SKIPPED"));
+        await waitFor(() => expect(result.current).toBeDefined());
+        expect(result.current.isStep4Completed).toBe(true);
+    });
+
+    it.each(["PENDING", "ACTIVE"])("blocks the request while Step 4 is %s", async (status) => {
+        const { result } = setup(buildAgreement(), buildTrackerData(status));
+        await waitFor(() => expect(result.current).toBeDefined());
+        expect(result.current.isStep4Completed).toBe(false);
+    });
+});
+
+describe("useRequestPreAwardApproval — contract mod budget lines (OPS-6513)", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() });
+    });
+
+    const modLine = { id: 200, status: "IN_EXECUTION", amount: 1000, can_id: 7, services_component_id: 3 };
+    const pastPlannedLine = {
+        id: 201,
+        status: "PLANNED",
+        amount: 2000,
+        can_id: 7,
+        services_component_id: 3,
+        date_needed: "2020-06-21"
+    };
+    const modTrackerData = (budgetLineItemIds) => ({
+        data: [
+            {
+                id: 2,
+                status: "ACTIVE",
+                award_type: "MODIFICATION",
+                agreement_mod_id: 9,
+                budget_line_item_ids: budgetLineItemIds,
+                steps: [
+                    { step_number: 4, status: "SKIPPED" },
+                    { step_number: 5, id: 5, approval_requested: false, approval_status: null }
+                ]
+            }
+        ]
+    });
+
+    it("validates only the mod's own lines, so another Planned line with a past date doesn't block it", () => {
+        const agreement = buildAgreement({
+            budget_line_items: [{ ...modLine, date_needed: futureDateISO() }, pastPlannedLine]
+        });
+        const { result } = setup(agreement, modTrackerData([modLine.id]), { allow_past_obligate_by_dates: false });
+
+        expect(result.current.validatableBudgetLines.map((bli) => bli.id)).toEqual([modLine.id]);
+        expect(result.current.hasBLIError).toBe(false);
+        expect(result.current.pageErrors).toEqual({});
+        expect(result.current.isStep4Completed).toBe(true);
+    });
+
+    it("still flags a problem on one of the mod's own lines", () => {
+        const agreement = buildAgreement({ budget_line_items: [{ ...modLine, date_needed: "2020-06-21" }] });
+        const { result } = setup(agreement, modTrackerData([modLine.id]), { allow_past_obligate_by_dates: false });
+
+        expect(result.current.hasBLIError).toBe(true);
+        expect(result.current.pageErrors).toHaveProperty("date_needed");
+    });
+});

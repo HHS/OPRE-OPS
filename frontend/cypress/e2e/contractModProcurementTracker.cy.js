@@ -45,6 +45,13 @@ const reviewOpenContractModifications = (action) => {
     });
 };
 
+/** September 30 of the current fiscal year: current FY, and still in the future for Pre-Award validation. */
+const lastDayOfCurrentFiscalYear = () => {
+    const today = new Date();
+    const fiscalYear = today.getMonth() >= 9 ? today.getFullYear() + 1 : today.getFullYear();
+    return `${fiscalYear}-09-30`;
+};
+
 /** A current-FY Planned budget line on 523, aliased as @budgetLineId. */
 const createPlannedBudgetLine = () => {
     testLogin("system-owner");
@@ -58,7 +65,7 @@ const createPlannedBudgetLine = () => {
             line_description: "E2E mod procurement tracker",
             amount: 1000,
             status: "PLANNED",
-            date_needed: new Date().toISOString().slice(0, 10),
+            date_needed: lastDayOfCurrentFiscalYear(),
             proc_shop_fee_percentage: 0
         }
     }).then((response) => {
@@ -222,6 +229,11 @@ describe("Procurement Tracker for a contract mod (OPS-6513)", () => {
         visitTracker();
         cy.get('[data-cy="step-indicator"] .usa-step-indicator__segment--current').should("contain", "Pre-Award");
         cy.get('[data-cy="step-indicator"] .usa-step-indicator__segment--complete').should("have.length", 1);
+
+        // Pre-Award approval can be requested: the skipped Evaluation step doesn't block it.
+        cy.visit(`/agreements/${AGREEMENT_ID}/pre-award-approval`);
+        cy.contains("Step 4 Not Completed").should("not.exist");
+        cy.get('[data-cy="send-to-approval-btn"]').should("be.enabled");
     });
 
     it("declining a mod leaves the Procurement Tracker tab on the most recent tracker", () => {
