@@ -1,6 +1,6 @@
 import React from "react";
-import { useBlocker } from "react-router-dom";
 import { proceedIfBlocked } from "./proceedIfBlocked";
+import useBlockerWithBypassRef from "./useBlockerWithBypassRef.hooks";
 
 /**
  * Discard-only navigation blocker for forms that have no "save draft" option.
@@ -29,23 +29,7 @@ export default function useUnsavedChangesBlocker({
     const [showBlockerModal, setShowBlockerModal] = React.useState(false);
     const [blockerModalProps, setBlockerModalProps] = React.useState({});
 
-    // Ref-based bypass so an intentional, already-confirmed exit (e.g. a Cancel dialog's
-    // confirm handler) can skip the blocker even when navigation is triggered synchronously
-    // in the same tick, such as via Alert's redirectUrl effect. A `hasChanged` of `false`
-    // passed in on the next render isn't enough on its own: react-router only re-registers
-    // useBlocker's predicate inside an effect, which can run after a sibling component's
-    // navigate() call already fired. Mirrors useNavigationBlocker's isBypassingRef.
-    const isBypassingRef = React.useRef(false);
-
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            !isBypassingRef.current && hasChanged && currentLocation.pathname !== nextLocation.pathname
-    );
-
-    const blockerRef = React.useRef(blocker);
-    React.useEffect(() => {
-        blockerRef.current = blocker;
-    }, [blocker]);
+    const { blocker, blockerRef, isBypassingRef } = useBlockerWithBypassRef(hasChanged);
 
     React.useEffect(() => {
         if (blocker.state === "blocked") {
