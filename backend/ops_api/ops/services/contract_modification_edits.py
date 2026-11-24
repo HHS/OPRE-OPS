@@ -8,6 +8,7 @@ to execute a Planned budget line, via contract_modification_requests.py). A lega
 approved before that change shipped is still recorded on approval.
 """
 
+from datetime import datetime
 from typing import Optional
 
 from flask import current_app
@@ -27,10 +28,12 @@ from models import (
     ContractModificationRequest,
     ContractModificationRequestStatus,
     ModificationEditType,
+    OpsDBHistoryType,
     ServicesComponent,
     ServicesComponentChangeRequest,
     User,
 )
+from models.utils import add_obj_to_db_history
 from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.budget_line_items_helpers import agreement_tracks_contract_modifications
@@ -109,17 +112,13 @@ class ContractModificationEditService:
         if budget_line_item_id is not None:
             pending = self._pending_for_budget_line(budget_line_item_id, None if field == "delete" else field)
             if pending and field != "delete":
-                # Merge into the line's pending edit to the same field (at most one, per
-                # ix_contract_modification_edit_one_pending_bli_field), the same as
-                # record_direct_edit: its From is the awarded value. Updated in place rather than
-                # replaced, so nothing needs flushing here: the session isn't autoflushed, and an
-                # early flush would write the approval before the before_commit audit hooks
-                # (created_by/updated_by, OpsDBHistory) see it.
-                (edit,) = pending
-                if edit.old_value == new_value:
-                    self.db_session.delete(edit)
+                # Merge into the line's pending edit to the same field, the same as
+                # record_direct_edit. Nothing is flushed here (the session isn't autoflushed), so
+                # the before_commit audit hooks still see the change (updated_by, OpsDBHistory).
+                edit = pending[0]
+                self._merge_into_pending(pending, new_value, None)
+                if edit in self.db_session.deleted:  # The change netted to nothing.
                     return None
-                edit.new_value = new_value
                 edit.change_request_id = change_request.id
                 edit.requested_by_id = change_request.created_by
                 edit.requested_on = change_request.created_on
@@ -157,25 +156,18 @@ class ContractModificationEditService:
         awarded value as From and the latest value as To, and drops the edit when the change nets
         to nothing (so a modification never carries an edit the list doesn't show). ``old_value``
         and ``new_value`` must be in the format change requests snapshot
-        (``PATCHRequestBodySchema(only=[field]).dump``). Flushes (but does not commit) so a
+        (``PATCHRequestBodySchema(only=[field]).dump``). Flushes (but does not commit), so a
         concurrent duplicate save (double-click/retry) fails fast on
         ``ix_contract_modification_edit_one_pending_bli_field`` instead of silently orphaning a
         pending row.
         """
-        pending = self._pending_for_budget_line(budget_line_item.id, field)
-        if pending:
-            old_value = pending[0].old_value
-            for edit in pending:
-                self.db_session.delete(edit)
-            # Flush the delete(s) first: SQLAlchemy's unit of work otherwise flushes the new
-            # row's INSERT before these DELETEs, tripping the unique index on a merge that is
-            # actually fine (the row below replaces the one just deleted).
-            self.db_session.flush()
-        if old_value == new_value:
-            return
-        self._add_direct_edit(
-            budget_line_item.agreement_id, budget_line_item.id, None, field, old_value, new_value, user_id
-        )
+        if not self._merge_into_pending(self._pending_for_budget_line(budget_line_item.id, field), new_value, user_id):
+            if old_value == new_value:
+                return
+            self._add_direct_edit(
+                budget_line_item.agreement_id, budget_line_item.id, None, field, old_value, new_value, user_id
+            )
+        self._record_history_before_flush(user_id)
         try:
             self.db_session.flush()
         except IntegrityError:
@@ -295,31 +287,27 @@ class ContractModificationEditService:
         Merges with the SC's pending edit to the same field and drops the edit when it nets to
         nothing, the same as ``record_direct_edit``. An SC added after the award (still carrying
         its pending "Add SC" edit) was never on the contract, so nothing is recorded. Flushes (but
-        does not commit) so a concurrent duplicate save fails fast on
+        does not commit), so a concurrent duplicate save fails fast on
         ``ix_contract_modification_edit_one_pending_sc_field``.
         """
         if self._pending_services_component_additions(services_component.id):
             return
         old_value, new_value = _iso_or_none(old_value), _iso_or_none(new_value)
         pending = self._pending_for_services_component(services_component.id, field)
-        if pending:
-            old_value = pending[0].old_value
-            for edit in pending:
-                self.db_session.delete(edit)
-            # Flush the delete(s) first so the INSERT below doesn't trip the unique index.
-            self.db_session.flush()
-        if old_value == new_value:
-            return
-        self._add_direct_edit(
-            services_component.agreement_id,
-            None,
-            services_component.id,
-            field,
-            old_value,
-            new_value,
-            user_id,
-            services_component_display_name=services_component.display_name,
-        )
+        if not self._merge_into_pending(pending, new_value, user_id):
+            if old_value == new_value:
+                return
+            self._add_direct_edit(
+                services_component.agreement_id,
+                None,
+                services_component.id,
+                field,
+                old_value,
+                new_value,
+                user_id,
+                services_component_display_name=services_component.display_name,
+            )
+        self._record_history_before_flush(user_id)
         try:
             self.db_session.flush()
         except IntegrityError:
@@ -372,6 +360,53 @@ class ContractModificationEditService:
             user_id,
         )
 
+    def _merge_into_pending(self, pending: list[ContractModificationEdit], new_value, user_id: Optional[int]) -> bool:
+        """Merge a new edit into the pending edit to the same field, if there is one: update it in
+        place to the new To (its From stays the awarded value), or remove it when the change nets
+        to nothing. Returns whether there was one to merge into.
+
+        Updated in place rather than deleted and re-inserted, which needed a flush between the two
+        (or the INSERT trips the one-pending-per-field index). A direct edit (``user_id`` given)
+        sets ``updated_by`` and the requester here, and drops the edit's change request and
+        approval: it's no longer the value that was requested or approved. On the approval path
+        (``user_id`` None) the caller sets those, and the before_commit hook sets ``updated_by``.
+        """
+        if not pending:
+            return False
+        edit, *extras = pending
+        for extra in extras:  # Only possible for rows from before the unique index existed.
+            self.db_session.delete(extra)
+        if edit.old_value == new_value:
+            self.db_session.delete(edit)
+            return True
+        edit.new_value = new_value
+        if user_id is not None:
+            edit.requested_by_id = user_id
+            # A Python value, not func.now(): the before_commit history hook serializes this row
+            # before it's flushed, and a SQL expression can't be serialized.
+            edit.requested_on = datetime.now()
+            edit.updated_by = user_id
+            edit.change_request_id = None
+            edit.approved_by_id = None
+            edit.approved_on = None
+        return True
+
+    def _record_history_before_flush(self, user_id: int) -> None:
+        """Write the OpsDBHistory rows of the merged or removed edits the next flush sends.
+
+        The before_commit hook records only rows still dirty or deleted at commit, so it misses a
+        row flushed before then (here, or by the edit bundle's services). New rows are recorded by
+        the after_flush hook. Call just before a flush.
+        """
+        session = self.db_session
+        user = session.get(User, user_id)
+        for rows, event_type in (
+            (session.dirty, OpsDBHistoryType.UPDATED),
+            (session.deleted, OpsDBHistoryType.DELETED),
+        ):
+            merged = [row for row in rows if isinstance(row, ContractModificationEdit)]
+            session.add_all(add_obj_to_db_history(merged, event_type, user))
+
     def _add_direct_edit(
         self,
         agreement_id: int,
@@ -397,8 +432,9 @@ class ContractModificationEditService:
                 requested_by_id=user_id,
                 requested_on=func.now(),
                 # Set here: rows flushed inside the edit bundle leave session.new before the
-                # created_by hook (handle_create_update_by_attrs) runs at commit.
+                # created_by/updated_by hook (handle_create_update_by_attrs) runs at commit.
                 created_by=user_id,
+                updated_by=user_id,
             )
         )
 

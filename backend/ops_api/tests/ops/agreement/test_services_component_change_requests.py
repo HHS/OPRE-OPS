@@ -724,13 +724,48 @@ def test_period_edits_merge_and_net_to_nothing(
     assert first.status_code == 200
     # The response is the saved SC, not just the fields sent.
     assert (first.json["number"], first.json["display_name"]) == (2, "SC2")
+    (new_edit,) = _edits(loaded_db, awarded_agreement.id)
+    # Stamped on insert: the row is flushed before the commit-time created_by/updated_by hook.
+    assert (new_edit.created_by, new_edit.updated_by) == (BASIC_USER_ID, BASIC_USER_ID)
+    first_id = new_edit.id
     assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-06-30"}).status_code == 200
     (edit,) = _edits(loaded_db, awarded_agreement.id)
     assert (edit.old_value, edit.new_value) == ("2043-12-31", "2044-06-30")
+    assert (edit.id, edit.updated_by) == (first_id, BASIC_USER_ID)
 
     # Back to the awarded value: the edit is dropped.
     assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2043-12-31"}).status_code == 200
     assert _edits(loaded_db, awarded_agreement.id) == []
+
+
+def test_a_save_that_merges_one_period_edit_and_adds_another_keeps_the_merge_history(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    """period_start merges in place and period_end adds a new edit, each flushed when it's recorded
+    (before the before_commit history hook runs), so the merge's OpsDBHistory row is recorded at
+    its flush."""
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_start": "2043-02-01"}).status_code == 200
+    (start_edit,) = _edits(loaded_db, awarded_agreement.id)
+
+    response = _patch_sc(basic_user_auth_client, sc2_id, {"period_start": "2043-03-01", "period_end": "2044-01-31"})
+
+    assert response.status_code == 200, response.json
+    edits = {e.field: (e.id, e.old_value, e.new_value) for e in _edits(loaded_db, awarded_agreement.id)}
+    assert edits["period_start"] == (start_edit.id, "2043-01-01", "2043-03-01")
+    assert edits["period_end"][1:] == ("2043-12-31", "2044-01-31")
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "ContractModificationEdit",
+            OpsDBHistory.row_key == str(start_edit.id),
+            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+        )
+    ).all()
+    assert [(h.changes["new_value"], h.created_by) for h in history] == [
+        ({"old": "2043-02-01", "new": "2043-03-01"}, BASIC_USER_ID)
+    ]
 
 
 def test_unchanged_period_in_a_full_form_save_records_nothing(
@@ -813,6 +848,39 @@ def test_superuser_period_edit_keeps_an_existing_pending_card_current(
     assert [(e.old_value, e.new_value) for e in edits] == expected
     # The card now shows the superuser's value, so it's attributed to them.
     assert [e.requested_by_id for e in edits] == [POWER_USER_ID] * len(expected)
+
+
+def test_period_edit_locks_the_sc_before_reading_its_pending_edits(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    """Two saves to the same SC run one after the other. Without the lock, a save could merge into
+    a pending edit a concurrent save had just removed, and fail with a 500."""
+    from sqlalchemy import event
+
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    assert _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-01-31"}).status_code == 200
+
+    statements = []
+
+    def _capture(conn, cursor, statement, *args):
+        statements.append(" ".join(statement.split()))
+
+    engine = loaded_db.get_bind()
+    event.listen(engine, "before_cursor_execute", _capture)
+    try:
+        response = _patch_sc(basic_user_auth_client, sc2_id, {"period_end": "2044-06-30"})
+    finally:
+        event.remove(engine, "before_cursor_execute", _capture)
+
+    assert response.status_code == 200, response.json
+    sc_lock = next(
+        i for i, sql in enumerate(statements) if "FROM services_component WHERE" in sql and sql.endswith("FOR UPDATE")
+    )
+    pending_read = next(i for i, sql in enumerate(statements) if "FROM contract_modification_edit WHERE" in sql)
+    assert sc_lock < pending_read
+    assert [(e.old_value, e.new_value) for e in _edits(loaded_db, awarded_agreement.id)] == [
+        ("2043-12-31", "2044-06-30")
+    ]
 
 
 def test_superuser_period_edit_still_records_nothing_without_a_pending_card(
@@ -974,6 +1042,34 @@ def test_bundle_period_edit_is_tracked_and_number_change_rejected(
     assert response.status_code == 200, response.json
     (edit,) = _edits(loaded_db, awarded_agreement.id)
     assert (edit.field, edit.old_value, edit.new_value) == ("period_start", "2043-01-01", "2043-02-01")
+
+
+def test_a_bundle_period_edit_merged_into_a_pending_edit_records_its_history(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, awarded_agreement, app_ctx
+):
+    """The bundle flushes the SC update before the before_commit history hook runs, so the merge
+    records its OpsDBHistory row when it's flushed."""
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    sc2_id = _sc_with_period(loaded_db, awarded_agreement, 2).id
+    url = url_for("api.agreements-edit-bundle", id=awarded_agreement.id)
+    for period_start in ("2043-02-01", "2043-03-01"):
+        body = {"services_components": {"update": [{"id": sc2_id, "period_start": period_start}]}}
+        response = basic_user_auth_client.patch(url, json=body)
+        assert response.status_code == 200, response.json
+
+    (edit,) = _edits(loaded_db, awarded_agreement.id)
+    assert (edit.old_value, edit.new_value) == ("2043-01-01", "2043-03-01")
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "ContractModificationEdit",
+            OpsDBHistory.row_key == str(edit.id),
+            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+        )
+    ).all()
+    assert [(h.changes["new_value"], h.created_by) for h in history] == [
+        ({"old": "2043-02-01", "new": "2043-03-01"}, BASIC_USER_ID)
+    ]
 
 
 # ---=== Deleting an SC with Executing/Obligated budget lines is blocked (OPS-3268) ===---

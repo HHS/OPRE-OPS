@@ -315,20 +315,114 @@ def test_consecutive_edits_on_the_same_field_merge_into_one_row(
     """Repeated edits to the same field merge into one row: the From stays the awarded value,
     so a modification never carries more than the net change."""
     agreement, bli = make_agreement(test_can)
+    first_id = None
     for amount in (500000.00, 100000.00):
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id), json={"amount": amount}
         )
         assert response.status_code == 200, response.json
+        if first_id is None:
+            (new_edit,) = _edits(loaded_db, agreement.id)
+            # Stamped on insert: the row is flushed before the commit-time created_by/updated_by hook.
+            assert (new_edit.created_by, new_edit.updated_by) == (BASIC_USER_ID, BASIC_USER_ID)
+            first_id = new_edit.id
 
     (edit,) = _edits(loaded_db, agreement.id)
     assert (edit.old_value, edit.new_value) == (600000.0, 100000.0)
+    # Updated in place, so the audit hooks see it (no delete + re-insert).
+    assert edit.id == first_id
+    assert edit.updated_by == BASIC_USER_ID
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "ContractModificationEdit",
+            OpsDBHistory.row_key == str(edit.id),
+            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+        )
+    ).all()
+    assert [h.changes["new_value"] for h in history] == [{"old": 500000.0, "new": 100000.0}]
 
     response = _get_pending(basic_user_auth_client, agreement.id)
     assert response.status_code == 200, response.json
     (record,) = response.json["data"]
     assert (record["old_value"], record["new_value"]) == (600000.0, 100000.0)
     assert record["id"] == edit.id
+
+
+def test_a_merge_followed_by_a_new_edit_in_one_save_keeps_the_merge_history(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
+):
+    """Each edit is flushed when it's recorded, before the before_commit history hook runs, so the
+    amount merge records its OpsDBHistory row at its own flush (and the date_needed edit's flush
+    doesn't hide it)."""
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    agreement, bli = make_agreement(test_can)
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 500000.00)
+    (amount_edit,) = _edits(loaded_db, agreement.id)
+
+    service = ContractModificationEditService(loaded_db)
+    service.record_direct_edit(bli, "amount", 500000.0, 300000.0, BASIC_USER_ID)
+    service.record_direct_edit(bli, "date_needed", "2043-01-01", "2044-01-01", BASIC_USER_ID)
+    loaded_db.commit()
+
+    edits = {e.field: (e.old_value, e.new_value) for e in _edits(loaded_db, agreement.id)}
+    assert edits == {"amount": (600000.0, 300000.0), "date_needed": ("2043-01-01", "2044-01-01")}
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "ContractModificationEdit",
+            OpsDBHistory.row_key == str(amount_edit.id),
+            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+        )
+    ).all()
+    assert [(h.changes["new_value"], h.created_by) for h in history] == [
+        ({"old": 500000.0, "new": 300000.0}, BASIC_USER_ID)
+    ]
+
+
+@pytest.mark.parametrize(
+    "amount, event_type, change",
+    [
+        pytest.param(400000.00, "UPDATED", {"old": 500000.0, "new": 400000.0}, id="merges"),
+        pytest.param(600000.00, "DELETED", None, id="nets to nothing"),
+    ],
+)
+def test_a_bundle_save_that_merges_into_a_pending_edit_records_its_history(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+    amount,
+    event_type,
+    change,
+):
+    """The edit bundle flushes after each change, before the before_commit history hook runs, so a
+    merge records its OpsDBHistory row when it's flushed."""
+    from models import OpsDBHistory, OpsDBHistoryType
+
+    agreement, bli = make_agreement(test_can)
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 500000.00)
+    (amount_edit,) = _edits(loaded_db, agreement.id)
+
+    response = basic_user_auth_client.patch(
+        url_for("api.agreements-edit-bundle", id=agreement.id),
+        json={"budget_line_items": {"update": [{"id": bli.id, "amount": amount}]}},
+    )
+
+    assert response.status_code == 200, response.json
+    history = loaded_db.scalars(
+        select(OpsDBHistory).where(
+            OpsDBHistory.class_name == "ContractModificationEdit",
+            OpsDBHistory.row_key == str(amount_edit.id),
+            OpsDBHistory.event_type.in_([OpsDBHistoryType.UPDATED, OpsDBHistoryType.DELETED]),
+        )
+    ).all()
+    assert [(h.event_type.name, h.changes.get("new_value"), h.created_by) for h in history] == [
+        (event_type, change, BASIC_USER_ID)
+    ]
 
 
 def test_an_edit_that_nets_to_no_change_drops_the_pending_edit(
@@ -859,6 +953,32 @@ def test_approving_a_change_request_merges_with_a_pending_edit_and_keeps_audit_f
     assert _updated_by_director("ContractModificationEdit", edit.id)
 
 
+def test_a_direct_edit_merged_into_an_approved_edit_drops_the_approval(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """The Division Director approved the old To, not the new one, so a later direct save that
+    merges into the approved edit leaves it with no approval."""
+    agreement, bli = make_agreement(test_can, awarded=False)
+    cr_id = _legacy_amount_change_request_after_award(basic_user_auth_client, loaded_db, agreement, bli)
+    _review(division_director_auth_client, cr_id)
+    (approved,) = _edits(loaded_db, agreement.id)
+    assert approved.change_request_id == cr_id
+    assert approved.approved_by_id is not None and approved.approved_on is not None
+
+    _direct_amount_edit(basic_user_auth_client, loaded_db, bli, 400000.00)
+
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert (edit.id, edit.old_value, edit.new_value) == (approved.id, 600000.0, 400000.0)
+    assert edit.requested_by_id == BASIC_USER_ID
+    assert (edit.change_request_id, edit.approved_by_id, edit.approved_on) == (None, None, None)
+
+
 def test_approving_a_change_request_on_a_line_in_an_in_review_modification_is_rejected(
     modified_loe_enabled,
     basic_user_auth_client,
@@ -884,3 +1004,34 @@ def test_approving_a_change_request_on_a_line_in_an_in_review_modification_is_re
     (edit,) = _edits(loaded_db, agreement.id)
     assert edit.new_value == 500000.0
     assert loaded_db.get(BudgetLineItemChangeRequest, cr_id).status == ChangeRequestStatus.IN_REVIEW
+
+
+def test_a_concurrent_duplicate_edit_on_approval_returns_a_friendly_400(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+    monkeypatch,
+):
+    """A save that races the approval onto the same field trips the unique index at commit; that
+    is a 400 saying so, not a 500, and the request stays in review."""
+    agreement, bli = make_agreement(test_can, awarded=False)
+    cr_id = _legacy_amount_change_request_after_award(basic_user_auth_client, loaded_db, agreement, bli)
+
+    # The approval reads the pending edits before the racing save's edit is committed, so it sees
+    # none and inserts its own: the real index rejects the second pending "amount" row.
+    monkeypatch.setattr(ContractModificationEditService, "_pending_for_budget_line", lambda self, *a, **k: [])
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=cr_id), json={"action": "APPROVE"}
+    )
+    monkeypatch.undo()
+
+    assert response.status_code == 400, response.json
+    assert "saved at the same time" in response.json["errors"]["change_request"][0]
+    loaded_db.expire_all()
+    assert loaded_db.get(BudgetLineItemChangeRequest, cr_id).status == ChangeRequestStatus.IN_REVIEW
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert (edit.change_request_id, edit.new_value) == (None, 500000.0)
