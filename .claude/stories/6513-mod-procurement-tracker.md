@@ -129,9 +129,18 @@ Backend steps 1–4 are implemented on this branch, with tests (`backend/ops_api
   - The award and pre-award approval pages use the same tracker as the tab.
   - The agreement-level Pre-Award banner ignores mod trackers.
 
+- **OpenAPI (2026-11-24):** `ProcurementTrackerResponse` in `backend/openapi.yml` documents the new fields and the newest-first order.
+- **E2E (2026-11-24):** `frontend/cypress/e2e/contractModProcurementTracker.cy.js`.
+  - One test needs no feature flag, so it also runs in CI: the tab opens on 523's newest tracker and shows only its non-skipped steps.
+  - Three tests skip when `ENABLE_MODIFIED_LOE_EDITS` is off, as `startContractModification.cy.js` does:
+    - an approved Admin mod gets all six steps;
+    - an approved As-Is mod shows three steps (1–3 of 3), and completing step 1 moves to Pre-Award;
+    - a declined mod leaves the tab on the newest tracker.
+
 Still to do:
-- **OpenAPI:** run `/sync-openapi` for the new tracker response fields.
-- **Frontend:** a tracker selector dropdown (future work); an e2e journey once this lands.
+- **Future:** a tracker selector dropdown, and putting a tracker id in the approval pages' URLs.
+- **Not covered by E2E:** the Award & Modification History entry. It needs the full pre-award, requisition and award approval flow; backend tests cover it (`test_awarding_a_mod_obligates_only_its_budget_lines_and_records_its_number`).
+- **De-obligation mods:** OPS-6488 lets users submit de-obligations, but approving one isn't applied until OPS-6489. Until then, `mod_type()` ignores pending de-obligation edits, so a mod whose other contents are just executed lines is As-Is (3 steps). When OPS-6489 applies de-obligations at approval, `mod_type()` should count them so those mods get all six steps.
 
 ## Decisions
 - **Which mods get a tracker:** every approved mod. An **As-Is** mod is one whose only change moves BLIs from Planned to Executing, which is what `mod_type()` already returns as AS_IS when there are no edits. It gets steps 1, 5 and 6. Every other combination gets all 6 steps, including Admin-only mods such as a COR change, and Modified LOE mods, with or without executed BLIs.

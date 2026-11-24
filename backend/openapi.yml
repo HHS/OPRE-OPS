@@ -1574,7 +1574,7 @@ paths:
         - Procurement Trackers
       operationId: Get Procurement Trackers
       summary: Get a list of procurement trackers
-      description: Get a paginated list of procurement trackers with optional filtering
+      description: Get a paginated list of procurement trackers with optional filtering, newest first (so an agreement's first tracker is its latest procurement cycle).
       parameters:
         - in: query
           name: agreement_id
@@ -10242,6 +10242,35 @@ components:
           type: integer
           nullable: true
           description: The currently active step number in the workflow. Initialized to 1 for new trackers.
+        created_on:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the tracker was created. Trackers are listed newest first.
+        award_type:
+          type: string
+          nullable: true
+          description: The award type of the tracker's procurement action, e.g. NEW_AWARD, or MODIFICATION for a contract mod's own procurement cycle.
+          example: MODIFICATION
+        agreement_mod_id:
+          type: integer
+          nullable: true
+          description: The contract mod (AgreementMod) this tracker belongs to; null for the initial award.
+        mod_type:
+          type: string
+          nullable: true
+          description: The contract mod's type (e.g. AS_IS, ADMIN, MODIFIED_LOE). An AS_IS mod's tracker has steps 2-4 SKIPPED.
+          example: AS_IS
+        mod_number:
+          type: string
+          nullable: true
+          description: The contract mod's number, taken from its Award step's Modification # at award approval.
+          example: P00001
+        budget_line_item_ids:
+          type: array
+          items:
+            type: integer
+          description: Budget lines linked to the tracker's procurement action. A contract mod's tracker only covers (and locks) these.
         steps:
           type: array
           items:
