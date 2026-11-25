@@ -82,6 +82,7 @@ const ServicesComponents = ({
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
+                    description={modalProps.description}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}

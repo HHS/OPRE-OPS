@@ -270,9 +270,11 @@ const useServicesComponents = (
         if (draftOrPlannedBudgetLines.length > 0) {
             setShowModal(true);
             setModalProps({
-                heading: `${selectedServicesComponent.display_title} has Draft and/or Planned budget lines. Do you want to delete them too, or keep them unassigned from any Services Component?`,
-                actionButtonText: "Delete budget lines",
-                tertiaryButtonText: "Keep budget lines",
+                heading: `Delete ${selectedServicesComponent.display_title}'s Draft and Planned budget lines too?`,
+                description:
+                    "This Services Component has Draft and/or Planned budget lines. Choose whether to delete them along with it, or keep them unassigned.",
+                actionButtonText: "Delete",
+                tertiaryButtonText: "Keep",
                 secondaryButtonText: "Cancel",
                 handleConfirm: () => performDelete(selectedServicesComponent, draftOrPlannedBudgetLines),
                 handleTertiary: () => performDelete(selectedServicesComponent)

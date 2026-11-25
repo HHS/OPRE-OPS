@@ -115,8 +115,8 @@ describe("ServicesComponents — keyboard focus after editing or deleting an SC 
     });
 
     it.each([
-        ["Delete budget lines", "deleting the budget lines too"],
-        ["Keep budget lines", "keeping the budget lines unassigned"]
+        ["Delete", "deleting the budget lines too"],
+        ["Keep", "keeping the budget lines unassigned"]
     ])("moves focus to Add Services Component after %s on an SC with a Planned line (%s)", async (buttonName) => {
         const user = userEvent.setup();
         renderServicesComponents({ allBudgetLines: [{ id: 1, status: "PLANNED", services_component_id: 12 }] });

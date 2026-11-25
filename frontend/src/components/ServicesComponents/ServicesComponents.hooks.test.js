@@ -495,12 +495,16 @@ describe("useServicesComponents", () => {
             });
 
             expect(result.current.showModal).toBe(true);
-            expect(result.current.modalProps.actionButtonText).toBe("Delete budget lines");
-            expect(result.current.modalProps.tertiaryButtonText).toBe("Keep budget lines");
+            expect(result.current.modalProps.heading).toBe("Delete SC1's Draft and Planned budget lines too?");
+            expect(result.current.modalProps.description).toBe(
+                "This Services Component has Draft and/or Planned budget lines. Choose whether to delete them along with it, or keep them unassigned."
+            );
+            expect(result.current.modalProps.actionButtonText).toBe("Delete");
+            expect(result.current.modalProps.tertiaryButtonText).toBe("Keep");
             expect(result.current.modalProps.secondaryButtonText).toBe("Cancel");
         });
 
-        it("dispatches deleting the Draft/Planned lines and the SC, in that order, when the user picks Delete budget lines", () => {
+        it("dispatches deleting the Draft/Planned lines and the SC, in that order, when the user picks Delete", () => {
             useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
             const draftLine = { id: 900, status: "DRAFT", services_component_id: 1 };
             const plannedLine = { id: 901, status: "PLANNED", services_component_id: 1 };
@@ -534,7 +538,7 @@ describe("useServicesComponents", () => {
             expect(result.current.showModal).toBe(false);
         });
 
-        it("dispatches only the SC delete, keeping the budget lines unassigned, when the user picks Keep budget lines", () => {
+        it("dispatches only the SC delete, keeping the budget lines unassigned, when the user picks Keep", () => {
             useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
             const plannedLine = { id: 900, status: "PLANNED", services_component_id: 1 };
             const { result } = renderUseServicesComponents(vi.fn(), undefined, [], [plannedLine]);
