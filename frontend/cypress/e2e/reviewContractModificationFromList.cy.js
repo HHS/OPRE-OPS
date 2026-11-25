@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { terminalLog, testLogin } from "./utils";
+import { BACKEND_DOMAIN, terminalLog, testLogin } from "./utils";
 
 // Reuses the same seeded Awarded contract as startContractModification.cy.js (OPS-3072
 // manual-testing fixture): an Awarded Contract with Obligated budget lines. Its seeded Planned
@@ -8,7 +8,7 @@ import { terminalLog, testLogin } from "./utils";
 const AGREEMENT_ID = 523;
 const SERVICES_COMPONENT_ID = 55;
 const CAN_ID = 504;
-const API = "http://localhost:8080/api/v1";
+const API = `${BACKEND_DOMAIN}/api/v1`;
 
 /** Request with the signed-in user's token, read when the command runs (not when it's queued). */
 const apiRequest = (options) =>
@@ -143,17 +143,36 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
     });
 
     it("de-obligates a line and approves it from the Mod Approval page, reducing the obligated amount (OPS-6489)", () => {
+        // An Obligated line needs a future Need By Date; the shared beforeEach's budgetLineId
+        // uses today's (fine for the Planned-execute flow in the other two tests), so this test
+        // creates its own.
+        let obligatedBliId;
         testLogin("system-owner");
         apiRequest({
-            method: "PATCH",
-            url: `/budget-line-items/${budgetLineId}`,
-            body: { status: "OBLIGATED" }
-        }).its("status").should("eq", 200);
-        apiRequest({
             method: "POST",
-            url: `/budget-line-items/${budgetLineId}/de-obligation/`,
-            body: { requested_amount: "200" }
-        }).its("status").should("eq", 200);
+            url: "/budget-line-items/",
+            body: {
+                agreement_id: AGREEMENT_ID,
+                services_component_id: SERVICES_COMPONENT_ID,
+                can_id: CAN_ID,
+                line_description: "E2E de-obligation approval",
+                amount: 1000,
+                status: "OBLIGATED",
+                date_needed: "2044-01-01",
+                proc_shop_fee_percentage: 0
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                obligatedBliId = response.body.id;
+                return apiRequest({
+                    method: "POST",
+                    url: `/budget-line-items/${obligatedBliId}/de-obligation/`,
+                    body: { requested_amount: "200" }
+                });
+            })
+            .its("status")
+            .should("eq", 200);
         apiRequest({
             method: "POST",
             url: `/agreements/${AGREEMENT_ID}/contract-modifications/`,
@@ -176,7 +195,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         cy.get(".usa-alert__body").contains(/agreement approved for contract modification/i);
 
         testLogin("system-owner");
-        apiRequest({ url: `/budget-line-items/${budgetLineId}` }).then((response) => {
+        apiRequest({ url: `/budget-line-items/${obligatedBliId}` }).then((response) => {
             expect(Number(response.body.amount)).to.eq(800);
         });
     });
