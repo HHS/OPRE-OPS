@@ -246,7 +246,7 @@ describe("UserInfo", () => {
         expect(await screen.findByText("Test User")).toBeInTheDocument(); // User Name
         expect(await screen.findByText("test.user@example.com")).toBeInTheDocument(); // User Email
         expect(await screen.findByText("Child Care")).toBeInTheDocument(); // Division
-        expect(await screen.findByText("ACTIVE")).toBeInTheDocument(); // Status
+        expect(await screen.findByText("Active")).toBeInTheDocument(); // Status
         expect(await screen.findByText("System Owner")).toBeInTheDocument(); // Roles
     });
 
@@ -275,7 +275,7 @@ describe("UserInfo", () => {
         expect(await screen.findByText("Test User")).toBeInTheDocument(); // User Name
         expect(await screen.findByText("test.user@example.com")).toBeInTheDocument(); // User Email
         expect((await screen.findAllByText("Child Care"))[0]).toBeInTheDocument(); // Division
-        expect((await screen.findAllByText("ACTIVE"))[0]).toBeInTheDocument(); // Status
+        expect((await screen.findAllByText("Active"))[0]).toBeInTheDocument(); // Status
         expect(await screen.findByText("System Owner")).toBeInTheDocument(); // Roles
     });
 
@@ -390,7 +390,7 @@ describe("UserInfo", () => {
         expect(screen.getByTestId("status-combobox")).toBeInTheDocument();
 
         // For react-select, the displayed value is in a div with class containing 'single-value'
-        const statusValue = screen.getAllByText("ACTIVE")[0];
+        const statusValue = screen.getAllByText("Active")[0];
         expect(statusValue).toBeInTheDocument();
 
         // Get the input element within the combobox
@@ -398,9 +398,9 @@ describe("UserInfo", () => {
         const comboInput = within(statusCombo).getByRole("combobox");
 
         await browserUser.type(comboInput, "{arrowdown}");
-        expect(await screen.findAllByText("ACTIVE")).toHaveLength(2);
-        expect(await screen.findByText("INACTIVE")).toBeInTheDocument();
-        expect(await screen.findByText("LOCKED")).toBeInTheDocument();
+        expect(await screen.findAllByText("Active")).toHaveLength(2);
+        expect(await screen.findByText("Inactive")).toBeInTheDocument();
+        expect(await screen.findByText("Locked")).toBeInTheDocument();
     });
 
     // TODO: revisit these skipped tests
@@ -613,16 +613,16 @@ describe("UserInfo", () => {
         await browserUser.type(comboInput, "{arrowdown}");
 
         // Wait for the dropdown to open and options to be available
-        // Use getAllByText since there are multiple ACTIVE elements (selected value + dropdown option)
+        // Use getAllByText since there are multiple "Active" elements (selected value + dropdown option)
         await waitFor(
             () => {
-                const activeElements = screen.getAllByText("ACTIVE");
+                const activeElements = screen.getAllByText("Active");
                 expect(activeElements.length).toBeGreaterThan(1); // Should have at least 2 (selected + dropdown option)
             },
             { timeout: 5000 }
         );
 
-        // Click the LOCKED option
+        // Click the "Locked" option
         await browserUser.click(screen.getByRole("option", { name: /LOCKED/i }));
 
         // The component should make an API call to update the user status

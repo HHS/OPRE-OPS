@@ -11,3 +11,14 @@ export const USER_STATUS = {
     INACTIVE: "INACTIVE",
     LOCKED: "LOCKED"
 };
+
+/**
+ * Display labels (sentence case) for each User status.
+ *
+ * @type {Record<keyof typeof USER_STATUS, string>}
+ */
+export const USER_STATUS_LABELS = {
+    [USER_STATUS.ACTIVE]: "Active",
+    [USER_STATUS.INACTIVE]: "Inactive",
+    [USER_STATUS.LOCKED]: "Locked"
+};
