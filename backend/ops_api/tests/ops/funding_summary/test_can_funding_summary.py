@@ -487,20 +487,29 @@ def test_get_can_funding_summary_with_null_bli_amounts(loaded_db, app_ctx) -> No
         MagicMock(fiscal_year=2023, budget=Decimal("500000.00")),
     ]
 
-    # Create mock budget line items, some with NULL amounts
-    mock_bli_1 = MagicMock(amount=None, status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023)
+    # Create mock budget line items, some with NULL amounts. can_funding_amount mirrors amount --
+    # none of these has ever had a de-obligation approved (OPS-6489), so the two are the same.
+    mock_bli_1 = MagicMock(
+        amount=None, can_funding_amount=None, status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023
+    )
     mock_bli_2 = MagicMock(
         amount=Decimal("100000.00"),
+        can_funding_amount=Decimal("100000.00"),
         status=BudgetLineItemStatus.IN_EXECUTION,
         fiscal_year=2023,
     )
-    mock_bli_3 = MagicMock(amount=None, status=BudgetLineItemStatus.OBLIGATED, fiscal_year=2023)
+    mock_bli_3 = MagicMock(
+        amount=None, can_funding_amount=None, status=BudgetLineItemStatus.OBLIGATED, fiscal_year=2023
+    )
     mock_bli_4 = MagicMock(
         amount=Decimal("200000.00"),
+        can_funding_amount=Decimal("200000.00"),
         status=BudgetLineItemStatus.PLANNED,
         fiscal_year=2023,
     )
-    mock_bli_5 = MagicMock(amount=None, status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023)
+    mock_bli_5 = MagicMock(
+        amount=None, can_funding_amount=None, status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023
+    )
 
     can = MagicMock(
         id=600,

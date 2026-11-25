@@ -613,6 +613,44 @@ def test_review_by_another_divisions_director_returns_403(
     assert loaded_db.get(ContractModificationRequest, request_id).status == ContractModificationRequestStatus.IN_REVIEW
 
 
+def test_a_de_obligation_only_request_is_governed_by_the_same_review_guards(
+    modified_loe_enabled,  # noqa: F811
+    basic_user_auth_client,
+    division_director_auth_client,
+    division_6_director_auth_client,
+    loaded_db,
+    test_can,
+    test_project,
+    app_ctx,
+):
+    """`can_review()`/`review()` key off status and reviewer only, never modification_type -- a
+    de-obligation-only request is rejected for a non-reviewer (OPS-6489) exactly like every other
+    type, with no de-obligation-specific authorization code to duplicate-test."""
+    from models import BudgetLineItemStatus
+    from tests.ops.budget_line_items.test_de_obligation import (
+        _cleanup,
+        _make_agreement,
+        _make_bli,
+        _submit_de_obligation,
+    )
+
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="AUTHZ")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
+    try:
+        assert _submit_de_obligation(basic_user_auth_client, bli.id, 100000.00).status_code == 200
+        request_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+
+        assert _review_mod(division_6_director_auth_client, request_id).status_code == 403
+        assert (
+            loaded_db.get(ContractModificationRequest, request_id).status == ContractModificationRequestStatus.IN_REVIEW
+        )
+
+        assert _review_mod(division_director_auth_client, request_id).status_code == 200
+        assert _review_mod(division_director_auth_client, request_id, "DECLINE").status_code == 400
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
 def test_review_by_a_second_authorized_reviewer_after_approval_returns_400(
     awarded_with_edit,
     basic_user_auth_client,

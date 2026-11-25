@@ -185,7 +185,7 @@ describe("ContractModificationEdits", () => {
         ]);
     });
 
-    it("renders a de-obligation as an Amount change from the original to the net amount (OPS-6488)", () => {
+    it("renders a de-obligation with its original, requested, and remaining amounts (OPS-6489)", () => {
         mockQuery({
             data: [
                 {
@@ -210,8 +210,8 @@ describe("ContractModificationEdits", () => {
             "First Last Name",
             "De-obligation",
             "123458",
-            "Amount",
             "$500,000.00",
+            "$100,000.00",
             "$400,000.00"
         ]);
     });

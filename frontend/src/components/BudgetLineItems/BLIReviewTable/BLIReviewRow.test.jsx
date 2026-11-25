@@ -468,4 +468,34 @@ describe("BLIReviewRow", () => {
             });
         });
     });
+
+    describe("highlightedField (OPS-6489 Mod Approval page)", () => {
+        it("highlights the Amount cell and names it for screen readers when highlightedField is 'amount'", () => {
+            renderComponent({ highlightedField: "amount" });
+
+            const highlightedCell = screen
+                .getAllByRole("cell")
+                .find((cell) => cell.className.includes("border-bottom-2px"));
+            expect(highlightedCell).toHaveTextContent("$1,000,000.00");
+            expect(highlightedCell.className).toContain("border-primary");
+            expect(screen.getByText("(Updated by this modification)")).toBeInTheDocument();
+        });
+
+        it("highlights the Status cell and names it for screen readers when highlightedField is 'status'", () => {
+            renderComponent({ highlightedField: "status" });
+
+            const highlightedCell = screen
+                .getAllByRole("cell")
+                .find((cell) => cell.className.includes("border-bottom-2px"));
+            expect(highlightedCell).toHaveTextContent("Draft");
+            expect(highlightedCell.className).toContain("border-primary");
+            expect(screen.getByText("(Updated by this modification)")).toBeInTheDocument();
+        });
+
+        it("highlights nothing when highlightedField is omitted", () => {
+            renderComponent();
+
+            expect(screen.queryByText("(Updated by this modification)")).not.toBeInTheDocument();
+        });
+    });
 });

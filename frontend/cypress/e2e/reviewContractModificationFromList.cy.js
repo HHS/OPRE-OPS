@@ -79,7 +79,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         apiRequest({ method: "DELETE", url: `/budget-line-items/${budgetLineId}` });
     });
 
-    it("approves from the quick icons on the For Review list, with no Review agreement link", () => {
+    it("approves from the Mod Approval page via the list's Review Agreement link (OPS-6489)", () => {
         // Submit the modification via the API -- the UI submission flow is already covered by
         // startContractModification.cy.js; this spec is about the review side.
         testLogin("system-owner");
@@ -95,16 +95,18 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         cy.get('[data-cy="contract-modification-review-card"]').should("exist").as("modCard");
         cy.get("@modCard").contains("Contract Modification");
         cy.get("@modCard").contains("As-Is");
-        // No "Review agreement" link or detail view -- the icons are the only interaction (#6546).
-        cy.get("@modCard").contains(/review agreement/i).should("not.exist");
+        // The real review page exists now (#3331/OPS-6489): the list card links to it instead of
+        // acting inline.
+        cy.get("@modCard").find('[data-cy="review-agreement-button"]').click();
 
-        cy.get("@modCard").find('[data-cy="approve-contract-modification-icon-btn"]').click();
+        cy.url().should("match", new RegExp(`/agreements/${AGREEMENT_ID}/review-modification$`));
+        cy.contains("h1", "Mod Approval").should("be.visible");
+        cy.get('[data-cy="approve-mod-approval-btn"]').click();
         cy.get(".usa-modal__content").should("exist");
         cy.get(".usa-modal__content").contains("This will start the procurement process for budget lines selected to change status from Planned to Executing.");
         cy.get("[data-cy='confirm-action']").click();
 
         cy.get(".usa-alert__body").contains(/agreement approved for contract modification/i);
-        cy.get('[data-cy="contract-modification-review-card"]').should("not.exist");
 
         // The requester sees the existing outcome alert on the agreement, on the main tab --
         // not only on Award & Modifications (#6546 follow-up: the alert used to be tab-specific).
@@ -113,7 +115,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         cy.contains("Contract Modification Approved").should("be.visible");
     });
 
-    it("declines from the quick icons on the For Review list", () => {
+    it("declines from the Mod Approval page via the list's Review Agreement link", () => {
         testLogin("system-owner");
         apiRequest({
             method: "POST",
@@ -125,16 +127,57 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         cy.visit("/agreements?filter=change-requests").wait(1000);
 
         cy.get('[data-cy="contract-modification-review-card"]').should("exist").as("modCard");
-        cy.get("@modCard").find('[data-cy="decline-contract-modification-icon-btn"]').click();
+        cy.get("@modCard").find('[data-cy="review-agreement-button"]').click();
+
+        cy.url().should("match", new RegExp(`/agreements/${AGREEMENT_ID}/review-modification$`));
+        cy.get('[data-cy="decline-mod-approval-btn"]').click();
         cy.get(".usa-modal__content").should("exist");
         cy.get(".usa-modal__content").contains("The agreement will remain as it was before the change was requested.");
         cy.get("[data-cy='confirm-action']").click();
 
         cy.get(".usa-alert__body").contains(/contract modification declined/i);
-        cy.get('[data-cy="contract-modification-review-card"]').should("not.exist");
 
         testLogin("system-owner");
         cy.visit(`/agreements/${AGREEMENT_ID}`);
         cy.contains("Contract Modification Declined").should("be.visible");
+    });
+
+    it("de-obligates a line and approves it from the Mod Approval page, reducing the obligated amount (OPS-6489)", () => {
+        testLogin("system-owner");
+        apiRequest({
+            method: "PATCH",
+            url: `/budget-line-items/${budgetLineId}`,
+            body: { status: "OBLIGATED" }
+        }).its("status").should("eq", 200);
+        apiRequest({
+            method: "POST",
+            url: `/budget-line-items/${budgetLineId}/de-obligation/`,
+            body: { requested_amount: "200" }
+        }).its("status").should("eq", 200);
+        apiRequest({
+            method: "POST",
+            url: `/agreements/${AGREEMENT_ID}/contract-modifications/`,
+            body: { requestor_notes: "E2E de-obligation approval from list" }
+        }).its("status").should("eq", 201);
+
+        testLogin("division-director");
+        cy.visit("/agreements?filter=change-requests").wait(1000);
+
+        cy.get('[data-cy="contract-modification-review-card"]').should("exist").as("modCard");
+        cy.get("@modCard").contains("De-obligation");
+        cy.get("@modCard").find('[data-cy="review-agreement-button"]').click();
+
+        cy.url().should("match", new RegExp(`/agreements/${AGREEMENT_ID}/review-modification$`));
+        cy.contains("Original Amount").should("be.visible");
+        cy.contains("Requested De-obligation").should("be.visible");
+        cy.contains("Remaining Amount").should("be.visible");
+        cy.get('[data-cy="approve-mod-approval-btn"]').click();
+        cy.get("[data-cy='confirm-action']").click();
+        cy.get(".usa-alert__body").contains(/agreement approved for contract modification/i);
+
+        testLogin("system-owner");
+        apiRequest({ url: `/budget-line-items/${budgetLineId}` }).then((response) => {
+            expect(Number(response.body.amount)).to.eq(800);
+        });
     });
 });

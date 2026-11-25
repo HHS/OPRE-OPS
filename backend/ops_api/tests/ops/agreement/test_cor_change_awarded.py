@@ -1128,23 +1128,28 @@ def test_failed_approval_leaves_the_card_unattached(
 
 
 @pytest.mark.parametrize(
-    "edit_types, expected",
+    "edit_types, budget_line_items, expected",
     [
-        ([], ModType.AS_IS),
-        ([ModificationEditType.ADMIN_CHANGE], ModType.ADMIN),
-        ([ModificationEditType.MODIFIED_LOE], ModType.MODIFIED_LOE),
-        ([ModificationEditType.ADMIN_CHANGE, ModificationEditType.MODIFIED_LOE], ModType.MODIFIED_LOE),
-        # Approval leaves de-obligations pending (OPS-6488), so they don't set the mod type.
-        ([ModificationEditType.DE_OBLIGATION], ModType.AS_IS),
-        ([ModificationEditType.ADMIN_CHANGE, ModificationEditType.DE_OBLIGATION], ModType.ADMIN),
+        ([], [], ModType.AS_IS),
+        ([ModificationEditType.ADMIN_CHANGE], [], ModType.ADMIN),
+        ([ModificationEditType.MODIFIED_LOE], [], ModType.MODIFIED_LOE),
+        ([ModificationEditType.ADMIN_CHANGE, ModificationEditType.MODIFIED_LOE], [], ModType.MODIFIED_LOE),
+        # A de-obligation-only request (nothing else to approve) is its own type (OPS-6489).
+        ([ModificationEditType.DE_OBLIGATION], [], ModType.DE_OBLIGATION),
+        # Riding along with budget lines to execute, or another edit type, doesn't change the
+        # existing classification for either.
+        ([ModificationEditType.DE_OBLIGATION], [object()], ModType.AS_IS),
+        ([ModificationEditType.ADMIN_CHANGE, ModificationEditType.DE_OBLIGATION], [], ModType.ADMIN),
     ],
 )
-def test_mod_type_follows_the_bundled_edits(edit_types, expected):
+def test_mod_type_follows_the_bundled_edits(edit_types, budget_line_items, expected):
     from types import SimpleNamespace
 
     from ops_api.ops.services.contract_modification_requests import mod_type
 
-    request = SimpleNamespace(edits=[SimpleNamespace(modification_type=t) for t in edit_types])
+    request = SimpleNamespace(
+        edits=[SimpleNamespace(modification_type=t) for t in edit_types], budget_line_items=budget_line_items
+    )
     assert mod_type(request) == expected
 
 

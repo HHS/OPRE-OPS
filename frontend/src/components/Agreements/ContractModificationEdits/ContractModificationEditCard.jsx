@@ -39,6 +39,11 @@ const SERVICES_COMPONENT_CHANGE_LABELS = {
 // From/To dates, per the design.
 const SERVICES_COMPONENT_PERIOD_FIELDS = ["period_start", "period_end"];
 
+// A de-obligation edit (OPS-6488/OPS-6489): old_value is the original obligated amount, new_value
+// is the requested de-obligation delta. The generic From/To pair isn't enough here -- the
+// Director needs to see all three: original, requested, and what would remain (OPS-6489 AC2).
+const DE_OBLIGATION_AMOUNT_FIELD = "requested_de_obligation_amount";
+
 /**
  * One edit on an Awarded agreement that requires a contract modification.
  *
@@ -60,6 +65,7 @@ const ContractModificationEditCard = ({ edit }) => {
     const servicesComponentName = edit.field === "services_component_create" ? edit.new_value : edit.old_value;
     // A COR change (OPS-3153) is agreement-level: no budget line, and From/To are user names.
     const isAgreementLevel = edit.field === "project_officer_id";
+    const isDeObligation = edit.field === DE_OBLIGATION_AMOUNT_FIELD;
     // A budget line selected to execute (Planned -> Executing, Start Modification) isn't a
     // tracked edit -- it's the approval action itself -- so it carries no modification_type.
     const isExecuteSelection =
@@ -182,6 +188,29 @@ const ContractModificationEditCard = ({ edit }) => {
                     <TermTag
                         label="To"
                         bliStatus={edit.new_value}
+                        className="margin-0"
+                    />
+                </>
+            ) : isDeObligation ? (
+                <>
+                    <TermTag
+                        label="BL ID"
+                        value={edit.budget_line_item_id}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Original Amount"
+                        value={renderField("amount", "amount", edit.old_value)}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Requested De-obligation"
+                        value={renderField("amount", "amount", edit.new_value)}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Remaining Amount"
+                        value={renderField("amount", "amount", Number(edit.old_value) - Number(edit.new_value))}
                         className="margin-0"
                     />
                 </>

@@ -93,6 +93,9 @@ class ModType(Enum):
     AS_IS = auto()
     REPLACEMENT_AMOUNT_FINAL = auto()
     MODIFIED_LOE = auto()
+    # A modification whose edits are only de-obligation (OPS-6489). Not rendered in the frontend
+    # today; added so a pure de-obligation request isn't mis-classified as AS_IS.
+    DE_OBLIGATION = auto()
 
 
 class AgreementClassification(Enum):

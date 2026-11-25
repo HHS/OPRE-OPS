@@ -8,6 +8,7 @@ request per agreement can be in review at a time.
 """
 
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import Optional
 
 from flask import current_app
@@ -216,17 +217,6 @@ class ContractModificationRequestService:
         request.status = ContractModificationRequestStatus.DECLINED
 
     def _approve(self, request: ContractModificationRequest) -> None:
-        # Applying an approved de-obligation is OPS-6489. Until then, approve everything else in
-        # the request and leave de-obligation edits pending, so a de-obligation doesn't block
-        # unrelated work on the agreement; a request with nothing else in it can't be approved.
-        approvable_edits = [
-            edit for edit in request.edits if edit.modification_type != ModificationEditType.DE_OBLIGATION
-        ]
-        if len(approvable_edits) < len(request.edits) and not approvable_edits and not request.budget_line_items:
-            raise ValidationError(
-                {"action": "De-obligation requests can't be approved yet; that's tracked separately (OPS-6489)."}
-            )
-
         # Re-run the submit-time checks before writing anything: a budget line may have been
         # executed, edited into review, or moved out of the current FY since the request was sent.
         self._get_executable_budget_lines(
@@ -242,13 +232,21 @@ class ContractModificationRequestService:
         if changed:
             raise ValidationError({"budget_line_item_ids": changed})
 
+        de_obligation_edits = [
+            edit for edit in request.edits if edit.modification_type == ModificationEditType.DE_OBLIGATION
+        ]
+        # Validated here, before anything is written, so a stale de-obligation (OPS-6489) leaves
+        # the request pending exactly like a stale budget line does above.
+        self._validate_de_obligation_edits(de_obligation_edits)
+
         agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=mod_type(request))
         self.db_session.add(agreement_mod)
         self.db_session.flush()
 
         self._edit_service.attach_pending_edits_to_mod(
-            request.agreement_id, agreement_mod.id, [edit.id for edit in approvable_edits]
+            request.agreement_id, agreement_mod.id, [edit.id for edit in request.edits]
         )
+        self._apply_de_obligation_edits(de_obligation_edits)
         # Set directly: the BLI update and change request paths reject Executing on an Awarded
         # agreement (validate_no_execution_status_change_on_awarded), because this approval is
         # the only way to get there.
@@ -257,6 +255,36 @@ class ContractModificationRequestService:
 
         request.status = ContractModificationRequestStatus.APPROVED
         request.agreement_mod_id = agreement_mod.id
+
+    def _validate_de_obligation_edits(self, de_obligation_edits: list) -> None:
+        """Re-validate each pending de-obligation's budget line is still Obligated and the
+        requested amount still fits its current (possibly already-reduced) amount -- the line may
+        have changed since the request was sent, the same risk already checked for executable
+        budget lines above."""
+        errors = []
+        for edit in de_obligation_edits:
+            bli = self.db_session.get(BudgetLineItem, edit.budget_line_item_id)
+            if bli is None:
+                errors.append(f"Budget line {edit.budget_line_item_id} not found.")
+                continue
+            if bli.status != BudgetLineItemStatus.OBLIGATED:
+                errors.append(f"Budget line {bli.id} is no longer in Obligated status.")
+            elif Decimal(str(edit.new_value)) > (bli.amount or Decimal("0")):
+                errors.append(f"Budget line {bli.id} no longer has enough obligated to de-obligate this amount.")
+        if errors:
+            raise ValidationError({"budget_line_item_ids": errors})
+
+    def _apply_de_obligation_edits(self, de_obligation_edits: list) -> None:
+        """Reduce each line's obligated amount by its approved de-obligation (OPS-6489). The line
+        stays Obligated even at $0 (AC6). ``original_obligated_amount`` is set once -- the first
+        time a line is de-obligated -- so it and the cumulative total de-obligated to date stay
+        correct and viewable across any later, repeat de-obligation of the same line."""
+        for edit in de_obligation_edits:
+            bli = self.db_session.get(BudgetLineItem, edit.budget_line_item_id)
+            if bli.original_obligated_amount is None:
+                bli.original_obligated_amount = bli.amount
+            bli.amount = (bli.amount or Decimal("0")) - Decimal(str(edit.new_value))
+            bli.requested_de_obligation_amount = None
 
     def _get_executable_budget_lines(self, agreement_id: int, budget_line_item_ids: list[int]) -> list[BudgetLineItem]:
         """Only Planned, current-FY budget lines not already in review, and not in a Services
@@ -325,7 +353,8 @@ class ContractModificationRequestService:
             {
                 "contract_modification_request_id": request.id,
                 "title": f"Contract Modification {'Approved' if approved else 'Declined'}",
-                "message": (
+                "message": self._de_obligation_submitter_message(request, approved)
+                or (
                     "Your Contract Modification has been successfully approved by your Division Director, "
                     "and the procurement process has started."
                     if approved
@@ -337,6 +366,30 @@ class ContractModificationRequestService:
             },
             commit=False,
         )
+
+    @staticmethod
+    def _de_obligation_submitter_message(request: ContractModificationRequest, approved: bool) -> Optional[str]:
+        """A de-obligation-specific outcome message, naming the per-line de-obligated and
+        remaining amounts and any reviewer notes (AC9). Other mod types keep the generic message
+        in ``_notify_submitter`` unchanged -- a de-obligation-specific notification is this
+        story's job, not a rewrite of every mod type's outcome message (OPS-6489)."""
+        de_obligation_edits = [
+            edit for edit in request.edits if edit.modification_type == ModificationEditType.DE_OBLIGATION
+        ]
+        if not de_obligation_edits:
+            return None
+        notes_suffix = f" Reviewer notes: {request.reviewer_notes}" if request.reviewer_notes else ""
+        if not approved:
+            return f"Your de-obligation request has been declined by your Division Director.{notes_suffix}"
+        lines = "; ".join(
+            "budget line {bli_id}: de-obligated {deobligated}, {remaining} remaining obligated".format(
+                bli_id=edit.budget_line_item_id,
+                deobligated="${:,.2f}".format(Decimal(str(edit.new_value))),
+                remaining="${:,.2f}".format(Decimal(str(edit.old_value)) - Decimal(str(edit.new_value))),
+            )
+            for edit in de_obligation_edits
+        )
+        return f"Your de-obligation request has been approved by your Division Director. {lines}.{notes_suffix}"
 
     @staticmethod
     def can_review(request: ContractModificationRequest, user) -> bool:
@@ -365,11 +418,18 @@ class ContractModificationRequestService:
 
 
 def mod_type(request: ContractModificationRequest) -> ModType:
-    """As-is for pure budget-line execution (#1008), Admin when only Admin Changes such as a COR
-    change ride along (#3269), and Modified LOE when any Modified LOE edit does (#3072).
-    De-obligation edits don't count: approval leaves them pending until OPS-6489 (OPS-6488)."""
+    """As-is for pure budget-line execution (#1008) -- including a de-obligation riding along
+    with budget lines to execute and no other edit, same as before de-obligation approval
+    existed -- Admin when only Admin Changes such as a COR change ride along (#3269), Modified
+    LOE when any Modified LOE edit does (#3072), and De-obligation when the request is
+    de-obligation edits only, with nothing else to approve (OPS-6489). A de-obligation riding
+    along with a Modified LOE/Admin edit doesn't change the type either -- that classification
+    takes precedence."""
     edits = [edit for edit in request.edits if edit.modification_type != ModificationEditType.DE_OBLIGATION]
     if not edits:
+        has_de_obligation = any(edit.modification_type == ModificationEditType.DE_OBLIGATION for edit in request.edits)
+        if has_de_obligation and not request.budget_line_items:
+            return ModType.DE_OBLIGATION
         return ModType.AS_IS
     if all(edit.modification_type == ModificationEditType.ADMIN_CHANGE for edit in edits):
         return ModType.ADMIN

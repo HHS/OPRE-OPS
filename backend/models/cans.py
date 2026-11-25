@@ -121,7 +121,11 @@ class CAN(BaseModel):
     @property
     def status(self):
         total_funding = sum([b.budget for b in self.funding_budgets]) or 0
-        total_spent = sum([b.amount for b in self.budget_line_items if not b.is_obe and (b.status != "DRAFT")]) or 0
+        # can_funding_amount (not amount): an approved de-obligation (OPS-6489) reduces amount in
+        # place but must not free up the CAN's balance, so this stays keyed to the original.
+        total_spent = (
+            sum([b.can_funding_amount for b in self.budget_line_items if not b.is_obe and (b.status != "DRAFT")]) or 0
+        )
         available_funding = total_funding - total_spent
 
         can_status = CANStatus.INACTIVE if available_funding <= 0 and self.is_expired else CANStatus.ACTIVE

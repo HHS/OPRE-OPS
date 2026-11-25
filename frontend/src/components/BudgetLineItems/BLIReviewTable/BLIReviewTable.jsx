@@ -23,6 +23,9 @@ import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIReviewTable.constants";
  * @param {string} props.action - The action of the review
  * @param {string[]} [props.errorStatuses] - When provided, inline error styling applies to rows whose status is in this list (regardless of row selection). When omitted, the original selection-gated behavior is preserved: errors only show when the row is selected (Review Agreement page behavior).
  * @param {import('./BLIReviewRow').BLIReviewClinConfig} [props.clin] - CLIN column display configuration. Omit to hide the column.
+ * @param {Object.<number, "status"|"amount">} [props.highlightedFieldByBudgetLineId] - A mod's
+ *   changed field per budget line id (OPS-6489 Mod Approval page): "status" highlights that row's
+ *   Status cell, "amount" its Amount cell. Omit for no highlighting.
  * @returns {React.ReactElement} - The rendered table component.
  */
 const AgreementBLIReviewTable = ({
@@ -36,7 +39,8 @@ const AgreementBLIReviewTable = ({
     action,
     readOnly = false,
     errorStatuses,
-    clin = {}
+    clin = {},
+    highlightedFieldByBudgetLineId
 }) => {
     const {
         showColumn: showCLINColumn = false,
@@ -142,6 +146,7 @@ const AgreementBLIReviewTable = ({
                         readOnly={readOnly}
                         errorStatuses={errorStatuses}
                         clin={rowClin}
+                        highlightedField={highlightedFieldByBudgetLineId?.[budgetLine.id]}
                     />
                 ))}
             </Table>
