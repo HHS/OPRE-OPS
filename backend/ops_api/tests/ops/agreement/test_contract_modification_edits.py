@@ -88,6 +88,15 @@ def delete_mods_and_procurement_records(loaded_db, agreement_id):
     loaded_db.execute(text(f"DELETE FROM default_procurement_tracker WHERE id IN {trackers}"), params)
     loaded_db.execute(text("DELETE FROM procurement_tracker WHERE agreement_id = :id"), params)
     loaded_db.execute(text("DELETE FROM procurement_action WHERE agreement_id = :id"), params)
+    # A mod that other requests joined (OPS-6513) can hold two rows for one budget line field;
+    # deleting it would SET NULL both into the pending-only unique index, so drop them first.
+    loaded_db.execute(
+        text(
+            "DELETE FROM contract_modification_edit WHERE agreement_mod_id IN "
+            "(SELECT id FROM agreement_mod WHERE agreement_id = :id)"
+        ),
+        params,
+    )
     loaded_db.execute(text("DELETE FROM agreement_mod WHERE agreement_id = :id"), params)
 
 

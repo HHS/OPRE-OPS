@@ -3,6 +3,38 @@ import ContractModificationEdits from "../../../components/Agreements/ContractMo
 import Accordion from "../../../components/UI/Accordion/Accordion";
 import TermTag from "../../../components/UI/Term/TermTag";
 import { getAwardModificationSections } from "../../../helpers/awardModificationHistory.helpers";
+import { getContractModificationEditTerms } from "../../../helpers/contractModificationEdits.helpers";
+import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
+
+/**
+ * One of a contract mod's edits, as label/value pills in the history accordion's style
+ * (OPS-6513). Uses the same terms as the edit card.
+ *
+ * @component
+ * @param {Object} props
+ * @param {import("../../../components/Agreements/ContractModificationEdits/ContractModificationEditCard").ContractModificationEdit} props.edit
+ * @returns {React.ReactElement}
+ */
+const AwardModificationEdit = ({ edit }) => {
+    const oldCan = useGetNameForCanId(edit.field === "can_id" ? edit.old_value : undefined);
+    const newCan = useGetNameForCanId(edit.field === "can_id" ? edit.new_value : undefined);
+    return (
+        <dl
+            className="display-flex flex-wrap margin-0"
+            style={{ gap: "0.75rem 2rem" }}
+            data-cy="award-mod-edit"
+            data-testid="award-mod-edit"
+        >
+            {getContractModificationEditTerms(edit, { oldCan, newCan }).map((term) => (
+                <TermTag
+                    key={term.label}
+                    term={term.label}
+                    description={term.value == null || term.value === "" ? undefined : String(term.value)}
+                />
+            ))}
+        </dl>
+    );
+};
 
 /**
  * @typedef {Object} AgreementAwardModificationsProps
@@ -11,8 +43,9 @@ import { getAwardModificationSections } from "../../../helpers/awardModification
 
 /**
  * Award & Modification History tab for Contract and AA agreements. Renders one
- * accordion per completed procurement action (initial award + each completed
- * modification), each showing a fixed grid of award/mod fields.
+ * accordion per procurement cycle: the initial award once its award is approved, and each
+ * contract mod from the Division Director's approval (OPS-6513). Each shows a fixed grid of
+ * award/mod fields; a contract mod also lists the edits it batched.
  *
  * @component
  * @param {AgreementAwardModificationsProps} props
@@ -37,6 +70,7 @@ const AgreementAwardModifications = ({ agreement }) => {
         <ContractModificationEdits
             agreementId={agreementId}
             isAgreementEditable={Boolean(agreement?._meta?.isEditable)}
+            isActiveContractModLocked={Boolean(agreement?.is_active_contract_mod_locked)}
         />
     ) : null;
 
@@ -128,6 +162,24 @@ const AgreementAwardModifications = ({ agreement }) => {
                                     </div>
                                 ))}
                             </div>
+                            {record.edits?.length > 0 && (
+                                <div
+                                    data-cy="award-mod-edits"
+                                    data-testid="award-mod-edits"
+                                    className="display-flex flex-column margin-top-4"
+                                    style={{ gap: "1.5rem" }}
+                                >
+                                    <h4 className="margin-0 margin-bottom-neg-1 font-sans-3xs text-bold text-base-dark">
+                                        Contract Modification Edits
+                                    </h4>
+                                    {record.edits.map((edit) => (
+                                        <AwardModificationEdit
+                                            key={edit.id}
+                                            edit={edit}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </Accordion>
                     ))}
                 </>

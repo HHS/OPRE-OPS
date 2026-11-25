@@ -258,11 +258,12 @@ def _contract_mod_action_id(tracker, agreement) -> int | None:
 def _lock_trackers(agreement, budget_line_item=None, *, active_only=True) -> list:
     """The trackers whose pre-award / award locks apply.
 
-    Parallel contract-mod trackers don't block each other (OPS-6513):
+    (OPS-6513):
     - the initial award's tracker (any tracker that isn't a contract mod's) locks the whole agreement;
-    - a contract mod's tracker locks only the budget lines that mod executed, i.e. the ones linked
-      to its procurement action. So it never applies to an agreement-level check
-      (``budget_line_item=None``).
+    - a contract mod's tracker locks only the budget lines that mod executed, including those of
+      every request that joined it, i.e. the ones linked to its procurement action. So it never
+      applies to an agreement-level check (``budget_line_item=None``), and the agreement's other
+      lines stay editable while the mod is in procurement.
     """
     if not agreement or not agreement.procurement_trackers:
         return []

@@ -1,18 +1,19 @@
 """Service for the Award & Modification History tab.
 
 Aggregates award/modification data for a single Contract or AA agreement into a
-flat list of records, one per procurement action whose award has been approved by
-the Budget Team (initial award plus each approved modification). A cycle appears as
-soon as the Budget Team approves its award — the COR need not have completed the
-final (AWARD) step, and the tracker need not be COMPLETED. Data is stitched together
-from four models:
+flat list of records, one per procurement action. The initial award appears as soon as
+the Budget Team approves it — the COR need not have completed the final (AWARD) step,
+and the tracker need not be COMPLETED. A contract mod appears from the Division
+Director's approval, with the edits it batched (OPS-6513); its award fields stay empty
+until its award is approved. Data is stitched together from these models:
 
 - ``ProcurementAction`` — one row per award/mod cycle (award/contract totals, award date).
 - ``ProcurementTracker`` / ``DefaultProcurementTrackerStep`` — the AWARD step carries
   vendor + award amount/date, plus the per-cycle Modification # / Purchase Order # /
   Task Order # the COR entered at step 6 (OPS-5892); the PRE_AWARD step carries
   requisition number/approval date.
-- ``AgreementMod`` — modification number (null for the initial award).
+- ``AgreementMod`` — modification number and approval date (null for the initial award).
+- ``ContractModificationEdit`` — the edits attached to a contract mod.
 - ``ContractAgreement`` / ``AaAgreement`` — agreement-level ``po_number`` /
   ``task_order_number`` / ``contract_number`` (single value repeated across every row).
 
@@ -31,13 +32,17 @@ from models import (
     DEFAULT_AWARD_MODIFICATION_NUMBER,
     Agreement,
     AgreementType,
+    AwardType,
+    ContractModificationEdit,
     ProcurementAction,
     ProcurementTracker,
     ProcurementTrackerStepType,
 )
 from models.procurement_workflow import AWARD_APPROVED_STATUS
 from models.utils.fiscal_year import date_to_fiscal_year
+from ops_api.ops.schemas.contract_modification_edits import ContractModificationEditSchema
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
+from ops_api.ops.utils.contract_modification_edits_helpers import net_mod_edits
 
 # Agreement types that expose po_number / task_order_number / contract_number and
 # are in scope for this tab. Reading those attributes on any other subtype raises
@@ -65,22 +70,19 @@ def _prefer_step_value(step_value: Optional[str], fallback: Optional[str]) -> Op
     return fallback
 
 
-def build_fiscal_year_label(action_date: Optional[date], is_modification: bool, mod_number: Optional[str]) -> str:
+def build_fiscal_year_label(action_date: Optional[date], is_modification: bool) -> str:
     """Build the accordion header label for an award/mod cycle.
 
-    Examples: ``"FY 2024 Award"``, ``"FY 2025 Mod 1"``. ``mod_number`` is the
-    ``AgreementMod.number`` string, which already reads like ``"Mod 1"``. When the
-    cycle has no date the ``"FY {year}"`` prefix is dropped (``"Award"`` /
-    ``"Mod 1"``). When a modification has no number, ``"Mod"`` is used on its own.
+    Examples: ``"FY 2024 Award"``, ``"FY 2025 Contract Modification (03/01/2025)"``. When the
+    cycle has no date the fiscal year and date are dropped (``"Award"`` /
+    ``"Contract Modification"``).
     """
-    if is_modification:
-        base = mod_number if mod_number else "Mod"
-    else:
-        base = "Award"
-
     if action_date is None:
-        return base
-    return f"FY {date_to_fiscal_year(action_date)} {base}"
+        return "Contract Modification" if is_modification else "Award"
+    fiscal_year = f"FY {date_to_fiscal_year(action_date)}"
+    if is_modification:
+        return f"{fiscal_year} Contract Modification ({action_date:%m/%d/%Y})"
+    return f"{fiscal_year} Award"
 
 
 class _AwardHistoryEntry(NamedTuple):
@@ -130,28 +132,29 @@ class AgreementAwardHistoryService:
         task_order_number = agreement.task_order_number
         contract_number = agreement.contract_number
 
-        # Map each procurement action to the tracker whose award the Budget Team
-        # has approved (if any).
-        approved_trackers_by_action = self._approved_trackers_by_action(agreement_id)
-        if not approved_trackers_by_action:
+        # Map each procurement action to the tracker its history entry comes from.
+        trackers_by_action = self._history_trackers_by_action(agreement_id)
+        if not trackers_by_action:
             return []
 
         actions = self.db_session.scalars(
             select(ProcurementAction)
             .where(
                 ProcurementAction.agreement_id == agreement_id,
-                ProcurementAction.id.in_(approved_trackers_by_action.keys()),
+                ProcurementAction.id.in_(trackers_by_action.keys()),
             )
             .options(selectinload(ProcurementAction.agreement_mod))
         ).all()
+        edits_by_mod = self._edits_by_mod([action.agreement_mod_id for action in actions if action.agreement_mod_id])
 
         entries = [
             self._build_record(
                 action=action,
-                tracker=approved_trackers_by_action[action.id],
+                tracker=trackers_by_action[action.id],
                 po_number=po_number,
                 task_order_number=task_order_number,
                 contract_number=contract_number,
+                edits=edits_by_mod.get(action.agreement_mod_id, []),
             )
             for action in actions
         ]
@@ -161,13 +164,14 @@ class AgreementAwardHistoryService:
         entries.sort(key=lambda entry: (entry.sort_date or date.max, entry.is_modification))
         return [entry.record for entry in entries]
 
-    def _approved_trackers_by_action(self, agreement_id: int) -> dict[int, ProcurementTracker]:
-        """Return a map of procurement_action_id -> the tracker whose AWARD step the
-        Budget Team has approved, for the agreement.
+    def _history_trackers_by_action(self, agreement_id: int) -> dict[int, ProcurementTracker]:
+        """Return a map of procurement_action_id -> the tracker its history entry comes from.
 
-        A cycle is included as soon as its AWARD step's ``award_approval_status`` is
-        ``"APPROVED"``; the tracker does NOT need to be COMPLETED (i.e. the COR need not
-        have completed the final step). Trackers with no approved AWARD step are skipped.
+        The initial award (and any legacy cycle) is included as soon as its AWARD step's
+        ``award_approval_status`` is ``"APPROVED"``; the tracker does NOT need to be COMPLETED
+        (i.e. the COR need not have completed the final step). A contract mod is included from
+        the Division Director's approval, so its batched edits show while it is in procurement
+        (OPS-6513); its award fields stay empty until the award is approved.
 
         If more than one approved tracker ever points at the same action (no DB
         constraint rules this out), the most recently updated tracker is kept, with
@@ -185,15 +189,55 @@ class AgreementAwardHistoryService:
             .options(ProcurementTracker.steps_with_award_vendor_option())
         ).all()
 
+        contract_mod_action_ids = set(
+            self.db_session.scalars(
+                select(ProcurementAction.id).where(
+                    ProcurementAction.agreement_id == agreement_id,
+                    ProcurementAction.award_type == AwardType.MODIFICATION,
+                    ProcurementAction.agreement_mod_id.isnot(None),
+                )
+            ).all()
+        )
+
         by_action: dict[int, ProcurementTracker] = {}
         for tracker in trackers:
             award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
             # award_approval_status lives on the DefaultProcurementTrackerStep subclass;
             # getattr keeps this safe for any non-default step type.
-            if getattr(award_step, "award_approval_status", None) != AWARD_APPROVED_STATUS:
+            award_approved = getattr(award_step, "award_approval_status", None) == AWARD_APPROVED_STATUS
+            if not award_approved and tracker.procurement_action not in contract_mod_action_ids:
                 continue
             by_action.setdefault(tracker.procurement_action, tracker)
         return by_action
+
+    def _edits_by_mod(self, agreement_mod_ids: list[int]) -> dict[int, list[dict]]:
+        """Return each mod's edits, collapsed to what changed (see ``net_mod_edits``), as the
+        edit cards' JSON: From comes from the first row, everything else from the latest."""
+        if not agreement_mod_ids:
+            return {}
+        edits = self.db_session.scalars(
+            select(ContractModificationEdit)
+            .where(ContractModificationEdit.agreement_mod_id.in_(agreement_mod_ids))
+            .options(selectinload(ContractModificationEdit.requested_by))
+            .order_by(ContractModificationEdit.requested_on, ContractModificationEdit.id)
+        ).all()
+        rows_by_mod: dict[int, list] = {}
+        for edit in edits:
+            rows_by_mod.setdefault(edit.agreement_mod_id, []).append(edit)
+
+        schema = ContractModificationEditSchema()
+        result: dict[int, list[dict]] = {}
+        for agreement_mod_id, rows in rows_by_mod.items():
+            dumped = []
+            for first, latest in net_mod_edits(rows):
+                edit = schema.dump(latest)
+                if first is not latest:
+                    first_dump = schema.dump(first)
+                    edit["old_value"] = first_dump["old_value"]
+                    edit["old_display_name"] = first_dump["old_display_name"]
+                dumped.append(edit)
+            result[agreement_mod_id] = dumped
+        return result
 
     def _build_record(
         self,
@@ -202,6 +246,7 @@ class AgreementAwardHistoryService:
         po_number: Optional[str],
         task_order_number: Optional[str],
         contract_number: Optional[str],
+        edits: list[dict],
     ) -> _AwardHistoryEntry:
         award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
         pre_award_step = tracker.get_step(ProcurementTrackerStepType.PRE_AWARD)
@@ -210,25 +255,22 @@ class AgreementAwardHistoryService:
         is_modification = action.agreement_mod_id is not None
         mod = action.agreement_mod
         mod_number = mod.number if mod else None
-        # A single canonical date drives both the label and the displayed "Award Date"
-        # field, so they can't diverge. AgreementMod.mod_date is not used here: it's an
-        # independent, nullable field that isn't guaranteed to match the action's own
-        # award/obligation date.
+        # The award/obligation date drives the displayed "Award Date". A contract mod's
+        # entry shows from the Division Director's approval (OPS-6513), before it has one,
+        # so until then its label and sort order use the approval date (AgreementMod.mod_date).
         action_date = action.date_awarded_obligated
+        label_date = action_date or (mod.mod_date if is_modification and mod else None)
 
         # OPS-5892: step 6 captures Modification # / Purchase Order # / Task Order # per
         # award cycle, so those beat the agreement-level (and AgreementMod) fallbacks —
         # see _prefer_step_value. getattr keeps this safe for a non-default step type,
-        # matching _approved_trackers_by_action, and for award_step being None.
+        # matching _history_trackers_by_action, and for award_step being None.
         step_mod_number = getattr(award_step, "award_modification_number", None)
         step_po_number = getattr(award_step, "award_purchase_order_number", None)
         step_task_order_number = getattr(award_step, "award_task_order_number", None)
 
         record = {
-            # The header stays on AgreementMod.number: it is the prose cycle label
-            # ("Mod 1"), whereas the step value is the modification number off the signed
-            # award ("P00001"), which does not read as a header. They are allowed to differ.
-            "fiscal_year_label": build_fiscal_year_label(action_date, is_modification, mod_number),
+            "fiscal_year_label": build_fiscal_year_label(label_date, is_modification),
             "award_date": action_date,
             "award_amount": award_step.award_amount if award_step else None,
             "contract_total": action.agreement_total,
@@ -246,8 +288,10 @@ class AgreementAwardHistoryService:
             "vendor_type": vendor.vendor_type if vendor else None,
             "purchase_order_number": _prefer_step_value(step_po_number, po_number),
             "task_order_number": _prefer_step_value(step_task_order_number, task_order_number),
+            # A contract mod's edits, collapsed to what changed (OPS-6513); empty for the award.
+            "edits": edits,
             # Internal sort keys, stripped before returning.
-            "_sort_date": action_date,
+            "_sort_date": label_date,
             "_is_modification": is_modification,
         }
-        return _AwardHistoryEntry(sort_date=action_date, is_modification=is_modification, record=record)
+        return _AwardHistoryEntry(sort_date=label_date, is_modification=is_modification, record=record)

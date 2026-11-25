@@ -771,12 +771,13 @@ paths:
       operationId: getAgreementAwardHistory
       summary: Get award & modification history for a Contract or AA agreement
       description: |
-        Returns one flat record per completed procurement action (the initial
-        award plus each completed modification) for a Contract or AA agreement.
-        Data is aggregated from the procurement action, its completed
+        Returns one flat record per procurement action for a Contract or AA
+        agreement: the initial award once the Budget Team approves it, and each
+        contract modification from the Division Director's approval, with the
+        edits it batched. Data is aggregated from the procurement action, its
         procurement tracker's AWARD and PRE_AWARD steps, the linked vendor and
-        agreement modification, and the agreement's own PO/task order/contract
-        numbers.
+        agreement modification, the mod's edits, and the agreement's own
+        PO/task order/contract numbers.
 
         Only Contract and AA agreements are supported; any other agreement type
         returns 400. Fields with no underlying data are returned as null; the
@@ -7816,8 +7817,11 @@ components:
       properties:
         fiscal_year_label:
           type: string
-          description: Accordion header, e.g. "FY 2024 Award" or "FY 2025 Mod 1"
-          example: FY 2024 Award
+          description: >-
+            Accordion header, e.g. "FY 2024 Award" or "FY 2025 Contract Modification (03/01/2025)".
+            A contract mod's date is its award date once awarded, otherwise the date the Division
+            Director approved it.
+          example: FY 2025 Contract Modification (03/01/2025)
         award_date:
           type: string
           format: date
@@ -7868,6 +7872,14 @@ components:
           description: >-
             The Task Order # entered on the award step for this cycle; falls back to the
             agreement-level task_order_number when the step has none
+        edits:
+          type: array
+          description: >-
+            A contract modification's edits, collapsed to one per budget line (or Services
+            Component, or COR) and field, from the first From to the latest To; empty for the
+            initial award
+          items:
+            $ref: "#/components/schemas/ContractModificationEdit"
     AgreementName:
       description: Agreement identifier with ID and name (nick_name preferred over title)
       type: object
@@ -10789,6 +10801,12 @@ components:
             is_post_pre_award_locked:
               type: boolean
               description: Whether BLI editing is permanently locked after full pre-award approval
+            is_active_contract_mod_locked:
+              type: boolean
+              description: >-
+                Whether the agreement's contract modification in procurement has had its Pre-Award
+                approval requested, so no new contract modification can start until its tracker is
+                complete
             authorized_user_ids:
               type: array
               items:

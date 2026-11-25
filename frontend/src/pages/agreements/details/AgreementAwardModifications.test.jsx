@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AgreementAwardModifications from "./AgreementAwardModifications";
 import { useGetAgreementAwardHistoryByIdQuery, useGetVersionQuery } from "../../../api/opsAPI";
@@ -7,6 +7,10 @@ import { NO_DATA } from "../../../constants";
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementAwardHistoryByIdQuery: vi.fn(),
     useGetVersionQuery: vi.fn()
+}));
+
+vi.mock("../../../hooks/lookup.hooks", () => ({
+    useGetNameForCanId: (id) => (id ? `CAN-${id}` : undefined)
 }));
 
 // The section has its own tests; here we only check when it is shown.
@@ -42,7 +46,7 @@ const CONTRACT_RECORD = {
 
 const MOD_RECORD = {
     ...CONTRACT_RECORD,
-    fiscal_year_label: "FY 2025 Mod 1",
+    fiscal_year_label: "FY 2025 Contract Modification (01/15/2025)",
     modification_number: "Mod 1"
 };
 
@@ -70,7 +74,7 @@ describe("AgreementAwardModifications", () => {
         const headings = screen.getAllByTestId("accordion-heading");
         expect(headings).toHaveLength(2);
         expect(headings[0]).toHaveTextContent("FY 2024 Award");
-        expect(headings[1]).toHaveTextContent("FY 2025 Mod 1");
+        expect(headings[1]).toHaveTextContent("FY 2025 Contract Modification (01/15/2025)");
 
         // Field values render (formatted) — first accordion.
         expect(screen.getAllByText("June 26, 2024").length).toBeGreaterThan(0);
@@ -79,6 +83,77 @@ describe("AgreementAwardModifications", () => {
         expect(screen.getAllByText("Small Business").length).toBeGreaterThan(0);
         expect(screen.getByText("Base")).toBeInTheDocument();
         expect(screen.getByText("Mod 1")).toBeInTheDocument();
+    });
+
+    it("lists a contract mod's edits as label/value pills inside its accordion (OPS-6513)", () => {
+        const modWithEdits = {
+            ...MOD_RECORD,
+            edits: [
+                {
+                    id: 1,
+                    modification_type: "MODIFIED_LOE",
+                    budget_line_item_id: 16076,
+                    field: "amount",
+                    old_value: 100000,
+                    new_value: 125000
+                },
+                {
+                    id: 2,
+                    modification_type: "ADMIN_CHANGE",
+                    budget_line_item_id: null,
+                    field: "project_officer_id",
+                    old_value: 520,
+                    new_value: 522,
+                    old_display_name: "Chris Fortunato",
+                    new_display_name: "Dave Director"
+                },
+                {
+                    id: 3,
+                    modification_type: "MODIFIED_LOE",
+                    budget_line_item_id: 16077,
+                    field: "can_id",
+                    old_value: 504,
+                    new_value: 505
+                }
+            ]
+        };
+        useGetAgreementAwardHistoryByIdQuery.mockReturnValue({
+            data: [{ ...CONTRACT_RECORD, edits: [] }, modWithEdits],
+            isLoading: false,
+            isError: false
+        });
+
+        render(<AgreementAwardModifications agreement={agreement} />);
+
+        // Only the mod's accordion lists edits.
+        expect(screen.getAllByTestId("award-mod-edits")).toHaveLength(1);
+        const edits = screen.getAllByTestId("award-mod-edit");
+        expect(edits).toHaveLength(3);
+        const pills = (edit) => {
+            const terms = within(edit).getAllByRole("term");
+            const definitions = within(edit).getAllByRole("definition");
+            return terms.map((term, index) => [term.textContent, definitions[index].textContent]);
+        };
+        expect(pills(edits[0])).toEqual([
+            ["Modification Type", "Modified Level of Effort"],
+            ["BL ID", "16076"],
+            ["Change To", "Amount"],
+            ["From", "$100,000.00"],
+            ["To", "$125,000.00"]
+        ]);
+        expect(pills(edits[1])).toEqual(
+            expect.arrayContaining([
+                ["From", "Chris Fortunato"],
+                ["To", "Dave Director"]
+            ])
+        );
+        expect(pills(edits[2])).toEqual(
+            expect.arrayContaining([
+                ["From", "CAN-504"],
+                ["To", "CAN-505"]
+            ])
+        );
+        expect(screen.getByText("Contract Modification Edits")).toBeInTheDocument();
     });
 
     it("renders NO_DATA for missing fields", () => {

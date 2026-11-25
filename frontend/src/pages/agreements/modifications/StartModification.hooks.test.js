@@ -194,4 +194,20 @@ describe("useStartModification", () => {
 
         expect(result.current.canStartModification).toBe(false);
     });
+
+    it("can't start once the contract mod in procurement is sent for Pre-Award approval (OPS-6513)", () => {
+        setQueries();
+        queries.agreement = { data: { ...AGREEMENT, is_active_contract_mod_locked: true }, isLoading: false };
+        const { result } = renderHook(() => useStartModification(42));
+
+        expect(result.current.canStartModification).toBe(false);
+    });
+
+    it("can start while a contract mod is in procurement but not yet at Pre-Award (OPS-6513)", () => {
+        setQueries({ requests: [{ id: 9, status: "APPROVED" }] });
+        queries.agreement = { data: { ...AGREEMENT, is_active_contract_mod_locked: false }, isLoading: false };
+        const { result } = renderHook(() => useStartModification(42));
+
+        expect(result.current.canStartModification).toBe(true);
+    });
 });

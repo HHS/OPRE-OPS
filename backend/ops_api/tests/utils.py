@@ -2,6 +2,7 @@ from sqlalchemy import select
 
 from models import (
     AgreementMod,
+    ContractModificationEdit,
     DefaultProcurementTracker,
     DefaultProcurementTrackerStep,
     ProcurementAction,
@@ -28,6 +29,13 @@ def cleanup_award_history(loaded_db, agreement, vendor=None):
         select(ProcurementAction).where(ProcurementAction.agreement_id == agreement.id)
     ).all():
         loaded_db.delete(action)
+    loaded_db.flush()
+    # A mod's edits go first: deleting the mod would SET NULL them into the pending-only unique
+    # indexes, which a mod that batched several requests (OPS-6513) can violate.
+    for edit in loaded_db.scalars(
+        select(ContractModificationEdit).where(ContractModificationEdit.agreement_id == agreement.id)
+    ).all():
+        loaded_db.delete(edit)
     loaded_db.flush()
     for mod in loaded_db.scalars(select(AgreementMod).where(AgreementMod.agreement_id == agreement.id)).all():
         loaded_db.delete(mod)

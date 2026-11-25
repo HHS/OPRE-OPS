@@ -1177,7 +1177,7 @@ def test_mod_scenario_links_in_execution_blis_to_modification(db_with_agreements
 def test_mod_scenario_new_award_step_is_approved(db_with_agreements):
     """The NEW_AWARD tracker's AWARD step must be Budget-Team-approved, not just its
     tracker COMPLETED — the Awards and Modifications tab gates on award_approval_status,
-    not tracker/step status (see agreement_award_history._approved_trackers_by_action)."""
+    not tracker/step status (see agreement_award_history._history_trackers_by_action)."""
     sys_user = get_or_create_sys_user(db_with_agreements)
     backfill_procurement_records(db_with_agreements, sys_user)
 

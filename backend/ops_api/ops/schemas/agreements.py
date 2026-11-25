@@ -244,6 +244,9 @@ class AgreementResponse(FyObligatedMixin, AgreementData):
     in_review = fields.Bool(required=True)
     is_award_approval_requested = fields.Bool(load_default=False, dump_default=False, required=False)
     is_post_pre_award_locked = fields.Bool(load_default=False, dump_default=False, required=False)
+    # The contract mod in procurement is past its Pre-Award request, so no new contract
+    # modification can start until its tracker is complete (OPS-6513).
+    is_active_contract_mod_locked = fields.Bool(load_default=False, dump_default=False, required=False)
     change_requests_in_review = fields.Nested(
         AgreementChangeRequestResponseSchema,
         many=True,

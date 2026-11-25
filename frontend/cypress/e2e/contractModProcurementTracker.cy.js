@@ -2,15 +2,18 @@
 
 import { testLogin } from "./utils";
 
-// OPS-6513: when the Division Director approves a contract modification, the mod gets its own
-// Procurement Tracker, and the Procurement Tracker tab opens on the most recent one. An As-Is mod
-// (budget lines moved from Planned to Executing, nothing else) needs only steps 1, 5 and 6, so the
-// tab shows just those three; every other mod shows all six.
+// OPS-6513: when the Division Director approves a contract modification, the agreement's contract
+// mod gets a Procurement Tracker, and the Procurement Tracker tab opens on the most recent one. An
+// As-Is mod (budget lines moved from Planned to Executing, nothing else) needs only steps 1, 5 and
+// 6, so the tab shows just those three; every other mod shows all six. An agreement has one
+// contract mod in procurement at a time: a modification approved while it's active joins it, until
+// its Pre-Award approval is requested.
 //
-// Uses the seeded Awarded contract 523 (OPS-3072 manual-testing fixture). Each test makes its own
-// current-FY Planned budget line to execute, sets up and reviews the mod through the API (as
-// startContractModification.cy.js does), and checks the tab in the browser. Approved mods can't be
-// undone, so every assertion is about the newest tracker, which keeps the spec rerunnable.
+// Uses the seeded Awarded contract 523 (OPS-3072 manual-testing fixture), whose As-Is mod is in
+// procurement on a fresh seed. Each test makes its own current-FY Planned budget line to execute,
+// sets up and reviews the mod through the API (as startContractModification.cy.js does), and checks
+// the tab in the browser. The flagged tests run in order on a fresh seed: each builds on the mod the
+// one before left in procurement.
 const AGREEMENT_ID = 523;
 const SERVICES_COMPONENT_ID = 55;
 const CAN_ID = 504;
@@ -167,33 +170,7 @@ describe("Procurement Tracker for a contract mod (OPS-6513)", () => {
         reviewOpenContractModifications("DECLINE");
     });
 
-    it("an Admin mod gets its own tracker with all six steps once the Division Director approves it", () => {
-        changeCor();
-        createPlannedBudgetLine();
-        cy.get("@budgetLineId").then((budgetLineId) => submitContractModification([budgetLineId]));
-
-        reviewOpenContractModifications("APPROVE");
-
-        getNewestTracker();
-        cy.get("@newestTracker").then((tracker) => {
-            expect(tracker.award_type).to.eq("MODIFICATION");
-            expect(tracker.mod_type).to.not.eq("AS_IS");
-        });
-        visitTracker();
-        expectSteps(ALL_STEPS);
-        cy.get('[data-cy="step-indicator"] .usa-step-indicator__segment--current').should(
-            "contain",
-            "Acquisition Planning"
-        );
-    });
-
-    it("an As-Is mod's tracker shows only Acquisition Planning, Pre-Award and Award, numbered 1-3 of 3", () => {
-        // The previous test's approval attached every pending edit, so this mod only executes a line.
-        createPlannedBudgetLine();
-        cy.get("@budgetLineId").then((budgetLineId) => submitContractModification([budgetLineId]));
-
-        reviewOpenContractModifications("APPROVE");
-
+    it("the seeded As-Is mod's tracker shows Acquisition Planning, Pre-Award and Award, numbered 1-3 of 3", () => {
         getNewestTracker();
         cy.get("@newestTracker").then((tracker) => {
             expect(tracker.mod_type).to.eq("AS_IS");
@@ -236,7 +213,56 @@ describe("Procurement Tracker for a contract mod (OPS-6513)", () => {
         cy.get('[data-cy="send-to-approval-btn"]').should("be.enabled");
     });
 
-    it("declining a mod leaves the Procurement Tracker tab on the most recent tracker", () => {
+    it("a modification with Modified LOE edits joins the mod, which brings back steps 2-4 and moves back to Pre-Solicitation", () => {
+        // 523 seeds pending Modified LOE edits, so this modification takes them with the new line.
+        getNewestTracker();
+        createPlannedBudgetLine();
+        cy.get("@budgetLineId").then((budgetLineId) => submitContractModification([budgetLineId]));
+
+        reviewOpenContractModifications("APPROVE");
+
+        cy.get("@newestTracker").then((before) => {
+            cy.get("@budgetLineId").then((budgetLineId) => {
+                testLogin("system-owner");
+                apiRequest({ url: `/procurement-trackers/?agreement_id=${AGREEMENT_ID}&limit=50` }).then((response) => {
+                    const tracker = response.body.data[0];
+                    expect(tracker.id, "same tracker").to.eq(before.id);
+                    expect(tracker.agreement_mod_id, "same mod").to.eq(before.agreement_mod_id);
+                    expect(tracker.mod_type).to.eq("MODIFIED_LOE");
+                    expect(tracker.budget_line_item_ids).to.include(budgetLineId);
+                    expect(tracker.budget_line_item_ids.length).to.eq(before.budget_line_item_ids.length + 1);
+                    expect(tracker.steps.some((step) => step.status === "SKIPPED")).to.eq(false);
+                });
+            });
+        });
+        visitTracker();
+        expectSteps(ALL_STEPS);
+        // Step 1 was done, so the tracker moves back to the first step it brought back.
+        cy.get('[data-cy="step-indicator"] .usa-step-indicator__segment--current').should(
+            "contain",
+            "Pre-Solicitation"
+        );
+    });
+
+    it("a COR change joins the mod, and the mod's history entry lists its edits", () => {
+        getNewestTracker();
+        changeCor();
+        submitContractModification([]);
+
+        reviewOpenContractModifications("APPROVE");
+
+        cy.get("@newestTracker").then((before) => {
+            testLogin("system-owner");
+            apiRequest({ url: `/procurement-trackers/?agreement_id=${AGREEMENT_ID}&limit=50` })
+                .its("body.data.0.id")
+                .should("eq", before.id);
+        });
+        cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
+        cy.contains("button", "Contract Modification (").click();
+        cy.get('[data-cy="award-mod-edits"]').should("contain", "COR").and("contain", "Amount");
+    });
+
+    it("declining a modification leaves the mod in procurement unchanged", () => {
         getNewestTracker();
         createPlannedBudgetLine();
         cy.get("@budgetLineId").then((budgetLineId) => submitContractModification([budgetLineId]));
@@ -245,12 +271,13 @@ describe("Procurement Tracker for a contract mod (OPS-6513)", () => {
 
         cy.get("@newestTracker").then((before) => {
             testLogin("system-owner");
-            apiRequest({ url: `/procurement-trackers/?agreement_id=${AGREEMENT_ID}&limit=50` })
-                .its("body.data.0.id")
-                .should("eq", before.id);
+            apiRequest({ url: `/procurement-trackers/?agreement_id=${AGREEMENT_ID}&limit=50` }).then((response) => {
+                const tracker = response.body.data[0];
+                expect(tracker.id).to.eq(before.id);
+                expect(tracker.budget_line_item_ids).to.deep.eq(before.budget_line_item_ids);
+            });
         });
         visitTracker();
-        // The previous test's As-Is tracker is still the one shown.
-        expectSteps(AS_IS_STEPS);
+        expectSteps(ALL_STEPS);
     });
 });

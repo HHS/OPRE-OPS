@@ -200,6 +200,39 @@ class ProcurementTracker(BaseModel):
                 step.step_start_date = date.today()
                 break
 
+    def unskip_steps(self, step_types: frozenset["ProcurementTrackerStepType"]) -> bool:
+        """Bring back SKIPPED steps of the given types, e.g. steps 2-4 once an As-Is contract mod
+        takes on work that needs them (OPS-6513).
+
+        They become PENDING. If the tracker had already moved past the first of them (an As-Is
+        mod sits on Pre-Award once step 1 is done), that step goes back to PENDING, keeping its
+        data, and the first un-skipped step becomes the active one. Returns whether anything
+        changed.
+        """
+        unskipped = sorted(
+            (
+                step
+                for step in self.steps
+                if step.step_type in step_types and step.status == ProcurementTrackerStepStatus.SKIPPED
+            ),
+            key=lambda step: step.step_number,
+        )
+        if not unskipped:
+            return False
+        for step in unskipped:
+            step.status = ProcurementTrackerStepStatus.PENDING
+
+        first = unskipped[0]
+        if self.active_step_number is not None and self.active_step_number > first.step_number:
+            for step in self.steps:
+                if step.step_number == self.active_step_number and step.status == ProcurementTrackerStepStatus.ACTIVE:
+                    step.status = ProcurementTrackerStepStatus.PENDING
+                    step.step_start_date = None
+            first.status = ProcurementTrackerStepStatus.ACTIVE
+            first.step_start_date = date.today()
+            self.active_step_number = first.step_number
+        return True
+
     def get_step(self, step_type: "ProcurementTrackerStepType") -> Optional["ProcurementTrackerStep"]:
         """Return this tracker's step of the given type, or None.
 

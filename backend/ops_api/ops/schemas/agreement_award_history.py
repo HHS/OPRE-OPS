@@ -27,3 +27,6 @@ class AgreementAwardHistoryRecordSchema(Schema):
     vendor_type = fields.Enum(VendorType, allow_none=True)
     purchase_order_number = fields.String(allow_none=True)
     task_order_number = fields.String(allow_none=True)
+    # A contract mod's edits, collapsed to what changed, in the edit cards' shape
+    # (ContractModificationEditSchema); empty for the initial award (OPS-6513).
+    edits = fields.List(fields.Raw(), dump_default=list)

@@ -1191,7 +1191,7 @@ def test_creates_awarded_new_award_action_for_obligated_bli_without_execution(db
     assert tracker.status == ProcurementTrackerStatus.COMPLETED
 
     # The Awards and Modifications tab gates on the AWARD step's award_approval_status,
-    # not tracker/step status (see agreement_award_history._approved_trackers_by_action),
+    # not tracker/step status (see agreement_award_history._history_trackers_by_action),
     # so a COMPLETED tracker must still have its AWARD step explicitly approved to show up.
     award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
     assert award_step is not None
