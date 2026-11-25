@@ -159,4 +159,17 @@ describe("ServicesComponents — keyboard focus after editing or deleting an SC 
 
         expect(document.body).toHaveFocus();
     });
+
+    it("doesn't steal focus when services_components shrinks for a reason other than a delete (OPS-3268)", () => {
+        // e.g. a failed Save reseeding the list back to the server's shorter, pre-add copy. This
+        // must not be mistaken for "the user just deleted an SC" and yank focus away from
+        // whatever the user was looking at (often the error alert from that same failed save).
+        renderServicesComponents();
+        expect(document.body).toHaveFocus();
+
+        store.set({ services_components: [savedSc(11, 1)] });
+
+        expect(screen.getByRole("button", { name: "Add Services Component" })).not.toHaveFocus();
+        expect(document.body).toHaveFocus();
+    });
 });

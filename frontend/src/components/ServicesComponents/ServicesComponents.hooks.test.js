@@ -695,6 +695,40 @@ describe("useServicesComponents", () => {
             );
         });
 
+        it("excludes an in_review (locked) Planned line from the delete-or-keep set, like OBE (OPS-3268)", () => {
+            // A locked line can never be hard-deleted via the standalone per-line delete icon
+            // either (it's disabled for in_review lines) -- bundling it into this bulk delete
+            // would let a sibling Draft line commit while the locked one 400s, with no rollback.
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const draftLine = { id: 900, status: "DRAFT", services_component_id: 1 };
+            const lockedPlannedLine = { id: 901, status: "PLANNED", in_review: true, services_component_id: 1 };
+            const setHasUnsavedChanges = vi.fn();
+            const { result } = renderUseServicesComponents(
+                setHasUnsavedChanges,
+                undefined,
+                [],
+                [draftLine, lockedPlannedLine]
+            );
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.actionButtonText).toBe("Delete");
+            expect(result.current.modalProps.tertiaryButtonText).toBe("Keep");
+
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(dispatchMock).toHaveBeenCalledWith({ type: "DELETE_BUDGET_LINE_ITEM", payload: draftLine });
+            expect(dispatchMock).not.toHaveBeenCalledWith({
+                type: "DELETE_BUDGET_LINE_ITEM",
+                payload: lockedPlannedLine
+            });
+        });
+
         it("falls through to the generic delete confirmation when the SC's only lines are OBE", () => {
             useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
             const obeLine = { id: 900, status: "PLANNED", is_obe: true, services_component_id: 1 };

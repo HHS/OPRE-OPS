@@ -54,7 +54,8 @@ const ServicesComponents = ({
         handleCancel,
         setFormDataById,
         servicesComponentsNumbers,
-        formKey
+        formKey,
+        deleteCount
     } = useServicesComponents(
         agreementId,
         serviceRequirementType,
@@ -70,18 +71,22 @@ const ServicesComponents = ({
     // Leaving edit mode (Update or Cancel) swaps the focused button for "Add Services Component",
     // and a confirmed delete removes the item that had focus, so keyboard focus would drop to
     // <body> (WCAG 2.4.3). When that happens, put it on the Add button instead. An empty SC now
-    // deletes with no modal at all (OPS-3268 AC1), so a shrinking list is its own trigger too.
+    // deletes with no modal at all (OPS-3268 AC1), so deleteCount (bumped only when performDelete
+    // actually runs) is its own trigger too. This deliberately does NOT key off
+    // servicesComponents.length: that array can also shrink for unrelated reasons (e.g. a save
+    // failure reseeding it back to the server's shorter list), which must not steal focus away
+    // from whatever the user was doing -- often the error alert from that same failed save.
     const addButtonRef = React.useRef(/** @type {HTMLButtonElement | null} */ (null));
-    const previous = React.useRef({ mode: formData.mode, showModal, scCount: servicesComponents.length });
+    const previous = React.useRef({ mode: formData.mode, showModal, deleteCount });
     React.useEffect(() => {
         const leftEditMode = previous.current.mode === "edit" && formData.mode !== "edit";
         const closedModal = previous.current.showModal && !showModal;
-        const deletedAnSc = servicesComponents.length < previous.current.scCount;
-        previous.current = { mode: formData.mode, showModal, scCount: servicesComponents.length };
+        const deletedAnSc = deleteCount > previous.current.deleteCount;
+        previous.current = { mode: formData.mode, showModal, deleteCount };
         if (!leftEditMode && !closedModal && !deletedAnSc) return;
         const focusLost = !document.activeElement || document.activeElement === document.body;
         if (focusLost) addButtonRef.current?.focus();
-    }, [formData.mode, showModal, servicesComponents.length]);
+    }, [formData.mode, showModal, deleteCount]);
 
     return (
         <>

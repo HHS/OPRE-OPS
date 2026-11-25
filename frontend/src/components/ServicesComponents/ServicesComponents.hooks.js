@@ -51,6 +51,10 @@ const useServicesComponents = (
         handleConfirm: () => {}
     });
     const [formKey, setFormKey] = React.useState(Date.now());
+    // Bumped only when performDelete actually runs, so the component's focus-restoration effect
+    // can tell "the user just deleted an SC" apart from any other reason services_components might
+    // shrink (e.g. a save failure reseeding it back to the server's shorter list) -- OPS-3268.
+    const [deleteCount, setDeleteCount] = React.useState(0);
     const { setAlert } = useAlert();
 
     const dispatch = useEditAgreementDispatch();
@@ -198,6 +202,7 @@ const useServicesComponents = (
         setHasUnsavedChanges(true);
         setShowModal(false);
         setFormKey(Date.now());
+        setDeleteCount((count) => count + 1);
         popValidationSuite.reset();
         setFormData(initialFormData);
 
@@ -268,9 +273,22 @@ const useServicesComponents = (
         // default "keep" path below regardless of which button the user picks. Computed before the
         // PoP check below so a simultaneous PoP conflict doesn't silently skip the Draft/Planned
         // choice (OPS-3268).
+        //
+        // A line with a pending, unapproved change request (in_review) is also excluded from the
+        // delete set, the same way the standalone per-line delete icon already refuses it
+        // (BLIRow.jsx/ChangeIcons.jsx, backed by the backend's compute_bli_editable, which forces
+        // isDeletable false while in_review for every user including superusers). Without this,
+        // "Delete budget lines" could bundle a deletable line with a locked one into one
+        // Promise.all save: the deletable line's DELETE commits immediately while the locked
+        // line's 400s, so the batch partially and silently succeeds with no rollback. Treating a
+        // locked line like OBE -- always kept/unassigned, never offered for deletion -- avoids
+        // that partial-delete outcome entirely.
         const allMatchedBudgetLines = allBudgetLines.filter(isOnSelectedSc);
         const draftOrPlannedBudgetLines = allMatchedBudgetLines.filter(
-            (budgetLine) => !budgetLine.is_obe && [BLI_STATUS.DRAFT, BLI_STATUS.PLANNED].includes(budgetLine.status)
+            (budgetLine) =>
+                !budgetLine.is_obe &&
+                !budgetLine.in_review &&
+                [BLI_STATUS.DRAFT, BLI_STATUS.PLANNED].includes(budgetLine.status)
         );
 
         const remainingServicesComponents = servicesComponents.filter((component) => component.number !== number);
@@ -374,7 +392,8 @@ const useServicesComponents = (
         handleCancel,
         setFormDataById,
         servicesComponentsNumbers,
-        formKey
+        formKey,
+        deleteCount
     };
 };
 
