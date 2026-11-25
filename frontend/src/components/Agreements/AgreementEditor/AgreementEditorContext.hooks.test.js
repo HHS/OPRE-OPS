@@ -329,29 +329,29 @@ describe("editAgreementReducer - budget line items", () => {
         expect(next.budget_line_items).toEqual([{ id: "a", amount: 100 }]);
     });
 
-    it("DELETE_BUDGET_LINE_ITEM filters by id and appends the bare id to deleted_budget_line_items_ids", () => {
+    it("DELETE_BUDGET_LINE_ITEM filters by id and appends a persisted line's id to deleted_budget_line_items_ids", () => {
         const state = {
             ...defaultState,
             budget_line_items: [
-                { id: "a", amount: 100 },
-                { id: "b", amount: 200 }
+                { id: "a", amount: 100, created_on: "2026-01-01T00:00:00Z" },
+                { id: "b", amount: 200, created_on: "2026-01-01T00:00:00Z" }
             ],
             deleted_budget_line_items_ids: []
         };
 
         const next = editAgreementReducer(state, {
             type: "DELETE_BUDGET_LINE_ITEM",
-            payload: { id: "a", amount: 100 }
+            payload: { id: "a", amount: 100, created_on: "2026-01-01T00:00:00Z" }
         });
 
-        expect(next.budget_line_items).toEqual([{ id: "b", amount: 200 }]);
+        expect(next.budget_line_items).toEqual([{ id: "b", amount: 200, created_on: "2026-01-01T00:00:00Z" }]);
         expect(next.deleted_budget_line_items_ids).toEqual(["a"]);
     });
 
     it("DELETE_BUDGET_LINE_ITEM does not append to deleted_budget_line_items_ids when payload has no id", () => {
         const state = {
             ...defaultState,
-            budget_line_items: [{ id: "a", amount: 100 }],
+            budget_line_items: [{ id: "a", amount: 100, created_on: "2026-01-01T00:00:00Z" }],
             deleted_budget_line_items_ids: []
         };
 
@@ -360,6 +360,24 @@ describe("editAgreementReducer - budget line items", () => {
             payload: { amount: 100 }
         });
 
+        expect(next.deleted_budget_line_items_ids).toEqual([]);
+    });
+
+    it("DELETE_BUDGET_LINE_ITEM removes but does not queue a not-yet-saved line, even with a truthy temp id (OPS-3268)", () => {
+        // buildNewBudgetLineItem stamps a cryptoRandomString id on a brand-new line before it's ever
+        // saved -- always truthy, and with no created_on (the API hasn't returned one yet).
+        const state = {
+            ...defaultState,
+            budget_line_items: [{ id: "tempId123abc", amount: 100 }],
+            deleted_budget_line_items_ids: []
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "DELETE_BUDGET_LINE_ITEM",
+            payload: { id: "tempId123abc", amount: 100 }
+        });
+
+        expect(next.budget_line_items).toEqual([]);
         expect(next.deleted_budget_line_items_ids).toEqual([]);
     });
 

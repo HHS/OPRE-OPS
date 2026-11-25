@@ -3,6 +3,7 @@ import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { useEditAgreement, useEditAgreementDispatch } from "../Agreements/AgreementEditor/AgreementEditorContext.hooks";
+import { isDeletionRoutedToApproval } from "../BudgetLineItems/CreateBLIsAndSCs/CreateBLIsAndSCs.helpers";
 import { initialFormData } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
 import popValidationSuite from "./ServicesComponentForm/popValidationSuite";
@@ -26,6 +27,8 @@ const POP_DELETE_CONFIRMATION_MESSAGE =
  * @param {import('vest').Suite<any, any>} [scFormSuite] - Vest suite for the SC form's required fields.
  * @param {import('../../types/BudgetLineTypes').BudgetLine[]} [nonDraftBudgetLines] - Non-draft BLIs used by the PoP validation suite.
  * @param {import('../../types/BudgetLineTypes').BudgetLine[]} [allBudgetLines] - Every BLI on the agreement (including Draft), used to decide delete behavior for an SC's own budget lines (OPS-3268).
+ * @param {boolean} [isSuperUser] - Whether the acting user is a super user (OPS-3268: affects whether a Planned/Executing line's deletion is immediate or approval-routed).
+ * @param {boolean} [tracksContractModifications] - Whether the agreement is Awarded and tracked (OPS-3072/OPS-3268): also makes a Planned/Executing line's deletion immediate.
  */
 const useServicesComponents = (
     agreementId,
@@ -34,7 +37,9 @@ const useServicesComponents = (
     setHasUnsavedChanges,
     scFormSuite,
     nonDraftBudgetLines = [],
-    allBudgetLines = []
+    allBudgetLines = [],
+    isSuperUser = false,
+    tracksContractModifications = false
 ) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
@@ -195,10 +200,27 @@ const useServicesComponents = (
         setFormKey(Date.now());
         popValidationSuite.reset();
         setFormData(initialFormData);
-        const budgetLinesNote = budgetLinesToDelete.length > 0 ? " and its budget lines" : "";
+
+        // A Planned/Executing line isn't always hard-deleted immediately (OPS-3072/OPS-3268): for a
+        // non-superuser on an agreement that isn't Awarded+tracked, deleting it instead queues a
+        // deletion change request and leaves the line intact (now unassigned, once the SC above is
+        // gone). Say so accurately rather than claiming every chosen line was deleted.
+        const pendingApproval = budgetLinesToDelete.filter((budgetLine) =>
+            isDeletionRoutedToApproval(budgetLine, isSuperUser, tracksContractModifications)
+        );
+        const hardDeletedCount = budgetLinesToDelete.length - pendingApproval.length;
+
+        const budgetLinesNote = hardDeletedCount > 0 ? " and its budget lines" : "";
+        let message = `${selectedServicesComponent.display_title}${budgetLinesNote} ${hardDeletedCount > 0 ? "have" : "has"} been successfully deleted.`;
+        if (pendingApproval.length > 0) {
+            const plural = pendingApproval.length > 1;
+            message += ` The deletion of ${plural ? `${pendingApproval.length} budget lines` : "1 budget line"} has been sent to your Division Director for approval, and ${plural ? "they are" : "it is"} unassigned from any Services Component in the meantime.`;
+        }
+        message += ` When you're done editing, click ${continueBtnText} below.`;
+
         setAlert({
             type: "success",
-            message: `${selectedServicesComponent.display_title}${budgetLinesNote} ${budgetLinesToDelete.length > 0 ? "have" : "has"} been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
+            message,
             isCloseable: false,
             isToastMessage: true
         });
@@ -212,11 +234,16 @@ const useServicesComponents = (
         const index = servicesComponents.findIndex((component) => component.number === number);
         const selectedServicesComponent = servicesComponents[index];
         // Match a line by its SC number when it has one: moving a line to another SC updates the
-        // number and leaves services_component_id stale until save.
+        // number and leaves services_component_id stale until save. The id fallback only applies
+        // once the SC itself has a persisted id: an unsaved new SC's id is undefined, and so is an
+        // unassigned local budget line's services_component_id, so without this guard the two would
+        // incorrectly match each other and the line would look like it belongs to the new SC
+        // (OPS-3268).
         const isOnSelectedSc = (budgetLine) =>
             budgetLine.services_component_number != null
                 ? budgetLine.services_component_number === selectedServicesComponent.number
-                : budgetLine.services_component_id === selectedServicesComponent.id;
+                : selectedServicesComponent.id != null &&
+                  budgetLine.services_component_id === selectedServicesComponent.id;
         const hasExecutingBudgetLines =
             selectedServicesComponent?.id != null &&
             nonDraftBudgetLines.some(
@@ -234,35 +261,37 @@ const useServicesComponents = (
             });
             return;
         }
-        const remainingServicesComponents = servicesComponents.filter((component) => component.number !== number);
-
-        const popCheck = popValidationSuite.run({
-            mode: "delete",
-            allServicesComponents: remainingServicesComponents,
-            nonDraftBudgetLines
-        });
-
-        if (popCheck.hasErrors()) {
-            setShowModal(true);
-            setModalProps({
-                heading: POP_DELETE_CONFIRMATION_MESSAGE,
-                actionButtonText: "Continue with Deletion",
-                secondaryButtonText: "Cancel",
-                handleConfirm: () => performDelete(selectedServicesComponent)
-            });
-            return;
-        }
 
         // Every budget line on this SC, not just non-draft ones (OPS-3268 UX feedback item): an
         // empty SC deletes with no prompt, and Draft/Planned lines get their own delete-or-keep
         // choice. OBE lines are always kept, so they're excluded here and ride through the
-        // default "keep" path below regardless of which button the user picks.
+        // default "keep" path below regardless of which button the user picks. Computed before the
+        // PoP check below so a simultaneous PoP conflict doesn't silently skip the Draft/Planned
+        // choice (OPS-3268).
         const allMatchedBudgetLines = allBudgetLines.filter(isOnSelectedSc);
         const draftOrPlannedBudgetLines = allMatchedBudgetLines.filter(
             (budgetLine) => !budgetLine.is_obe && [BLI_STATUS.DRAFT, BLI_STATUS.PLANNED].includes(budgetLine.status)
         );
 
+        const remainingServicesComponents = servicesComponents.filter((component) => component.number !== number);
+        const popCheck = popValidationSuite.run({
+            mode: "delete",
+            allServicesComponents: remainingServicesComponents,
+            nonDraftBudgetLines
+        });
+        const hasPopConflict = popCheck.hasErrors();
+
         if (allMatchedBudgetLines.length === 0) {
+            if (hasPopConflict) {
+                setShowModal(true);
+                setModalProps({
+                    heading: POP_DELETE_CONFIRMATION_MESSAGE,
+                    actionButtonText: "Continue with Deletion",
+                    secondaryButtonText: "Cancel",
+                    handleConfirm: () => performDelete(selectedServicesComponent)
+                });
+                return;
+            }
             performDelete(selectedServicesComponent);
             return;
         }
@@ -270,14 +299,28 @@ const useServicesComponents = (
         if (draftOrPlannedBudgetLines.length > 0) {
             setShowModal(true);
             setModalProps({
-                heading: `Delete ${selectedServicesComponent.display_title}'s Draft and Planned budget lines too?`,
-                description:
-                    "This Services Component has Draft and/or Planned budget lines. Choose whether to delete them along with it, or keep them unassigned.",
+                heading: hasPopConflict
+                    ? `Delete ${selectedServicesComponent.display_title}?`
+                    : `Delete ${selectedServicesComponent.display_title}'s Draft and Planned budget lines too?`,
+                description: hasPopConflict
+                    ? "Deleting this Services Component will alter the agreement’s overall Period of Performance, and it has Draft and/or Planned budget lines. Some budget lines will need an updated Obligate By Date. Choose whether to also delete the Draft and/or Planned lines, or keep them unassigned."
+                    : "This Services Component has Draft and/or Planned budget lines. Choose whether to delete them along with it, or keep them unassigned.",
                 actionButtonText: "Delete",
                 tertiaryButtonText: "Keep",
                 secondaryButtonText: "Cancel",
                 handleConfirm: () => performDelete(selectedServicesComponent, draftOrPlannedBudgetLines),
                 handleTertiary: () => performDelete(selectedServicesComponent)
+            });
+            return;
+        }
+
+        if (hasPopConflict) {
+            setShowModal(true);
+            setModalProps({
+                heading: POP_DELETE_CONFIRMATION_MESSAGE,
+                actionButtonText: "Continue with Deletion",
+                secondaryButtonText: "Cancel",
+                handleConfirm: () => performDelete(selectedServicesComponent)
             });
             return;
         }

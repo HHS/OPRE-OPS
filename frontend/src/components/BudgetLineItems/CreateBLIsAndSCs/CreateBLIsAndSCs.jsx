@@ -139,6 +139,7 @@ export const CreateBLIsAndSCs = ({
         requiresFinancialApproval,
         requiresContractModification,
         tracksContractModifications,
+        isSuperUser,
         locksServicesComponentNumbers,
         grantNumberNumber,
         setGrantNumberNumber,
@@ -456,6 +457,8 @@ export const CreateBLIsAndSCs = ({
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
                                 allBudgetLines={tempBudgetLines}
+                                isSuperUser={isSuperUser}
+                                tracksContractModifications={tracksContractModifications}
                                 locksServicesComponentNumbers={locksServicesComponentNumbers}
                             />
                         ))}
@@ -524,6 +527,8 @@ export const CreateBLIsAndSCs = ({
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
                                 allBudgetLines={tempBudgetLines}
+                                isSuperUser={isSuperUser}
+                                tracksContractModifications={tracksContractModifications}
                                 locksServicesComponentNumbers={locksServicesComponentNumbers}
                             />
                         ))}

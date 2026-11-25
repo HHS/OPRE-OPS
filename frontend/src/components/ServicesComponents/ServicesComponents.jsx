@@ -19,6 +19,8 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.nonDraftBudgetLines] - Non-draft BLIs used by the SC form suite for PoP validation.
  * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.allBudgetLines] - Every BLI on the agreement (including Draft), used to decide delete behavior for an SC's own budget lines (OPS-3268).
  * @param {boolean} [props.locksServicesComponentNumbers] - Whether a saved SC's number and Optional flag are locked (Awarded agreement, OPS-3268).
+ * @param {boolean} [props.isSuperUser] - Whether the acting user is a super user (OPS-3268: affects whether deleting a Planned/Executing budget line is immediate or approval-routed).
+ * @param {boolean} [props.tracksContractModifications] - Whether the agreement is Awarded and tracked (OPS-3072/OPS-3268): also makes that deletion immediate.
  * @returns {React.ReactElement}
  *
  * @example
@@ -36,7 +38,9 @@ const ServicesComponents = ({
     scFormSuite,
     nonDraftBudgetLines = [],
     allBudgetLines = [],
-    locksServicesComponentNumbers = false
+    locksServicesComponentNumbers = false,
+    isSuperUser = false,
+    tracksContractModifications = false
 }) => {
     const {
         formData,
@@ -58,7 +62,9 @@ const ServicesComponents = ({
         setHasUnsavedChanges,
         scFormSuite,
         nonDraftBudgetLines,
-        allBudgetLines
+        allBudgetLines,
+        isSuperUser,
+        tracksContractModifications
     );
 
     // Leaving edit mode (Update or Cancel) swaps the focused button for "Add Services Component",
