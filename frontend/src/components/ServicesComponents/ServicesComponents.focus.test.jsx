@@ -31,6 +31,8 @@ vi.mock("../Agreements/AgreementEditor/AgreementEditorContext.hooks", async () =
                         .services_components.filter((sc) => sc.number !== action.payload.number)
                 });
             }
+            // DELETE_BUDGET_LINE_ITEM isn't exercised by this focus-restoration suite — no store
+            // state tracks budget lines here, so nothing to do.
         }
     };
 });
@@ -49,10 +51,11 @@ const savedSc = (id, number) => ({
     created_on: "2043-01-01T00:00:00Z"
 });
 
-const renderServicesComponents = ({ nonDraftBudgetLines } = {}) =>
+const renderServicesComponents = ({ nonDraftBudgetLines, allBudgetLines } = {}) =>
     render(
         <ServicesComponents
             nonDraftBudgetLines={nonDraftBudgetLines}
+            allBudgetLines={allBudgetLines}
             serviceRequirementType="SEVERABLE"
             agreementId={1}
             continueBtnText="Save & Exit"
@@ -85,12 +88,41 @@ describe("ServicesComponents — keyboard focus after editing or deleting an SC 
         expect(document.body).not.toHaveFocus();
     });
 
-    it("moves focus to Add Services Component after a confirmed delete removes the focused item", async () => {
+    it("moves focus to Add Services Component after deleting an empty SC with no prompt (OPS-3268 AC1)", async () => {
         const user = userEvent.setup();
         renderServicesComponents();
 
         await user.click(screen.getByRole("button", { name: "Delete Services Component 2" }));
+
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Delete Services Component 2" })).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Add Services Component" })).toHaveFocus();
+    });
+
+    it("moves focus to Add Services Component after confirming the generic delete modal (SC with only an OBE line)", async () => {
+        const user = userEvent.setup();
+        // An OBE line keeps the SC from being "empty" (AC1), so the generic confirm modal still
+        // appears rather than the Draft/Planned choice modal (AC2/AC3 don't apply to OBE-only SCs).
+        renderServicesComponents({
+            allBudgetLines: [{ id: 1, status: "PLANNED", is_obe: true, services_component_id: 12 }]
+        });
+
+        await user.click(screen.getByRole("button", { name: "Delete Services Component 2" }));
         await user.click(screen.getByRole("button", { name: "Delete" }));
+
+        expect(screen.queryByRole("button", { name: "Delete Services Component 2" })).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Add Services Component" })).toHaveFocus();
+    });
+
+    it.each([
+        ["Delete budget lines", "deleting the budget lines too"],
+        ["Keep budget lines", "keeping the budget lines unassigned"]
+    ])("moves focus to Add Services Component after %s on an SC with a Planned line (%s)", async (buttonName) => {
+        const user = userEvent.setup();
+        renderServicesComponents({ allBudgetLines: [{ id: 1, status: "PLANNED", services_component_id: 12 }] });
+
+        await user.click(screen.getByRole("button", { name: "Delete Services Component 2" }));
+        await user.click(screen.getByRole("button", { name: buttonName }));
 
         expect(screen.queryByRole("button", { name: "Delete Services Component 2" })).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Add Services Component" })).toHaveFocus();
@@ -111,7 +143,8 @@ describe("ServicesComponents — keyboard focus after editing or deleting an SC 
 
     it("leaves focus on the Delete button when the delete is cancelled", async () => {
         const user = userEvent.setup();
-        renderServicesComponents();
+        // A budget line keeps the SC from being "empty" (AC1), so there's a modal to cancel.
+        renderServicesComponents({ allBudgetLines: [{ id: 1, status: "PLANNED", services_component_id: 12 }] });
         const deleteButton = screen.getByRole("button", { name: "Delete Services Component 2" });
 
         await user.click(deleteButton);

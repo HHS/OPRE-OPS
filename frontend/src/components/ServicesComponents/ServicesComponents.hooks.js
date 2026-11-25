@@ -25,6 +25,7 @@ const POP_DELETE_CONFIRMATION_MESSAGE =
  * @param {Function} setHasUnsavedChanges - Function to mark the parent form dirty.
  * @param {import('vest').Suite<any, any>} [scFormSuite] - Vest suite for the SC form's required fields.
  * @param {import('../../types/BudgetLineTypes').BudgetLine[]} [nonDraftBudgetLines] - Non-draft BLIs used by the PoP validation suite.
+ * @param {import('../../types/BudgetLineTypes').BudgetLine[]} [allBudgetLines] - Every BLI on the agreement (including Draft), used to decide delete behavior for an SC's own budget lines (OPS-3268).
  */
 const useServicesComponents = (
     agreementId,
@@ -32,7 +33,8 @@ const useServicesComponents = (
     continueBtnText,
     setHasUnsavedChanges,
     scFormSuite,
-    nonDraftBudgetLines = []
+    nonDraftBudgetLines = [],
+    allBudgetLines = []
 ) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
@@ -167,10 +169,23 @@ const useServicesComponents = (
     /**
      * Dispatches the deletion, fires the success alert, and resets the form. Runs
      * unconditionally once the caller has decided the delete should proceed — either
-     * because there was no PoP conflict, or because the user confirmed the PoP-impact modal.
+     * because there was no PoP conflict, or because the user confirmed the PoP-impact modal
+     * or the Draft/Planned budget-line choice modal.
+     *
+     * Deleting the chosen budget lines first (OPS-3268 UX feedback item) matters: the SC delete's
+     * own reconciliation only unassigns whatever budget lines are still linked to it, so by the
+     * time it runs, only the ones NOT passed here (e.g. OBE lines, which are always kept) are left
+     * to unassign.
      * @param {object} selectedServicesComponent
+     * @param {import('../../types/BudgetLineTypes').BudgetLine[]} [budgetLinesToDelete]
      */
-    const performDelete = (selectedServicesComponent) => {
+    const performDelete = (selectedServicesComponent, budgetLinesToDelete = []) => {
+        budgetLinesToDelete.forEach((budgetLine) => {
+            dispatch({
+                type: "DELETE_BUDGET_LINE_ITEM",
+                payload: budgetLine
+            });
+        });
         dispatch({
             type: "DELETE_SERVICE_COMPONENT",
             payload: selectedServicesComponent
@@ -180,9 +195,10 @@ const useServicesComponents = (
         setFormKey(Date.now());
         popValidationSuite.reset();
         setFormData(initialFormData);
+        const budgetLinesNote = budgetLinesToDelete.length > 0 ? " and its budget lines" : "";
         setAlert({
             type: "success",
-            message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
+            message: `${selectedServicesComponent.display_title}${budgetLinesNote} ${budgetLinesToDelete.length > 0 ? "have" : "has"} been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
             isCloseable: false,
             isToastMessage: true
         });
@@ -233,6 +249,33 @@ const useServicesComponents = (
                 actionButtonText: "Continue with Deletion",
                 secondaryButtonText: "Cancel",
                 handleConfirm: () => performDelete(selectedServicesComponent)
+            });
+            return;
+        }
+
+        // Every budget line on this SC, not just non-draft ones (OPS-3268 UX feedback item): an
+        // empty SC deletes with no prompt, and Draft/Planned lines get their own delete-or-keep
+        // choice. OBE lines are always kept, so they're excluded here and ride through the
+        // default "keep" path below regardless of which button the user picks.
+        const allMatchedBudgetLines = allBudgetLines.filter(isOnSelectedSc);
+        const draftOrPlannedBudgetLines = allMatchedBudgetLines.filter(
+            (budgetLine) => !budgetLine.is_obe && [BLI_STATUS.DRAFT, BLI_STATUS.PLANNED].includes(budgetLine.status)
+        );
+
+        if (allMatchedBudgetLines.length === 0) {
+            performDelete(selectedServicesComponent);
+            return;
+        }
+
+        if (draftOrPlannedBudgetLines.length > 0) {
+            setShowModal(true);
+            setModalProps({
+                heading: `${selectedServicesComponent.display_title} has Draft and/or Planned budget lines. Do you want to delete them too, or keep them unassigned from any Services Component?`,
+                actionButtonText: "Delete budget lines",
+                tertiaryButtonText: "Keep budget lines",
+                secondaryButtonText: "Cancel",
+                handleConfirm: () => performDelete(selectedServicesComponent, draftOrPlannedBudgetLines),
+                handleTertiary: () => performDelete(selectedServicesComponent)
             });
             return;
         }

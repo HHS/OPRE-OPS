@@ -455,6 +455,7 @@ export const CreateBLIsAndSCs = ({
                                 hasUnsavedChanges={hasUnsavedChanges}
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
+                                allBudgetLines={tempBudgetLines}
                                 locksServicesComponentNumbers={locksServicesComponentNumbers}
                             />
                         ))}
@@ -522,6 +523,7 @@ export const CreateBLIsAndSCs = ({
                                 hasUnsavedChanges={hasUnsavedChanges}
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
+                                allBudgetLines={tempBudgetLines}
                                 locksServicesComponentNumbers={locksServicesComponentNumbers}
                             />
                         ))}

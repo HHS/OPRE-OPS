@@ -75,6 +75,18 @@ describe("ServicesComponentListItem", () => {
         expect(screen.queryByText("In Review")).not.toBeInTheDocument();
     });
 
+    it("disables delete (but not edit) with an Obligated-budget-line tooltip (OPS-3268 AC4)", () => {
+        renderItem({ hasObligatedBudgetLines: true });
+        hoverItem();
+
+        const [editButton, deleteButton] = screen.getAllByRole("button");
+        expect(editButton).toHaveAttribute("aria-disabled", "false");
+        expect(deleteButton).toHaveAttribute("aria-disabled", "true");
+        expect(deleteButton).toHaveAccessibleDescription(
+            "This services component has an Obligated budget line and can't be deleted."
+        );
+    });
+
     it("shows the SC1 tooltip for the first services component's delete", () => {
         renderItem({ number: 1 });
         hoverItem();

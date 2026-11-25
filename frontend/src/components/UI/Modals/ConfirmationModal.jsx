@@ -12,6 +12,8 @@ import LogItem from "../LogItem";
  * @param {string} props.actionButtonText - The text to display on the primary action button.
  * @param {string} [props.secondaryButtonText="Cancel"] - The text to display on the secondary action button.
  * @param {Function} [props.handleConfirm=() => {}] - A function to handle the primary action button click.
+ * @param {string} [props.tertiaryButtonText] - When set, renders a third button (between the primary and secondary) for a 3-way choice.
+ * @param {Function} [props.handleTertiary=() => {}] - A function to handle the tertiary button click.
  * @returns {JSX.Element} - The modal component JSX.
  */
 export const ConfirmationModal = ({
@@ -20,7 +22,9 @@ export const ConfirmationModal = ({
     setShowModal = () => {},
     actionButtonText,
     secondaryButtonText = "Cancel",
-    handleConfirm = () => {}
+    handleConfirm = () => {},
+    tertiaryButtonText,
+    handleTertiary = () => {}
 }) => {
     const modalRef = useRef(null);
 
@@ -132,6 +136,21 @@ export const ConfirmationModal = ({
                                             {actionButtonText}
                                         </button>
                                     </li>
+                                    {tertiaryButtonText && (
+                                        <li className="usa-button-group__item">
+                                            <button
+                                                type="button"
+                                                className="usa-button usa-button--outline"
+                                                data-cy="tertiary-action"
+                                                onClick={() => {
+                                                    setShowModal(false);
+                                                    handleTertiary();
+                                                }}
+                                            >
+                                                {tertiaryButtonText}
+                                            </button>
+                                        </li>
+                                    )}
                                     <li className="usa-button-group__item">
                                         <button
                                             type="button"
@@ -160,5 +179,7 @@ ConfirmationModal.propTypes = {
     setShowModal: PropTypes.func.isRequired,
     actionButtonText: PropTypes.string.isRequired,
     secondaryButtonText: PropTypes.string,
-    handleConfirm: PropTypes.func.isRequired
+    handleConfirm: PropTypes.func.isRequired,
+    tertiaryButtonText: PropTypes.string,
+    handleTertiary: PropTypes.func
 };

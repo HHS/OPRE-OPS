@@ -17,6 +17,7 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {import('vest').Suite<any, any>} [props.scFormSuite] - Vest validation suite for the SC form.
  * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.nonDraftBudgetLines] - Non-draft BLIs used by the SC form suite for PoP validation.
+ * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.allBudgetLines] - Every BLI on the agreement (including Draft), used to decide delete behavior for an SC's own budget lines (OPS-3268).
  * @param {boolean} [props.locksServicesComponentNumbers] - Whether a saved SC's number and Optional flag are locked (Awarded agreement, OPS-3268).
  * @returns {React.ReactElement}
  *
@@ -34,6 +35,7 @@ const ServicesComponents = ({
     hasUnsavedChanges,
     scFormSuite,
     nonDraftBudgetLines = [],
+    allBudgetLines = [],
     locksServicesComponentNumbers = false
 }) => {
     const {
@@ -55,22 +57,25 @@ const ServicesComponents = ({
         continueBtnText,
         setHasUnsavedChanges,
         scFormSuite,
-        nonDraftBudgetLines
+        nonDraftBudgetLines,
+        allBudgetLines
     );
 
     // Leaving edit mode (Update or Cancel) swaps the focused button for "Add Services Component",
     // and a confirmed delete removes the item that had focus, so keyboard focus would drop to
-    // <body> (WCAG 2.4.3). When that happens, put it on the Add button instead.
+    // <body> (WCAG 2.4.3). When that happens, put it on the Add button instead. An empty SC now
+    // deletes with no modal at all (OPS-3268 AC1), so a shrinking list is its own trigger too.
     const addButtonRef = React.useRef(/** @type {HTMLButtonElement | null} */ (null));
-    const previous = React.useRef({ mode: formData.mode, showModal });
+    const previous = React.useRef({ mode: formData.mode, showModal, scCount: servicesComponents.length });
     React.useEffect(() => {
         const leftEditMode = previous.current.mode === "edit" && formData.mode !== "edit";
         const closedModal = previous.current.showModal && !showModal;
-        previous.current = { mode: formData.mode, showModal };
-        if (!leftEditMode && !closedModal) return;
+        const deletedAnSc = servicesComponents.length < previous.current.scCount;
+        previous.current = { mode: formData.mode, showModal, scCount: servicesComponents.length };
+        if (!leftEditMode && !closedModal && !deletedAnSc) return;
         const focusLost = !document.activeElement || document.activeElement === document.body;
         if (focusLost) addButtonRef.current?.focus();
-    }, [formData.mode, showModal]);
+    }, [formData.mode, showModal, servicesComponents.length]);
 
     return (
         <>
@@ -81,6 +86,8 @@ const ServicesComponents = ({
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                    tertiaryButtonText={modalProps.tertiaryButtonText}
+                    handleTertiary={modalProps.handleTertiary}
                 />
             )}
 
@@ -105,6 +112,7 @@ const ServicesComponents = ({
                 servicesComponents={servicesComponents}
                 setFormDataById={setFormDataById}
                 handleDelete={handleDelete}
+                allBudgetLines={allBudgetLines}
             />
         </>
     );

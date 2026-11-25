@@ -50,4 +50,25 @@ describe("ConfirmationModal", () => {
         await userEvent.click(overlay);
         expect(defaultProps.setShowModal).toHaveBeenCalledWith(false);
     });
+    it("does not render a third button when tertiaryButtonText is not provided", () => {
+        render(<ConfirmationModal {...defaultProps} />);
+
+        expect(screen.getAllByRole("button")).toHaveLength(2);
+    });
+    it("renders and wires up a third button when tertiaryButtonText is provided (OPS-3268)", async () => {
+        const handleTertiary = vi.fn();
+        render(
+            <ConfirmationModal
+                {...defaultProps}
+                tertiaryButtonText="Keep budget lines"
+                handleTertiary={handleTertiary}
+            />
+        );
+
+        expect(screen.getAllByRole("button")).toHaveLength(3);
+        await userEvent.click(screen.getByText("Keep budget lines"));
+
+        expect(handleTertiary).toHaveBeenCalled();
+        expect(defaultProps.setShowModal).toHaveBeenCalledWith(false);
+    });
 });
