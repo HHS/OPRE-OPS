@@ -32,6 +32,7 @@ from models import (
     ServicesComponent,
     User,
 )
+from tests.ops.agreement.test_contract_modification_edits import delete_mods_and_procurement_records
 
 SYSTEM_OWNER_USER_ID = 503
 BASIC_USER_ID = 521
@@ -118,8 +119,7 @@ def _cleanup(loaded_db, agreement_id, bli_id, sc):
     params = {"id": agreement_id}
     loaded_db.execute(text("DELETE FROM contract_modification_request WHERE agreement_id = :id"), params)
     loaded_db.execute(text("DELETE FROM contract_modification_edit WHERE agreement_id = :id"), params)
-    loaded_db.execute(text("DELETE FROM agreement_mod WHERE agreement_id = :id"), params)
-    loaded_db.execute(text("DELETE FROM procurement_action WHERE agreement_id = :id"), params)
+    delete_mods_and_procurement_records(loaded_db, agreement_id)
     loaded_db.commit()
     for bli in loaded_db.query(ContractBudgetLineItem).filter_by(agreement_id=agreement_id).all():
         loaded_db.delete(bli)

@@ -3,6 +3,7 @@ import pytest
 from models import (
     CAN,
     AgreementType,
+    AwardType,
     BudgetLineItemStatus,
     ContractBudgetLineItem,
     Division,
@@ -21,6 +22,8 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     create_budget_line_item_instance,
     get_bli_locked_message,
     get_division_for_budget_line_item,
+    get_pre_award_lock,
+    is_award_approval_requested,
     is_post_pre_award_locked,
     is_pre_award_in_review,
     update_data,
@@ -45,30 +48,41 @@ class _FakeStep:
         self.pre_award_approval_status = approval_status
         self.pre_award_requisition_approved_by = requisition_approved_by
         self.award_approval_status = award_approval_status
+        self.award_approval_requested = False
 
 
 class _FakeTracker:
-    def __init__(self, status, active_step_number, steps=None):
+    def __init__(self, status, active_step_number, steps=None, procurement_action=None):
         self.status = status
         self.active_step_number = active_step_number
         self.steps = steps or []
+        self.procurement_action = procurement_action
 
     def get_step(self, step_type):
         return next((step for step in self.steps if step.step_type == step_type), None)
 
 
 class _FakeAgreement:
-    def __init__(self, procurement_trackers=None):
+    def __init__(self, procurement_trackers=None, procurement_actions=None):
         self.procurement_trackers = procurement_trackers or []
+        self.procurement_actions = procurement_actions or []
+
+
+class _FakeAction:
+    def __init__(self, id, award_type, agreement_mod_id=None):
+        self.id = id
+        self.award_type = award_type
+        self.agreement_mod_id = agreement_mod_id
 
 
 class _FakeBLI:
     """Lightweight stand-in so editability rules can be unit-tested without the DB."""
 
-    def __init__(self, status, *, is_obe=False, agreement=None):
+    def __init__(self, status, *, is_obe=False, agreement=None, procurement_action_id=None):
         self.status = status
         self.is_obe = is_obe
         self.agreement = agreement if agreement is not None else _FakeAgreement()
+        self.procurement_action_id = procurement_action_id
 
 
 def _pre_award_in_review_agreement(active_step_number=1):
@@ -541,6 +555,101 @@ def test_get_bli_locked_message_post_pre_award_locked():
         get_bli_locked_message(bli, in_review=False, is_super=True)
         == "This budget line can't be edited after Pre-Award Approval has been completed."
     )
+
+
+# ---------------------------------------------------------------------------
+# Parallel contract mod trackers (OPS-6513): a mod's tracker locks only its own budget lines
+# ---------------------------------------------------------------------------
+
+NEW_AWARD_ACTION_ID = 1
+MOD_A_ACTION_ID = 2
+MOD_B_ACTION_ID = 3
+
+
+def _fully_approved_pre_award_step(award_approval_status=None):
+    return [
+        _FakeStep(
+            ProcurementTrackerStepType.PRE_AWARD,
+            approval_requested=True,
+            approval_status="APPROVED",
+            requisition_approved_by=42,
+        ),
+        _FakeStep(ProcurementTrackerStepType.AWARD, award_approval_status=award_approval_status),
+    ]
+
+
+def _agreement_with_parallel_mods(*, mod_a_steps, mod_b_steps=None, new_award_steps=None):
+    """An awarded agreement with its initial award tracker plus two contract mods' trackers."""
+    actions = [
+        _FakeAction(NEW_AWARD_ACTION_ID, AwardType.NEW_AWARD),
+        _FakeAction(MOD_A_ACTION_ID, AwardType.MODIFICATION, agreement_mod_id=10),
+        _FakeAction(MOD_B_ACTION_ID, AwardType.MODIFICATION, agreement_mod_id=11),
+    ]
+    trackers = [
+        _FakeTracker(ProcurementTrackerStatus.ACTIVE, 6, new_award_steps or [], procurement_action=NEW_AWARD_ACTION_ID),
+        _FakeTracker(ProcurementTrackerStatus.ACTIVE, 5, mod_a_steps, procurement_action=MOD_A_ACTION_ID),
+        _FakeTracker(ProcurementTrackerStatus.ACTIVE, 1, mod_b_steps or [], procurement_action=MOD_B_ACTION_ID),
+    ]
+    return _FakeAgreement(trackers, actions)
+
+
+def test_mod_tracker_post_pre_award_lock_applies_only_to_its_own_budget_lines():
+    agreement = _agreement_with_parallel_mods(mod_a_steps=_fully_approved_pre_award_step())
+    mod_a_bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=agreement, procurement_action_id=MOD_A_ACTION_ID)
+    mod_b_bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=agreement, procurement_action_id=MOD_B_ACTION_ID)
+    planned_bli = _FakeBLI(BudgetLineItemStatus.PLANNED, agreement=agreement)
+
+    assert is_post_pre_award_locked(agreement, mod_a_bli) is True
+    assert compute_bli_editable(mod_a_bli, in_review=False, is_super=False) is False
+    assert get_pre_award_lock(agreement, mod_a_bli) is not None
+
+    # Mod B's lines and lines in no cycle aren't blocked by mod A's tracker.
+    assert compute_bli_editable(mod_b_bli, in_review=False, is_super=False) is True
+    assert compute_bli_editable(planned_bli, in_review=False, is_super=False) is True
+    # Nor are agreement-level edits (agreement fields, SCs, new budget lines).
+    assert get_pre_award_lock(agreement) is None
+    assert is_post_pre_award_locked(agreement) is False
+
+
+def test_mod_tracker_pre_award_in_review_applies_only_to_its_own_budget_lines():
+    in_review = [_FakeStep(ProcurementTrackerStepType.PRE_AWARD, approval_requested=True, approval_status="PENDING")]
+    agreement = _agreement_with_parallel_mods(mod_a_steps=[], mod_b_steps=in_review)
+    mod_a_bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=agreement, procurement_action_id=MOD_A_ACTION_ID)
+    mod_b_bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=agreement, procurement_action_id=MOD_B_ACTION_ID)
+
+    assert is_pre_award_in_review(agreement, mod_b_bli) is True
+    assert (
+        get_bli_locked_message(mod_b_bli, in_review=False, is_super=False)
+        == "This budget line can't be edited while Pre-Award Approval is in review."
+    )
+    assert is_pre_award_in_review(agreement, mod_a_bli) is False
+    assert get_bli_locked_message(mod_a_bli, in_review=False, is_super=False) is None
+    assert is_pre_award_in_review(agreement) is False
+
+
+def test_mod_tracker_pending_award_approval_counts_only_for_its_own_budget_lines():
+    pending_award = [_FakeStep(ProcurementTrackerStepType.AWARD)]
+    pending_award[0].award_approval_requested = True  # requested, not yet decided
+    agreement = _agreement_with_parallel_mods(mod_a_steps=pending_award)
+    mod_a_bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=agreement, procurement_action_id=MOD_A_ACTION_ID)
+
+    assert is_award_approval_requested(agreement, mod_a_bli) is True
+    assert is_award_approval_requested(agreement) is False
+
+
+def test_mod_tracker_lock_releases_once_its_award_is_approved():
+    agreement = _agreement_with_parallel_mods(mod_a_steps=_fully_approved_pre_award_step("APPROVED"))
+    mod_a_bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=agreement, procurement_action_id=MOD_A_ACTION_ID)
+
+    assert is_post_pre_award_locked(agreement, mod_a_bli) is False
+
+
+def test_initial_award_tracker_still_locks_every_budget_line_alongside_mod_trackers():
+    agreement = _agreement_with_parallel_mods(mod_a_steps=[], new_award_steps=_fully_approved_pre_award_step())
+    mod_b_bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=agreement, procurement_action_id=MOD_B_ACTION_ID)
+
+    assert compute_bli_editable(mod_b_bli, in_review=False, is_super=False) is False
+    assert get_pre_award_lock(agreement) is not None
 
 
 # ---------------------------------------------------------------------------

@@ -117,7 +117,7 @@ class CompletedByUpdateAuthorizationRule(ValidationRule):
 class NoUpdatingCompletedProcurementStepRule(ValidationRule):
     """
     Validates that completed procurement tracker steps cannot be updated,
-    except when the only field being updated is the notes.
+    except when the only field being updated is the notes. Skipped steps can't be updated at all.
     AWARD steps are also exempt when the PATCH only contains approval-response fields, because
     Budget Team approval happens after the COR completes (status=COMPLETED) the step.
     """
@@ -131,6 +131,11 @@ class NoUpdatingCompletedProcurementStepRule(ValidationRule):
         return "No Updating Completed Procurement Step"
 
     def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        # A SKIPPED step (e.g. steps 2-4 of an As-Is contract mod, OPS-6513) isn't part of this
+        # procurement cycle, so nothing on it can be filled in.
+        if procurement_tracker_step.status == ProcurementTrackerStepStatus.SKIPPED:
+            raise ValidationError({"status": "Cannot update a procurement tracker step that is skipped."})
+
         if procurement_tracker_step.status != ProcurementTrackerStepStatus.COMPLETED:
             return
 
@@ -659,7 +664,7 @@ class NoBLIsInReviewForApprovalRequestRule(ValidationRule):
 
 class Step4CompletionRequiredForApprovalRequestRule(ValidationRule):
     """
-    Validates that Step 4 (Evaluation) is completed before allowing pre-award approval requests.
+    Validates that Step 4 (Evaluation) is completed (or skipped) before allowing pre-award approval requests.
     Only checks when approval_requested is being set to true for PRE_AWARD steps.
     """
 
@@ -699,8 +704,8 @@ class Step4CompletionRequiredForApprovalRequestRule(ValidationRule):
                 }
             )
 
-        # Step 4 must be completed
-        if step_4.status != ProcurementTrackerStepStatus.COMPLETED:
+        # Step 4 must be completed, or skipped by this cycle (an As-Is contract mod, OPS-6513)
+        if step_4.status not in (ProcurementTrackerStepStatus.COMPLETED, ProcurementTrackerStepStatus.SKIPPED):
             raise ValidationError(
                 {
                     "approval_requested": f"Cannot request pre-award approval: Step 4 (Evaluation) must be completed first. Current status: {step_4.status}"

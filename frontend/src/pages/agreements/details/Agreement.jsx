@@ -38,6 +38,7 @@ import AgreementAwardModifications from "./AgreementAwardModifications";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 import AgreementProcurementTracker from "./AgreementProcurementTracker";
+import { getAgreementWideActiveTracker } from "../../../helpers/procurementTracker.helpers";
 
 const Agreement = () => {
     const navigate = useNavigate();
@@ -240,8 +241,10 @@ const Agreement = () => {
 
     // Check if pre-award approval is in review (approval_requested but not yet fully approved)
     // Keep agreement locked through DD approval until Budget Team approves requisition
+    // Agreement-wide, so only the initial award's tracker counts: a contract mod's tracker locks
+    // only its own budget lines (OPS-6513), which their editability meta already reflects.
     const trackers = procurementTrackers?.data || [];
-    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const activeTracker = getAgreementWideActiveTracker(trackers);
     const preAwardStep = activeTracker?.steps?.find((step) => step.step_type === "PRE_AWARD");
     const preAwardApprovalStatus = preAwardStep?.approval_status;
     const isPreAwardInReview =

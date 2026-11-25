@@ -55,6 +55,8 @@ const getStepState = (step, activeStepNumber) => {
  * @typedef {Object} StepBuilderAccordionProps
  * @property {ProcurementStep} step
  * @property {number} totalSteps
+ * @property {number} [displayStepNumber] - The number shown in the heading, when it differs from the
+ *   step's own number (an As-Is contract mod shows its steps 1, 5 and 6 as 1, 2 and 3 of 3)
  * @property {number} [activeStepNumber]
  * @property {import("react").ReactNode} [children]
  * @property {boolean} [isClosed=false]
@@ -68,7 +70,19 @@ const getStepState = (step, activeStepNumber) => {
  * @returns {import("react").ReactElement}
  */
 const StepBuilderAccordion = React.forwardRef(
-    ({ step, totalSteps, activeStepNumber, children, isClosed = false, isReadOnly = false, level = 3 }, ref) => {
+    (
+        {
+            step,
+            totalSteps,
+            displayStepNumber,
+            activeStepNumber,
+            children,
+            isClosed = false,
+            isReadOnly = false,
+            level = 3
+        },
+        ref
+    ) => {
         const stepState = getStepState(step, activeStepNumber);
         const readOnlyClassName = isReadOnly ? "step-builder-accordion__heading--read-only" : "";
 
@@ -78,7 +92,9 @@ const StepBuilderAccordion = React.forwardRef(
                 data-testid={`step-builder-heading-${step?.id}`}
             >
                 <span className="step-builder-accordion__step-count">
-                    <span className="step-builder-accordion__step-number">{step?.step_number}</span>{" "}
+                    <span className="step-builder-accordion__step-number">
+                        {displayStepNumber ?? step?.step_number}
+                    </span>{" "}
                     <span className="step-builder-accordion__step-total">of {totalSteps}</span>
                 </span>{" "}
                 <span className="step-builder-accordion__step-label">{formatStepLabel(step?.step_type)}</span>

@@ -78,9 +78,13 @@ const useStartModification = (agreementId) => {
     }, [agreement, servicesComponents]);
 
     const isInReview = modificationRequests.some((request) => request.status === "IN_REVIEW");
-    // Only an Awarded agreement with the capability on and no modification in review can start one.
+    // Only an Awarded agreement with the capability on, no modification in review, and no contract
+    // mod in procurement past its Pre-Award request (OPS-6513) can start one.
     const canStartModification =
-        Boolean(agreement?.is_awarded) && Boolean(versionData?.enable_modified_loe_edits) && !isInReview;
+        Boolean(agreement?.is_awarded) &&
+        Boolean(versionData?.enable_modified_loe_edits) &&
+        !isInReview &&
+        !agreement?.is_active_contract_mod_locked;
     // Wait for the award history too, so the award fields don't shift the details in after it loads.
     const isPageReady = !isLoadingAgreement && !isLoadingVersion && !isLoadingRequests && !isLoadingAwardHistory;
 

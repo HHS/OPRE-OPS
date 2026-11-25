@@ -1,4 +1,10 @@
 import React, { useState, useMemo } from "react";
+import {
+    getCurrentProcurementTracker,
+    getNextModificationNumber,
+    getTrackerBudgetLines,
+    isContractModTracker
+} from "../../../helpers/procurementTracker.helpers";
 import { flushSync } from "react-dom";
 import { useNavigate, useBlocker } from "react-router-dom";
 import {
@@ -18,7 +24,8 @@ import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import {
     DEFAULT_MODIFICATION_NUMBER,
     getSeededAwardFields,
-    hasAwardFieldChanges
+    hasAwardFieldChanges,
+    hasMissingClins
 } from "../../../components/Agreements/AwardRequestForm/awardForm.helpers";
 import suite from "./RequestAwardApproval.suite";
 
@@ -88,8 +95,9 @@ export default function useRequestAwardApproval(agreementId) {
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
 
     // Get active tracker and steps
+    // The tracker the Procurement Tracker tab shows: the latest contract mod's once there is one (OPS-6513).
     const trackers = trackersData?.data || [];
-    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const activeTracker = getCurrentProcurementTracker(trackers);
     const step5 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 5);
     const step6 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 6);
 
@@ -100,6 +108,13 @@ export default function useRequestAwardApproval(agreementId) {
     // Get all budget lines for display
     // Memoized to prevent reference changes on every render
     const allBudgetLines = useMemo(() => agreement?.budget_line_items ?? [], [agreement?.budget_line_items]);
+
+    // Every line is shown, but only the lines this award covers need a CLIN: a contract mod's own
+    // lines (OPS-6513), or every line for the initial award.
+    const hasMissingCLINs = useMemo(
+        () => hasMissingClins(getTrackerBudgetLines(activeTracker, allBudgetLines), clinAssignments),
+        [activeTracker, allBudgetLines, clinAssignments]
+    );
 
     // Group all budget lines by services component for display
     // Memoized to avoid expensive re-computation on every render
@@ -140,7 +155,14 @@ export default function useRequestAwardApproval(agreementId) {
     // submission when one exists — a declined request keeps its values, so a COR resubmitting does
     // not have to re-enter the PO # / Task Order # — and otherwise from the agreement name and the
     // "Base" default. Shared with hasChanged so a pristine form never trips the blocker.
-    const seededAwardFields = useMemo(() => getSeededAwardFields(step6, agreement), [step6, agreement]);
+    // A contract mod's award starts on the next Modification #, never "Base" (OPS-6513).
+    const defaultModificationNumber = isContractModTracker(activeTracker)
+        ? getNextModificationNumber(trackers, activeTracker)
+        : DEFAULT_MODIFICATION_NUMBER;
+    const seededAwardFields = useMemo(
+        () => getSeededAwardFields(step6, agreement, defaultModificationNumber),
+        [step6, agreement, defaultModificationNumber]
+    );
 
     // Seed once. Guard with isSeeded so a refetch never clobbers the user's edits, and wait for the
     // tracker query so a first render without step6 does not seed the fallbacks prematurely.
@@ -369,6 +391,7 @@ export default function useRequestAwardApproval(agreementId) {
         MemoizedDatePicker,
         clinAssignments,
         setClinAssignments,
+        hasMissingCLINs,
         showModal,
         setShowModal,
         modalProps

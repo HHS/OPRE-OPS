@@ -5,9 +5,14 @@ Planned budget lines they want to execute, and sends them to the Division Direct
 creates the ``AgreementMod``, attaches the edits to it and executes the budget lines; a decline
 leaves Modified LOE edits pending, and undoes a COR change and removes its card (#3269). Only one
 request per agreement can be in review at a time.
+
+An agreement has one contract mod in procurement at a time (OPS-6513). A request approved while
+one is active joins it: its edits attach to that ``AgreementMod`` and its budget lines to that
+mod's procurement action and tracker. Joins stop once the active mod's Pre-Award approval is
+requested, because that approval covers a fixed scope (see ``contract_mod_is_frozen``).
 """
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Optional
 
 from flask import current_app
@@ -21,12 +26,21 @@ from models import (
     AgreementMod,
     BudgetLineItem,
     BudgetLineItemStatus,
+    ContractModificationEdit,
     ContractModificationRequest,
     ContractModificationRequestNotification,
     ContractModificationRequestStatus,
     ModificationEditType,
     ModType,
     NotificationType,
+    ProcurementTrackerStepType,
+    User,
+)
+from models.procurement_workflow import (
+    active_contract_mod,
+    contract_mod_is_frozen,
+    create_procurement_records_for_contract_mod,
+    join_contract_mod,
 )
 from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
@@ -38,6 +52,10 @@ from ops_api.ops.utils.change_requests_helpers import get_reviewable_agreement_i
 APPROVE = "APPROVE"
 DECLINE = "DECLINE"
 _ALREADY_IN_REVIEW = "A contract modification is already in review for this agreement."
+_ACTIVE_MOD_FROZEN = (
+    "This agreement's current contract modification has been sent for Pre-Award approval, so it can't take new "
+    "changes. You can start a new contract modification once its Procurement Tracker is complete."
+)
 
 
 class ContractModificationRequestService:
@@ -49,6 +67,9 @@ class ContractModificationRequestService:
         # the declined change ({"old", "new"}) and what the revert did.
         self.declined_project_officer_change: Optional[dict] = None
         self.project_officer_revert: Optional[dict] = None
+        # Set by an approval that joined the agreement's active contract mod instead of starting
+        # one (OPS-6513), for the submitter's notification.
+        self.joined_existing_mod = False
 
     def get_for_agreement(self, agreement_id: int) -> list[ContractModificationRequest]:
         """Return the agreement's contract modification requests, newest first."""
@@ -124,6 +145,9 @@ class ContractModificationRequestService:
         )
         if self.get_in_review(agreement_id) is not None:
             raise ValidationError({"agreement_id": _ALREADY_IN_REVIEW})
+        active = active_contract_mod(agreement)
+        if active is not None and contract_mod_is_frozen(active[1]):
+            raise ValidationError({"agreement_id": _ACTIVE_MOD_FROZEN})
 
         budget_line_items = self._get_executable_budget_lines(agreement_id, budget_line_item_ids)
         if not pending_edits and not budget_line_items:
@@ -190,7 +214,7 @@ class ContractModificationRequestService:
                 raise ValidationError({"status": "This contract modification has already been reviewed."})
 
             if action == APPROVE:
-                self._approve(request)
+                self._approve(request, user)
             else:
                 self._decline(request)
 
@@ -215,7 +239,7 @@ class ContractModificationRequestService:
                 self.project_officer_revert = self._edit_service.revert_project_officer_change(request.agreement, edit)
         request.status = ContractModificationRequestStatus.DECLINED
 
-    def _approve(self, request: ContractModificationRequest) -> None:
+    def _approve(self, request: ContractModificationRequest, user: User) -> None:
         # Applying an approved de-obligation is OPS-6489. Until then, approve everything else in
         # the request and leave de-obligation edits pending, so a de-obligation doesn't block
         # unrelated work on the agreement; a request with nothing else in it can't be approved.
@@ -242,21 +266,63 @@ class ContractModificationRequestService:
         if changed:
             raise ValidationError({"budget_line_item_ids": changed})
 
-        agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=mod_type(request))
-        self.db_session.add(agreement_mod)
-        self.db_session.flush()
+        approvable_edit_ids = [edit.id for edit in approvable_edits]
+        active = active_contract_mod(request.agreement)
+        if active is not None:
+            # One contract mod in procurement at a time (OPS-6513): this request joins it.
+            action, tracker = active
+            # Lock the tracker and its Pre-Award step so a Pre-Award request can't land between
+            # this check and the join.
+            self.db_session.refresh(tracker, with_for_update=True)
+            pre_award = tracker.get_step(ProcurementTrackerStepType.PRE_AWARD)
+            if pre_award is not None:
+                self.db_session.refresh(pre_award, with_for_update=True)
+            if contract_mod_is_frozen(tracker):
+                raise ValidationError({"action": _ACTIVE_MOD_FROZEN})
+            agreement_mod = action.agreement_mod
+            self._edit_service.attach_pending_edits_to_mod(request.agreement_id, agreement_mod.id, approvable_edit_ids)
+            self._execute(request)
+            mod_edits = self.db_session.scalars(
+                select(ContractModificationEdit).where(ContractModificationEdit.agreement_mod_id == agreement_mod.id)
+            ).all()
+            join_contract_mod(
+                self.db_session,
+                action,
+                tracker,
+                agreement_mod,
+                list(request.budget_line_items),
+                mod_type_for_edits(mod_edits),
+            )
+            self.joined_existing_mod = True
+        else:
+            agreement_mod = AgreementMod(
+                agreement_id=request.agreement_id, mod_type=mod_type(request), mod_date=date.today()
+            )
+            self.db_session.add(agreement_mod)
+            self.db_session.flush()
+            self._edit_service.attach_pending_edits_to_mod(request.agreement_id, agreement_mod.id, approvable_edit_ids)
+            self._execute(request)
+            # Approval starts the agreement's contract mod procurement cycle: its Procurement
+            # Tracker (OPS-6513).
+            create_procurement_records_for_contract_mod(
+                self.db_session,
+                request.agreement,
+                agreement_mod,
+                list(request.budget_line_items),
+                created_by=user.id,
+                source="Contract modification approval",
+            )
 
-        self._edit_service.attach_pending_edits_to_mod(
-            request.agreement_id, agreement_mod.id, [edit.id for edit in approvable_edits]
-        )
+        request.status = ContractModificationRequestStatus.APPROVED
+        request.agreement_mod_id = agreement_mod.id
+
+    @staticmethod
+    def _execute(request: ContractModificationRequest) -> None:
         # Set directly: the BLI update and change request paths reject Executing on an Awarded
         # agreement (validate_no_execution_status_change_on_awarded), because this approval is
         # the only way to get there.
         for budget_line_item in request.budget_line_items:
             budget_line_item.status = BudgetLineItemStatus.IN_EXECUTION
-
-        request.status = ContractModificationRequestStatus.APPROVED
-        request.agreement_mod_id = agreement_mod.id
 
     def _get_executable_budget_lines(self, agreement_id: int, budget_line_item_ids: list[int]) -> list[BudgetLineItem]:
         """Only Planned, current-FY budget lines not already in review, and not in a Services
@@ -326,8 +392,13 @@ class ContractModificationRequestService:
                 "contract_modification_request_id": request.id,
                 "title": f"Contract Modification {'Approved' if approved else 'Declined'}",
                 "message": (
-                    "Your Contract Modification has been successfully approved by your Division Director, "
-                    "and the procurement process has started."
+                    (
+                        "Your Contract Modification has been successfully approved by your Division Director, "
+                        "and added to the contract modification already in procurement."
+                        if self.joined_existing_mod
+                        else "Your Contract Modification has been successfully approved by your Division Director, "
+                        "and the procurement process has started."
+                    )
                     if approved
                     else "Your Contract Modification has been declined by your Division Director."
                 ),
@@ -365,10 +436,16 @@ class ContractModificationRequestService:
 
 
 def mod_type(request: ContractModificationRequest) -> ModType:
+    """The type of a mod made from this request alone; see ``mod_type_for_edits``."""
+    return mod_type_for_edits(request.edits)
+
+
+def mod_type_for_edits(edits) -> ModType:
     """As-is for pure budget-line execution (#1008), Admin when only Admin Changes such as a COR
     change ride along (#3269), and Modified LOE when any Modified LOE edit does (#3072).
-    De-obligation edits don't count: approval leaves them pending until OPS-6489 (OPS-6488)."""
-    edits = [edit for edit in request.edits if edit.modification_type != ModificationEditType.DE_OBLIGATION]
+    De-obligation edits don't count: approval leaves them pending until OPS-6489 (OPS-6488).
+    A mod that joined later requests (OPS-6513) is typed over all its edits, so it only moves up."""
+    edits = [edit for edit in edits if edit.modification_type != ModificationEditType.DE_OBLIGATION]
     if not edits:
         return ModType.AS_IS
     if all(edit.modification_type == ModificationEditType.ADMIN_CHANGE for edit in edits):

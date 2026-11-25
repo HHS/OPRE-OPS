@@ -1,4 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
+import {
+    getCurrentProcurementTracker,
+    getNextModificationNumber,
+    getTrackerBudgetLines,
+    isContractModTracker
+} from "../../../helpers/procurementTracker.helpers";
 import { flushSync } from "react-dom";
 import { useNavigate, useBlocker, useSearchParams } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
@@ -18,7 +24,8 @@ import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import {
     DEFAULT_MODIFICATION_NUMBER,
     getSeededAwardFields,
-    hasAwardFieldChanges
+    hasAwardFieldChanges,
+    hasMissingClins
 } from "../../../components/Agreements/AwardRequestForm/awardForm.helpers";
 import suite from "./RequestAwardApproval.suite";
 
@@ -126,8 +133,9 @@ export default function useEditAwardApproval(agreementId) {
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
 
     // Get active tracker and step 6
+    // The tracker the Procurement Tracker tab shows: the latest contract mod's once there is one (OPS-6513).
     const trackers = trackersData?.data || [];
-    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const activeTracker = getCurrentProcurementTracker(trackers);
     const step6 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 6);
 
     // Get project officer names
@@ -136,6 +144,13 @@ export default function useEditAwardApproval(agreementId) {
 
     // Get all budget lines
     const allBudgetLines = useMemo(() => agreement?.budget_line_items ?? [], [agreement?.budget_line_items]);
+
+    // Every line is shown, but only the lines this award covers need a CLIN: a contract mod's own
+    // lines (OPS-6513), or every line for the initial award.
+    const hasMissingCLINs = useMemo(
+        () => hasMissingClins(getTrackerBudgetLines(activeTracker, allBudgetLines), clinAssignments),
+        [activeTracker, allBudgetLines, clinAssignments]
+    );
 
     // Group budget lines by services component
     const groupedBudgetLinesByServicesComponent = useMemo(
@@ -158,7 +173,14 @@ export default function useEditAwardApproval(agreementId) {
 
     // OPS-5892: baseline for the four additional award fields, shared with hasChanged below so a
     // pristine page can never look dirty (falls back to agreement.name for legacy rows).
-    const seededAwardFields = useMemo(() => getSeededAwardFields(step6, agreement), [step6, agreement]);
+    // A contract mod's award starts on the next Modification #, never "Base" (OPS-6513).
+    const defaultModificationNumber = isContractModTracker(activeTracker)
+        ? getNextModificationNumber(trackers, activeTracker)
+        : DEFAULT_MODIFICATION_NUMBER;
+    const seededAwardFields = useMemo(
+        () => getSeededAwardFields(step6, agreement, defaultModificationNumber),
+        [step6, agreement, defaultModificationNumber]
+    );
 
     // Seed form fields from step 6 once data is available.
     // Run only once to avoid overwriting user edits on re-renders.
@@ -430,6 +452,7 @@ export default function useEditAwardApproval(agreementId) {
         MemoizedDatePicker,
         clinAssignments,
         setClinAssignments,
+        hasMissingCLINs,
         showModal,
         setShowModal,
         modalProps

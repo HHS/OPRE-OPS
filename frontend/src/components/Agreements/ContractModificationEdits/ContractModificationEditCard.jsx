@@ -1,7 +1,10 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { renderChangeValues } from "../../../helpers/changeRequests.helpers";
-import { convertCodeForDisplay, formatDateToMonthDayYear, renderField } from "../../../helpers/utils";
+import {
+    getContractModificationEditTerms,
+    isExecuteSelection
+} from "../../../helpers/contractModificationEdits.helpers";
+import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import TermTag from "../../ChangeRequests/TermTag";
 import Tag from "../../UI/Tag";
@@ -27,18 +30,6 @@ import styles from "./ContractModificationEditCard.module.scss";
  * @property {boolean} [in_review] - Part of the contract modification that is in review
  */
 
-// Services Component add/delete (OPS-6440/OPS-3072) show the SC and what happened to it, with no
-// From/To, per the design. "delete" is shared with a budget-line delete; which branch renders is
-// decided by edit.services_component_id, not the field name.
-const SERVICES_COMPONENT_CHANGE_LABELS = {
-    services_component_create: "Add SC",
-    delete: "Delete SC"
-};
-
-// A Services Component's period-of-performance edit (OPS-3268): one card per date, with the SC and
-// From/To dates, per the design.
-const SERVICES_COMPONENT_PERIOD_FIELDS = ["period_start", "period_end"];
-
 /**
  * One edit on an Awarded agreement that requires a contract modification.
  *
@@ -48,30 +39,24 @@ const SERVICES_COMPONENT_PERIOD_FIELDS = ["period_start", "period_end"];
  * @returns {React.ReactElement}
  */
 const ContractModificationEditCard = ({ edit }) => {
-    const changeTo = { [edit.field]: { old: edit.old_value, new: edit.new_value } };
     const oldCan = useGetNameForCanId(edit.field === "can_id" ? edit.old_value : undefined);
     const newCan = useGetNameForCanId(edit.field === "can_id" ? edit.new_value : undefined);
-    const { oldValue, newValue } = renderChangeValues(edit.field, changeTo, oldCan, newCan);
-    const servicesComponentChange =
-        edit.services_component_id != null ? SERVICES_COMPONENT_CHANGE_LABELS[edit.field] : undefined;
-    const isServicesComponentPeriodEdit =
-        edit.services_component_id != null && SERVICES_COMPONENT_PERIOD_FIELDS.includes(edit.field);
-    // The SC's display name, frozen on the row: the new SC for an addition, the deleted one otherwise.
-    const servicesComponentName = edit.field === "services_component_create" ? edit.new_value : edit.old_value;
-    // A COR change (OPS-3153) is agreement-level: no budget line, and From/To are user names.
-    const isAgreementLevel = edit.field === "project_officer_id";
-    // A budget line selected to execute (Planned -> Executing, Start Modification) isn't a
-    // tracked edit -- it's the approval action itself -- so it carries no modification_type.
-    const isExecuteSelection =
-        edit.modification_type == null &&
-        !isAgreementLevel &&
-        !servicesComponentChange &&
-        !isServicesComponentPeriodEdit;
+    const terms = getContractModificationEditTerms(edit, { oldCan, newCan });
+    const executeSelection = isExecuteSelection(edit);
+    const budgetLineGroup = terms.filter((term) => term.group === "budget-line");
+    const renderTerm = (term) => (
+        <TermTag
+            key={term.label}
+            label={term.label}
+            {...(term.bliStatus !== undefined ? { bliStatus: term.bliStatus } : { value: term.value })}
+            className="margin-0"
+        />
+    );
 
     return (
         <div
             className={`padding-205 bg-base-lightest border-1px border-base-light radius-md ${styles.card} ${
-                isExecuteSelection ? styles.executeCard : ""
+                executeSelection ? styles.executeCard : ""
             }`}
             data-cy="contract-modification-edit-card"
         >
@@ -91,141 +76,15 @@ const ContractModificationEditCard = ({ edit }) => {
                     {formatDateToMonthDayYear(edit.requested_on)}
                 </div>
             </div>
-            {!isExecuteSelection && (
-                <TermTag
-                    label="Modification Type"
-                    value={convertCodeForDisplay("modificationEditType", edit.modification_type)}
-                    className="margin-0"
-                />
+            {budgetLineGroup.length > 0 && (
+                <div
+                    className="display-flex"
+                    style={{ gap: "1.5rem" }}
+                >
+                    {budgetLineGroup.map(renderTerm)}
+                </div>
             )}
-            {isAgreementLevel ? (
-                <>
-                    <TermTag
-                        label="Change To"
-                        value={convertCodeForDisplay("changeToTypes", edit.field)}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="From"
-                        value={edit.old_display_name ?? "TBD"}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="To"
-                        value={edit.new_display_name ?? "TBD"}
-                        className="margin-0"
-                    />
-                </>
-            ) : isServicesComponentPeriodEdit ? (
-                <>
-                    <TermTag
-                        label="SC"
-                        value={edit.services_component_display_name ?? "TBD"}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="Change To"
-                        value={convertCodeForDisplay("changeToTypes", edit.field)}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="From"
-                        value={edit.old_value ? formatDateToMonthDayYear(edit.old_value) : "TBD"}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="To"
-                        value={edit.new_value ? formatDateToMonthDayYear(edit.new_value) : "TBD"}
-                        className="margin-0"
-                    />
-                </>
-            ) : servicesComponentChange ? (
-                <>
-                    <TermTag
-                        label="SC"
-                        value={servicesComponentName}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="Change To"
-                        value={servicesComponentChange}
-                        className="margin-0"
-                    />
-                </>
-            ) : isExecuteSelection ? (
-                <>
-                    <div
-                        className="display-flex"
-                        style={{ gap: "1.5rem" }}
-                    >
-                        <TermTag
-                            label="BL ID"
-                            value={edit.budget_line_item_id}
-                            className="margin-0"
-                        />
-                        <TermTag
-                            label="Total"
-                            value={renderField("amount", "amount", edit.amount)}
-                            className="margin-0"
-                        />
-                    </div>
-                    <TermTag
-                        label="Change To"
-                        value={convertCodeForDisplay("changeToTypes", edit.field)}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="From"
-                        bliStatus={edit.old_value}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="To"
-                        bliStatus={edit.new_value}
-                        className="margin-0"
-                    />
-                </>
-            ) : (
-                <>
-                    <TermTag
-                        label="BL ID"
-                        value={edit.budget_line_item_id}
-                        className="margin-0"
-                    />
-                    <TermTag
-                        label="Change To"
-                        value={convertCodeForDisplay("changeToTypes", edit.field)}
-                        className="margin-0"
-                    />
-                    {edit.field === "status" ? (
-                        <>
-                            <TermTag
-                                label="From"
-                                bliStatus={edit.old_value}
-                                className="margin-0"
-                            />
-                            <TermTag
-                                label="To"
-                                bliStatus={edit.new_value}
-                                className="margin-0"
-                            />
-                        </>
-                    ) : (
-                        <>
-                            <TermTag
-                                label="From"
-                                value={oldValue}
-                                className="margin-0"
-                            />
-                            <TermTag
-                                label="To"
-                                value={newValue}
-                                className="margin-0"
-                            />
-                        </>
-                    )}
-                </>
-            )}
+            {terms.filter((term) => term.group === undefined).map(renderTerm)}
             {edit.in_review && (
                 <Tag
                     tagStyle="lightTextRedBackground"

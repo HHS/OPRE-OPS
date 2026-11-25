@@ -18,12 +18,15 @@ from loguru import logger
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from models.agreements import AgreementMod, ModType
 from models.budget_line_items import BudgetLineItem, BudgetLineItemStatus
 from models.events import OpsEvent, OpsEventStatus, OpsEventType
 from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
 from models.procurement_tracker import (
     DefaultProcurementTracker,
+    ProcurementTracker,
     ProcurementTrackerStatus,
+    ProcurementTrackerStepStatus,
     ProcurementTrackerStepType,
 )
 
@@ -38,6 +41,11 @@ __all__ = [
     "link_blis_to_action",
     "get_or_create_procurement_records_for_new_award",
     "get_or_create_procurement_records_for_modification",
+    "create_procurement_records_for_contract_mod",
+    "skipped_step_types_for_mod",
+    "active_contract_mod",
+    "contract_mod_is_frozen",
+    "join_contract_mod",
 ]
 
 # The AWARD step's award_approval_status value that marks a Budget Team award
@@ -333,9 +341,7 @@ def get_or_create_procurement_records_for_new_award(
         or step_1.acquisition_planning_task_completed_by
     )
     tracker_is_untouched = (
-        tracker.active_step_number <= 1
-        and tracker.status != ProcurementTrackerStatus.COMPLETED
-        and not step_1_has_data
+        tracker.active_step_number <= 1 and tracker.status != ProcurementTrackerStatus.COMPLETED and not step_1_has_data
     )
     if tracker_status == ProcurementTrackerStatus.COMPLETED:
         if needs_step_setup or tracker_is_untouched:
@@ -451,3 +457,146 @@ def get_or_create_procurement_records_for_modification(
         )
 
     return action, tracker, action_created, tracker_created
+
+
+# An As-Is mod only moves budget lines from Planned to Executing on the existing award, so it
+# skips the solicitation steps (OPS-6513). Every other mod type, including ones added later,
+# needs the full tracker.
+_AS_IS_SKIPPED_STEP_TYPES = frozenset(
+    {
+        ProcurementTrackerStepType.PRE_SOLICITATION,
+        ProcurementTrackerStepType.SOLICITATION,
+        ProcurementTrackerStepType.EVALUATION,
+    }
+)
+
+
+def skipped_step_types_for_mod(mod_type: Optional[ModType]) -> frozenset[ProcurementTrackerStepType]:
+    """The tracker steps a contract mod of this type doesn't need."""
+    return _AS_IS_SKIPPED_STEP_TYPES if mod_type == ModType.AS_IS else frozenset()
+
+
+def create_procurement_records_for_contract_mod(
+    session: Session,
+    agreement: "Agreement",
+    agreement_mod: AgreementMod,
+    budget_line_items: list[BudgetLineItem],
+    created_by: Optional[int] = None,
+    source: Optional[str] = None,
+) -> tuple[ProcurementAction, DefaultProcurementTracker]:
+    """
+    Create the MODIFICATION ProcurementAction and ACTIVE tracker for a contract mod the
+    Division Director just approved, and link the mod's budget lines to the action.
+
+    Only called when the agreement has no active contract mod: an agreement has one contract
+    mod in procurement at a time, and a mod approved while one is active joins it instead
+    (join_contract_mod). Always creates new records, unlike
+    get_or_create_procurement_records_for_modification, which data_tools uses.
+
+    Returns (action, tracker).
+    """
+    action = ProcurementAction(
+        agreement_id=agreement.id,
+        agreement_mod_id=agreement_mod.id,
+        award_type=AwardType.MODIFICATION,
+        status=ProcurementActionStatus.PLANNED,
+        procurement_shop_id=agreement.awarding_entity_id,
+        created_by=created_by,
+    )
+    session.add(action)
+    session.flush()
+    _create_action_event(session, action, created_by=created_by, source=source)
+
+    for budget_line_item in budget_line_items:
+        budget_line_item.procurement_action_id = action.id
+
+    tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=agreement.id,
+        skipped_step_types=skipped_step_types_for_mod(agreement_mod.mod_type),
+        procurement_action=action.id,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=created_by,
+    )
+    session.add(tracker)
+    session.flush()
+    _create_tracker_event(
+        session, tracker, created_by=created_by, source=source, award_type_label=AwardType.MODIFICATION.name
+    )
+    logger.info(
+        f"Created MODIFICATION ProcurementAction {action.id} and tracker {tracker.id} for "
+        f"AgreementMod {agreement_mod.id} ({agreement_mod.mod_type.name if agreement_mod.mod_type else None}) "
+        f"on Agreement {agreement.id}, linking {len(budget_line_items)} budget line(s)"
+    )
+    return action, tracker
+
+
+def active_contract_mod(agreement: "Agreement") -> Optional[tuple[ProcurementAction, ProcurementTracker]]:
+    """The agreement's contract mod in procurement: its MODIFICATION action and ACTIVE tracker.
+
+    An agreement has at most one (OPS-6513): a mod approved while one is active joins it. Uses
+    the loaded relationships, so it adds no query where those are eager-loaded. Returns None when
+    there is none.
+    """
+    actions = {
+        action.id: action
+        for action in agreement.procurement_actions
+        if action.award_type == AwardType.MODIFICATION and action.agreement_mod_id is not None
+    }
+    active = [
+        tracker
+        for tracker in agreement.procurement_trackers
+        if tracker.status == ProcurementTrackerStatus.ACTIVE and tracker.procurement_action in actions
+    ]
+    if not active:
+        return None
+    if len(active) > 1:
+        logger.warning(
+            f"Agreement {agreement.id} has {len(active)} active contract mod trackers; using the newest"
+        )
+    tracker = max(active, key=lambda t: (t.created_on or date.min, t.id or 0))
+    return actions[tracker.procurement_action], tracker
+
+
+def contract_mod_is_frozen(tracker: ProcurementTracker) -> bool:
+    """Whether the active contract mod no longer takes new requests: once its Pre-Award approval
+    is requested (and not declined) or its Pre-Award step is completed.
+
+    Pre-Award approval signs off on a fixed scope: the Division Director approves these lines and
+    amounts, then the Budget Team requisitions that total. Work added after that would be awarded
+    and obligated without either covering it, so it waits for the next mod (OPS-6513).
+    """
+    pre_award = tracker.get_step(ProcurementTrackerStepType.PRE_AWARD)
+    if pre_award is None:
+        return False
+    if pre_award.status == ProcurementTrackerStepStatus.COMPLETED:
+        return True
+    return bool(pre_award.pre_award_approval_requested) and pre_award.pre_award_approval_status != "DECLINED"
+
+
+def join_contract_mod(
+    session: Session,
+    action: ProcurementAction,
+    tracker: ProcurementTracker,
+    agreement_mod: AgreementMod,
+    budget_line_items: list[BudgetLineItem],
+    new_mod_type: Optional[ModType],
+) -> None:
+    """Add a newly approved contract modification's budget lines to the active contract mod, and
+    bring back the tracker steps its new type needs (OPS-6513).
+
+    The lines are linked to the mod's procurement action, so its locks and award cover them. When
+    the type changes (an As-Is mod taking on admin or Modified LOE work), the steps the old type
+    skipped come back. Does not commit.
+    """
+    for budget_line_item in budget_line_items:
+        budget_line_item.procurement_action_id = action.id
+
+    old_mod_type = agreement_mod.mod_type
+    if new_mod_type != old_mod_type:
+        agreement_mod.mod_type = new_mod_type
+        tracker.unskip_steps(skipped_step_types_for_mod(old_mod_type) - skipped_step_types_for_mod(new_mod_type))
+    session.flush()
+    logger.info(
+        f"Joined {len(budget_line_items)} budget line(s) to contract mod AgreementMod {agreement_mod.id} "
+        f"(action {action.id}, tracker {tracker.id}); type {old_mod_type} -> {new_mod_type}"
+    )

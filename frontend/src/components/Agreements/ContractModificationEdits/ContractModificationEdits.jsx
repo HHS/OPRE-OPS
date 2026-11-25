@@ -21,9 +21,11 @@ import ContractModificationEditCard from "./ContractModificationEditCard";
  * @param {Object} props
  * @param {number} props.agreementId
  * @param {boolean} [props.isAgreementEditable] - The agreement's `_meta.isEditable` (team membership)
+ * @param {boolean} [props.isActiveContractModLocked] - The agreement's contract mod in procurement
+ *   is past its Pre-Award request, so a new one can't start until its tracker completes (OPS-6513)
  * @returns {React.ReactElement | null}
  */
-const ContractModificationEdits = ({ agreementId, isAgreementEditable = false }) => {
+const ContractModificationEdits = ({ agreementId, isAgreementEditable = false, isActiveContractModLocked = false }) => {
     const navigate = useNavigate();
     const {
         data: edits,
@@ -70,6 +72,9 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
         disabledReason = "Only team members on this agreement can start a Contract Modification";
     } else if (isInReview) {
         disabledReason = "A Contract Modification is already in review for this agreement";
+    } else if (isActiveContractModLocked) {
+        disabledReason =
+            "This agreement's current Contract Modification has been sent for Pre-Award approval. You can start a new one once its Procurement Tracker is complete";
     }
 
     return (

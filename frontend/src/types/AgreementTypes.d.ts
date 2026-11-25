@@ -51,6 +51,8 @@ export type Agreement = {
     in_review?: boolean;
     is_award_approval_requested?: boolean;
     is_post_pre_award_locked?: boolean;
+    /** The contract mod in procurement is past its Pre-Award request, so no new one can start (OPS-6513) */
+    is_active_contract_mod_locked?: boolean;
     change_requests_in_review?: ChangeRequest[];
     requesting_agency?: string;
     servicing_agency?: string;

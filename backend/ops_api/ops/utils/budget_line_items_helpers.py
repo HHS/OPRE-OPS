@@ -8,6 +8,7 @@ from sqlalchemy import inspect
 from models import (
     CAN,
     AgreementType,
+    AwardType,
     BudgetLineItem,
     BudgetLineItemStatus,
     Division,
@@ -179,10 +180,10 @@ def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> b
     if not compute_bli_editable_status_only(budget_line_item, in_review, is_super):
         return False
 
-    if is_pre_award_in_review(budget_line_item.agreement):
+    if is_pre_award_in_review(budget_line_item.agreement, budget_line_item):
         return False
 
-    if is_post_pre_award_locked(budget_line_item.agreement):
+    if is_post_pre_award_locked(budget_line_item.agreement, budget_line_item):
         return False
 
     return True
@@ -199,9 +200,9 @@ def get_bli_locked_message(budget_line_item, in_review: bool, is_super: bool) ->
     """
     if budget_line_item is None:
         return None
-    if not in_review and is_pre_award_in_review(budget_line_item.agreement):
+    if not in_review and is_pre_award_in_review(budget_line_item.agreement, budget_line_item):
         return "This budget line can't be edited while Pre-Award Approval is in review."
-    if is_post_pre_award_locked(budget_line_item.agreement):
+    if is_post_pre_award_locked(budget_line_item.agreement, budget_line_item):
         return "This budget line can't be edited after Pre-Award Approval has been completed."
     return None
 
@@ -238,7 +239,46 @@ def is_bli_editable(budget_line_item):
     )
 
 
-def is_pre_award_in_review(agreement):
+def _contract_mod_action_id(tracker, agreement) -> int | None:
+    """The procurement action id when ``tracker`` is a contract mod's own tracker (OPS-6513), else None.
+
+    Read through ``agreement.procurement_actions`` (eager-loaded alongside the trackers by the BLI
+    list/meta queries) instead of a per-tracker query.
+    """
+    action_id = getattr(tracker, "procurement_action", None)
+    if action_id is None:
+        return None
+    for action in getattr(agreement, "procurement_actions", None) or []:
+        if action.id == action_id:
+            is_contract_mod = action.award_type == AwardType.MODIFICATION and action.agreement_mod_id is not None
+            return action.id if is_contract_mod else None
+    return None
+
+
+def _lock_trackers(agreement, budget_line_item=None, *, active_only=True) -> list:
+    """The trackers whose pre-award / award locks apply.
+
+    (OPS-6513):
+    - the initial award's tracker (any tracker that isn't a contract mod's) locks the whole agreement;
+    - a contract mod's tracker locks only the budget lines that mod executed, including those of
+      every request that joined it, i.e. the ones linked to its procurement action. So it never
+      applies to an agreement-level check (``budget_line_item=None``), and the agreement's other
+      lines stay editable while the mod is in procurement.
+    """
+    if not agreement or not agreement.procurement_trackers:
+        return []
+    bli_action_id = getattr(budget_line_item, "procurement_action_id", None) if budget_line_item else None
+    trackers = []
+    for tracker in agreement.procurement_trackers:
+        if active_only and tracker.status != ProcurementTrackerStatus.ACTIVE:
+            continue
+        mod_action_id = _contract_mod_action_id(tracker, agreement)
+        if mod_action_id is None or (bli_action_id is not None and mod_action_id == bli_action_id):
+            trackers.append(tracker)
+    return trackers
+
+
+def is_pre_award_in_review(agreement, budget_line_item=None):
     """
     Check if the agreement's pre-award approval is currently in review.
 
@@ -248,18 +288,16 @@ def is_pre_award_in_review(agreement):
 
     Args:
         agreement: Agreement object to check
+        budget_line_item: When given, also honor the lock of the contract mod tracker this budget
+            line belongs to (see ``_lock_trackers``). Omit for agreement-level checks.
 
     Returns:
         bool: True if pre-award is in review, False otherwise
     """
-    if not agreement or not agreement.procurement_trackers:
-        return False
+    return any(_is_tracker_pre_award_in_review(tracker) for tracker in _lock_trackers(agreement, budget_line_item))
 
-    # Get the active procurement tracker
-    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
-    if not tracker:
-        return False
 
+def _is_tracker_pre_award_in_review(tracker) -> bool:
     pre_award_step = tracker.get_step(ProcurementTrackerStepType.PRE_AWARD)
 
     if not pre_award_step or not pre_award_step.pre_award_approval_requested:
@@ -280,7 +318,7 @@ def is_pre_award_in_review(agreement):
     return True
 
 
-def is_award_approval_requested(agreement) -> bool:
+def is_award_approval_requested(agreement, budget_line_item=None) -> bool:
     """
     Check if the agreement's award approval (step 6) has been requested and is pending.
 
@@ -295,13 +333,11 @@ def is_award_approval_requested(agreement) -> bool:
     Returns:
         bool: True if award approval has been requested and is not yet resolved.
     """
-    if not agreement or not agreement.procurement_trackers:
-        return False
-
-    # Check every tracker for a pending AWARD step. The tracker status is intentionally
+    # Check every tracker in scope for a pending AWARD step. The tracker status is intentionally
     # not filtered: the AWARD step can be pending while the tracker is ACTIVE, and edge
     # cases (COMPLETED/INACTIVE trackers) should still honor a not-yet-resolved request.
-    for tracker in agreement.procurement_trackers:
+    # A contract mod's tracker only counts for its own budget lines (OPS-6513).
+    for tracker in _lock_trackers(agreement, budget_line_item, active_only=False):
         award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
         if not award_step or not award_step.award_approval_requested:
             continue
@@ -315,7 +351,7 @@ def is_award_approval_requested(agreement) -> bool:
     return False
 
 
-def is_post_pre_award_locked(agreement) -> bool:
+def is_post_pre_award_locked(agreement, budget_line_item=None) -> bool:
     """
     Check if the agreement is in the post-pre-award locked state.
 
@@ -337,16 +373,13 @@ def is_post_pre_award_locked(agreement) -> bool:
         bool: True if pre-award is fully approved, the Award request is not yet approved,
         and BLIs should be locked.
     """
-    if not agreement or not agreement.procurement_trackers:
-        return False
+    # Scope to active trackers only — consistent with is_pre_award_in_review, and prevents a
+    # completed tracker from a prior procurement cycle permanently locking BLIs on a new active
+    # cycle. A contract mod's tracker only locks its own budget lines (OPS-6513).
+    return any(_is_tracker_post_pre_award_locked(tracker) for tracker in _lock_trackers(agreement, budget_line_item))
 
-    # Scope to the active tracker only — consistent with is_pre_award_in_review and
-    # is_award_approval_requested, and prevents a completed tracker from a prior
-    # procurement cycle permanently locking BLIs on a new active cycle.
-    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
-    if not tracker:
-        return False
 
+def _is_tracker_post_pre_award_locked(tracker) -> bool:
     pre_award_step = tracker.get_step(ProcurementTrackerStepType.PRE_AWARD)
     if not pre_award_step:
         return False
@@ -374,15 +407,18 @@ class PreAwardLock(Enum):
     POST_APPROVAL = "post_approval"  # Pre-Award fully approved, Award request not yet approved
 
 
-def get_pre_award_lock(agreement) -> PreAwardLock | None:
+def get_pre_award_lock(agreement, budget_line_item=None) -> PreAwardLock | None:
     """
     The single source of truth for which pre-award lock an agreement is under. Every write path
     that honors the locks (BLI validation and direct-apply, agreement and services-component /
     grant-number edits, BLI create) goes through this so they can't drift apart.
+
+    Pass ``budget_line_item`` for a check on one budget line, so a contract mod tracker's lock
+    applies to the lines it executed (OPS-6513). Agreement-level checks omit it.
     """
-    if is_pre_award_in_review(agreement):
+    if is_pre_award_in_review(agreement, budget_line_item):
         return PreAwardLock.IN_REVIEW
-    if is_post_pre_award_locked(agreement):
+    if is_post_pre_award_locked(agreement, budget_line_item):
         return PreAwardLock.POST_APPROVAL
     return None
 

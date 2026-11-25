@@ -415,6 +415,7 @@ const AwardRequestForm = ({
                                     aria-required="true"
                                     data-cy="modification-number-select"
                                 >
+                                    {modificationNumber === "" && <option value="">- Select -</option>}
                                     {MODIFICATION_NUMBER_OPTIONS.map((option) => (
                                         <option
                                             key={option}

@@ -41,7 +41,8 @@ class TestAgreementAwardHistoryEndpoint:
         assert award["vendor_type"] == "SMALL_BUSINESS"
         assert award["requisition_number"] == "REQ-000444"
 
-        assert data[1]["fiscal_year_label"] == "FY 2025 Mod 1"
+        assert data[1]["fiscal_year_label"] == "FY 2025 Contract Modification (01/15/2025)"
+        assert data[1]["edits"] == []
         assert data[1]["modification_number"] == "Mod 1"
 
     def test_aa_agreement_returns_records(self, auth_client, loaded_db):

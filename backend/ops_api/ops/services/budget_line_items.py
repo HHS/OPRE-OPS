@@ -289,6 +289,8 @@ class BudgetLineItemService:
                     joinedload(Agreement.project),
                     joinedload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
                     selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps),
+                    # ...and which trackers are a contract mod's (OPS-6513).
+                    selectinload(Agreement.procurement_actions),
                 ),
                 selectinload(BudgetLineItem.can).options(
                     joinedload(CAN.portfolio).joinedload(Portfolio.division),
@@ -949,7 +951,7 @@ class BudgetLineItemService:
         # Never apply directly while a pre-award lock is active: _validation rejects other users
         # then, but lets Budget Team through on the understanding that their edits still route
         # through a change request for DD review.
-        if get_pre_award_lock(budget_line_item.agreement):
+        if get_pre_award_lock(budget_line_item.agreement, budget_line_item):
             return False, set()
 
         if not tracks_contract_modifications(budget_line_item) and not current_app.config.get(
@@ -1338,7 +1340,9 @@ class BudgetLineItemService:
         # locks also feed compute_bli_editable (the editability meta), so the pen-icon state and the
         # PATCH validation stay in lockstep. Budget Team is exempt from both locks (they write
         # directly through the change-request workflow with no additional gate).
-        lock = None if is_budget_team(current_user) else get_pre_award_lock(budget_line_item.agreement)
+        lock = (
+            None if is_budget_team(current_user) else get_pre_award_lock(budget_line_item.agreement, budget_line_item)
+        )
         if lock == PreAwardLock.IN_REVIEW:
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
@@ -1760,7 +1764,8 @@ def get_is_editable_meta_data(serialized_bli):
         options=[
             selectinload(BudgetLineItem.agreement)
             .selectinload(Agreement.procurement_trackers)
-            .selectinload(ProcurementTracker.steps)
+            .selectinload(ProcurementTracker.steps),
+            selectinload(BudgetLineItem.agreement).selectinload(Agreement.procurement_actions),
         ],
     )
     in_review = budget_line_item.in_review if budget_line_item else False
@@ -1801,7 +1806,8 @@ def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
         .options(
             selectinload(BudgetLineItem.agreement)
             .selectinload(Agreement.procurement_trackers)
-            .selectinload(ProcurementTracker.steps)
+            .selectinload(ProcurementTracker.steps),
+            selectinload(BudgetLineItem.agreement).selectinload(Agreement.procurement_actions),
         )
         .all()
     )

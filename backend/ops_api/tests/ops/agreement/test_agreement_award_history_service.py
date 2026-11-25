@@ -11,7 +11,9 @@ from models import (
     AgreementType,
     AwardType,
     ContractAgreement,
+    ContractModificationEdit,
     GrantAgreement,
+    ModificationEditType,
     ModType,
     ProcurementAction,
     ProcurementActionStatus,
@@ -30,21 +32,21 @@ from ops_api.tests.utils import cleanup_award_history, make_awarded_tracker
 
 class TestBuildFiscalYearLabel:
     def test_initial_award_label(self):
-        assert build_fiscal_year_label(date(2024, 6, 26), False, None) == "FY 2024 Award"
+        assert build_fiscal_year_label(date(2024, 6, 26), False) == "FY 2024 Award"
 
     def test_award_uses_federal_fiscal_year(self):
         # Oct 1 rolls into the next fiscal year.
-        assert build_fiscal_year_label(date(2024, 10, 1), False, None) == "FY 2025 Award"
+        assert build_fiscal_year_label(date(2024, 10, 1), False) == "FY 2025 Award"
 
-    def test_modification_label_uses_mod_number_verbatim(self):
-        assert build_fiscal_year_label(date(2025, 1, 15), True, "Mod 1") == "FY 2025 Mod 1"
+    def test_modification_label_names_the_contract_modification_and_its_date(self):
+        assert build_fiscal_year_label(date(2025, 3, 1), True) == "FY 2025 Contract Modification (03/01/2025)"
 
-    def test_modification_without_number(self):
-        assert build_fiscal_year_label(date(2025, 1, 15), True, None) == "FY 2025 Mod"
+    def test_modification_uses_federal_fiscal_year(self):
+        assert build_fiscal_year_label(date(2024, 10, 2), True) == "FY 2025 Contract Modification (10/02/2024)"
 
     def test_missing_date_drops_fy_prefix(self):
-        assert build_fiscal_year_label(None, False, None) == "Award"
-        assert build_fiscal_year_label(None, True, "Mod 2") == "Mod 2"
+        assert build_fiscal_year_label(None, False) == "Award"
+        assert build_fiscal_year_label(None, True) == "Contract Modification"
 
 
 class TestAgreementAwardHistoryService:
@@ -56,8 +58,9 @@ class TestAgreementAwardHistoryService:
         # Oldest-first: initial award, then modification.
         assert records[0]["fiscal_year_label"] == "FY 2024 Award"
         assert records[0]["modification_number"] == "Base"
-        assert records[1]["fiscal_year_label"] == "FY 2025 Mod 1"
+        assert records[1]["fiscal_year_label"] == "FY 2025 Contract Modification (01/15/2025)"
         assert records[1]["modification_number"] == "Mod 1"
+        assert records[0]["edits"] == []
 
     def test_mod_label_and_award_date_use_the_same_date_when_mod_date_diverges(self, loaded_db, app_ctx):
         """A mod's fiscal-year label and its "Award Date" field must both derive from
@@ -98,7 +101,7 @@ class TestAgreementAwardHistoryService:
             service = AgreementAwardHistoryService(loaded_db)
             record = service.get_award_history(agreement.id)[0]
             assert record["award_date"] == date(2024, 10, 2)
-            assert record["fiscal_year_label"] == "FY 2025 Mod 1"
+            assert record["fiscal_year_label"] == "FY 2025 Contract Modification (10/02/2024)"
         finally:
             cleanup_award_history(loaded_db, agreement)
 
@@ -197,8 +200,7 @@ class TestAgreementAwardHistoryService:
             assert modification["purchase_order_number"] == "PO-MOD"
             assert modification["task_order_number"] == "TO-MOD"
             assert modification["modification_number"] == "P00001"
-            # The header keeps the prose cycle label from AgreementMod.number.
-            assert modification["fiscal_year_label"] == "FY 2025 Mod 1"
+            assert modification["fiscal_year_label"] == "FY 2025 Contract Modification (01/15/2025)"
 
             # contract_number has no step-level counterpart.
             assert award["contract_number"] == "CONTRACT-STEP6"
@@ -390,6 +392,113 @@ class TestAgreementAwardHistoryService:
             assert len(records) == 1
             assert records[0]["contract_number"] == "CONTRACT-APPROVED"
             assert records[0]["award_amount"] == Decimal("500000.00")
+        finally:
+            cleanup_award_history(loaded_db, agreement)
+
+    def _contract_mod_in_procurement(self, loaded_db, name):
+        """An agreement with a contract mod the Division Director approved on 03/01/2026, whose
+        tracker is still active and whose award hasn't been approved."""
+        agreement = ContractAgreement(name=name, agreement_type=AgreementType.CONTRACT)
+        loaded_db.add(agreement)
+        loaded_db.flush()
+        mod = AgreementMod(agreement_id=agreement.id, mod_type=ModType.MODIFIED_LOE, mod_date=date(2026, 3, 1))
+        loaded_db.add(mod)
+        loaded_db.flush()
+        action = ProcurementAction(
+            agreement_id=agreement.id,
+            agreement_mod_id=mod.id,
+            award_type=AwardType.MODIFICATION,
+            status=ProcurementActionStatus.PLANNED,
+        )
+        loaded_db.add(action)
+        loaded_db.flush()
+        make_awarded_tracker(
+            loaded_db,
+            agreement.id,
+            action.id,
+            tracker_status=ProcurementTrackerStatus.ACTIVE,
+            award_step_status=ProcurementTrackerStepStatus.PENDING,
+            award_approval_status=None,
+        )
+        return agreement, mod
+
+    @staticmethod
+    def _edit(agreement, mod, field, old_value, new_value, **kwargs):
+        return ContractModificationEdit(
+            agreement_id=agreement.id,
+            agreement_mod_id=mod.id,
+            modification_type=kwargs.pop("modification_type", ModificationEditType.MODIFIED_LOE),
+            field=field,
+            old_value=old_value,
+            new_value=new_value,
+            **kwargs,
+        )
+
+    def test_contract_mod_is_listed_from_approval_with_award_fields_empty(self, loaded_db, app_ctx):
+        """OPS-6513: a contract mod shows from the Division Director's approval, labeled with
+        the approval date, before its award is approved."""
+        agreement, _ = self._contract_mod_in_procurement(loaded_db, "Award History Mod In Procurement Test")
+        loaded_db.commit()
+
+        try:
+            records = AgreementAwardHistoryService(loaded_db).get_award_history(agreement.id)
+            assert len(records) == 1
+            record = records[0]
+            assert record["fiscal_year_label"] == "FY 2026 Contract Modification (03/01/2026)"
+            assert record["award_date"] is None
+            assert record["award_amount"] is None
+            assert record["edits"] == []
+        finally:
+            cleanup_award_history(loaded_db, agreement)
+
+    def test_contract_mod_lists_its_edits_netted_across_requests(self, loaded_db, app_ctx):
+        """OPS-6513: edits from every request that joined the mod are shown once per field, from
+        the first From to the latest To; changes that net to nothing are dropped."""
+        agreement, mod = self._contract_mod_in_procurement(loaded_db, "Award History Mod Edits Test")
+        loaded_db.add_all(
+            [
+                # Two requests changed BL 9001's amount: 100 -> 150, then 150 -> 200.
+                self._edit(agreement, mod, "amount", 100.0, 150.0, budget_line_item_id=9001),
+                self._edit(agreement, mod, "amount", 150.0, 200.0, budget_line_item_id=9001),
+                # BL 9002's date changed and then changed back.
+                self._edit(agreement, mod, "date_needed", "2026-05-01", "2026-06-01", budget_line_item_id=9002),
+                self._edit(agreement, mod, "date_needed", "2026-06-01", "2026-05-01", budget_line_item_id=9002),
+                # BL 9003 was changed, then deleted: the delete's From is its first amount.
+                self._edit(agreement, mod, "amount", 300.0, 350.0, budget_line_item_id=9003),
+                self._edit(agreement, mod, "delete", 350.0, None, budget_line_item_id=9003),
+            ]
+        )
+        loaded_db.commit()
+
+        try:
+            edits = AgreementAwardHistoryService(loaded_db).get_award_history(agreement.id)[0]["edits"]
+            by_line = {(edit["budget_line_item_id"], edit["field"]): edit for edit in edits}
+            assert set(by_line) == {(9001, "amount"), (9003, "delete")}
+            assert (by_line[(9001, "amount")]["old_value"], by_line[(9001, "amount")]["new_value"]) == (100.0, 200.0)
+            assert by_line[(9003, "delete")]["old_value"] == 300.0
+            assert by_line[(9003, "delete")]["modification_type"] == "MODIFIED_LOE"
+        finally:
+            cleanup_award_history(loaded_db, agreement)
+
+    def test_contract_mod_cor_change_carries_display_names(self, loaded_db, app_ctx):
+        agreement, mod = self._contract_mod_in_procurement(loaded_db, "Award History Mod COR Test")
+        loaded_db.add(
+            self._edit(
+                agreement,
+                mod,
+                "project_officer_id",
+                520,
+                522,
+                modification_type=ModificationEditType.ADMIN_CHANGE,
+            )
+        )
+        loaded_db.commit()
+
+        try:
+            (edit,) = AgreementAwardHistoryService(loaded_db).get_award_history(agreement.id)[0]["edits"]
+            assert edit["field"] == "project_officer_id"
+            assert edit["old_display_name"] and edit["new_display_name"]
+            assert edit["old_display_name"] != edit["new_display_name"]
         finally:
             cleanup_award_history(loaded_db, agreement)
 

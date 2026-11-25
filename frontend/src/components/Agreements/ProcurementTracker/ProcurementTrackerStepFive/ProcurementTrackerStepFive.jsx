@@ -25,6 +25,7 @@ import { PROCUREMENT_STEP_STATUS, ProcurementTrackerPreAwardApprovalStatus } fro
  * @property {number} agreementId - The agreement ID
  * @property {string} [agreementName] - The agreement name, shown in the approval page's breadcrumb
  * @property {import("../../../../types/BudgetLineTypes").BudgetLine[] | undefined} [budgetLineItems] - Array of budget line items
+ * @property {number} [previousStepNumber=4] - The displayed number of the step before Pre-Award (1 on an As-Is contract mod's tracker)
  * @property {((stepNumber: number) => void) | undefined} [handleSetCompletedStepNumber] - Optional callback to set completed step number
  * @property {boolean} [isReadOnly] - Whether to render in read-only mode (plain text, no form controls)
  */
@@ -43,6 +44,7 @@ const ProcurementTrackerStepFive = ({
     agreementId,
     agreementName,
     budgetLineItems,
+    previousStepNumber = 4,
     handleSetCompletedStepNumber,
     onDirtyChange = undefined,
     isReadOnly = false
@@ -126,7 +128,7 @@ const ProcurementTrackerStepFive = ({
         }
         // Requires completing prior step, usually obvious from UI
         if (!isActiveStep) {
-            return "Complete Step 4 before requesting Pre-Award Approval";
+            return `Complete Step ${previousStepNumber} before requesting Pre-Award Approval`;
         }
         // Generic fallback for global disabled state (no tracker, agreement not editable, etc.)
         if (isDisabled) {

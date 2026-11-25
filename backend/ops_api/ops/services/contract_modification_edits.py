@@ -37,6 +37,7 @@ from models.utils import add_obj_to_db_history
 from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.budget_line_items_helpers import agreement_tracks_contract_modifications
+from ops_api.ops.utils.contract_modification_edits_helpers import edit_target
 
 SC_ADDITION_IN_MODIFICATION_MESSAGE = (
     "This Services Component's addition is in a contract modification that is in review, "
@@ -517,15 +518,7 @@ class ContractModificationEditService:
         latest = {}
         deleted = set()
         for edit in edits:
-            # Services Component rows have no budget line, so they're keyed by SC instead;
-            # otherwise two SC adds would collapse into one (OPS-6440).
-            if edit.services_component_id is not None:
-                target = ("sc", edit.services_component_id)
-            elif edit.budget_line_item_id is None:
-                # Agreement-level edits, e.g. a COR change (OPS-3153)
-                target = ("agreement", edit.agreement_id)
-            else:
-                target = ("bli", edit.budget_line_item_id)
+            target = edit_target(edit)
             if edit.field == "delete":
                 deleted.add(target)
             key = (target, edit.field)

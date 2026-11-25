@@ -62,11 +62,13 @@ export const MODIFICATION_NUMBER_OPTIONS = Object.freeze([
  *
  * @param {any} step6 - The step 6 object from the active procurement tracker, if loaded.
  * @param {any} agreement - The agreement, if loaded.
+ * @param {string} [defaultModificationNumber] - Modification # to start on when none is stored:
+ *   "Base" for the initial award; the next P number (or "") for a contract mod (OPS-6513).
  * @returns {AwardFieldValues}
  */
-export const getSeededAwardFields = (step6, agreement) => ({
+export const getSeededAwardFields = (step6, agreement, defaultModificationNumber = DEFAULT_MODIFICATION_NUMBER) => ({
     agreementTitle: step6?.agreement_title || agreement?.name || "",
-    modificationNumber: step6?.modification_number || DEFAULT_MODIFICATION_NUMBER,
+    modificationNumber: step6?.modification_number || defaultModificationNumber,
     purchaseOrderNumber: step6?.purchase_order_number || "",
     taskOrderNumber: step6?.task_order_number || ""
 });
@@ -86,3 +88,18 @@ export const hasAwardFieldChanges = (current, seeded) =>
     current.modificationNumber !== seeded.modificationNumber ||
     current.purchaseOrderNumber.trim() !== seeded.purchaseOrderNumber.trim() ||
     current.taskOrderNumber.trim() !== seeded.taskOrderNumber.trim();
+
+/**
+ * Whether any non-Draft budget line this award covers still has no CLIN, counting CLINs picked on
+ * the form but not saved yet.
+ *
+ * Pass only the lines the award covers (`getTrackerBudgetLines`): a contract mod's award
+ * needs CLINs on its own lines, not on the agreement's earlier Obligated lines or on Planned
+ * lines that belong to no award yet (OPS-6513).
+ *
+ * @param {Array<{ id: number, status: string, clin_id?: number | null }>} budgetLines
+ * @param {Record<number, number>} clinAssignments - Budget line id → CLIN id picked on the form.
+ * @returns {boolean}
+ */
+export const hasMissingClins = (budgetLines, clinAssignments) =>
+    budgetLines.some((bli) => bli.status !== "DRAFT" && !clinAssignments[bli.id] && !bli.clin_id);

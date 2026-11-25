@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { getTrackerBudgetLines } from "../../../helpers/procurementTracker.helpers";
 import { flushSync } from "react-dom";
 import { useBlocker } from "react-router-dom";
 import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
@@ -62,6 +63,7 @@ export default function useRequestPreAwardApproval(agreementId) {
         grantNumbers,
         groupedBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
+        activeTracker,
         step4,
         step5
     } = usePreAwardApprovalData(agreementId);
@@ -83,15 +85,23 @@ export default function useRequestPreAwardApproval(agreementId) {
     // True when ANY BLI has a pending change request — blocks submission and shows the alert.
     const hasBLIInReview = agreement?.budget_line_items?.some((/** @type {any} */ bli) => bli.in_review) ?? false;
 
-    // Check if Step 4 (Evaluation) is completed
-    const isStep4Completed = step4?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
+    // Check if Step 4 (Evaluation) is done: completed, or skipped because this cycle doesn't need it
+    // (an As-Is contract mod skips steps 2-4, OPS-6513). Mirrors the backend's
+    // Step4CompletionRequiredForApprovalRequestRule.
+    const isStep4Completed =
+        step4?.status === PROCUREMENT_STEP_STATUS.COMPLETED || step4?.status === PROCUREMENT_STEP_STATUS.SKIPPED;
 
     // Only PLANNED and IN_EXECUTION budget lines require pre-award validation.
     // DRAFT lines aren't yet committed for approval; OBLIGATED lines have already
     // completed the full award cycle and don't need pre-award checks.
+    // A contract mod's request covers only the lines that mod executed (OPS-6513), so other
+    // Planned lines on the agreement, which belong to no cycle yet, don't block it.
     const validatableBudgetLines = useMemo(
-        () => allBudgetLines.filter(/** @param {any} bli */ (bli) => VALIDATABLE_BLI_STATUSES.includes(bli.status)),
-        [allBudgetLines]
+        () =>
+            getTrackerBudgetLines(activeTracker, allBudgetLines).filter(
+                /** @param {any} bli */ (bli) => VALIDATABLE_BLI_STATUSES.includes(bli.status)
+            ),
+        [activeTracker, allBudgetLines]
     );
 
     const [agreementValidationResults, setAgreementValidationResults] = useState(null);

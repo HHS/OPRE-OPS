@@ -28,7 +28,8 @@ vi.mock("../../../helpers/budgetLines.helpers", () => ({
 }));
 
 vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants", () => ({
-    PROCUREMENT_STEP_STATUS: { COMPLETE: "COMPLETE" }
+    PROCUREMENT_STEP_STATUS: { COMPLETE: "COMPLETE", SKIPPED: "SKIPPED" },
+    PROCUREMENT_TRACKER_STATUS: { ACTIVE: "ACTIVE", INACTIVE: "INACTIVE", COMPLETED: "COMPLETED" }
 }));
 
 vi.mock("./RequestAwardApproval.suite", () => {
@@ -279,7 +280,7 @@ describe("useRequestAwardApproval — reseeding after a declined request (OPS-58
      * Render the hook with a step 6 that already holds a previous submission's values,
      * as it does when the Budget Team declines and the COR returns to resubmit.
      */
-    const setupWithStep6 = (step6Overrides) => {
+    const setupWithStep6 = (step6Overrides, trackersOverride) => {
         const store = setupStore();
         const wrapper = ({ children }) => (
             <Provider store={store}>
@@ -289,7 +290,9 @@ describe("useRequestAwardApproval — reseeding after a declined request (OPS-58
 
         useGetAgreementByIdQuery.mockReturnValue({ data: buildAgreement(), isLoading: false });
         useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
-            data: { data: [{ status: "ACTIVE", steps: [{ step_number: 6, id: 60, ...step6Overrides }] }] },
+            data: {
+                data: trackersOverride ?? [{ status: "ACTIVE", steps: [{ step_number: 6, id: 60, ...step6Overrides }] }]
+            },
             isLoading: false
         });
         useUpdateProcurementTrackerStepMutation.mockReturnValue([vi.fn(), {}]);
@@ -299,6 +302,37 @@ describe("useRequestAwardApproval — reseeding after a declined request (OPS-58
 
         return renderHook(() => useRequestAwardApproval(1), { wrapper });
     };
+
+    it("starts a contract mod's award on the next Modification #, never Base (OPS-6513)", async () => {
+        const initialAward = {
+            id: 1,
+            status: "COMPLETED",
+            award_type: "NEW_AWARD",
+            created_on: "2025-01-01T00:00:00",
+            steps: [{ step_number: 6, id: 10, modification_number: "Base" }]
+        };
+        const earlierMod = {
+            id: 2,
+            status: "COMPLETED",
+            award_type: "MODIFICATION",
+            agreement_mod_id: 5,
+            created_on: "2026-01-01T00:00:00",
+            steps: [{ step_number: 6, id: 20, modification_number: "P00001" }]
+        };
+        const currentMod = {
+            id: 3,
+            status: "ACTIVE",
+            award_type: "MODIFICATION",
+            agreement_mod_id: 6,
+            created_on: "2026-11-02T00:00:00",
+            steps: [{ step_number: 6, id: 30, modification_number: null }]
+        };
+
+        const { result } = setupWithStep6(undefined, [currentMod, earlierMod, initialAward]);
+
+        await waitFor(() => expect(result.current.agreementTitle).toBe("Test Agreement"));
+        expect(result.current.modificationNumber).toBe("P00002");
+    });
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -383,5 +417,68 @@ describe("useRequestAwardApproval — reseeding after a declined request (OPS-58
                 nextLocation: { pathname: "/agreements/1/details" }
             })
         ).toBe(false);
+    });
+});
+
+describe("useRequestAwardApproval — CLINs required only on the lines this award covers (OPS-6513)", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() });
+    });
+
+    // An awarded contract with a mod: the original award's Obligated line, a Planned line that
+    // belongs to no award yet, and the mod's own Executing line. Only the mod's line has no CLIN
+    // picked yet in the "mod" cases below.
+    const obligatedLine = { id: 101, status: "OBLIGATED", clin_id: null };
+    const plannedLine = { id: 102, status: "PLANNED", clin_id: null };
+    const modLine = { id: 103, status: "IN_EXECUTION", clin_id: null };
+    const modTracker = {
+        id: 2,
+        status: "ACTIVE",
+        award_type: "MODIFICATION",
+        agreement_mod_id: 9,
+        budget_line_item_ids: [modLine.id],
+        steps: [{ step_number: 6, id: 60 }]
+    };
+
+    const render = (trackers, budgetLineItems) => {
+        const store = setupStore();
+        const wrapper = ({ children }) => (
+            <Provider store={store}>
+                <MemoryRouter>{children}</MemoryRouter>
+            </Provider>
+        );
+        useGetAgreementByIdQuery.mockReturnValue({
+            data: buildAgreement({ budget_line_items: budgetLineItems }),
+            isLoading: false
+        });
+        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({ data: { data: trackers }, isLoading: false });
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([vi.fn(), {}]);
+        useGetServicesComponentsListQuery.mockReturnValue({ data: [], isLoading: false });
+        useGetVendorsQuery.mockReturnValue({ data: [], isLoading: false });
+        useUpdateBudgetLineItemMutation.mockReturnValue([vi.fn(), {}]);
+        return renderHook(() => useRequestAwardApproval(1), { wrapper });
+    };
+
+    it("a mod's award isn't blocked by other lines on the agreement that have no CLIN", async () => {
+        const { result } = render([modTracker], [obligatedLine, plannedLine, { ...modLine, clin_id: 7 }]);
+        await waitFor(() => expect(result.current.allBudgetLines).toHaveLength(3));
+        expect(result.current.hasMissingCLINs).toBe(false);
+    });
+
+    it("a mod's award still needs a CLIN on its own line, and picking one clears it", async () => {
+        const { result } = render([modTracker], [obligatedLine, plannedLine, modLine]);
+        await waitFor(() => expect(result.current.allBudgetLines).toHaveLength(3));
+        expect(result.current.hasMissingCLINs).toBe(true);
+
+        act(() => result.current.setClinAssignments({ [modLine.id]: 7 }));
+        expect(result.current.hasMissingCLINs).toBe(false);
+    });
+
+    it("the initial award still needs a CLIN on every non-Draft line", async () => {
+        const initialTracker = { id: 1, status: "ACTIVE", steps: [{ step_number: 6, id: 60 }] };
+        const { result } = render([initialTracker], [{ ...modLine, clin_id: 7 }, plannedLine]);
+        await waitFor(() => expect(result.current.allBudgetLines).toHaveLength(2));
+        expect(result.current.hasMissingCLINs).toBe(true);
     });
 });

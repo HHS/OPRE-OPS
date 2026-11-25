@@ -314,3 +314,66 @@ describe("useEditAwardApproval — save", () => {
         expect(result.current.isSubmitting).toBe(false);
     });
 });
+
+describe("useEditAwardApproval — CLINs required only on the lines this award covers (OPS-6513)", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() });
+    });
+
+    // An awarded contract with a mod: the original award's Obligated line, a Planned line that
+    // belongs to no award yet, and the mod's own Executing line. Only the mod's line has no CLIN
+    // picked yet in the "mod" cases below.
+    const obligatedLine = { id: 101, status: "OBLIGATED", clin_id: null };
+    const plannedLine = { id: 102, status: "PLANNED", clin_id: null };
+    const modLine = { id: 103, status: "IN_EXECUTION", clin_id: null };
+    const modTracker = {
+        id: 2,
+        status: "ACTIVE",
+        award_type: "MODIFICATION",
+        agreement_mod_id: 9,
+        budget_line_item_ids: [modLine.id],
+        steps: [{ step_number: 6, id: 60 }]
+    };
+
+    const render = (trackers, budgetLineItems) => {
+        const store = setupStore(BUDGET_TEAM_STATE);
+        const wrapper = ({ children }) => (
+            <Provider store={store}>
+                <MemoryRouter>{children}</MemoryRouter>
+            </Provider>
+        );
+        useGetAgreementByIdQuery.mockReturnValue({
+            data: buildAgreement({ budget_line_items: budgetLineItems }),
+            isLoading: false
+        });
+        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({ data: { data: trackers }, isLoading: false });
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([vi.fn(), {}]);
+        useGetServicesComponentsListQuery.mockReturnValue({ data: [], isLoading: false });
+        useGetVendorsQuery.mockReturnValue({ data: [], isLoading: false });
+        useUpdateBudgetLineItemMutation.mockReturnValue([vi.fn(), {}]);
+        return renderHook(() => useEditAwardApproval(1), { wrapper });
+    };
+
+    it("a mod's award isn't blocked by other lines on the agreement that have no CLIN", async () => {
+        const { result } = render([modTracker], [obligatedLine, plannedLine, { ...modLine, clin_id: 7 }]);
+        await waitFor(() => expect(result.current.allBudgetLines).toHaveLength(3));
+        expect(result.current.hasMissingCLINs).toBe(false);
+    });
+
+    it("a mod's award still needs a CLIN on its own line, and picking one clears it", async () => {
+        const { result } = render([modTracker], [obligatedLine, plannedLine, modLine]);
+        await waitFor(() => expect(result.current.allBudgetLines).toHaveLength(3));
+        expect(result.current.hasMissingCLINs).toBe(true);
+
+        act(() => result.current.setClinAssignments({ [modLine.id]: 7 }));
+        expect(result.current.hasMissingCLINs).toBe(false);
+    });
+
+    it("the initial award still needs a CLIN on every non-Draft line", async () => {
+        const initialTracker = { id: 1, status: "ACTIVE", steps: [{ step_number: 6, id: 60 }] };
+        const { result } = render([initialTracker], [{ ...modLine, clin_id: 7 }, plannedLine]);
+        await waitFor(() => expect(result.current.allBudgetLines).toHaveLength(2));
+        expect(result.current.hasMissingCLINs).toBe(true);
+    });
+});

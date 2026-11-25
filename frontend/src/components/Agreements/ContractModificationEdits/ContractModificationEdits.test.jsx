@@ -145,6 +145,24 @@ describe("ContractModificationEdits", () => {
         expect(within(getCards()[0]).getByText("In Review")).toBeInTheDocument();
     });
 
+    it("disables Start modification once the contract mod in procurement is sent for Pre-Award approval (OPS-6513)", () => {
+        mockQuery({ data: [AMOUNT_EDIT] });
+        mockRequests([{ id: 9, status: "APPROVED" }]);
+
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+                isActiveContractModLocked={true}
+            />
+        );
+
+        expect(isDisabledWithReachableTooltip("Start modification")).toBe(true);
+        expect(
+            screen.getByText(/current Contract Modification has been sent for Pre-Award approval/, { exact: false })
+        ).toBeInTheDocument();
+    });
+
     it("shows neither the In Review warning nor the review card here -- both live at the agreement level now (#6546)", () => {
         mockQuery({ data: [{ ...AMOUNT_EDIT, in_review: true }] });
         mockRequests([

@@ -19,6 +19,7 @@ from models import (
     AgreementHistoryType,
     AgreementMod,
     BudgetLineItemStatus,
+    ContractAgreement,
     ContractBudgetLineItem,
     ContractModificationRequest,
     ContractModificationRequestNotification,
@@ -907,6 +908,17 @@ def test_modification_document_types_can_be_uploaded(
     assert document.document_type == DocumentType[document_type]
     loaded_db.delete(document)
     loaded_db.commit()
+
+
+def test_seeded_mod_lines_on_agreement_523_are_inside_its_sc_window(loaded_db, app_ctx):
+    """Agreement 523's Planned lines for starting mods in manual testing (LI 5-7) must sit inside the
+    agreement's services-component window, or every edit to them by a non-super user fails the
+    window check in BudgetLineItemService."""
+    agreement = loaded_db.get(ContractAgreement, 523)
+    lines = {bli.line_description: bli for bli in agreement.budget_line_items}
+    for description in ("LI 5", "LI 6", "LI 7"):
+        assert lines[description].status == BudgetLineItemStatus.PLANNED
+        assert agreement.sc_start_date <= lines[description].date_needed <= agreement.sc_end_date, description
 
 
 def test_seeded_contract_modification_edits_cover_every_edit_type_on_agreement_523(loaded_db, app_ctx):

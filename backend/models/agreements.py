@@ -491,6 +491,16 @@ class Agreement(BaseModel):
 
         return is_post_pre_award_locked(self)
 
+    @property
+    def is_active_contract_mod_locked(self) -> bool:
+        """Whether the agreement's contract mod in procurement no longer takes new requests,
+        because its Pre-Award approval has been requested (OPS-6513). A new contract
+        modification can start again once that mod's tracker is complete."""
+        from models.procurement_workflow import active_contract_mod, contract_mod_is_frozen
+
+        active = active_contract_mod(self)
+        return active is not None and contract_mod_is_frozen(active[1])
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
         d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]

@@ -83,6 +83,28 @@ describe("usePreAwardApprovalData", () => {
         expect(budgetLinesTotal).toHaveBeenCalledWith([executingBli1, executingBli2]);
     });
 
+    it("limits a contract mod's executing budget lines to the ones that mod executed (OPS-6513)", () => {
+        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+            data: {
+                data: [
+                    {
+                        id: 2,
+                        status: "ACTIVE",
+                        award_type: "MODIFICATION",
+                        agreement_mod_id: 7,
+                        budget_line_item_ids: [executingBli2.id],
+                        steps: []
+                    }
+                ]
+            }
+        });
+
+        const { result } = renderHook(() => usePreAwardApprovalData(1));
+
+        expect(result.current.executingBudgetLines).toEqual([executingBli2]);
+        expect(budgetLinesTotal).toHaveBeenCalledWith([executingBli2]);
+    });
+
     it("resolves step6 from an ACTIVE tracker", () => {
         const step6 = { id: 10, step_number: 6, approval_requested_by: 42 };
         useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
