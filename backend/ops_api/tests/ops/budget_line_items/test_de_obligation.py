@@ -704,3 +704,84 @@ def test_declining_a_de_obligation_request_puts_the_edit_back_to_pending(
         assert _get_edit(loaded_db, bli.id) is not None  # still pending, available for a new mod
     finally:
         _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
+def test_a_second_de_obligation_shows_the_true_original_and_running_total_not_the_remaining_amount(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    test_project,
+    app_ctx,
+):
+    """Regression guard (OPS-6489): a second de-obligation's old_value is only the amount left
+    after the first approval, not the line's true original -- the pending-review listing, the
+    submitter notification, and the agreement history must all still show the correct lifetime
+    original and the correct cumulative total de-obligated to date for this second round."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="SECOND")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
+    try:
+        # First round: de-obligate and approve.
+        assert _submit_de_obligation(basic_user_auth_client, bli.id, 100000.00).status_code == 200
+        first_mod_id = _submit_mod(basic_user_auth_client, agreement.id).json["id"]
+        assert _review_mod(division_director_auth_client, first_mod_id, "APPROVE").status_code == 200
+        loaded_db.expire_all()
+        bli = loaded_db.get(ContractBudgetLineItem, bli.id)
+        assert float(bli.amount) == 400000.00
+
+        # Second round: de-obligate again -- old_value on this new edit will be 400,000, not the
+        # line's true original of 500,000.
+        assert _submit_de_obligation(basic_user_auth_client, bli.id, 50000.00).status_code == 200
+        second_mod_id = _submit_mod(basic_user_auth_client, agreement.id).json["id"]
+
+        pending = division_director_auth_client.get(url_for("api.contract-modification-requests-pending-review")).json[
+            "data"
+        ]
+        second_request = next(r for r in pending if r["id"] == second_mod_id)
+        de_obligation_edit = next(e for e in second_request["edits"] if e["modification_type"] == "DE_OBLIGATION")
+        assert de_obligation_edit["old_value"] == 400000.0  # the amount before THIS request
+        assert de_obligation_edit["budget_line_original_obligated_amount"] == 500000.0  # the true original
+        assert de_obligation_edit["budget_line_total_de_obligated_to_date"] == 100000.0  # before this approval
+
+        response = _review_mod(division_director_auth_client, second_mod_id, "APPROVE", reviewer_notes="Second round")
+        assert response.status_code == 200, response.json
+
+        loaded_db.expire_all()
+        bli = loaded_db.get(ContractBudgetLineItem, bli.id)
+        assert float(bli.amount) == 350000.00
+        assert float(bli.original_obligated_amount) == 500000.00  # unchanged -- set only once
+        assert float(bli.total_de_obligated_to_date) == 150000.00
+
+        notification = loaded_db.scalars(
+            select(ContractModificationRequestNotification).where(
+                ContractModificationRequestNotification.contract_modification_request_id == second_mod_id,
+                ContractModificationRequestNotification.recipient_id == BASIC_USER_ID,
+            )
+        ).one()
+        # The notification is correct either way: it names THIS request's delta and the
+        # resulting remaining amount, never a claimed "original".
+        assert "de-obligated $50,000.00" in notification.message
+        assert "$350,000.00 remaining obligated" in notification.message
+
+        event = loaded_db.scalars(
+            select(OpsEvent)
+            .where(OpsEvent.event_type == OpsEventType.REVIEW_CONTRACT_MODIFICATION)
+            .order_by(OpsEvent.id.desc())
+            .limit(1)
+        ).one()
+        history = loaded_db.scalars(
+            select(AgreementHistory).where(
+                AgreementHistory.agreement_id == agreement.id,
+                AgreementHistory.history_type == AgreementHistoryType.CONTRACT_MODIFICATION_APPROVED,
+                AgreementHistory.ops_event_id == event.id,
+            )
+        ).one()
+        assert f"BL {bli.id} de-obligated $50,000.00" in history.history_message
+        assert "$350,000.00 remaining obligated" in history.history_message
+        assert "$150,000.00 de-obligated to date" in history.history_message
+    finally:
+        loaded_db.rollback()
+        loaded_db.execute(text("DELETE FROM agreement_history WHERE agreement_id_record = :id"), {"id": agreement.id})
+        loaded_db.commit()
+        _cleanup(loaded_db, agreement.id, bli.id, sc)

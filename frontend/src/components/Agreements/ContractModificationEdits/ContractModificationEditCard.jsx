@@ -1,6 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { renderChangeValues } from "../../../helpers/changeRequests.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay, formatDateToMonthDayYear, renderField } from "../../../helpers/utils";
 import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import TermTag from "../../ChangeRequests/TermTag";
@@ -21,6 +22,11 @@ import styles from "./ContractModificationEditCard.module.scss";
  * @property {*} new_value
  * @property {string | null} [old_display_name] - The "From" user's name for a COR change
  * @property {string | null} [new_display_name] - The "To" user's name for a COR change
+ * @property {number | null} [budget_line_original_obligated_amount] - A de-obligation edit's
+ *   budget line's true lifetime original obligated amount (OPS-6489) -- unlike old_value, this
+ *   stays correct across a second or later de-obligation of the same line.
+ * @property {number | null} [budget_line_total_de_obligated_to_date] - A de-obligation edit's
+ *   budget line's cumulative total de-obligated across every approved de-obligation to date.
  * @property {string | null} [services_component_display_name] - The SC's name for its period-of-performance edits
  * @property {{id: number, full_name: string, display_name?: string} | null} requested_by
  * @property {string | null} requested_on
@@ -39,9 +45,12 @@ const SERVICES_COMPONENT_CHANGE_LABELS = {
 // From/To dates, per the design.
 const SERVICES_COMPONENT_PERIOD_FIELDS = ["period_start", "period_end"];
 
-// A de-obligation edit (OPS-6488/OPS-6489): old_value is the original obligated amount, new_value
-// is the requested de-obligation delta. The generic From/To pair isn't enough here -- the
-// Director needs to see all three: original, requested, and what would remain (OPS-6489 AC2).
+// A de-obligation edit (OPS-6488/OPS-6489): new_value is the requested de-obligation delta, and
+// old_value is the amount before THIS request -- the right basis for "what would remain", but
+// only the line's true original the first time it's de-obligated. budget_line_original_obligated_
+// amount/budget_line_total_de_obligated_to_date come from the budget line itself, so they stay
+// correct across a second or later round too. The generic From/To pair isn't enough here -- the
+// Director needs to see original, requested, what would remain, and the running total (AC2/AC10).
 const DE_OBLIGATION_AMOUNT_FIELD = "requested_de_obligation_amount";
 
 /**
@@ -200,17 +209,22 @@ const ContractModificationEditCard = ({ edit }) => {
                     />
                     <TermTag
                         label="Original Amount"
-                        value={renderField("amount", "amount", edit.old_value)}
+                        value={formatCurrency(edit.budget_line_original_obligated_amount ?? edit.old_value)}
                         className="margin-0"
                     />
                     <TermTag
                         label="Requested De-obligation"
-                        value={renderField("amount", "amount", edit.new_value)}
+                        value={formatCurrency(edit.new_value)}
                         className="margin-0"
                     />
                     <TermTag
                         label="Remaining Amount"
-                        value={renderField("amount", "amount", Number(edit.old_value) - Number(edit.new_value))}
+                        value={formatCurrency(Number(edit.old_value) - Number(edit.new_value))}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Total De-obligated to Date"
+                        value={formatCurrency(edit.budget_line_total_de_obligated_to_date ?? 0)}
                         className="margin-0"
                     />
                 </>

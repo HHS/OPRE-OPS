@@ -256,14 +256,24 @@ class ContractModificationRequestService:
         request.status = ContractModificationRequestStatus.APPROVED
         request.agreement_mod_id = agreement_mod.id
 
+    def _budget_lines_for_edits(self, edits: list) -> dict[int, BudgetLineItem]:
+        """One query for every edit's budget line, keyed by id -- avoids a round trip per edit
+        in ``_validate_de_obligation_edits``/``_apply_de_obligation_edits``."""
+        bli_ids = [edit.budget_line_item_id for edit in edits]
+        if not bli_ids:
+            return {}
+        budget_line_items = self.db_session.scalars(select(BudgetLineItem).where(BudgetLineItem.id.in_(bli_ids))).all()
+        return {bli.id: bli for bli in budget_line_items}
+
     def _validate_de_obligation_edits(self, de_obligation_edits: list) -> None:
         """Re-validate each pending de-obligation's budget line is still Obligated and the
         requested amount still fits its current (possibly already-reduced) amount -- the line may
         have changed since the request was sent, the same risk already checked for executable
         budget lines above."""
+        budget_lines_by_id = self._budget_lines_for_edits(de_obligation_edits)
         errors = []
         for edit in de_obligation_edits:
-            bli = self.db_session.get(BudgetLineItem, edit.budget_line_item_id)
+            bli = budget_lines_by_id.get(edit.budget_line_item_id)
             if bli is None:
                 errors.append(f"Budget line {edit.budget_line_item_id} not found.")
                 continue
@@ -279,8 +289,9 @@ class ContractModificationRequestService:
         stays Obligated even at $0 (AC6). ``original_obligated_amount`` is set once -- the first
         time a line is de-obligated -- so it and the cumulative total de-obligated to date stay
         correct and viewable across any later, repeat de-obligation of the same line."""
+        budget_lines_by_id = self._budget_lines_for_edits(de_obligation_edits)
         for edit in de_obligation_edits:
-            bli = self.db_session.get(BudgetLineItem, edit.budget_line_item_id)
+            bli = budget_lines_by_id[edit.budget_line_item_id]
             if bli.original_obligated_amount is None:
                 bli.original_obligated_amount = bli.amount
             bli.amount = (bli.amount or Decimal("0")) - Decimal(str(edit.new_value))
@@ -425,9 +436,14 @@ def mod_type(request: ContractModificationRequest) -> ModType:
     de-obligation edits only, with nothing else to approve (OPS-6489). A de-obligation riding
     along with a Modified LOE/Admin edit doesn't change the type either -- that classification
     takes precedence."""
-    edits = [edit for edit in request.edits if edit.modification_type != ModificationEditType.DE_OBLIGATION]
+    edits = []
+    has_de_obligation = False
+    for edit in request.edits:
+        if edit.modification_type == ModificationEditType.DE_OBLIGATION:
+            has_de_obligation = True
+        else:
+            edits.append(edit)
     if not edits:
-        has_de_obligation = any(edit.modification_type == ModificationEditType.DE_OBLIGATION for edit in request.edits)
         if has_de_obligation and not request.budget_line_items:
             return ModType.DE_OBLIGATION
         return ModType.AS_IS

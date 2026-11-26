@@ -333,7 +333,8 @@ class BudgetLineItem(BaseModel):
         and the agreement history."""
         if self.original_obligated_amount is None:
             return Decimal("0")
-        return Decimal(self.original_obligated_amount) - Decimal(self.amount or "0")
+        current_amount = self.amount if self.amount is not None else Decimal("0")
+        return Decimal(self.original_obligated_amount) - Decimal(current_amount)
 
     @total_de_obligated_to_date.expression
     def total_de_obligated_to_date(cls):

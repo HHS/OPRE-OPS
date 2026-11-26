@@ -5,6 +5,7 @@ from sqlalchemy.orm import object_session
 
 from models import (
     PROJECT_OFFICER_EDIT_FIELD,
+    BudgetLineItem,
     ContractModificationRequestStatus,
     ModificationEditType,
     User,
@@ -43,6 +44,13 @@ class ContractModificationEditSchema(Schema):
     agreement_mod_id = fields.Integer(allow_none=True)
     # True when the edit is part of the contract modification that is in review.
     in_review = fields.Boolean(dump_default=False)
+    # A de-obligation edit's own old_value is only the line's TRUE original the first time it's
+    # de-obligated -- for a second (or later) one it's the amount left after the prior approval,
+    # not the lifetime original (OPS-6489). These come straight from the budget line itself so
+    # "the original obligated amount" and "the total de-obligated to date" stay correct and
+    # viewable on every later round too (null/0 for a non-de-obligation edit).
+    budget_line_original_obligated_amount = fields.Method("_budget_line_original_obligated_amount")
+    budget_line_total_de_obligated_to_date = fields.Method("_budget_line_total_de_obligated_to_date")
 
     @staticmethod
     def _user_name(edit, user_id):
@@ -56,6 +64,20 @@ class ContractModificationEditSchema(Schema):
 
     def _new_display_name(self, edit):
         return self._user_name(edit, edit.new_value)
+
+    @staticmethod
+    def _de_obligation_budget_line(edit):
+        if edit.modification_type != ModificationEditType.DE_OBLIGATION or edit.budget_line_item_id is None:
+            return None
+        return object_session(edit).get(BudgetLineItem, edit.budget_line_item_id)
+
+    def _budget_line_original_obligated_amount(self, edit):
+        bli = self._de_obligation_budget_line(edit)
+        return float(bli.original_obligated_amount) if bli and bli.original_obligated_amount is not None else None
+
+    def _budget_line_total_de_obligated_to_date(self, edit):
+        bli = self._de_obligation_budget_line(edit)
+        return float(bli.total_de_obligated_to_date) if bli else None
 
 
 class SubmitContractModificationRequestSchema(Schema):

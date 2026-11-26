@@ -746,17 +746,25 @@ def _services_components_added_phrase(event: OpsEvent) -> str:
 
 
 def _de_obligations_applied_phrase(event: OpsEvent) -> str:
-    """e.g. " BL 123 de-obligated $100,000.00, $400,000.00 remaining obligated." for a contract
-    modification that applied a de-obligation (OPS-6489), or "" when it has none -- leading space
-    included so it concatenates directly after the other REVIEW_CONTRACT_MODIFICATION phrases."""
+    """e.g. " BL 123 de-obligated $100,000.00, $400,000.00 remaining obligated ($200,000.00
+    de-obligated to date)." for a contract modification that applied a de-obligation (OPS-6489),
+    or "" when it has none -- leading space included so it concatenates directly after the other
+    REVIEW_CONTRACT_MODIFICATION phrases.
+
+    "Remaining obligated" is the line's true original minus the cumulative total de-obligated to
+    date (as of this approval), not minus just this event's own requested amount -- for a line's
+    second or later de-obligation, "original" (the lifetime original) and "this request's delta"
+    alone would understate how much is actually still obligated."""
     applied = event.event_details.get("de_obligations_applied") or []
     if not applied:
         return ""
     lines = "; ".join(
-        "BL {bli_id} de-obligated {requested}, {remaining} remaining obligated".format(
+        "BL {bli_id} de-obligated {requested}, {remaining} remaining obligated "
+        "({total_to_date} de-obligated to date)".format(
             bli_id=d["budget_line_item_id"],
             requested="${:,.2f}".format(d["requested_amount"]),
-            remaining="${:,.2f}".format(d["original_amount"] - d["requested_amount"]),
+            remaining="${:,.2f}".format(d["original_amount"] - d["total_de_obligated_to_date"]),
+            total_to_date="${:,.2f}".format(d["total_de_obligated_to_date"]),
         )
         for d in applied
     )

@@ -88,6 +88,10 @@ const BLIRow = ({
         !budgetLine?._meta?.inReviewModification;
     const pendingDeObligationAmount = budgetLine?.requested_de_obligation_amount;
     const hasPendingDeObligation = pendingDeObligationAmount != null;
+    // Set once a de-obligation has ever been approved on this line (OPS-6489) -- stays true
+    // after the pending request above is resolved, so the original amount and the running total
+    // de-obligated to date remain viewable on the line's details even once nothing is pending.
+    const hasApprovedDeObligation = budgetLine?.original_obligated_amount != null;
 
     const changeIcons = (
         <ChangeIcons
@@ -284,6 +288,20 @@ const BLIRow = ({
                         <dt className="margin-0 text-base-dark">Procurement Shop</dt>
                         <dd className="margin-0">{getProcurementShopLabel(budgetLine)}</dd>
                     </dl>
+                )}
+                {/* Kept viewable once a de-obligation has been approved, even after the pending
+                    request above is resolved (OPS-6489 AC10). */}
+                {hasApprovedDeObligation && (
+                    <>
+                        <dl className="grid-col-auto margin-top-0 font-12px">
+                            <dt className="margin-0 text-base-dark">Original Obligated Amount</dt>
+                            <dd className="margin-0">{formatCurrency(budgetLine.original_obligated_amount)}</dd>
+                        </dl>
+                        <dl className="grid-col-auto margin-top-0 font-12px">
+                            <dt className="margin-0 text-base-dark">Total De-obligated to Date</dt>
+                            <dd className="margin-0">{formatCurrency(budgetLine.total_de_obligated_to_date)}</dd>
+                        </dl>
+                    </>
                 )}
                 <div className="grid-col display-flex flex-justify-end flex-align-end margin-bottom-1">
                     {!readOnly && (canDeObligate ? deObligateButton : changeIcons)}

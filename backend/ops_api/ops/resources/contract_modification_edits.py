@@ -44,18 +44,24 @@ def _project_officer_change(edits: list[dict]) -> dict | None:
 
 
 def _de_obligations_applied(edits: list[dict]) -> list[dict]:
-    """Per-line original/requested de-obligation amounts among the given serialized edits, for
-    history and the submitter notification (OPS-6489)."""
+    """Per-line original/requested/cumulative de-obligation amounts among the given serialized
+    edits, for history and the submitter notification (OPS-6489). ``original_amount`` is the
+    budget line's true lifetime original (not the edit's own old_value, which for a second or
+    later de-obligation of the same line is only the amount left after the prior approval)."""
     return [
         {
             "budget_line_item_id": edit["budget_line_item_id"],
-            "original_amount": edit["old_value"],
+            "original_amount": (
+                edit["budget_line_original_obligated_amount"]
+                if edit["budget_line_original_obligated_amount"] is not None
+                else edit["old_value"]
+            ),
             "requested_amount": edit["new_value"],
+            "total_de_obligated_to_date": edit["budget_line_total_de_obligated_to_date"],
         }
         for edit in edits
         if edit["modification_type"] == "DE_OBLIGATION"
     ]
-    return None
 
 
 class AgreementContractModificationEditsAPI(BaseItemAPI):

@@ -20,9 +20,9 @@ const approveConfirmationHeading = (request) =>
 /**
  * Shared Approve/Decline confirmation flow for a Contract Modification request (#6546): the
  * confirmation-modal props, the `useReviewContractModificationMutation` call, the success/error
- * alert, and submit-disabling-after-success. Extracted out of `ContractModificationRequestReviewCard`
- * so the For Review list's quick-icon card (`ContractModificationReviewCard`) reuses the exact
- * same approve/decline behavior and alert copy instead of duplicating it.
+ * alert, and submit-disabling-after-success. Shared by the Mod Approval review page
+ * (`ApproveModApproval`, OPS-6489) so every review surface reuses the exact same approve/decline
+ * behavior and alert copy instead of duplicating it.
  *
  * @param {Object} request - The contract modification request (needs at least `id`,
  *   `agreement_id`, and `budget_line_items` for the confirmation heading and success message).
