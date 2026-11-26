@@ -415,6 +415,92 @@ describe("editAgreementReducer - budget line items", () => {
     });
 });
 
+describe("editAgreementReducer - DELETE_SERVICE_COMPONENT", () => {
+    it("filters the SC out and appends a persisted SC's id to deleted_services_components_ids", () => {
+        const state = {
+            ...defaultState,
+            services_components: [
+                { id: 10, number: 1 },
+                { id: 11, number: 2 }
+            ],
+            deleted_services_components_ids: []
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "DELETE_SERVICE_COMPONENT",
+            payload: { id: 10, number: 1 }
+        });
+
+        expect(next.services_components).toEqual([{ id: 11, number: 2 }]);
+        expect(next.deleted_services_components_ids).toEqual([10]);
+    });
+
+    it("unassigns a budget line linked to the deleted SC, but leaves one linked to a surviving SC untouched", () => {
+        const state = {
+            ...defaultState,
+            services_components: [
+                { id: 10, number: 1 },
+                { id: 11, number: 2 }
+            ],
+            budget_line_items: [
+                { id: 1, services_component_id: 10, services_component_number: 1 },
+                { id: 2, services_component_id: 11, services_component_number: 2 }
+            ]
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "DELETE_SERVICE_COMPONENT",
+            payload: { id: 10, number: 1 }
+        });
+
+        expect(next.budget_line_items[0]).toMatchObject({ services_component_id: null, services_component_number: 0 });
+        expect(next.budget_line_items[1]).toEqual(state.budget_line_items[1]);
+    });
+
+    // OPS-3268: performDelete dispatches DELETE_BUDGET_LINE_ITEM for every chosen Draft/Planned
+    // line BEFORE dispatching DELETE_SERVICE_COMPONENT, relying on this composed sequence --
+    // through the real reducer, not a mocked dispatch -- to leave only the kept (OBE/locked)
+    // lines for DELETE_SERVICE_COMPONENT's own reconciliation to unassign. Neither action's own
+    // isolated test proves this composition actually produces the right final state.
+    it("composed with DELETE_BUDGET_LINE_ITEM: chosen lines are removed and queued, the kept OBE line survives unassigned (OPS-3268)", () => {
+        const draftLine = { id: 1, status: "DRAFT", services_component_id: 10, created_on: "2026-01-01T00:00:00Z" };
+        const plannedLine = {
+            id: 2,
+            status: "PLANNED",
+            services_component_id: 10,
+            created_on: "2026-01-01T00:00:00Z"
+        };
+        const obeLine = { id: 3, is_obe: true, services_component_id: 10, created_on: "2026-01-01T00:00:00Z" };
+        const state = {
+            ...defaultState,
+            services_components: [{ id: 10, number: 1 }],
+            budget_line_items: [draftLine, plannedLine, obeLine],
+            deleted_budget_line_items_ids: []
+        };
+
+        const afterBudgetLineDeletes = [draftLine, plannedLine].reduce(
+            (currentState, bli) =>
+                editAgreementReducer(currentState, { type: "DELETE_BUDGET_LINE_ITEM", payload: bli }),
+            state
+        );
+        const final = editAgreementReducer(afterBudgetLineDeletes, {
+            type: "DELETE_SERVICE_COMPONENT",
+            payload: { id: 10, number: 1 }
+        });
+
+        expect(final.budget_line_items).toHaveLength(1);
+        expect(final.budget_line_items[0]).toMatchObject({
+            id: 3,
+            is_obe: true,
+            services_component_id: null,
+            services_component_number: 0,
+            serviceComponentGroupingLabel: "0"
+        });
+        expect(final.deleted_budget_line_items_ids).toEqual([1, 2]);
+        expect(final.deleted_services_components_ids).toEqual([10]);
+    });
+});
+
 describe("editAgreementReducer - ADD_ALN_NUMBER / REMOVE_ALN_NUMBER", () => {
     it("ADD_ALN_NUMBER appends to an existing array", () => {
         const state = { ...defaultState, agreement: { ...defaultState.agreement, aln_numbers: ["93.086"] } };

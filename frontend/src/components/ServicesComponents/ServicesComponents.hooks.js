@@ -274,20 +274,23 @@ const useServicesComponents = (
         // PoP check below so a simultaneous PoP conflict doesn't silently skip the Draft/Planned
         // choice (OPS-3268).
         //
-        // A line with a pending, unapproved change request (in_review) is also excluded from the
-        // delete set, the same way the standalone per-line delete icon already refuses it
-        // (BLIRow.jsx/ChangeIcons.jsx, backed by the backend's compute_bli_editable, which forces
-        // isDeletable false while in_review for every user including superusers). Without this,
-        // "Delete budget lines" could bundle a deletable line with a locked one into one
-        // Promise.all save: the deletable line's DELETE commits immediately while the locked
-        // line's 400s, so the batch partially and silently succeeds with no rollback. Treating a
-        // locked line like OBE -- always kept/unassigned, never offered for deletion -- avoids
-        // that partial-delete outcome entirely.
+        // A line with a pending, unapproved change request (in_review) -- or one locked by a
+        // submitted, undecided Modified-LOE contract-modification request (_meta.isDeletable
+        // false; a separate lock from in_review, OPS-3072) -- is also excluded from the delete
+        // set, the same way the standalone per-line delete icon already refuses both
+        // (BLIRow.jsx:71,88, backed by the backend's compute_bli_editable/
+        // _validate_not_in_review_modification, which force isDeletable false for every user
+        // including superusers). Without this, "Delete budget lines" could bundle a deletable
+        // line with a locked one into one Promise.all save: the deletable line's DELETE commits
+        // immediately while the locked line's 400s, so the batch partially and silently succeeds
+        // with no rollback. Treating a locked line like OBE -- always kept/unassigned, never
+        // offered for deletion -- avoids that partial-delete outcome entirely.
         const allMatchedBudgetLines = allBudgetLines.filter(isOnSelectedSc);
         const draftOrPlannedBudgetLines = allMatchedBudgetLines.filter(
             (budgetLine) =>
                 !budgetLine.is_obe &&
                 !budgetLine.in_review &&
+                budgetLine._meta?.isDeletable !== false &&
                 [BLI_STATUS.DRAFT, BLI_STATUS.PLANNED].includes(budgetLine.status)
         );
 

@@ -729,6 +729,47 @@ describe("useServicesComponents", () => {
             });
         });
 
+        it("excludes a Planned line locked by a submitted Modified-LOE contract modification, like in_review (OPS-3268)", () => {
+            // This lock (_meta.isDeletable false) is a separate mechanism from in_review -- it's
+            // set while a Modified-LOE contract-modification request is submitted and undecided,
+            // with no BudgetLineItemChangeRequest involved. The standalone per-line delete icon
+            // already refuses it (BLIRow.jsx), so bundling it into this bulk delete would reproduce
+            // the exact same partial-delete risk the in_review exclusion above guards against.
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const draftLine = { id: 900, status: "DRAFT", services_component_id: 1 };
+            const lockedPlannedLine = {
+                id: 901,
+                status: "PLANNED",
+                services_component_id: 1,
+                _meta: { isDeletable: false, inReviewModification: true }
+            };
+            const setHasUnsavedChanges = vi.fn();
+            const { result } = renderUseServicesComponents(
+                setHasUnsavedChanges,
+                undefined,
+                [],
+                [draftLine, lockedPlannedLine]
+            );
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.actionButtonText).toBe("Delete");
+            expect(result.current.modalProps.tertiaryButtonText).toBe("Keep");
+
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(dispatchMock).toHaveBeenCalledWith({ type: "DELETE_BUDGET_LINE_ITEM", payload: draftLine });
+            expect(dispatchMock).not.toHaveBeenCalledWith({
+                type: "DELETE_BUDGET_LINE_ITEM",
+                payload: lockedPlannedLine
+            });
+        });
+
         it("falls through to the generic delete confirmation when the SC's only lines are OBE", () => {
             useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
             const obeLine = { id: 900, status: "PLANNED", is_obe: true, services_component_id: 1 };
