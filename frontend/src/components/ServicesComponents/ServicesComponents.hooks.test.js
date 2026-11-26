@@ -31,7 +31,10 @@ const bli = (date_needed) => ({ date_needed });
 const renderUseServicesComponents = (
     setHasUnsavedChanges = vi.fn(),
     scFormSuite = undefined,
-    nonDraftBudgetLines = []
+    nonDraftBudgetLines = [],
+    allBudgetLines = [],
+    isSuperUser = false,
+    tracksContractModifications = false
 ) =>
     renderHook(() =>
         useServicesComponents(
@@ -40,7 +43,10 @@ const renderUseServicesComponents = (
             CONTINUE_BTN_TEXT,
             setHasUnsavedChanges,
             scFormSuite,
-            nonDraftBudgetLines
+            nonDraftBudgetLines,
+            allBudgetLines,
+            isSuperUser,
+            tracksContractModifications
         )
     );
 
@@ -294,9 +300,15 @@ describe("useServicesComponents", () => {
 
         it("goes by a line's current SC number, not its saved services_component_id (moved line)", () => {
             useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
-            const { result } = renderUseServicesComponents(vi.fn(), undefined, [
-                { id: 900, status: "OBLIGATED", services_component_id: 2, services_component_number: 1 }
-            ]);
+            const movedLine = { id: 900, status: "OBLIGATED", services_component_id: 2, services_component_number: 1 };
+            // An unrelated OBE line actually on SC2, so SC2 isn't "empty" (AC1) for this test's purposes.
+            const unrelatedObeLine = { id: 901, status: "PLANNED", is_obe: true, services_component_id: 2 };
+            const { result } = renderUseServicesComponents(
+                vi.fn(),
+                undefined,
+                [movedLine],
+                [movedLine, unrelatedObeLine]
+            );
 
             act(() => {
                 result.current.handleDelete(2);
@@ -308,10 +320,11 @@ describe("useServicesComponents", () => {
 
         it("still allows the delete when its only non-Draft lines are Planned", () => {
             useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
-            const { result } = renderUseServicesComponents(vi.fn(), undefined, [
+            const budgetLines = [
                 { id: 900, status: "PLANNED", services_component_id: 2 },
                 { id: 901, status: "OBLIGATED", services_component_id: 1 }
-            ]);
+            ];
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, budgetLines, budgetLines);
 
             act(() => {
                 result.current.handleDelete(2);
@@ -330,7 +343,14 @@ describe("useServicesComponents", () => {
                     { id: 2, number: 2, display_title: "SC2", period_start: "2025-07-01", period_end: "2025-12-31" }
                 ]
             });
-            const { result } = renderUseServicesComponents(vi.fn(), undefined, [bli("2025-08-15")]);
+            // An OBE line on SC1 so it isn't "empty" (AC1): OBE lines ride the generic confirm
+            // modal, not the new Draft/Planned choice modal (AC2/AC3).
+            const { result } = renderUseServicesComponents(
+                vi.fn(),
+                undefined,
+                [bli("2025-08-15")],
+                [{ id: 50, status: "PLANNED", is_obe: true, services_component_id: 1 }]
+            );
 
             act(() => {
                 result.current.handleDelete(1);
@@ -394,11 +414,20 @@ describe("useServicesComponents", () => {
                     { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" }
                 ]
             });
-            const { result } = renderUseServicesComponents(vi.fn(), undefined, []);
+            // An OBE line so SC1 isn't "empty" (AC1) and the generic confirm modal still appears.
+            const { result } = renderUseServicesComponents(
+                vi.fn(),
+                undefined,
+                [],
+                [{ id: 50, status: "PLANNED", is_obe: true, services_component_id: 1 }]
+            );
 
             act(() => {
                 result.current.handleDelete(1);
             });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.actionButtonText).toBe("Delete");
 
             act(() => {
                 result.current.modalProps.handleConfirm();
@@ -409,6 +438,350 @@ describe("useServicesComponents", () => {
                 payload: expect.objectContaining({ number: 1 })
             });
             expect(result.current.showModal).toBe(false);
+        });
+    });
+
+    describe("handleDelete — an empty SC (OPS-3268 AC1: no additional prompt)", () => {
+        it("deletes immediately with no modal when the SC has no budget lines at all", () => {
+            useEditAgreementMock.mockReturnValue({
+                services_components: [
+                    { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" }
+                ]
+            });
+            const setHasUnsavedChanges = vi.fn();
+            const { result } = renderUseServicesComponents(setHasUnsavedChanges, undefined, [], []);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(false);
+            expect(dispatchMock).toHaveBeenCalledWith({
+                type: "DELETE_SERVICE_COMPONENT",
+                payload: expect.objectContaining({ number: 1 })
+            });
+            expect(setHasUnsavedChanges).toHaveBeenCalledWith(true);
+        });
+
+        it("still shows the PoP-impact modal for an empty SC when deleting it affects another SC's budget line", () => {
+            useEditAgreementMock.mockReturnValue({
+                services_components: [
+                    { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" },
+                    { id: 2, number: 2, display_title: "SC2", period_start: "2025-07-01", period_end: "2025-12-31" }
+                ]
+            });
+            // SC1 has no budget lines of its own, but deleting it narrows the agreement's PoP
+            // window such that SC2's own non-draft line falls outside it.
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [bli("2025-03-15")], []);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.actionButtonText).toBe("Continue with Deletion");
+            expect(dispatchMock).not.toHaveBeenCalled();
+        });
+
+        it("doesn't mistake an unrelated unassigned Draft line for belonging to a brand-new, not-yet-saved empty SC (OPS-3268)", () => {
+            // A new SC (added via "Add Services Component" but not yet saved) has no id yet. An
+            // unassigned budget line also has no services_component_id. Without a guard, undefined
+            // === undefined would make them look linked.
+            const newUnsavedSc = {
+                number: 2,
+                display_title: "SC2",
+                period_start: "2025-01-01",
+                period_end: "2025-06-30"
+            };
+            useEditAgreementMock.mockReturnValue({ services_components: [newUnsavedSc] });
+            const unrelatedUnassignedDraftLine = { id: 900, status: "DRAFT" };
+            const setHasUnsavedChanges = vi.fn();
+            const { result } = renderUseServicesComponents(
+                setHasUnsavedChanges,
+                undefined,
+                [],
+                [unrelatedUnassignedDraftLine]
+            );
+
+            act(() => {
+                result.current.handleDelete(2);
+            });
+
+            // AC1 (empty SC, no prompt) still applies -- the unrelated Draft line must not count.
+            expect(result.current.showModal).toBe(false);
+            expect(dispatchMock).not.toHaveBeenCalledWith({
+                type: "DELETE_BUDGET_LINE_ITEM",
+                payload: unrelatedUnassignedDraftLine
+            });
+            expect(dispatchMock).toHaveBeenCalledWith({
+                type: "DELETE_SERVICE_COMPONENT",
+                payload: expect.objectContaining({ number: 2 })
+            });
+            expect(setHasUnsavedChanges).toHaveBeenCalledWith(true);
+        });
+    });
+
+    describe("handleDelete — a PoP conflict combined with Draft/Planned budget lines (OPS-3268)", () => {
+        it("still offers the delete-or-keep choice, not just Continue with Deletion, when both apply", () => {
+            useEditAgreementMock.mockReturnValue({
+                services_components: [
+                    { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" },
+                    { id: 2, number: 2, display_title: "SC2", period_start: "2025-07-01", period_end: "2025-12-31" }
+                ]
+            });
+            const plannedLine = { id: 900, status: "PLANNED", services_component_id: 1 };
+            // Dated so that removing SC1 strands this non-draft line outside the remaining window.
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [bli("2025-03-15")], [plannedLine]);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.actionButtonText).toBe("Delete");
+            expect(result.current.modalProps.tertiaryButtonText).toBe("Keep");
+            expect(result.current.modalProps.secondaryButtonText).toBe("Cancel");
+            expect(dispatchMock).not.toHaveBeenCalled();
+        });
+
+        it("still dispatches deleting the chosen lines and the SC when the user picks Delete despite the PoP conflict", () => {
+            useEditAgreementMock.mockReturnValue({
+                services_components: [
+                    { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" },
+                    { id: 2, number: 2, display_title: "SC2", period_start: "2025-07-01", period_end: "2025-12-31" }
+                ]
+            });
+            const plannedLine = { id: 900, status: "PLANNED", services_component_id: 1 };
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [bli("2025-03-15")], [plannedLine]);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(dispatchMock).toHaveBeenCalledWith({ type: "DELETE_BUDGET_LINE_ITEM", payload: plannedLine });
+            expect(dispatchMock).toHaveBeenCalledWith({
+                type: "DELETE_SERVICE_COMPONENT",
+                payload: expect.objectContaining({ number: 1 })
+            });
+        });
+    });
+
+    describe("handleDelete — an SC with Draft/Planned budget lines (OPS-3268 AC2/AC3)", () => {
+        const servicesComponents = [
+            { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" }
+        ];
+
+        it.each(["DRAFT", "PLANNED"])("shows the delete-or-keep modal when the SC has a %s line", (status) => {
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const draftOrPlannedLine = { id: 900, status, services_component_id: 1 };
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [], [draftOrPlannedLine]);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.heading).toBe("Delete SC1's Draft and Planned budget lines too?");
+            expect(result.current.modalProps.description).toBe(
+                "This Services Component has Draft and/or Planned budget lines. Choose whether to delete them along with it, or keep them unassigned."
+            );
+            expect(result.current.modalProps.actionButtonText).toBe("Delete");
+            expect(result.current.modalProps.tertiaryButtonText).toBe("Keep");
+            expect(result.current.modalProps.secondaryButtonText).toBe("Cancel");
+        });
+
+        it("dispatches deleting the Draft/Planned lines and the SC, in that order, when the user picks Delete", () => {
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const draftLine = { id: 900, status: "DRAFT", services_component_id: 1 };
+            const plannedLine = { id: 901, status: "PLANNED", services_component_id: 1 };
+            // An OBE line, also matched to the SC, that must never be included in the delete set.
+            const obeLine = { id: 902, status: "PLANNED", is_obe: true, services_component_id: 1 };
+            const setHasUnsavedChanges = vi.fn();
+            const { result } = renderUseServicesComponents(
+                setHasUnsavedChanges,
+                undefined,
+                [],
+                [draftLine, plannedLine, obeLine]
+            );
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            const calledTypesInOrder = dispatchMock.mock.calls.map((call) => call[0].type);
+            expect(calledTypesInOrder).toEqual([
+                "DELETE_BUDGET_LINE_ITEM",
+                "DELETE_BUDGET_LINE_ITEM",
+                "DELETE_SERVICE_COMPONENT"
+            ]);
+            expect(dispatchMock).toHaveBeenCalledWith({ type: "DELETE_BUDGET_LINE_ITEM", payload: draftLine });
+            expect(dispatchMock).toHaveBeenCalledWith({ type: "DELETE_BUDGET_LINE_ITEM", payload: plannedLine });
+            expect(dispatchMock).not.toHaveBeenCalledWith({ type: "DELETE_BUDGET_LINE_ITEM", payload: obeLine });
+            expect(setHasUnsavedChanges).toHaveBeenCalledWith(true);
+            expect(result.current.showModal).toBe(false);
+        });
+
+        it("dispatches only the SC delete, keeping the budget lines unassigned, when the user picks Keep", () => {
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const plannedLine = { id: 900, status: "PLANNED", services_component_id: 1 };
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [], [plannedLine]);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+            act(() => {
+                result.current.modalProps.handleTertiary();
+            });
+
+            expect(dispatchMock).not.toHaveBeenCalledWith({ type: "DELETE_BUDGET_LINE_ITEM", payload: plannedLine });
+            expect(dispatchMock).toHaveBeenCalledWith({
+                type: "DELETE_SERVICE_COMPONENT",
+                payload: expect.objectContaining({ number: 1 })
+            });
+            expect(result.current.showModal).toBe(false);
+        });
+
+        it("says a Planned line's deletion was sent for approval, not that it was deleted, when it would be approval-routed (OPS-3268)", () => {
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const plannedLine = { id: 900, status: "PLANNED", services_component_id: 1 };
+            // Default isSuperUser/tracksContractModifications (both false) route a Planned line's
+            // deletion through DD approval instead of hard-deleting it (OPS-3072/OPS-3268).
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [], [plannedLine]);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(setAlertMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: expect.stringContaining(
+                        "The deletion of 1 budget line has been queued and will be sent to your Division Director for approval when you save"
+                    )
+                })
+            );
+            expect(setAlertMock).toHaveBeenCalledWith(
+                expect.objectContaining({ message: expect.not.stringContaining("and its budget lines have") })
+            );
+        });
+
+        it("says the budget lines were deleted when the acting user is a superuser (OPS-3268)", () => {
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const plannedLine = { id: 900, status: "PLANNED", services_component_id: 1 };
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [], [plannedLine], true, false);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(setAlertMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: expect.stringContaining("and its budget lines have been successfully deleted")
+                })
+            );
+            expect(setAlertMock).toHaveBeenCalledWith(
+                expect.objectContaining({ message: expect.not.stringContaining("Division Director") })
+            );
+        });
+
+        it("excludes an in_review (locked) Planned line from the delete-or-keep set, like OBE (OPS-3268)", () => {
+            // A locked line can never be hard-deleted via the standalone per-line delete icon
+            // either (it's disabled for in_review lines) -- bundling it into this bulk delete
+            // would let a sibling Draft line commit while the locked one 400s, with no rollback.
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const draftLine = { id: 900, status: "DRAFT", services_component_id: 1 };
+            const lockedPlannedLine = { id: 901, status: "PLANNED", in_review: true, services_component_id: 1 };
+            const setHasUnsavedChanges = vi.fn();
+            const { result } = renderUseServicesComponents(
+                setHasUnsavedChanges,
+                undefined,
+                [],
+                [draftLine, lockedPlannedLine]
+            );
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.actionButtonText).toBe("Delete");
+            expect(result.current.modalProps.tertiaryButtonText).toBe("Keep");
+
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(dispatchMock).toHaveBeenCalledWith({ type: "DELETE_BUDGET_LINE_ITEM", payload: draftLine });
+            expect(dispatchMock).not.toHaveBeenCalledWith({
+                type: "DELETE_BUDGET_LINE_ITEM",
+                payload: lockedPlannedLine
+            });
+        });
+
+        it("excludes a Planned line locked by a submitted Modified-LOE contract modification, like in_review (OPS-3268)", () => {
+            // This lock (_meta.isDeletable false) is a separate mechanism from in_review -- it's
+            // set while a Modified-LOE contract-modification request is submitted and undecided,
+            // with no BudgetLineItemChangeRequest involved. The standalone per-line delete icon
+            // already refuses it (BLIRow.jsx), so bundling it into this bulk delete would reproduce
+            // the exact same partial-delete risk the in_review exclusion above guards against.
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const draftLine = { id: 900, status: "DRAFT", services_component_id: 1 };
+            const lockedPlannedLine = {
+                id: 901,
+                status: "PLANNED",
+                services_component_id: 1,
+                _meta: { isDeletable: false, inReviewModification: true }
+            };
+            const setHasUnsavedChanges = vi.fn();
+            const { result } = renderUseServicesComponents(
+                setHasUnsavedChanges,
+                undefined,
+                [],
+                [draftLine, lockedPlannedLine]
+            );
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.actionButtonText).toBe("Delete");
+            expect(result.current.modalProps.tertiaryButtonText).toBe("Keep");
+
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(dispatchMock).toHaveBeenCalledWith({ type: "DELETE_BUDGET_LINE_ITEM", payload: draftLine });
+            expect(dispatchMock).not.toHaveBeenCalledWith({
+                type: "DELETE_BUDGET_LINE_ITEM",
+                payload: lockedPlannedLine
+            });
+        });
+
+        it("falls through to the generic delete confirmation when the SC's only lines are OBE", () => {
+            useEditAgreementMock.mockReturnValue({ services_components: servicesComponents });
+            const obeLine = { id: 900, status: "PLANNED", is_obe: true, services_component_id: 1 };
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [], [obeLine]);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.actionButtonText).toBe("Delete");
+            expect(result.current.modalProps.tertiaryButtonText).toBeUndefined();
         });
     });
 

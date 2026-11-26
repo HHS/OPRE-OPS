@@ -865,6 +865,50 @@
         },
       ],
     },
+    {
+      // Seeded for manual testing of SC deletion with budget lines (OPS-3268 UX feedback,
+      // 11/18 collab): one empty SC per scenario slot, so a tester can add whichever budget
+      // line(s) a scenario needs (via the UI) without constructing the rest of the agreement by
+      // hand. Modeled on CONTRACT #523 above. No budget lines are pre-seeded here on purpose:
+      // BudgetLineItem.id is one sequence shared by every BLI subtype (budget_line_item_id_seq),
+      // so pre-seeded lines here would shift the auto-assigned ids other specs hardcode (e.g.
+      // Cypress's reviewAgreement.cy.js), breaking unrelated tests with no visible connection to
+      // this fixture.
+      // SC1: scaffold (always delete-disabled regardless of its lines).
+      // SC2: AC1 -- add no lines, deletes immediately with no prompt.
+      // SC3: AC2 -- add one DRAFT line, delete-or-keep modal (Draft is never approval-routed).
+      // SC4: AC2 -- add one PLANNED line, delete-or-keep modal.
+      // SC5: AC2 -- add a DRAFT + a PLANNED line, both deleted (or kept) together.
+      // SC6: AC2 + AC3 -- add DRAFT + PLANNED + an OBE line; OBE is always kept/unassigned
+      //   regardless of what's chosen for the other two.
+      // SC7: AC3 -- add only an OBE line; falls through to the plain confirm, not the 3-way
+      //   choice modal.
+      // SC8: AC4 -- add one OBLIGATED line; delete icon is disabled with a tooltip.
+      // SC9: pre-existing, broader block -- add one IN_EXECUTION line; reactive error alert on
+      //   click, not proactively disabled (AC4 only mentions Obligated).
+      id: 524,
+      name: "CONTRACT #524: SC Deletion Test Fixture (OPS-3268)",
+      nick_name: "SC-DELETE-TEST",
+      description: "Fixture for manually testing SC deletion with budget lines (OPS-3268): one empty SC per scenario slot (see comment above) -- add the scenario's budget line(s) via the UI before testing.",
+      product_service_code_id: 1,
+      agreement_reason: "NEW_REQ",
+      project_officer_id: 500,
+      agreement_type: "CONTRACT",
+      project_id: 1002,
+      awarding_entity_id: 4,
+      created_by: 503,
+      contract_number: "CTSCDEL524",
+      vendor_id: 100,
+      delivered_status: false,
+      contract_type: "FIRM_FIXED_PRICE",
+      contract_category: "RESEARCH",
+      service_requirement_type: "SEVERABLE",
+      support_contacts: [],
+      start_date: "2044-06-13T14:00:00",
+      end_date: "2045-06-13T14:00:00",
+      psc_contract_specialist: "PSC Contract Specialist",
+      cotr_id: 520,
+    },
     // OPS-6195 test agreements 25-28: executing BLI edits without approval until Pre-Award.
     {
       id: 25,
@@ -1220,6 +1264,88 @@
       period_start: "2026-11-01T14:00:00",
       period_end: "2027-09-30T14:00:00",
       agreement_id: 28,
+    },
+    // OPS-3268 SC-deletion test fixture (CONTRACT #524) -- see the agreement comment above.
+    {
+      id: 62,
+      number: 1,
+      optional: false,
+      description: "Base Period (scaffold -- not a test case; SC1 is always delete-disabled)",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 524,
+    },
+    {
+      id: 63,
+      number: 2,
+      optional: false,
+      description: "Empty SC -- AC1: deletes immediately with no prompt",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 524,
+    },
+    {
+      id: 64,
+      number: 3,
+      optional: false,
+      description: "Draft-only SC -- AC2: delete-or-keep modal",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 524,
+    },
+    {
+      id: 65,
+      number: 4,
+      optional: false,
+      description: "Planned-only SC -- AC2: delete-or-keep modal",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 524,
+    },
+    {
+      id: 66,
+      number: 5,
+      optional: false,
+      description: "Draft + Planned SC -- AC2: both lines deleted or kept together",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 524,
+    },
+    {
+      id: 67,
+      number: 6,
+      optional: false,
+      description: "Draft + Planned + OBE SC -- AC2/AC3: the OBE line is always kept regardless of choice",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 524,
+    },
+    {
+      id: 68,
+      number: 7,
+      optional: false,
+      description: "OBE-only SC -- falls through to the plain confirm, not the delete-or-keep modal",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 524,
+    },
+    {
+      id: 69,
+      number: 8,
+      optional: false,
+      description: "Obligated SC -- AC4: delete icon is disabled with a tooltip",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 524,
+    },
+    {
+      id: 70,
+      number: 9,
+      optional: false,
+      description: "Executing SC -- pre-existing broader block (reactive error, not proactively disabled)",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 524,
     },
   ],
   procurement_action: [

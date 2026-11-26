@@ -1,3 +1,4 @@
+import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "./ServicesComponents.constants";
 
 /**
@@ -88,6 +89,28 @@ export const getServicesComponentChangeMessages = (changeRequests) =>
  * @param {object} servicesComponent - A services component as returned by the API.
  * @returns {string} The locked-icon tooltip, or "" when nothing is in review.
  */
+/**
+ * Whether a Services Component has any Obligated budget line (OPS-3268 UX feedback item): if so,
+ * it can't be deleted at all, so the delete icon should be disabled rather than reactively blocked
+ * after a click.
+ *
+ * @param {object} servicesComponent - A services component as returned by the API.
+ * @param {import('../../types/BudgetLineTypes').BudgetLine[]} allBudgetLines - Every BLI on the agreement.
+ * @returns {boolean}
+ */
+export function hasObligatedBudgetLines(servicesComponent, allBudgetLines = []) {
+    // Match a line by its SC number when it has one: moving a line to another SC updates the
+    // number and leaves services_component_id stale until save. Mirrors ServicesComponents.hooks.js.
+    const isOnSc = (budgetLine) =>
+        budgetLine.services_component_number != null
+            ? budgetLine.services_component_number === servicesComponent.number
+            : budgetLine.services_component_id === servicesComponent.id;
+    return (
+        servicesComponent?.id != null &&
+        allBudgetLines.some((budgetLine) => isOnSc(budgetLine) && budgetLine.status === BLI_STATUS.OBLIGATED)
+    );
+}
+
 export function getServicesComponentLockedMessage(servicesComponent) {
     // Its own edits are in a contract modification in review: the API rejects changing or deleting
     // it until the modification is approved or declined (OPS-3268).

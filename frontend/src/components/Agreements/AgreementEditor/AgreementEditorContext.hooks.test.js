@@ -497,29 +497,29 @@ describe("editAgreementReducer - budget line items", () => {
         expect(next.budget_line_items).toEqual([{ id: "a", amount: 100 }]);
     });
 
-    it("DELETE_BUDGET_LINE_ITEM filters by id and appends the bare id to deleted_budget_line_items_ids", () => {
+    it("DELETE_BUDGET_LINE_ITEM filters by id and appends a persisted line's id to deleted_budget_line_items_ids", () => {
         const state = {
             ...defaultState,
             budget_line_items: [
-                { id: "a", amount: 100 },
-                { id: "b", amount: 200 }
+                { id: "a", amount: 100, created_on: "2026-01-01T00:00:00Z" },
+                { id: "b", amount: 200, created_on: "2026-01-01T00:00:00Z" }
             ],
             deleted_budget_line_items_ids: []
         };
 
         const next = editAgreementReducer(state, {
             type: "DELETE_BUDGET_LINE_ITEM",
-            payload: { id: "a", amount: 100 }
+            payload: { id: "a", amount: 100, created_on: "2026-01-01T00:00:00Z" }
         });
 
-        expect(next.budget_line_items).toEqual([{ id: "b", amount: 200 }]);
+        expect(next.budget_line_items).toEqual([{ id: "b", amount: 200, created_on: "2026-01-01T00:00:00Z" }]);
         expect(next.deleted_budget_line_items_ids).toEqual(["a"]);
     });
 
     it("DELETE_BUDGET_LINE_ITEM does not append to deleted_budget_line_items_ids when payload has no id", () => {
         const state = {
             ...defaultState,
-            budget_line_items: [{ id: "a", amount: 100 }],
+            budget_line_items: [{ id: "a", amount: 100, created_on: "2026-01-01T00:00:00Z" }],
             deleted_budget_line_items_ids: []
         };
 
@@ -528,6 +528,24 @@ describe("editAgreementReducer - budget line items", () => {
             payload: { amount: 100 }
         });
 
+        expect(next.deleted_budget_line_items_ids).toEqual([]);
+    });
+
+    it("DELETE_BUDGET_LINE_ITEM removes but does not queue a not-yet-saved line, even with a truthy temp id (OPS-3268)", () => {
+        // buildNewBudgetLineItem stamps a cryptoRandomString id on a brand-new line before it's ever
+        // saved -- always truthy, and with no created_on (the API hasn't returned one yet).
+        const state = {
+            ...defaultState,
+            budget_line_items: [{ id: "tempId123abc", amount: 100 }],
+            deleted_budget_line_items_ids: []
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "DELETE_BUDGET_LINE_ITEM",
+            payload: { id: "tempId123abc", amount: 100 }
+        });
+
+        expect(next.budget_line_items).toEqual([]);
         expect(next.deleted_budget_line_items_ids).toEqual([]);
     });
 
@@ -562,6 +580,92 @@ describe("editAgreementReducer - budget line items", () => {
 
         expect(next.budget_line_items).toEqual([]);
         expect(next.deleted_budget_line_items_ids).toEqual([]);
+    });
+});
+
+describe("editAgreementReducer - DELETE_SERVICE_COMPONENT", () => {
+    it("filters the SC out and appends a persisted SC's id to deleted_services_components_ids", () => {
+        const state = {
+            ...defaultState,
+            services_components: [
+                { id: 10, number: 1 },
+                { id: 11, number: 2 }
+            ],
+            deleted_services_components_ids: []
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "DELETE_SERVICE_COMPONENT",
+            payload: { id: 10, number: 1 }
+        });
+
+        expect(next.services_components).toEqual([{ id: 11, number: 2 }]);
+        expect(next.deleted_services_components_ids).toEqual([10]);
+    });
+
+    it("unassigns a budget line linked to the deleted SC, but leaves one linked to a surviving SC untouched", () => {
+        const state = {
+            ...defaultState,
+            services_components: [
+                { id: 10, number: 1 },
+                { id: 11, number: 2 }
+            ],
+            budget_line_items: [
+                { id: 1, services_component_id: 10, services_component_number: 1 },
+                { id: 2, services_component_id: 11, services_component_number: 2 }
+            ]
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "DELETE_SERVICE_COMPONENT",
+            payload: { id: 10, number: 1 }
+        });
+
+        expect(next.budget_line_items[0]).toMatchObject({ services_component_id: null, services_component_number: 0 });
+        expect(next.budget_line_items[1]).toEqual(state.budget_line_items[1]);
+    });
+
+    // OPS-3268: performDelete dispatches DELETE_BUDGET_LINE_ITEM for every chosen Draft/Planned
+    // line BEFORE dispatching DELETE_SERVICE_COMPONENT, relying on this composed sequence --
+    // through the real reducer, not a mocked dispatch -- to leave only the kept (OBE/locked)
+    // lines for DELETE_SERVICE_COMPONENT's own reconciliation to unassign. Neither action's own
+    // isolated test proves this composition actually produces the right final state.
+    it("composed with DELETE_BUDGET_LINE_ITEM: chosen lines are removed and queued, the kept OBE line survives unassigned (OPS-3268)", () => {
+        const draftLine = { id: 1, status: "DRAFT", services_component_id: 10, created_on: "2026-01-01T00:00:00Z" };
+        const plannedLine = {
+            id: 2,
+            status: "PLANNED",
+            services_component_id: 10,
+            created_on: "2026-01-01T00:00:00Z"
+        };
+        const obeLine = { id: 3, is_obe: true, services_component_id: 10, created_on: "2026-01-01T00:00:00Z" };
+        const state = {
+            ...defaultState,
+            services_components: [{ id: 10, number: 1 }],
+            budget_line_items: [draftLine, plannedLine, obeLine],
+            deleted_budget_line_items_ids: []
+        };
+
+        const afterBudgetLineDeletes = [draftLine, plannedLine].reduce(
+            (currentState, bli) =>
+                editAgreementReducer(currentState, { type: "DELETE_BUDGET_LINE_ITEM", payload: bli }),
+            state
+        );
+        const final = editAgreementReducer(afterBudgetLineDeletes, {
+            type: "DELETE_SERVICE_COMPONENT",
+            payload: { id: 10, number: 1 }
+        });
+
+        expect(final.budget_line_items).toHaveLength(1);
+        expect(final.budget_line_items[0]).toMatchObject({
+            id: 3,
+            is_obe: true,
+            services_component_id: null,
+            services_component_number: 0,
+            serviceComponentGroupingLabel: "0"
+        });
+        expect(final.deleted_budget_line_items_ids).toEqual([1, 2]);
+        expect(final.deleted_services_components_ids).toEqual([10]);
     });
 });
 

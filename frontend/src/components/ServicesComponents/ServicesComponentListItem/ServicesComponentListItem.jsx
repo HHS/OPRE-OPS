@@ -17,6 +17,7 @@ import ServicesComponentMetadata from "../ServicesComponentMetadata";
  * @param {Function} props.handleDelete - Function to handle delete operation.
  * @param {boolean} [props.isSubComponent] - Indicates if the item is a sub-component.
  * @param {string} [props.lockedMessage] - When set, the item has a change in review: edit and delete are disabled and this is their tooltip (OPS-6440).
+ * @param {boolean} [props.hasObligatedBudgetLines] - When true, the item has an Obligated budget line: delete is disabled (OPS-3268).
  * @returns {JSX.Element}
  *
  * @example
@@ -32,7 +33,8 @@ function ServicesComponentListItem({
     description,
     handleDelete,
     isSubComponent,
-    lockedMessage = ""
+    lockedMessage = "",
+    hasObligatedBudgetLines = false
 }) {
     const [isHovered, setIsHovered] = React.useState(false);
     const [hasFocusWithin, setHasFocusWithin] = React.useState(false);
@@ -43,18 +45,22 @@ function ServicesComponentListItem({
     const isFirstServiceComponent = number === 1;
     const isLocked = Boolean(lockedMessage);
     const isEditDisabled = Boolean(isLocked || isSubComponent);
-    const isDeleteDisabled = Boolean(isLocked || isSubComponent || isFirstServiceComponent);
+    const isDeleteDisabled = Boolean(isLocked || isSubComponent || isFirstServiceComponent || hasObligatedBudgetLines);
 
     const SUB_COMPONENT_DISABLED_MSG = "Sub-Services Components are from legacy contracts and cannot be edited";
     const FIRST_SERVICE_COMPONENT_DISABLED_MSG = "All agreements must start with an SC1 or Base Period";
+    const OBLIGATED_BUDGET_LINES_DISABLED_MSG =
+        "This services component has an Obligated budget line and can't be deleted.";
 
     // A change in review takes precedence: it's the reason the user can act on.
     const disabledEditMsg = isLocked ? lockedMessage : SUB_COMPONENT_DISABLED_MSG;
     const disabledDeleteMsg = isLocked
         ? lockedMessage
-        : isSubComponent
-          ? SUB_COMPONENT_DISABLED_MSG
-          : FIRST_SERVICE_COMPONENT_DISABLED_MSG;
+        : hasObligatedBudgetLines
+          ? OBLIGATED_BUDGET_LINES_DISABLED_MSG
+          : isSubComponent
+            ? SUB_COMPONENT_DISABLED_MSG
+            : FIRST_SERVICE_COMPONENT_DISABLED_MSG;
 
     return (
         <div

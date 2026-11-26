@@ -714,6 +714,105 @@ def test_delete_sc_and_bli_via_api(auth_client, loaded_db, test_service_componen
     assert not deleted_bli
 
 
+def test_delete_sc_with_draft_and_planned_bli_via_api(auth_client, loaded_db, test_service_component):
+    """
+    OPS-3268: deleting a Services Component with Draft and/or Planned budget lines succeeds and
+    unassigns (rather than deletes) both of them -- "deleting the lines too" is a frontend choice,
+    not something the delete endpoint itself does.
+    """
+    draft_bli = ContractBudgetLineItem(
+        line_description="Draft BLI for SC deletion test",
+        agreement_id=test_service_component.agreement_id,
+        services_component_id=test_service_component.id,
+        amount=10000.00,
+        status=BudgetLineItemStatus.DRAFT,
+        created_by=1,
+    )
+    planned_bli = ContractBudgetLineItem(
+        line_description="Planned BLI for SC deletion test",
+        agreement_id=test_service_component.agreement_id,
+        services_component_id=test_service_component.id,
+        amount=20000.00,
+        status=BudgetLineItemStatus.PLANNED,
+        created_by=1,
+    )
+    loaded_db.add_all([draft_bli, planned_bli])
+    loaded_db.commit()
+    draft_bli_id, planned_bli_id = draft_bli.id, planned_bli.id
+
+    response = auth_client.delete(url_for("api.services-component-item", id=test_service_component.id))
+    assert response.status_code == 200
+    assert not loaded_db.get(ServicesComponent, test_service_component.id)
+
+    for bli_id in (draft_bli_id, planned_bli_id):
+        remaining_bli = loaded_db.get(ContractBudgetLineItem, bli_id)
+        assert remaining_bli is not None
+        assert remaining_bli.services_component_id is None
+
+    loaded_db.delete(loaded_db.get(ContractBudgetLineItem, draft_bli_id))
+    loaded_db.delete(loaded_db.get(ContractBudgetLineItem, planned_bli_id))
+    loaded_db.commit()
+
+
+def test_delete_sc_with_obe_bli_via_api(auth_client, loaded_db, test_service_component):
+    """OPS-3268: an OBE budget line always survives an SC delete, unassigned, regardless of its
+    underlying status."""
+    obe_bli = ContractBudgetLineItem(
+        line_description="OBE BLI for SC deletion test",
+        agreement_id=test_service_component.agreement_id,
+        services_component_id=test_service_component.id,
+        amount=30000.00,
+        status=BudgetLineItemStatus.PLANNED,
+        is_obe=True,
+        created_by=1,
+    )
+    loaded_db.add(obe_bli)
+    loaded_db.commit()
+    obe_bli_id = obe_bli.id
+
+    response = auth_client.delete(url_for("api.services-component-item", id=test_service_component.id))
+    assert response.status_code == 200
+    assert not loaded_db.get(ServicesComponent, test_service_component.id)
+
+    remaining_bli = loaded_db.get(ContractBudgetLineItem, obe_bli_id)
+    assert remaining_bli is not None
+    assert remaining_bli.services_component_id is None
+    assert remaining_bli.is_obe is True
+
+    loaded_db.delete(remaining_bli)
+    loaded_db.commit()
+
+
+@pytest.mark.parametrize("status", [BudgetLineItemStatus.OBLIGATED, BudgetLineItemStatus.IN_EXECUTION])
+def test_delete_sc_blocked_with_executing_or_obligated_bli_via_api(
+    auth_client, loaded_db, test_service_component, status
+):
+    """OPS-3268 AC4 (and the pre-existing, broader Executing block): an SC with an Obligated or
+    Executing budget line can't be deleted at all -- nothing is mutated."""
+    bli = ContractBudgetLineItem(
+        line_description=f"{status.value} BLI blocking SC deletion",
+        agreement_id=test_service_component.agreement_id,
+        services_component_id=test_service_component.id,
+        amount=40000.00,
+        status=status,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    bli_id = bli.id
+
+    response = auth_client.delete(url_for("api.services-component-item", id=test_service_component.id))
+    assert response.status_code == 400
+
+    assert loaded_db.get(ServicesComponent, test_service_component.id) is not None
+    unchanged_bli = loaded_db.get(ContractBudgetLineItem, bli_id)
+    assert unchanged_bli is not None
+    assert unchanged_bli.services_component_id == test_service_component.id
+
+    loaded_db.delete(unchanged_bli)
+    loaded_db.commit()
+
+
 def test_cannot_create_duplicate_sc_numbers_via_api(auth_client, loaded_db, test_project):
     """
     Test that creating Services Components with duplicate numbers via API fails.

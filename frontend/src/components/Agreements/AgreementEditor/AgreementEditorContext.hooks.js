@@ -269,10 +269,16 @@ export function editAgreementReducer(state, action) {
             };
         }
         case "DELETE_BUDGET_LINE_ITEM": {
+            // Only a persisted BLI (one the API has already returned, marked by its own
+            // `created_on`) needs its id queued for a backend DELETE on save. A not-yet-saved BLI
+            // still carries the client-side `cryptoRandomString` id `buildNewBudgetLineItem` stamped
+            // on it -- always truthy, so without this check it would be queued too, and Save would
+            // fail trying to DELETE an id the backend has never heard of (OPS-3268).
+            const isPersisted = action.payload.id && "created_on" in action.payload;
             return {
                 ...state,
                 budget_line_items: state.budget_line_items.filter((bli) => bli.id !== action.payload.id),
-                deleted_budget_line_items_ids: action.payload.id
+                deleted_budget_line_items_ids: isPersisted
                     ? [...state.deleted_budget_line_items_ids, action.payload.id]
                     : [...state.deleted_budget_line_items_ids]
             };

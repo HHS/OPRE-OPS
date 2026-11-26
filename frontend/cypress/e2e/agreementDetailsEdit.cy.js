@@ -260,8 +260,8 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("[data-cy='services-component-list'] > :nth-child(2)").within(() => {
                 cy.get("[data-cy='services-component-item-delete-button']").should("be.visible").click();
             });
-            cy.get(".usa-modal__heading").should("contain", "Are you sure you want to delete Services Component 2?");
-            cy.get("[data-cy='confirm-action']").click();
+            // Services Component 2 has no budget lines, so it deletes immediately with no
+            // confirmation prompt (OPS-3268 AC1).
             cy.get("[data-cy='alert']").should("contain", "Services Component 2 has been successfully deleted.");
             cy.get("[data-cy='services-component-list'] > *").should("have.length", 1);
 

@@ -1,4 +1,4 @@
-import { getServicesComponentLockedMessage } from "../ServicesComponents.helpers";
+import { getServicesComponentLockedMessage, hasObligatedBudgetLines } from "../ServicesComponents.helpers";
 import ServicesComponentListItem from "../ServicesComponentListItem";
 
 /**
@@ -7,12 +7,13 @@ import ServicesComponentListItem from "../ServicesComponentListItem";
  * @param {Array<any>} props.servicesComponents - The list of service components.
  * @param {Function} props.setFormDataById - The function to set the form data by ID.
  * @param {Function} props.handleDelete - The function to handle the deletion of a service component.
+ * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.allBudgetLines] - Every BLI on the agreement, used to disable delete for an SC with an Obligated line (OPS-3268).
  * @returns {React.ReactElement}
  *
  * @example
  * <ServicesComponentsList servicesComponents={servicesComponents} setFormDataById={setFormDataById} handleDelete={handleDelete} />
  */
-function ServicesComponentsList({ servicesComponents, setFormDataById, handleDelete }) {
+function ServicesComponentsList({ servicesComponents, setFormDataById, handleDelete, allBudgetLines = [] }) {
     const sortedServicesComponents = [...servicesComponents].sort((a, b) => {
         // First, sort by number
         if (a.number !== b.number) {
@@ -51,6 +52,7 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
                         handleDelete={handleDelete}
                         isSubComponent={!!item.sub_component}
                         lockedMessage={getServicesComponentLockedMessage(item)}
+                        hasObligatedBudgetLines={hasObligatedBudgetLines(item, allBudgetLines)}
                     />
                 ))
             ) : (

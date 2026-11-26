@@ -1188,6 +1188,7 @@ const useCreateBLIsAndSCs = (
         requiresFinancialApproval,
         requiresContractModification,
         tracksContractModifications,
+        isSuperUser,
         // On an Awarded agreement a non-superuser can't change a saved SC's number or Optional
         // flag (OPS-3268); the backend rejects it too.
         locksServicesComponentNumbers: awardedEditAppliesDirectly,
