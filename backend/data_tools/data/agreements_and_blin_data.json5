@@ -867,24 +867,29 @@
     },
     {
       // Seeded for manual testing of SC deletion with budget lines (OPS-3268 UX feedback,
-      // 11/18 collab): one SC per scenario, so each of the 4 new AC can be exercised in
-      // isolation without constructing data by hand. Modeled on CONTRACT #523 above.
-      // SC1: scaffold (empty, not a test case -- it's always delete-disabled regardless).
-      // SC2: empty -- AC1, deletes immediately with no prompt.
-      // SC3: one DRAFT line -- AC2, delete-or-keep modal (Draft is never approval-routed).
-      // SC4: one PLANNED line -- AC2, delete-or-keep modal.
-      // SC5: DRAFT + PLANNED -- AC2, both lines deleted (or kept) together.
-      // SC6: DRAFT + PLANNED + OBE -- AC2 + AC3, the OBE line is always kept/unassigned
+      // 11/18 collab): one empty SC per scenario slot, so a tester can add whichever budget
+      // line(s) a scenario needs (via the UI) without constructing the rest of the agreement by
+      // hand. Modeled on CONTRACT #523 above. No budget lines are pre-seeded here on purpose:
+      // BudgetLineItem.id is one sequence shared by every BLI subtype (budget_line_item_id_seq),
+      // so pre-seeded lines here would shift the auto-assigned ids other specs hardcode (e.g.
+      // Cypress's reviewAgreement.cy.js), breaking unrelated tests with no visible connection to
+      // this fixture.
+      // SC1: scaffold (always delete-disabled regardless of its lines).
+      // SC2: AC1 -- add no lines, deletes immediately with no prompt.
+      // SC3: AC2 -- add one DRAFT line, delete-or-keep modal (Draft is never approval-routed).
+      // SC4: AC2 -- add one PLANNED line, delete-or-keep modal.
+      // SC5: AC2 -- add a DRAFT + a PLANNED line, both deleted (or kept) together.
+      // SC6: AC2 + AC3 -- add DRAFT + PLANNED + an OBE line; OBE is always kept/unassigned
       //   regardless of what's chosen for the other two.
-      // SC7: OBE only, no Draft/Planned -- falls through to the plain confirm, not the
-      //   3-way choice modal.
-      // SC8: one OBLIGATED line -- AC4, delete icon is disabled with a tooltip.
-      // SC9: one IN_EXECUTION line -- pre-existing, broader block (reactive error alert on
-      //   click, not proactively disabled -- AC4 only mentions Obligated).
+      // SC7: AC3 -- add only an OBE line; falls through to the plain confirm, not the 3-way
+      //   choice modal.
+      // SC8: AC4 -- add one OBLIGATED line; delete icon is disabled with a tooltip.
+      // SC9: pre-existing, broader block -- add one IN_EXECUTION line; reactive error alert on
+      //   click, not proactively disabled (AC4 only mentions Obligated).
       id: 524,
       name: "CONTRACT #524: SC Deletion Test Fixture (OPS-3268)",
       nick_name: "SC-DELETE-TEST",
-      description: "Fixture for manually testing SC deletion with budget lines (OPS-3268): one SC per scenario (empty, Draft, Planned, Draft+Planned, Draft+Planned+OBE, OBE only, Obligated, Executing).",
+      description: "Fixture for manually testing SC deletion with budget lines (OPS-3268): one empty SC per scenario slot (see comment above) -- add the scenario's budget line(s) via the UI before testing.",
       product_service_code_id: 1,
       agreement_reason: "NEW_REQ",
       project_officer_id: 500,
@@ -18816,183 +18821,6 @@
       date_needed: "2025-03-01T14:00:00",
       proc_shop_fee_percentage: 0,
       services_component_id: 55,
-      on_hold: false,
-      certified: false,
-      closed: false,
-    },
-    // OPS-3268 SC-deletion test fixture (CONTRACT #524) -- appended at the end so no other
-    // contract budget line's auto-assigned id shifts. See the agreement/SC comments above for
-    // which scenario each line belongs to.
-    {
-      // SC3 (Draft-only)
-      budget_line_item_type: "CONTRACT",
-      line_description: "SC3 Draft line",
-      comments: "",
-      can_id: 504,
-      created_by: 503,
-      agreement_id: 524,
-      amount: 10000.0,
-      status: "DRAFT",
-      date_needed: "2045-03-01T14:00:00",
-      proc_shop_fee_percentage: 0,
-      services_component_id: 64,
-      on_hold: false,
-      certified: false,
-      closed: false,
-    },
-    {
-      // SC4 (Planned-only)
-      budget_line_item_type: "CONTRACT",
-      line_description: "SC4 Planned line",
-      comments: "",
-      can_id: 504,
-      created_by: 503,
-      agreement_id: 524,
-      amount: 20000.0,
-      status: "PLANNED",
-      date_needed: "2045-03-01T14:00:00",
-      proc_shop_fee_percentage: 0,
-      services_component_id: 65,
-      on_hold: false,
-      certified: false,
-      closed: false,
-    },
-    {
-      // SC5 (Draft + Planned), Draft line
-      budget_line_item_type: "CONTRACT",
-      line_description: "SC5 Draft line",
-      comments: "",
-      can_id: 504,
-      created_by: 503,
-      agreement_id: 524,
-      amount: 15000.0,
-      status: "DRAFT",
-      date_needed: "2045-03-01T14:00:00",
-      proc_shop_fee_percentage: 0,
-      services_component_id: 66,
-      on_hold: false,
-      certified: false,
-      closed: false,
-    },
-    {
-      // SC5 (Draft + Planned), Planned line
-      budget_line_item_type: "CONTRACT",
-      line_description: "SC5 Planned line",
-      comments: "",
-      can_id: 504,
-      created_by: 503,
-      agreement_id: 524,
-      amount: 25000.0,
-      status: "PLANNED",
-      date_needed: "2045-03-01T14:00:00",
-      proc_shop_fee_percentage: 0,
-      services_component_id: 66,
-      on_hold: false,
-      certified: false,
-      closed: false,
-    },
-    {
-      // SC6 (Draft + Planned + OBE), Draft line
-      budget_line_item_type: "CONTRACT",
-      line_description: "SC6 Draft line",
-      comments: "",
-      can_id: 504,
-      created_by: 503,
-      agreement_id: 524,
-      amount: 12000.0,
-      status: "DRAFT",
-      date_needed: "2045-03-01T14:00:00",
-      proc_shop_fee_percentage: 0,
-      services_component_id: 67,
-      on_hold: false,
-      certified: false,
-      closed: false,
-    },
-    {
-      // SC6 (Draft + Planned + OBE), Planned line
-      budget_line_item_type: "CONTRACT",
-      line_description: "SC6 Planned line",
-      comments: "",
-      can_id: 504,
-      created_by: 503,
-      agreement_id: 524,
-      amount: 22000.0,
-      status: "PLANNED",
-      date_needed: "2045-03-01T14:00:00",
-      proc_shop_fee_percentage: 0,
-      services_component_id: 67,
-      on_hold: false,
-      certified: false,
-      closed: false,
-    },
-    {
-      // SC6 (Draft + Planned + OBE), OBE line -- must always survive unassigned, whichever
-      // button is picked for the Draft/Planned lines above.
-      budget_line_item_type: "CONTRACT",
-      line_description: "SC6 OBE line",
-      comments: "",
-      can_id: 504,
-      created_by: 503,
-      agreement_id: 524,
-      amount: 18000.0,
-      status: "PLANNED",
-      is_obe: true,
-      date_needed: "2045-03-01T14:00:00",
-      proc_shop_fee_percentage: 0,
-      services_component_id: 67,
-      on_hold: false,
-      certified: false,
-      closed: false,
-    },
-    {
-      // SC7 (OBE only, no Draft/Planned) -- falls through to the plain confirm modal.
-      budget_line_item_type: "CONTRACT",
-      line_description: "SC7 OBE line",
-      comments: "",
-      can_id: 504,
-      created_by: 503,
-      agreement_id: 524,
-      amount: 9000.0,
-      status: "PLANNED",
-      is_obe: true,
-      date_needed: "2045-03-01T14:00:00",
-      proc_shop_fee_percentage: 0,
-      services_component_id: 68,
-      on_hold: false,
-      certified: false,
-      closed: false,
-    },
-    {
-      // SC8 (Obligated) -- AC4: delete icon disabled with a tooltip.
-      budget_line_item_type: "CONTRACT",
-      line_description: "SC8 Obligated line",
-      comments: "",
-      can_id: 504,
-      created_by: 503,
-      agreement_id: 524,
-      amount: 100000.0,
-      status: "OBLIGATED",
-      date_needed: "2045-03-01T14:00:00",
-      proc_shop_fee_percentage: 0,
-      services_component_id: 69,
-      on_hold: false,
-      certified: false,
-      closed: false,
-    },
-    {
-      // SC9 (Executing) -- pre-existing, broader block (reactive error alert, unaffected by
-      // this story's AC4 scope since that only mentions Obligated).
-      budget_line_item_type: "CONTRACT",
-      line_description: "SC9 Executing line",
-      comments: "",
-      can_id: 504,
-      created_by: 503,
-      agreement_id: 524,
-      amount: 110000.0,
-      status: "IN_EXECUTION",
-      date_needed: "2045-03-01T14:00:00",
-      proc_shop_fee_percentage: 0,
-      services_component_id: 70,
       on_hold: false,
       certified: false,
       closed: false,
