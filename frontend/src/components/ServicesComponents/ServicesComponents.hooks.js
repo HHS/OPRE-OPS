@@ -219,7 +219,7 @@ const useServicesComponents = (
         let message = `${selectedServicesComponent.display_title}${budgetLinesNote} ${hardDeletedCount > 0 ? "have" : "has"} been successfully deleted.`;
         if (pendingApproval.length > 0) {
             const plural = pendingApproval.length > 1;
-            message += ` The deletion of ${plural ? `${pendingApproval.length} budget lines` : "1 budget line"} has been sent to your Division Director for approval, and ${plural ? "they are" : "it is"} unassigned from any Services Component in the meantime.`;
+            message += ` The deletion of ${plural ? `${pendingApproval.length} budget lines` : "1 budget line"} has been queued and will be sent to your Division Director for approval when you save, and ${plural ? "they are" : "it is"} unassigned from any Services Component in the meantime.`;
         }
         message += ` When you're done editing, click ${continueBtnText} below.`;
 

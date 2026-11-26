@@ -664,7 +664,7 @@ describe("useServicesComponents", () => {
             expect(setAlertMock).toHaveBeenCalledWith(
                 expect.objectContaining({
                     message: expect.stringContaining(
-                        "The deletion of 1 budget line has been sent to your Division Director for approval"
+                        "The deletion of 1 budget line has been queued and will be sent to your Division Director for approval when you save"
                     )
                 })
             );
