@@ -38,6 +38,9 @@ const declineOpenContractModifications = () => {
 
 describe("Review a Contract Modification from the For Review list (#6546)", () => {
     let budgetLineId;
+    // Set only by the de-obligation test below; cleaned up here too so a successful run doesn't
+    // leave its $800 line (and its CAN allocation) behind for later test runs.
+    let obligatedBliId;
 
     before(function () {
         // Behind ENABLE_MODIFIED_LOE_EDITS, which is off in CI's E2E stack today.
@@ -50,6 +53,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
     });
 
     beforeEach(() => {
+        obligatedBliId = undefined;
         declineOpenContractModifications();
         testLogin("system-owner");
         apiRequest({
@@ -77,6 +81,12 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         declineOpenContractModifications();
         testLogin("system-owner");
         apiRequest({ method: "DELETE", url: `/budget-line-items/${budgetLineId}` });
+        if (obligatedBliId) {
+            // Obligated lines can only be deleted by a superuser (Power User), regardless of
+            // modification/review state -- system-owner's delete above would 400.
+            testLogin("power-user");
+            apiRequest({ method: "DELETE", url: `/budget-line-items/${obligatedBliId}` });
+        }
     });
 
     it("approves from the Mod Approval page via the list's Review Agreement link (OPS-6489)", () => {
@@ -145,8 +155,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
     it("de-obligates a line and approves it from the Mod Approval page, reducing the obligated amount (OPS-6489)", () => {
         // An Obligated line needs a future Need By Date; the shared beforeEach's budgetLineId
         // uses today's (fine for the Planned-execute flow in the other two tests), so this test
-        // creates its own.
-        let obligatedBliId;
+        // creates its own -- cleaned up by afterEach via the describe-scope obligatedBliId.
         testLogin("system-owner");
         apiRequest({
             method: "POST",
@@ -190,6 +199,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         cy.contains("Original Amount").should("be.visible");
         cy.contains("Requested De-obligation").should("be.visible");
         cy.contains("Remaining Amount").should("be.visible");
+        cy.contains("Total De-obligated to Date").should("be.visible");
         cy.get('[data-cy="approve-mod-approval-btn"]').click();
         cy.get("[data-cy='confirm-action']").click();
         cy.get(".usa-alert__body").contains(/agreement approved for contract modification/i);
