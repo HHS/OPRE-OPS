@@ -116,20 +116,35 @@ def get_funding_by_budget_line_item_status(
 ) -> float:
     """
     Return the funding amount for the given CAN based on the BudgetLineItem status and fiscal year.
+
+    Uses ``bli.can_funding_amount`` (the original obligated amount once a de-obligation has been
+    approved, otherwise the live ``amount``), not ``bli.amount`` directly: approving a
+    de-obligation reduces ``amount`` in place (OPS-6489), and the CAN's balance must keep
+    reflecting the amount originally deducted and consumed from it, not the contract's
+    now-smaller obligation.
     """
     if fiscal_year:
         return (
             sum(
                 [
-                    bli.amount
+                    bli.can_funding_amount
                     for bli in can.budget_line_items
-                    if bli.amount and bli.status == status and bli.fiscal_year == fiscal_year
+                    if bli.can_funding_amount and bli.status == status and bli.fiscal_year == fiscal_year
                 ]
             )
             or 0
         )
     else:
-        return sum([bli.amount for bli in can.budget_line_items if bli.amount and bli.status == status]) or 0
+        return (
+            sum(
+                [
+                    bli.can_funding_amount
+                    for bli in can.budget_line_items
+                    if bli.can_funding_amount and bli.status == status
+                ]
+            )
+            or 0
+        )
 
 
 class CanFundingAmounts(TypedDict):

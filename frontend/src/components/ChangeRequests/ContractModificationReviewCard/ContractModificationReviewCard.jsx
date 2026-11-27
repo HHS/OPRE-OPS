@@ -1,28 +1,27 @@
 import PropTypes from "prop-types";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faEye } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useNavigate } from "react-router-dom";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import useContractModificationReview from "../../../hooks/useContractModificationReview.hooks";
-import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
-import SimpleAlert from "../../UI/Alert/SimpleAlert";
-import Tooltip from "../../UI/USWDS/Tooltip";
 
 const MOD_TYPE_LABEL = {
     MODIFIED_LOE: "Modified LOE",
     ADMIN: "Admin Change",
-    AS_IS: "As-Is"
+    AS_IS: "As-Is",
+    DE_OBLIGATION: "De-obligation"
 };
 
 /**
  * ContractModificationReviewCard — For Review card for a Contract Modification request pending
- * the current user's review (#6546). A deliberately temporary "functional bullet tracer": quick
- * approve (✓) / decline (✕) icons are the entire interaction — no "Review agreement" link, no
- * detail view, no reviewer notes. Both are expected to be replaced once the real review page
- * (issue #3331) ships. Approve/decline logic is shared with the (currently unrendered)
- * `ContractModificationRequestReviewCard` via `useContractModificationReview`.
+ * the current user's review (#6546), for any modification type including de-obligation
+ * (OPS-6489). A "Review Agreement" link takes the Director to the dedicated Mod Approval page
+ * (`ApproveModApproval`, `/agreements/:id/review-modification`), which now carries the
+ * approve/decline interaction that this card's own quick icons used to -- the review page
+ * ships, so per this card's own prior doc comment, the icons are replaced by the link, not kept
+ * alongside it.
  *
  * @component
  * @param {Object} props
@@ -31,10 +30,14 @@ const MOD_TYPE_LABEL = {
  *   `created_by`, `created_on`, `modification_type`, `budget_line_items`).
  */
 function ContractModificationReviewCard({ request }) {
+    const navigate = useNavigate();
     const agreementName = useGetAgreementName(request.agreement_id);
     const requestorName = useGetUserFullNameFromId(request.created_by);
-    const { showModal, setShowModal, modalProps, handleReview, isSubmitDisabled, submitError } =
-        useContractModificationReview(request);
+
+    const handleViewClick = (e) => {
+        e.preventDefault();
+        navigate(`/agreements/${request.agreement_id}/review-modification`);
+    };
 
     return (
         <div
@@ -66,49 +69,25 @@ function ContractModificationReviewCard({ request }) {
                 <dd className="margin-0">{agreementName}</dd>
             </dl>
 
-            {/* Row 1, Col 6: quick approve/decline icons */}
+            {/* Row 1, Col 6: Review Agreement link */}
             <div
-                className="grid-col-6 display-flex flex-justify-end"
+                className="grid-col-6 display-flex flex-justify-end flex-align-start"
                 style={{ gap: "0.5rem" }}
             >
-                <Tooltip
-                    label="Approve"
-                    position="top"
+                <button
+                    type="button"
+                    onClick={handleViewClick}
+                    className="usa-button--unstyled text-primary font-12px cursor-pointer"
+                    data-cy="review-agreement-button"
+                    aria-label={`Review agreement ${agreementName}`}
                 >
-                    <button
-                        type="button"
-                        id={`approve-${request.id}`}
-                        aria-label="Approve"
-                        disabled={isSubmitDisabled}
-                        onClick={() => handleReview("APPROVE")}
-                        data-cy="approve-contract-modification-icon-btn"
-                    >
-                        <FontAwesomeIcon
-                            icon={faCheck}
-                            size="2x"
-                            className="text-primary height-2 width-2 cursor-pointer"
-                        />
-                    </button>
-                </Tooltip>
-                <Tooltip
-                    label="Decline"
-                    position="top"
-                >
-                    <button
-                        type="button"
-                        id={`decline-${request.id}`}
-                        aria-label="Decline"
-                        disabled={isSubmitDisabled}
-                        onClick={() => handleReview("DECLINE")}
-                        data-cy="decline-contract-modification-icon-btn"
-                    >
-                        <FontAwesomeIcon
-                            icon={faXmark}
-                            size="2x"
-                            className="text-primary height-2 width-2 cursor-pointer"
-                        />
-                    </button>
-                </Tooltip>
+                    Review Agreement
+                    <FontAwesomeIcon
+                        icon={faEye}
+                        size="3x"
+                        className="height-2 width-2 margin-left-1"
+                    />
+                </button>
             </div>
 
             {/* Modification Type */}
@@ -129,17 +108,6 @@ function ContractModificationReviewCard({ request }) {
                 <dd className="margin-0">{requestorName || "Unknown"}</dd>
             </dl>
 
-            {submitError && (
-                <div style={{ gridColumn: "1 / 7" }}>
-                    <SimpleAlert
-                        type="error"
-                        heading="Error"
-                        message={submitError}
-                        headingLevel={4}
-                    />
-                </div>
-            )}
-
             {/* Footer: request date */}
             <footer
                 className="font-12px display-flex flex-align-center"
@@ -154,15 +122,6 @@ function ContractModificationReviewCard({ request }) {
                     {formatDateToMonthDayYear(request.created_on)}
                 </div>
             </footer>
-
-            {showModal && (
-                <ConfirmationModal
-                    heading={modalProps.heading}
-                    setShowModal={setShowModal}
-                    actionButtonText={modalProps.actionButtonText}
-                    handleConfirm={modalProps.handleConfirm}
-                />
-            )}
         </div>
     );
 }

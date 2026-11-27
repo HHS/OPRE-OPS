@@ -39,3 +39,51 @@ describe("ContractModificationEditCard — Services Component period of performa
         expect(screen.getByText("January 31, 2044")).toBeInTheDocument();
     });
 });
+
+describe("ContractModificationEditCard — De-obligation (OPS-6489)", () => {
+    const deObligationEdit = {
+        id: 2,
+        modification_type: "DE_OBLIGATION",
+        budget_line_item_id: 123,
+        field: "requested_de_obligation_amount",
+        old_value: 500000.0,
+        new_value: 100000.0,
+        requested_by: { id: 521, full_name: "Basic User" },
+        requested_on: "2026-11-18T12:00:00Z"
+    };
+
+    it("shows the original, requested, remaining, and to-date amounts -- not just a From/To pair", () => {
+        render(<ContractModificationEditCard edit={deObligationEdit} />);
+
+        expect(screen.getByText("Original Amount")).toBeInTheDocument();
+        expect(screen.getByText("Requested De-obligation")).toBeInTheDocument();
+        expect(screen.getByText("Remaining Amount")).toBeInTheDocument();
+        expect(screen.getByText("Total De-obligated to Date")).toBeInTheDocument();
+        expect(screen.getByText("$500,000.00")).toBeInTheDocument();
+        expect(screen.getByText("$100,000.00")).toBeInTheDocument();
+        expect(screen.getByText("$400,000.00")).toBeInTheDocument();
+        // No budget_line_total_de_obligated_to_date on this (first-round) fixture -> $0, zero-suppressed.
+        expect(screen.getByText("$0")).toBeInTheDocument();
+        expect(screen.getByText("De-obligation")).toBeInTheDocument();
+        expect(screen.queryByText("From")).not.toBeInTheDocument();
+        expect(screen.queryByText("To")).not.toBeInTheDocument();
+    });
+
+    it("prefers the budget line's true original and cumulative total over old_value on a second de-obligation (OPS-6489 regression guard)", () => {
+        // Simulates reviewing a SECOND de-obligation request on a line already de-obligated once:
+        // old_value is only the amount left after that first approval, not the lifetime original.
+        const repeatRoundEdit = {
+            ...deObligationEdit,
+            old_value: 400000.0, // the line's remaining amount after the first approved round
+            new_value: 50000.0,
+            budget_line_original_obligated_amount: 500000.0, // the line's true, lifetime original
+            budget_line_total_de_obligated_to_date: 100000.0 // cumulative as of before this approval
+        };
+        render(<ContractModificationEditCard edit={repeatRoundEdit} />);
+
+        expect(screen.getByText("$500,000.00")).toBeInTheDocument(); // Original Amount: the true original, not $400,000
+        expect(screen.getByText("$50,000.00")).toBeInTheDocument(); // Requested De-obligation
+        expect(screen.getByText("$350,000.00")).toBeInTheDocument(); // Remaining Amount: 400,000 - 50,000
+        expect(screen.getByText("$100,000.00")).toBeInTheDocument(); // Total De-obligated to Date (as of before this approval)
+    });
+});

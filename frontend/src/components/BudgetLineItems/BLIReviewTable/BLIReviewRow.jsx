@@ -49,6 +49,9 @@ import React, { memo } from "react";
  * @property {boolean} [showCheckbox] - Whether to show the checkbox for selection.
  * @property {string[]} [errorStatuses] - When provided, inline error styling applies to rows whose status is in this list (regardless of row selection). When omitted, the original selection-gated behavior is preserved: errors only show when the row is selected (Review Agreement page behavior).
  * @property {BLIReviewClinConfig} [clin] - CLIN column display configuration. Omit to hide the column.
+ * @property {"status"|"amount"} [highlightedField] - A mod's changed field for this line
+ *   (OPS-6489 Mod Approval page): highlights the Status or Amount cell with a blue bottom border
+ *   and an "Updated" label (not color alone, per AC15).
  */
 
 /**
@@ -64,7 +67,8 @@ const BLIReviewRow = ({
     showCheckbox = true,
     readOnly = false,
     errorStatuses,
-    clin = {}
+    clin = {},
+    highlightedField
 }) => {
     const {
         showColumn: showCLINColumn = false,
@@ -243,7 +247,9 @@ const BLIReviewRow = ({
         const amountDisplay = amount != null ? formatCurrency(getNetAmount(budgetLine)) : NO_DATA;
         // Use explicit null check — 0 is a valid amount and must not be flagged as missing.
         const amountErrorClasses = rowInReviewMode && amount == null ? "table-item-error" : "";
-        const amountClasses = showCellErrors ? amountErrorClasses : "";
+        const amountHighlightClasses = highlightedField === "amount" ? "border-bottom-2px border-primary" : "";
+        const amountClasses = `${showCellErrors ? amountErrorClasses : ""} ${amountHighlightClasses}`.trim();
+        const statusHighlightClasses = highlightedField === "status" ? "border-bottom-2px border-primary" : "";
 
         const feeValue = feeTotal || 0;
         const totalWithFees = budgetLineTotalPlusFees || 0;
@@ -269,10 +275,13 @@ const BLIReviewRow = ({
                 <td className={amountClasses}>
                     {amountDisplay}
                     <PendingDeObligationIcon budgetLine={budgetLine} />
+                    {highlightedField === "amount" && (
+                        <span className="usa-sr-only"> (Updated by this modification)</span>
+                    )}
                 </td>
                 <td>{formatCurrency(feeValue)}</td>
                 <td>{formatCurrency(totalWithFees)}</td>
-                <td>
+                <td className={statusHighlightClasses || undefined}>
                     {isRowActive && onAddCLINClick && showCLINColumn && !isDraftStatus ? (
                         <button
                             className="usa-button usa-button--unstyled text-primary"
@@ -286,11 +295,16 @@ const BLIReviewRow = ({
                             CLIN
                         </button>
                     ) : (
-                        <TableTag
-                            status={budgetLine?.status}
-                            inReview={budgetLine?.in_review}
-                            lockedMessage={inReviewTooltip}
-                        />
+                        <>
+                            <TableTag
+                                status={budgetLine?.status}
+                                inReview={budgetLine?.in_review}
+                                lockedMessage={inReviewTooltip}
+                            />
+                            {highlightedField === "status" && (
+                                <span className="usa-sr-only"> (Updated by this modification)</span>
+                            )}
+                        </>
                     )}
                 </td>
             </>

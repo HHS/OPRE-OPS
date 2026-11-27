@@ -37,8 +37,9 @@ const declineOpenContractModifications = () => {
 };
 
 /**
- * Approve the contract modification in review as the Division Director, through the API: the review
- * card is a placeholder and isn't shown on the Award & Modifications tab yet (#3269; review UI is #3331).
+ * Approve the contract modification in review as the Division Director, through the API: the
+ * Mod Approval review page (OPS-6489) is reached from the For Review list, not from the Award &
+ * Modifications tab, which still shows only the read-only "In Review" alert there (#3269).
  */
 const approveOpenContractModification = () => {
     testLogin("division-director");

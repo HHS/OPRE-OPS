@@ -13,10 +13,14 @@ const PendingDeObligationIcon = ({ budgetLine }) => {
     if (pendingAmount == null) {
         return null;
     }
+    // budgetLine.amount is the amount before this pending request, which is also the line's true
+    // original obligated amount the first time it's de-obligated -- but not on a second or later
+    // round, where original_obligated_amount (set once, on the first approval) is already known.
+    const originalAmount = budgetLine.original_obligated_amount ?? budgetLine.amount;
     return (
         <Tooltip
             position="right"
-            label={`Original obligated amount was ${formatCurrency(budgetLine.amount)} with ${formatCurrency(
+            label={`Original obligated amount was ${formatCurrency(originalAmount)} with ${formatCurrency(
                 pendingAmount
             )} de-obligated in a modification`}
         >

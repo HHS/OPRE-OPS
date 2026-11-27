@@ -1,6 +1,7 @@
 import { vi } from "vitest";
 import {
     BLI_STATUS,
+    budgetLinesTotal,
     getBudgetLineCreatedDate,
     getBudgetByStatus,
     getNonDRAFTBudgetLines,
@@ -27,6 +28,23 @@ import {
 } from "./budgetLines.helpers";
 import { budgetLine, agreement } from "../tests/data";
 import { formatDateNeeded } from "./utils";
+
+describe("budgetLinesTotal", () => {
+    it("adds numeric amounts", () => {
+        expect(budgetLinesTotal([{ amount: 1000 }, { amount: 2000 }])).toBe(3000);
+    });
+
+    // Regression guard: ContractModificationBudgetLineSummarySchema dumps `amount` as a decimal
+    // STRING, not a number. `n + amount` would silently concatenate ("01000.002000.00") instead
+    // of adding, which CurrencyWithSmallCents then renders as $0 (Number(...) is NaN).
+    it("adds decimal-string amounts instead of concatenating them", () => {
+        expect(budgetLinesTotal([{ amount: "1000.00" }, { amount: "2000.00" }])).toBe(3000);
+    });
+
+    it("treats a null or missing amount as 0", () => {
+        expect(budgetLinesTotal([{ amount: 1000 }, { amount: null }, {}])).toBe(1000);
+    });
+});
 
 describe("getBudgetLineCreatedDate", () => {
     it("should return a human readable date", () => {

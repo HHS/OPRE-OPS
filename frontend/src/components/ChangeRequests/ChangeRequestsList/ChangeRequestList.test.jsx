@@ -281,8 +281,9 @@ describe("ChangeRequestList", () => {
 
         expect(await screen.findByTestId("contract-modification-review-card")).toBeInTheDocument();
         expect(screen.getByText("Modified LOE")).toBeInTheDocument();
-        // No "Review agreement" link/detail view — the quick icons are the only interaction (#6546).
-        expect(screen.queryByText(/review agreement/i)).not.toBeInTheDocument();
+        // The Mod Approval review page exists now (OPS-6489): a "Review Agreement" link takes
+        // the Director there, replacing the quick icons (#6546).
+        expect(screen.getByRole("button", { name: /review agreement/i })).toBeInTheDocument();
     });
 
     it("clamps currentPage to totalPages when allItems shrinks after a refetch", async () => {

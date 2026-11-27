@@ -29,6 +29,8 @@ import { VALIDATABLE_BLI_STATUSES } from "../constants";
  * @property {boolean} [showBudgetLineErrors] - When true, inline error styling is applied to
  *   PLANNED/IN_EXECUTION BLI cells. Omit (default false) for read-only review pages where
  *   errors should not be highlighted.
+ * @property {Object.<number, "status"|"amount">} [highlightedFieldByBudgetLineId] - A mod's
+ *   changed field per budget line id (OPS-6489 Mod Approval page). Omit for no highlighting.
  */
 
 /**
@@ -49,7 +51,8 @@ export const BudgetLinesReviewAccordion = ({
     executingTotal,
     showCLINColumn = false,
     executingTotalInstructions = undefined,
-    showBudgetLineErrors = false
+    showBudgetLineErrors = false,
+    highlightedFieldByBudgetLineId
 }) => {
     const isGrant = agreement?.agreement_type === "GRANT";
     return (
@@ -106,6 +109,7 @@ export const BudgetLinesReviewAccordion = ({
                                                 errorStatuses={
                                                     showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined
                                                 }
+                                                highlightedFieldByBudgetLineId={highlightedFieldByBudgetLineId}
                                             />
                                         ) : (
                                             <p className="text-center margin-y-7">
@@ -139,6 +143,7 @@ export const BudgetLinesReviewAccordion = ({
                                             action=""
                                             clin={{ showColumn: showCLINColumn }}
                                             errorStatuses={showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined}
+                                            highlightedFieldByBudgetLineId={highlightedFieldByBudgetLineId}
                                         />
                                     ) : (
                                         <p className="text-center margin-y-7">

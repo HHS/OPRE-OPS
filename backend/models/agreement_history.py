@@ -475,6 +475,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 else ""
             )
             sc_added = _services_components_added_phrase(event)
+            de_obligated = _de_obligations_applied_phrase(event)
             requestor_user = session.get(User, event.event_details.get("requested_by_user_id"))
             requestor_name = requestor_user.full_name if requestor_user else "Unknown User"
             history_events.append(
@@ -489,6 +490,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                         + (" The procurement process has started." if approved else "")
                         + (f" It included {sc_added}." if sc_added else "")
                         + executed
+                        + de_obligated
                         + (f" Notes: {reviewer_notes}" if reviewer_notes else "")
                     ),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -741,6 +743,32 @@ def _services_components_added_phrase(event: OpsEvent) -> str:
     if event.event_details.get("project_officer_change"):
         phrases.append("changing the COR")
     return " and ".join(phrases)
+
+
+def _de_obligations_applied_phrase(event: OpsEvent) -> str:
+    """e.g. " BL 123 de-obligated $100,000.00, $400,000.00 remaining obligated ($200,000.00
+    de-obligated to date)." for a contract modification that applied a de-obligation (OPS-6489),
+    or "" when it has none -- leading space included so it concatenates directly after the other
+    REVIEW_CONTRACT_MODIFICATION phrases.
+
+    "Remaining obligated" is the line's true original minus the cumulative total de-obligated to
+    date (as of this approval), not minus just this event's own requested amount -- for a line's
+    second or later de-obligation, "original" (the lifetime original) and "this request's delta"
+    alone would understate how much is actually still obligated."""
+    applied = event.event_details.get("de_obligations_applied") or []
+    if not applied:
+        return ""
+    lines = "; ".join(
+        "BL {bli_id} de-obligated {requested}, {remaining} remaining obligated "
+        "({total_to_date} de-obligated to date)".format(
+            bli_id=d["budget_line_item_id"],
+            requested="${:,.2f}".format(d["requested_amount"]),
+            remaining="${:,.2f}".format(d["original_amount"] - d["total_de_obligated_to_date"]),
+            total_to_date="${:,.2f}".format(d["total_de_obligated_to_date"]),
+        )
+        for d in applied
+    )
+    return f" {lines}."
 
 
 def create_services_component_change_request_history_event(

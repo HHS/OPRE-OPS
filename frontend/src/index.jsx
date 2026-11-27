@@ -43,6 +43,7 @@ import {
     ReviewBudgetTeamRequisition
 } from "./pages/agreements/pre-award-approval";
 import { RequestAwardApproval, ApproveAwardApproval, EditAwardApproval } from "./pages/agreements/award-approval";
+import { ApproveModApproval } from "./pages/agreements/mod-approval";
 import UserDetail from "./pages/users/detail/UserDetail";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import EditUser from "./pages/users/edit/EditUser";
@@ -334,6 +335,13 @@ const router = createBrowserRouter(
                 <Route
                     path="/agreements/:id/review-award"
                     element={<ApproveAwardApproval />}
+                    handle={{
+                        crumb: () => listCrumb("agreements")
+                    }}
+                />
+                <Route
+                    path="/agreements/:id/review-modification"
+                    element={<ApproveModApproval />}
                     handle={{
                         crumb: () => listCrumb("agreements")
                     }}

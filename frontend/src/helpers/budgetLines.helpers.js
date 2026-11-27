@@ -76,7 +76,10 @@ export const getNetAmount = (budgetLine) =>
  */
 export const budgetLinesTotal = (budgetLines) => {
     handleBLIArrayProp(budgetLines);
-    return budgetLines.reduce((n, { amount }) => n + (amount || 0), 0);
+    // Number(amount) first: some API responses dump amount as a decimal STRING (e.g.
+    // ContractModificationBudgetLineSummarySchema), and `n + amount` would silently concatenate
+    // those instead of adding them.
+    return budgetLines.reduce((n, { amount }) => n + (Number(amount) || 0), 0);
 };
 
 /**

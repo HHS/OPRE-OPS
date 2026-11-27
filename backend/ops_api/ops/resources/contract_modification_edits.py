@@ -43,6 +43,27 @@ def _project_officer_change(edits: list[dict]) -> dict | None:
     return None
 
 
+def _de_obligations_applied(edits: list[dict]) -> list[dict]:
+    """Per-line original/requested/cumulative de-obligation amounts among the given serialized
+    edits, for history and the submitter notification (OPS-6489). ``original_amount`` is the
+    budget line's true lifetime original (not the edit's own old_value, which for a second or
+    later de-obligation of the same line is only the amount left after the prior approval)."""
+    return [
+        {
+            "budget_line_item_id": edit["budget_line_item_id"],
+            "original_amount": (
+                edit["budget_line_original_obligated_amount"]
+                if edit["budget_line_original_obligated_amount"] is not None
+                else edit["old_value"]
+            ),
+            "requested_amount": edit["new_value"],
+            "total_de_obligated_to_date": edit["budget_line_total_de_obligated_to_date"],
+        }
+        for edit in edits
+        if edit["modification_type"] == "DE_OBLIGATION"
+    ]
+
+
 class AgreementContractModificationEditsAPI(BaseItemAPI):
     """Pending edits on an Awarded agreement that require a contract modification."""
 
@@ -149,7 +170,7 @@ class ContractModificationRequestsPendingReviewAPI(BaseListAPI):
         Returns every IN_REVIEW contract modification request the current user may
         approve/decline, newest first, shaped as ``{"data": [ {request}, ... ]}``. ``can_review``
         is true on every row (the query is already scoped to requests this user can review), and
-        ``modification_type`` ("MODIFIED_LOE" | "ADMIN" | "AS_IS") is set for display.
+        ``modification_type`` ("MODIFIED_LOE" | "ADMIN" | "AS_IS" | "DE_OBLIGATION") is set for display.
         """
         service = ContractModificationRequestService(current_app.db_session)
         requests = service.get_pending_for_user(get_current_user())
@@ -203,6 +224,10 @@ class ContractModificationRequestItemAPI(BaseItemAPI):
                     "project_officer_change": _project_officer_change(data["edits"])
                     or service.declined_project_officer_change,
                     "project_officer_revert": service.project_officer_revert,
+                    # Empty on a decline: the edits are still pending, nothing was applied (OPS-6489).
+                    "de_obligations_applied": (
+                        _de_obligations_applied(data["edits"]) if mod_request.status.name == "APPROVED" else []
+                    ),
                     "budget_line_item_ids": data["budget_line_item_ids"],
                     "reviewer_notes": mod_request.reviewer_notes,
                 }

@@ -1,15 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useReviewContractModificationMutation } from "../../../api/opsAPI";
 import ContractModificationReviewCard from "./ContractModificationReviewCard";
-
-const mockReview = vi.fn();
-const mockSetAlert = vi.fn();
-
-vi.mock("../../../api/opsAPI", () => ({
-    useReviewContractModificationMutation: vi.fn()
-}));
 
 vi.mock("../../../hooks/lookup.hooks", () => ({
     useGetAgreementName: () => "Agreement Name B"
@@ -17,11 +10,6 @@ vi.mock("../../../hooks/lookup.hooks", () => ({
 
 vi.mock("../../../hooks/user.hooks", () => ({
     default: () => "Sheila Celentano"
-}));
-
-vi.mock("../../../hooks/use-alert.hooks", () => ({
-    __esModule: true,
-    default: () => ({ setAlert: mockSetAlert })
 }));
 
 const baseRequest = {
@@ -33,77 +21,59 @@ const baseRequest = {
     budget_line_items: []
 };
 
-const renderCard = (request = {}) =>
-    render(<ContractModificationReviewCard request={{ ...baseRequest, ...request }} />);
+const renderCard = (request = {}) => {
+    const router = createMemoryRouter(
+        [{ path: "/", element: <ContractModificationReviewCard request={{ ...baseRequest, ...request }} /> }],
+        { initialEntries: ["/"] }
+    );
+    return render(<RouterProvider router={router} />);
+};
 
 describe("ContractModificationReviewCard", () => {
     afterEach(() => {
         vi.clearAllMocks();
     });
 
-    it("renders Agreement, Modification Type, Requested by, and the request date", () => {
-        useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
+    it.each([
+        ["MODIFIED_LOE", "Modified LOE"],
+        ["ADMIN", "Admin Change"],
+        ["AS_IS", "As-Is"],
+        ["DE_OBLIGATION", "De-obligation"]
+    ])(
+        "renders Agreement, Modification Type (%s -> %s), Requested by, and the request date",
+        (modificationType, label) => {
+            renderCard({ modification_type: modificationType });
 
+            expect(screen.getByText("Contract Modification")).toBeInTheDocument();
+            expect(screen.getByText("Agreement Name B")).toBeInTheDocument();
+            expect(screen.getByText(label)).toBeInTheDocument();
+            expect(screen.getByText("Sheila Celentano")).toBeInTheDocument();
+        }
+    );
+
+    it("has a 'Review Agreement' link instead of quick approve/decline icons (OPS-6489)", () => {
         renderCard();
 
-        expect(screen.getByText("Contract Modification")).toBeInTheDocument();
-        expect(screen.getByText("Agreement Name B")).toBeInTheDocument();
-        expect(screen.getByText("Modified LOE")).toBeInTheDocument();
-        expect(screen.getByText("Sheila Celentano")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /review agreement agreement name b/i })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Approve" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Decline" })).not.toBeInTheDocument();
     });
 
-    it("has no 'Review agreement' link or detail view -- the icons are the only interaction (#6546)", () => {
-        useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
-
-        renderCard();
-
-        expect(screen.queryByText(/review agreement/i)).not.toBeInTheDocument();
-        expect(screen.queryByRole("link")).not.toBeInTheDocument();
-    });
-
-    it("approving opens a confirmation modal without calling the mutation until confirmed", async () => {
-        useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
-
-        renderCard();
-        await userEvent.click(screen.getByRole("button", { name: "Approve" }));
-
-        expect(mockReview).not.toHaveBeenCalled();
-        expect(screen.getByText("Are you sure you want to approve this Contract Modification?")).toBeInTheDocument();
-    });
-
-    it("confirming Approve calls the mutation with no reviewer notes and alerts success", async () => {
-        const unwrap = vi.fn().mockResolvedValue({});
-        mockReview.mockReturnValue({ unwrap });
-        useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
-
-        renderCard();
-        await userEvent.click(screen.getByRole("button", { name: "Approve" }));
-        const confirmButtons = screen.getAllByRole("button", { name: "Approve" });
-        await userEvent.click(confirmButtons[confirmButtons.length - 1]);
-
-        expect(mockReview).toHaveBeenCalledWith({ requestId: 9, action: "APPROVE", reviewerNotes: null });
-        await vi.waitFor(() =>
-            expect(mockSetAlert).toHaveBeenCalledWith(
-                expect.objectContaining({ type: "success", heading: "Agreement Approved for Contract Modification" })
-            )
+    it("navigates to the Mod Approval page for this agreement when clicked", async () => {
+        const router = createMemoryRouter(
+            [
+                { path: "/", element: <ContractModificationReviewCard request={baseRequest} /> },
+                {
+                    path: "/agreements/:id/review-modification",
+                    element: <div data-testid="mod-approval-page">Mod Approval</div>
+                }
+            ],
+            { initialEntries: ["/"] }
         );
-    });
+        render(<RouterProvider router={router} />);
 
-    it("confirming Decline calls the mutation with DECLINE and alerts the decline", async () => {
-        const unwrap = vi.fn().mockResolvedValue({});
-        mockReview.mockReturnValue({ unwrap });
-        useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
+        await userEvent.click(screen.getByRole("button", { name: /review agreement/i }));
 
-        renderCard();
-        await userEvent.click(screen.getByRole("button", { name: "Decline" }));
-        const confirmButtons = screen.getAllByRole("button", { name: "Decline" });
-        await userEvent.click(confirmButtons[confirmButtons.length - 1]);
-
-        expect(mockReview).toHaveBeenCalledWith({ requestId: 9, action: "DECLINE", reviewerNotes: null });
-        await vi.waitFor(() =>
-            expect(mockSetAlert).toHaveBeenCalledWith(
-                expect.objectContaining({ type: "error", heading: "Contract Modification Declined" })
-            )
-        );
+        expect(await screen.findByTestId("mod-approval-page")).toBeInTheDocument();
     });
 });

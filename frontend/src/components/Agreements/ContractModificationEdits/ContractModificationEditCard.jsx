@@ -1,6 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { renderChangeValues } from "../../../helpers/changeRequests.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay, formatDateToMonthDayYear, renderField } from "../../../helpers/utils";
 import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import TermTag from "../../ChangeRequests/TermTag";
@@ -21,6 +22,11 @@ import styles from "./ContractModificationEditCard.module.scss";
  * @property {*} new_value
  * @property {string | null} [old_display_name] - The "From" user's name for a COR change
  * @property {string | null} [new_display_name] - The "To" user's name for a COR change
+ * @property {number | null} [budget_line_original_obligated_amount] - A de-obligation edit's
+ *   budget line's true lifetime original obligated amount (OPS-6489) -- unlike old_value, this
+ *   stays correct across a second or later de-obligation of the same line.
+ * @property {number | null} [budget_line_total_de_obligated_to_date] - A de-obligation edit's
+ *   budget line's cumulative total de-obligated across every approved de-obligation to date.
  * @property {string | null} [services_component_display_name] - The SC's name for its period-of-performance edits
  * @property {{id: number, full_name: string, display_name?: string} | null} requested_by
  * @property {string | null} requested_on
@@ -38,6 +44,14 @@ const SERVICES_COMPONENT_CHANGE_LABELS = {
 // A Services Component's period-of-performance edit (OPS-3268): one card per date, with the SC and
 // From/To dates, per the design.
 const SERVICES_COMPONENT_PERIOD_FIELDS = ["period_start", "period_end"];
+
+// A de-obligation edit (OPS-6488/OPS-6489): new_value is the requested de-obligation delta, and
+// old_value is the amount before THIS request -- the right basis for "what would remain", but
+// only the line's true original the first time it's de-obligated. budget_line_original_obligated_
+// amount/budget_line_total_de_obligated_to_date come from the budget line itself, so they stay
+// correct across a second or later round too. The generic From/To pair isn't enough here -- the
+// Director needs to see original, requested, what would remain, and the running total (AC2/AC10).
+const DE_OBLIGATION_AMOUNT_FIELD = "requested_de_obligation_amount";
 
 /**
  * One edit on an Awarded agreement that requires a contract modification.
@@ -60,6 +74,7 @@ const ContractModificationEditCard = ({ edit }) => {
     const servicesComponentName = edit.field === "services_component_create" ? edit.new_value : edit.old_value;
     // A COR change (OPS-3153) is agreement-level: no budget line, and From/To are user names.
     const isAgreementLevel = edit.field === "project_officer_id";
+    const isDeObligation = edit.field === DE_OBLIGATION_AMOUNT_FIELD;
     // A budget line selected to execute (Planned -> Executing, Start Modification) isn't a
     // tracked edit -- it's the approval action itself -- so it carries no modification_type.
     const isExecuteSelection =
@@ -182,6 +197,34 @@ const ContractModificationEditCard = ({ edit }) => {
                     <TermTag
                         label="To"
                         bliStatus={edit.new_value}
+                        className="margin-0"
+                    />
+                </>
+            ) : isDeObligation ? (
+                <>
+                    <TermTag
+                        label="BL ID"
+                        value={edit.budget_line_item_id}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Original Amount"
+                        value={formatCurrency(edit.budget_line_original_obligated_amount ?? edit.old_value)}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Requested De-obligation"
+                        value={formatCurrency(edit.new_value)}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Remaining Amount"
+                        value={formatCurrency(Number(edit.old_value) - Number(edit.new_value))}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="Total De-obligated to Date"
+                        value={formatCurrency(edit.budget_line_total_de_obligated_to_date ?? 0)}
                         className="margin-0"
                     />
                 </>

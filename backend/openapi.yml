@@ -7647,7 +7647,7 @@ components:
           example: 15
         modification_type:
           type: string
-          enum: [MODIFIED_LOE, ADMIN_CHANGE]
+          enum: [MODIFIED_LOE, ADMIN_CHANGE, DE_OBLIGATION]
           example: MODIFIED_LOE
         budget_line_item_id:
           type: integer
@@ -7724,6 +7724,23 @@ components:
           type: boolean
           description: True when the edit is part of the contract modification that is in review.
           example: false
+        budget_line_original_obligated_amount:
+          type: number
+          format: float
+          nullable: true
+          description: >-
+            DE_OBLIGATION edits only: the budget line's true lifetime original obligated amount
+            (OPS-6489) -- unlike old_value, this stays correct across a second or later
+            de-obligation of the same line. Null for other modification types.
+          example: 600000.0
+        budget_line_total_de_obligated_to_date:
+          type: number
+          format: float
+          nullable: true
+          description: >-
+            DE_OBLIGATION edits only: the budget line's cumulative total de-obligated across
+            every approved de-obligation to date. Null for other modification types.
+          example: 100000.0
     ContractModificationRequest:
       type: object
       description: A contract modification sent to the Division Director for approval.
@@ -8420,6 +8437,21 @@ components:
           description: >-
             `amount` minus `requested_de_obligation_amount`; equals `amount` when there is no
             pending de-obligation request.
+        original_obligated_amount:
+          type: number
+          format: float
+          nullable: true
+          description: >-
+            The line's obligated amount before its first approved de-obligation (OPS-6489). Null
+            until a de-obligation has been approved on this line; set once and never changed
+            after that, even across a later, repeat de-obligation of the same line.
+        total_de_obligated_to_date:
+          type: number
+          format: float
+          description: >-
+            How much has been de-obligated from this line across every approved de-obligation to
+            date (OPS-6489): `original_obligated_amount` minus the current `amount`, or 0 when
+            `original_obligated_amount` is null.
         comments:
           type: string
         date_needed:
@@ -8526,6 +8558,21 @@ components:
           description: >-
             `amount` minus `requested_de_obligation_amount`; equals `amount` when there is no
             pending de-obligation request.
+        original_obligated_amount:
+          type: number
+          format: float
+          nullable: true
+          description: >-
+            The line's obligated amount before its first approved de-obligation (OPS-6489). Null
+            until a de-obligation has been approved on this line; set once and never changed
+            after that, even across a later, repeat de-obligation of the same line.
+        total_de_obligated_to_date:
+          type: number
+          format: float
+          description: >-
+            How much has been de-obligated from this line across every approved de-obligation to
+            date (OPS-6489): `original_obligated_amount` minus the current `amount`, or 0 when
+            `original_obligated_amount` is null.
         comments:
           type: string
         date_needed:

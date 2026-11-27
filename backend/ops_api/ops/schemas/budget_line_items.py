@@ -344,6 +344,11 @@ class BudgetLineItemResponseSchema(Schema):
     # `amount` stays the real/original obligated amount; `net_amount` is `amount` minus this.
     requested_de_obligation_amount = fields.Float(load_default=None, dump_default=None, allow_none=True)
     net_amount = fields.Float(required=True)
+    # Set once an approved de-obligation (OPS-6489) has reduced `amount`: the amount before any
+    # de-obligation, and how much has been de-obligated across every approval to date. Both null
+    # (and 0, respectively) when the line has never had a de-obligation approved.
+    original_obligated_amount = fields.Float(load_default=None, dump_default=None, allow_none=True)
+    total_de_obligated_to_date = fields.Float(dump_default=0, allow_none=False)
     line_description = fields.Str(required=True)
     status = fields.Enum(BudgetLineItemStatus, required=True, by_value=True)
     is_obe = fields.Bool(required=True)

@@ -568,6 +568,36 @@ describe("BLIRow", () => {
             expect(expanded.queryByText("De-obligated Amount")).not.toBeInTheDocument();
         });
 
+        // OPS-6489: the line's details stay viewable after approval, once there's no longer a
+        // pending request to show the first ("DeObligationExpandedData") way.
+        it("shows the original obligated amount and total de-obligated to date once a de-obligation has been approved (OPS-6489)", async () => {
+            renderComponent([], true, {
+                status: "OBLIGATED",
+                amount: 350_000,
+                requested_de_obligation_amount: null,
+                original_obligated_amount: 500_000,
+                total_de_obligated_to_date: 150_000
+            });
+
+            await userEvent.setup().click(screen.getByTestId("expand-row"));
+
+            const expanded = screen.getByTestId("expanded-data");
+            expect(expanded).toHaveTextContent(/Original Obligated Amount\s*\$500,000\.00/);
+            expect(expanded).toHaveTextContent(/Total De-obligated to Date\s*\$150,000\.00/);
+            // Not the pending-request details -- there's no pending request here.
+            expect(within(expanded).queryByText("Modification #")).not.toBeInTheDocument();
+        });
+
+        it("omits the original obligated amount and total de-obligated to date when the line has never been de-obligated", async () => {
+            renderComponent([], true, { status: "OBLIGATED", original_obligated_amount: null });
+
+            await userEvent.setup().click(screen.getByTestId("expand-row"));
+
+            const expanded = screen.getByTestId("expanded-data");
+            expect(within(expanded).queryByText("Original Obligated Amount")).not.toBeInTheDocument();
+            expect(within(expanded).queryByText("Total De-obligated to Date")).not.toBeInTheDocument();
+        });
+
         it("shows the locked icons, not the pencil, while the line is in a modification in review", async () => {
             renderComponent(
                 [],

@@ -120,6 +120,14 @@ class BudgetLineItem(BaseModel):
     # `amount` stays the real obligated amount until OPS-6489 applies an approved de-obligation.
     requested_de_obligation_amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2), nullable=True)
 
+    # Set once -- to `amount` -- the first time a de-obligation is approved on this line (OPS-6489),
+    # and never changed again. NULL means the line has never had a de-obligation approved, in which
+    # case `amount` itself is still the original. Lets the original obligated amount and the total
+    # de-obligated to date stay viewable after `amount` has been reduced, and lets CAN funding
+    # calculations keep summing the original amount instead of the shrinking one (see
+    # `get_funding_by_budget_line_item_status`).
+    original_obligated_amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2), nullable=True)
+
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         ENUM(BudgetLineItemStatus), default=BudgetLineItemStatus.DRAFT
     )
@@ -302,6 +310,35 @@ class BudgetLineItem(BaseModel):
     @net_amount.expression
     def net_amount(cls):
         return cls.amount - func.coalesce(cls.requested_de_obligation_amount, 0)
+
+    @hybrid_property
+    def can_funding_amount(self):
+        """The amount CAN funding calculations should count for this line (OPS-6489): the
+        original obligated amount once a de-obligation has been approved (so the CAN's balance
+        isn't affected by a de-obligation that only reduces the contract's obligation, not the
+        CAN's), otherwise the live `amount`."""
+        if self.original_obligated_amount is not None:
+            return self.original_obligated_amount
+        return self.amount
+
+    @can_funding_amount.expression
+    def can_funding_amount(cls):
+        return func.coalesce(cls.original_obligated_amount, cls.amount)
+
+    @hybrid_property
+    def total_de_obligated_to_date(self):
+        """How much has been de-obligated from this line across every approved de-obligation
+        (OPS-6489): `original_obligated_amount - amount` once the line has had one approved, else
+        0. Shown alongside the original amount on the line's details, the modification record,
+        and the agreement history."""
+        if self.original_obligated_amount is None:
+            return Decimal("0")
+        current_amount = self.amount if self.amount is not None else Decimal("0")
+        return Decimal(self.original_obligated_amount) - Decimal(current_amount)
+
+    @total_de_obligated_to_date.expression
+    def total_de_obligated_to_date(cls):
+        return func.coalesce(cls.original_obligated_amount - cls.amount, 0)
 
     @hybrid_property
     def portfolio_id(self):

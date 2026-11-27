@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { terminalLog, testLogin } from "./utils";
+import { BACKEND_DOMAIN, terminalLog, testLogin } from "./utils";
 
 // Reuses the same seeded Awarded contract as startContractModification.cy.js (OPS-3072
 // manual-testing fixture): an Awarded Contract with Obligated budget lines. Its seeded Planned
@@ -8,7 +8,7 @@ import { terminalLog, testLogin } from "./utils";
 const AGREEMENT_ID = 523;
 const SERVICES_COMPONENT_ID = 55;
 const CAN_ID = 504;
-const API = "http://localhost:8080/api/v1";
+const API = `${BACKEND_DOMAIN}/api/v1`;
 
 /** Request with the signed-in user's token, read when the command runs (not when it's queued). */
 const apiRequest = (options) =>
@@ -38,6 +38,9 @@ const declineOpenContractModifications = () => {
 
 describe("Review a Contract Modification from the For Review list (#6546)", () => {
     let budgetLineId;
+    // Set only by the de-obligation test below; cleaned up here too so a successful run doesn't
+    // leave its $800 line (and its CAN allocation) behind for later test runs.
+    let obligatedBliId;
 
     before(function () {
         // Behind ENABLE_MODIFIED_LOE_EDITS, which is off in CI's E2E stack today.
@@ -50,6 +53,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
     });
 
     beforeEach(() => {
+        obligatedBliId = undefined;
         declineOpenContractModifications();
         testLogin("system-owner");
         apiRequest({
@@ -77,9 +81,15 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         declineOpenContractModifications();
         testLogin("system-owner");
         apiRequest({ method: "DELETE", url: `/budget-line-items/${budgetLineId}` });
+        if (obligatedBliId) {
+            // Obligated lines can only be deleted by a superuser (Power User), regardless of
+            // modification/review state -- system-owner's delete above would 400.
+            testLogin("power-user");
+            apiRequest({ method: "DELETE", url: `/budget-line-items/${obligatedBliId}` });
+        }
     });
 
-    it("approves from the quick icons on the For Review list, with no Review agreement link", () => {
+    it("approves from the Mod Approval page via the list's Review Agreement link (OPS-6489)", () => {
         // Submit the modification via the API -- the UI submission flow is already covered by
         // startContractModification.cy.js; this spec is about the review side.
         testLogin("system-owner");
@@ -95,16 +105,18 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         cy.get('[data-cy="contract-modification-review-card"]').should("exist").as("modCard");
         cy.get("@modCard").contains("Contract Modification");
         cy.get("@modCard").contains("As-Is");
-        // No "Review agreement" link or detail view -- the icons are the only interaction (#6546).
-        cy.get("@modCard").contains(/review agreement/i).should("not.exist");
+        // The real review page exists now (#3331/OPS-6489): the list card links to it instead of
+        // acting inline.
+        cy.get("@modCard").find('[data-cy="review-agreement-button"]').click();
 
-        cy.get("@modCard").find('[data-cy="approve-contract-modification-icon-btn"]').click();
+        cy.url().should("match", new RegExp(`/agreements/${AGREEMENT_ID}/review-modification$`));
+        cy.contains("h1", "Mod Approval").should("be.visible");
+        cy.get('[data-cy="approve-mod-approval-btn"]').click();
         cy.get(".usa-modal__content").should("exist");
         cy.get(".usa-modal__content").contains("This will start the procurement process for budget lines selected to change status from Planned to Executing.");
         cy.get("[data-cy='confirm-action']").click();
 
         cy.get(".usa-alert__body").contains(/agreement approved for contract modification/i);
-        cy.get('[data-cy="contract-modification-review-card"]').should("not.exist");
 
         // The requester sees the existing outcome alert on the agreement, on the main tab --
         // not only on Award & Modifications (#6546 follow-up: the alert used to be tab-specific).
@@ -113,7 +125,7 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         cy.contains("Contract Modification Approved").should("be.visible");
     });
 
-    it("declines from the quick icons on the For Review list", () => {
+    it("declines from the Mod Approval page via the list's Review Agreement link", () => {
         testLogin("system-owner");
         apiRequest({
             method: "POST",
@@ -125,16 +137,76 @@ describe("Review a Contract Modification from the For Review list (#6546)", () =
         cy.visit("/agreements?filter=change-requests").wait(1000);
 
         cy.get('[data-cy="contract-modification-review-card"]').should("exist").as("modCard");
-        cy.get("@modCard").find('[data-cy="decline-contract-modification-icon-btn"]').click();
+        cy.get("@modCard").find('[data-cy="review-agreement-button"]').click();
+
+        cy.url().should("match", new RegExp(`/agreements/${AGREEMENT_ID}/review-modification$`));
+        cy.get('[data-cy="decline-mod-approval-btn"]').click();
         cy.get(".usa-modal__content").should("exist");
         cy.get(".usa-modal__content").contains("The agreement will remain as it was before the change was requested.");
         cy.get("[data-cy='confirm-action']").click();
 
         cy.get(".usa-alert__body").contains(/contract modification declined/i);
-        cy.get('[data-cy="contract-modification-review-card"]').should("not.exist");
 
         testLogin("system-owner");
         cy.visit(`/agreements/${AGREEMENT_ID}`);
         cy.contains("Contract Modification Declined").should("be.visible");
+    });
+
+    it("de-obligates a line and approves it from the Mod Approval page, reducing the obligated amount (OPS-6489)", () => {
+        // An Obligated line needs a future Need By Date; the shared beforeEach's budgetLineId
+        // uses today's (fine for the Planned-execute flow in the other two tests), so this test
+        // creates its own -- cleaned up by afterEach via the describe-scope obligatedBliId.
+        testLogin("system-owner");
+        apiRequest({
+            method: "POST",
+            url: "/budget-line-items/",
+            body: {
+                agreement_id: AGREEMENT_ID,
+                services_component_id: SERVICES_COMPONENT_ID,
+                can_id: CAN_ID,
+                line_description: "E2E de-obligation approval",
+                amount: 1000,
+                status: "OBLIGATED",
+                date_needed: "2044-01-01",
+                proc_shop_fee_percentage: 0
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                obligatedBliId = response.body.id;
+                return apiRequest({
+                    method: "POST",
+                    url: `/budget-line-items/${obligatedBliId}/de-obligation/`,
+                    body: { requested_amount: "200" }
+                });
+            })
+            .its("status")
+            .should("eq", 200);
+        apiRequest({
+            method: "POST",
+            url: `/agreements/${AGREEMENT_ID}/contract-modifications/`,
+            body: { requestor_notes: "E2E de-obligation approval from list" }
+        }).its("status").should("eq", 201);
+
+        testLogin("division-director");
+        cy.visit("/agreements?filter=change-requests").wait(1000);
+
+        cy.get('[data-cy="contract-modification-review-card"]').should("exist").as("modCard");
+        cy.get("@modCard").contains("De-obligation");
+        cy.get("@modCard").find('[data-cy="review-agreement-button"]').click();
+
+        cy.url().should("match", new RegExp(`/agreements/${AGREEMENT_ID}/review-modification$`));
+        cy.contains("Original Amount").should("be.visible");
+        cy.contains("Requested De-obligation").should("be.visible");
+        cy.contains("Remaining Amount").should("be.visible");
+        cy.contains("Total De-obligated to Date").should("be.visible");
+        cy.get('[data-cy="approve-mod-approval-btn"]').click();
+        cy.get("[data-cy='confirm-action']").click();
+        cy.get(".usa-alert__body").contains(/agreement approved for contract modification/i);
+
+        testLogin("system-owner");
+        apiRequest({ url: `/budget-line-items/${obligatedBliId}` }).then((response) => {
+            expect(Number(response.body.amount)).to.eq(800);
+        });
     });
 });
